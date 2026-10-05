@@ -26,8 +26,8 @@ Git reads, not permission to create commits.
 
 Desktop uses the host-owned `sailry/sdk` module for public settings, `inspectGit()`
 and durable requests. Contracts and request recovery rules are described once in
-[the SDK guide](../../../plugins/SDK.md); the authoritative types are in the
-[desktop declaration](../../../apps/desktop/src/plugins/host/sdk/api.d.ts).
+[the SDK guide](https://github.com/sailry/sailry-harness/blob/main/sdk/plugins.md); the authoritative types are in the
+[desktop declaration](https://github.com/sailry/sailry-harness/blob/main/apps/desktop/src/plugins/host/sdk/api.d.ts).
 
 Keep an unresolved request ID until its outcome is confirmed. A protocol fault
 is different from an adapter exception. Revision conflicts require inspection;
@@ -63,7 +63,7 @@ An interrupted unknown outcome needs inspection, not another callback request.
 Multiple callback writes are not an atomic transaction.
 
 The Node-owned QuickJS VM loads digest-verified declared resources and the
-[headless SDK subset](../../../crates/node-runtime/src/plugins/script/api.d.ts).
+[headless SDK subset](https://github.com/sailry/sailry-harness/blob/main/crates/node-runtime/src/plugins/script/api.d.ts).
 It has no filesystem, process, fetch or Node.js globals. Desktop UI exports are
 not installed in that runtime. Running calls retain admitted package settings
 through updates, disabling or removal.
