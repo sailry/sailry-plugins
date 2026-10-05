@@ -55,7 +55,7 @@ test('file activation preserves native image priority and document line targets'
   assert.deepEqual(calls,[['image','image.png'],['system','report.pdf'],['document','source.rs',21]]);
 });
 
-test('unclassified binary files open in the system while access failures retain their fault', async () => {
+test('unclassified binaries open externally; access failures retain their faults', async () => {
   const opened = [];
   const Files = vm.runInNewContext(`${source}\nFiles`,{
     View:class {},inspectFilePath:() => ({image:false,external:false}),
@@ -71,7 +71,7 @@ test('unclassified binary files open in the system while access failures retain 
   assert.deepEqual(opened,['binary.data']);
 });
 
-test('the semantic close action uses the selected draft flow before closing an empty panel', () => {
+test('semantic close handles selected drafts before closing empty panels', () => {
   const closed = [];
   const Files = vm.runInNewContext(`${source}\nFiles`,{View:class {},closePanel:() => closed.push('panel')});
   const view = new Files();

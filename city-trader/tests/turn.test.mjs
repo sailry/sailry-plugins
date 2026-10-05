@@ -68,7 +68,7 @@ function tradeTurn(match) {
 
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
-test("tile feedback follows movement, reports settled cash once, and closes after two seconds", async () => {
+test("feedback follows movement, settles cash once, and closes after two seconds", async () => {
   let finish;
   const pauses = [];
   let first = true;
@@ -165,7 +165,7 @@ test("AI tile feedback pauses its next decision until dismissed", async () => {
   assert.equal(view.dialogOpen, false);
 });
 
-test("a human turn and both AI seats advance without asking a model to roll", async () => {
+test("human and both AI seats advance without model-controlled rolls", async () => {
   const { view, cx, sent, drain } = harness();
   view.game.players[1].position = 1;
   view.game.players[2].position = 3;

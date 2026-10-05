@@ -202,7 +202,7 @@ test("ascending auction sells to the last bidder at the final bid", () => {
   conserved(game);
 });
 
-test("auction can end without a buyer and never exceeds a bidder's cash", () => {
+test("auctions allow no buyer and respect each bidder's cash", () => {
   const game = newGame();
   game.players[1].cash = 0;
   assert(rollTwo(game));
@@ -216,7 +216,7 @@ test("auction can end without a buyer and never exceeds a bidder's cash", () => 
   assert.equal(game.history.at(-1).key, "auction_unsold");
 });
 
-test("buyer offers cash to a rival who may accept or reject once per turn", () => {
+test("rivals accept or reject one cash offer per turn", () => {
   const game = newGame();
   game.phase = "manage";
   game.properties[2].owner = 1;

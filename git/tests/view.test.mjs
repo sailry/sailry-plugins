@@ -147,7 +147,7 @@ test('empty lists fill their viewport without cards', () => {
   assert.ok(descendants(document).some(node => node.items.includes('No changes')));
 });
 
-test('uninitialized main content has a full-width action while the sidebar stays compact', () => {
+test('uninitialized main actions fill width while sidebars remain compact', () => {
   const {empty} = vm.runInNewContext(`${source}\n({empty})`,{
     div:() => element('div'),theme:() => ({colors:{}}),
     EmptyState:{new:(id,props) => element('empty',{id,...props})},
@@ -165,7 +165,7 @@ test('uninitialized main content has a full-width action while the sidebar stays
   assert.equal(descendants(sidebar).some(node=>node.kind==='button'),false);
 });
 
-test('main tabs belong to the Shell while embedded tabs remain in the panel', () => {
+test('main tabs use the Shell; embedded tabs remain local', () => {
   const {header} = vm.runInNewContext(`${source}\n({header})`,{
     div:() => element('div'),Header:{new:(id,props) => element('metadata',{id,...props})},
     PanelHeader:{new:id => element('header',{id})},

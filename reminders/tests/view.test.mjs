@@ -82,7 +82,7 @@ test("load failure keeps the page without a retry bar", () => {
   assert.deepEqual(setup.calls, []);
 });
 
-test("form delegates its heading, close guard and body/footer to the shared modal", () => {
+test("forms delegate heading, close guard, body and footer to shared modals", () => {
   const setup = fixture(); setup.view.editing = {draft:{}}; setup.render();
   const dialog = setup.nodes.get("reminder-dialog-0");
   assert.deepEqual(plain(dialog.props), {open:true,dismissable:true,form:true,title:"New reminder",width:480});
@@ -244,7 +244,7 @@ test("desktop navigation and project tool share the host package without contrac
   assert.equal(messages("zh-CN").description, "管理待办事项与定时提醒");
 });
 
-test("captured tool display keeps localized action and target prompts out of the payload", async () => {
+test("captured tool displays exclude localized action and target prompts from payloads", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const tool = manifest.extensions["dev.sailry.platform"].tools[0];
   assert.equal(tool.presentation,"summary");

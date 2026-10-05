@@ -44,7 +44,7 @@ test("five or more stones win in every direction", () => {
   assert.equal(winningLine(game.board, 7, 6, 1).length, 6);
 });
 
-test("edges do not join across rows and a full board is a draw", () => {
+test("edges never wrap across rows; full boards draw", () => {
   const game = newGame();
   for (let column = 11; column < 15; column++) game.board[0][column] = 1;
   game.board[1][0] = 1;

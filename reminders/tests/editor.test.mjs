@@ -41,7 +41,7 @@ function fixture() {
   return {api,view,cx,nodes,texts,created,released,render(){nodes.clear();return api.render(view);}};
 }
 
-test("new drafts remain unassigned despite the project filter and preserve text field order", () => {
+test("new drafts ignore project filters and preserve text field order", () => {
   const setup=fixture(); setup.view.editing=setup.api.editor(null,setup.view.text); setup.render();
   assert.equal(setup.view.editing.draft.project,null);
   assert.deepEqual(setup.created.map(value=>value.props.label),["Title","Notes"]);

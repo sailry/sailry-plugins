@@ -18,7 +18,7 @@ function fixture() {
   return {search:new Search({},key => errors.push(key)),fields,calls,errors,released,cancelled:() => cancelled};
 }
 
-test('editing cancels the old search and its late response cannot replace current results', async () => {
+test('edits cancel searches and prevent late responses from replacing current results', async () => {
   const f = fixture(); f.fields.set(f.search.query,'old');
   const old = f.search.run(cx);
   f.search.reset(cx); f.fields.set(f.search.query,'new');
@@ -31,7 +31,7 @@ test('editing cancels the old search and its late response cannot replace curren
   assert.equal(f.cancelled(),3);
 });
 
-test('search passes literal expressions and trimmed nonempty glob lines', async () => {
+test('passes literal expressions and trimmed nonempty glob lines', async () => {
   const f = fixture(); f.fields.set(f.search.query,'资料.*'); f.fields.set(f.search.filter,' **/*.rs \n\n !vendor/**\n');
   f.search.toggle('regex',cx); f.search.toggle('case_sensitive',cx);
   const run = f.search.run(cx);

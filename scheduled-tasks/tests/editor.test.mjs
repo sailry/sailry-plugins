@@ -40,7 +40,7 @@ function fixture(resolve=async()=>config) {
   const cx={notify(){},spawn:job=>jobs.push(job)};
   return {api,view,cx,nodes,texts,created,released,jobs,notices,render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
 }
-test("new forms have vertical native fields, full-width schedule choices and explicit model and strength",()=>{
+test("new forms use vertical fields, full-width schedules and explicit model strength",()=>{
   const setup=fixture(),{view}=setup;setup.render();
   const form=setup.nodes.get("task-editor").items[0];
   assert.equal(form.kind,"Form");assert.deepEqual(plain(form.style.w_full),[]);
@@ -58,7 +58,7 @@ test("new forms have vertical native fields, full-width schedule choices and exp
   assert.throws(()=>setup.api.value(view.editing),/modelRequired/);
   setup.api.release(view.editing);assert.deepEqual(setup.released.slice(0,3),["text-0","text-1","text-2"]);assert.equal(setup.released.length,4);
 });
-test("existing queue and policy survive model choices, and real strength choices update only the config",async()=>{
+test("model changes preserve queues and policies; strength choices update only configuration",async()=>{
   const calls=[],setup=fixture(async(model,effort,base)=>{calls.push({model,effort,base});return {...config,effort:effort??"high"};});
   const item={...setup.view.editing.draft,id:"saved",revision:"3",name:"Review",prompt:"Keep this",queue:"reviews",config:{...config},project:"removed",worktree:"missing"};
   setup.view.editing=setup.api.editor(item,setup.view.text);setup.render();
@@ -78,7 +78,7 @@ test("existing queue and policy survive model choices, and real strength choices
   setup.view.pending="original";setup.render();assert.equal(setup.nodes.get("task-project").props.disabled,true);
   setup.view.control({id:"task-project",value:"none"},setup.cx);assert.equal(setup.view.editing.draft.project,"project");
 });
-test("model choices stay disabled until a delayed model and its supported effort resolve together",async()=>{
+test("model choices wait for delayed models and supported effort to resolve together",async()=>{
   const calls=[];let reply;
   const setup=fixture((model,effort,base)=>{
     calls.push({model,effort,base});return new Promise(resolve=>{reply=resolve;});
@@ -106,7 +106,7 @@ test("model choices stay disabled until a delayed model and its supported effort
   assert.equal(item.config.model,"explicit");assert.equal(item.config.effort,"high");
   assert.equal(setup.notices.length,0);
 });
-test("failed and stale model replies retain drafts without choosing defaults or overwriting another editor",async()=>{
+test("failed or stale model replies preserve drafts without defaults or editor replacement",async()=>{
   const replies=[],setup=fixture(()=>new Promise((resolve,reject)=>replies.push({resolve,reject}))),original=setup.view.editing;
   setup.view.control({id:"task-model",value:{model:"provider/explicit",effort:"high"}},setup.cx);
   const first=setup.jobs.shift()(setup.cx);replies[0].reject(new Error("unavailable"));await first;

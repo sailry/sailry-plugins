@@ -12,7 +12,7 @@ const source = readFileSync(new URL("../dev.sailry.platform/desktop/portfolio.js
 vm.runInNewContext(`${source}\nglobalThis.item = activityItem;`, scope);
 const view = { game: newGame(() => 0), text: messages("en") };
 
-test("rewards and tax show the location once and unsigned amounts with cash flow", () => {
+test("rewards and tax show location once with unsigned amounts and cash flow", () => {
   const reward = scope.item(view, { key: "bonus", tile: 12, amount: 150 });
   assert.equal(reward.title, tileName(view.text, view.game.board[12]));
   assert.equal(reward.description, "150");

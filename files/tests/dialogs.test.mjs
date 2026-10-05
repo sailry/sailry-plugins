@@ -33,7 +33,7 @@ function render(value,paths = []) {
 
 function all(node) { return typeof node === 'object' ? [node,...node.items.flatMap(all)] : [node]; }
 
-test('copy dialogs retain the captured source and remaining batch while the destination is edited', () => {
+test('destination edits preserve captured sources and remaining copy batches', () => {
   const nodes = all(render({id:'one',kind:'copy',stage:'ready',path:'target/renamed.txt',
     source_label:'Other project',source_path:'nested/original.txt',can_start:true},[{path:'next.txt'}]));
   for (const text of ['Other project','nested/original.txt','next.txt','target']) assert.ok(nodes.includes(text),text);
@@ -41,7 +41,7 @@ test('copy dialogs retain the captured source and remaining batch while the dest
   assert.equal(nodes.some(node => node?.kind === 'progress'),false);
 });
 
-test('native progress switches between indeterminate phases and transfer percentages without byte-count copy', () => {
+test('native progress alternates indeterminate phases and percentages without byte counts', () => {
   const value = {id:'one',kind:'upload',path:'target.txt',source_path:'picked.txt'};
   for (const [stage,progress,loading,percentage] of [
     ['preparing',null,true,0],['transferring',{copied:3,size:4},false,75],

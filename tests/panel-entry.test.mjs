@@ -80,7 +80,7 @@ for(const name of ['gomoku','reversi','xiangqi','poker','liars-dice','doudizhu',
   await updates.close();await observation;
 });
 
-test('databases: entry refreshes the visible catalog without running SQL or discarding selection and drafts',async()=>{
+test('databases: entry refreshes catalogs without SQL execution or losing selection and drafts',async()=>{
   const jobs=[],loads=[],profile={id:'saved',revision:4};
   const nextChange=()=>{},Controller=await controller('databases','main.js',{
     nextChange,listDatabases:async()=>[profile],listSsh:async()=>[],readProjectCatalog:async()=>({projects:[]}),

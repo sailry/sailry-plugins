@@ -64,7 +64,7 @@ test("a late model result cannot change a restarted game", async () => {
   assert.deepEqual(forgotten, ["old-turn"]);
 });
 
-test("a selected pawn moves, AI uses one offered move, and human turn resumes", async () => {
+test("selected pawns move, AI selects an offered move, and human play resumes", async () => {
   const sent = [], forgotten = [], tasks = [];
   const scope = context({
     prepare: command => { sent.push(JSON.parse(command)); return "model-turn"; },

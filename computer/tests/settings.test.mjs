@@ -113,7 +113,7 @@ test('SDK node-validation failures recover through refresh and reconnection', as
   assert.equal(view.canRequest('screen_capture'),true);
 });
 
-test('a failed refresh keeps previous permission data and reports only through a toast',async()=>{
+test('failed refreshes preserve permissions and report only through toasts',async()=>{
   let fail=false;
   const setup=await settings({readComputerPermissions:async()=>{if(fail)throw new Error('Unavailable');return permissions();}});
   await setup.ready();const previous=setup.view.value();fail=true;await setup.act(()=>setup.view.read(null,setup.cx));

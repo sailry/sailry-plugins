@@ -14,7 +14,7 @@ async function drain(tasks) {
   while (tasks.length) await tasks.shift();
 }
 
-test("rolling reveals dice and advances the token one board tile at a time", async () => {
+test("rolling reveals dice and advances one tile at a time", async () => {
   const game = newGame(), motion = new Motion(), visited = [];
   const { cx, tasks } = immediate(() => visited.push(motion.positions[0]));
   motion.reset(game);

@@ -305,7 +305,7 @@ test('key selection blocks duplicate prompts and save while retaining the captur
   assert.equal(setup.owner.editor,next);assert.deepEqual(setup.errors,[]);
 });
 
-test('database history double-click and native menu remain bound to the displayed profile',async()=>{
+test('database history clicks and native menus retain the displayed profile',async()=>{
   const copied=[],opened=[];
   const setup=await fixture('databases',{writeClipboard:text=>copied.push(text)}),owner=setup.owner;
   Object.assign(owner,{opened:'displayed',tab:0,logs:[{id:'older',sql:'SELECT older',database:'one'},{id:'newer',sql:'SELECT newer',database:'two'}],selectedLog:null,logFocus:{focus(){}}});
@@ -317,7 +317,7 @@ test('database history double-click and native menu remain bound to the displaye
   assert.equal(opened.length,1);
 });
 
-test('database tab close rejects stale or pending events and preserves local drafts and history',async()=>{
+test('database tab close rejects stale events and preserves pending drafts and history',async()=>{
   const setup=await fixture('databases'),owner=setup.owner,logs=[{id:'log',sql:'SELECT 1'}],sql={draft:'SELECT retained'};
   Object.assign(owner,{profiles:[{id:'active'}],opened:'active',catalog:{},result:{rows:[]},origin:{},status:'db_ready',pending:null,epoch:4,page:2,
     logs,selectedLog:'log',sql,connected:false});
@@ -334,7 +334,7 @@ test('database tab close rejects stale or pending events and preserves local dra
   owner.navigation({bar:'db-tabs',id:'active',kind:'close'},setup.live);assert.equal(owner.epoch,5);
 });
 
-test('opening another database clears resource state while reopening the same one retains it',async()=>{
+test('database switches clear resource state; reopening the same database retains it',async()=>{
   const loaded=[],created=[];
   const setup=await fixture('databases',{Catalog:class {
     constructor(profile){this.profile=profile;created.push(this);}
@@ -352,7 +352,7 @@ test('opening another database clears resource state while reopening the same on
   assert.deepEqual(loaded,[['first',null,setup.live],['second',null,setup.live]]);
 });
 
-test('opening SSH Run and Transfer clears stale feedback without changing the trust binding',async()=>{
+test('opening SSH Run and Transfer clears feedback while retaining trust',async()=>{
   for(const action of ['run','transfer'])for(const kind of ['host_key_required','completed']) {
     const setup=await fixture('ssh',{createText:value=>({value})}),owner=setup.owner,profile={id:'chosen',revision:4},target={id:'prior',revision:2};
     Object.assign(owner,{profiles:[profile],selected:'prior',connected:true,pending:null,picker:true,pickerProfile:'chosen',pickerRevision:3,dialog:1,
@@ -369,7 +369,7 @@ test('opening SSH Run and Transfer clears stale feedback without changing the tr
   assert.equal(owner.outcome,outcome);assert.equal(owner.dialog,1);assert.equal(owner.commandOpen,false);assert.equal(owner.transfer,null);
 });
 
-test('SSH Run keeps its selected resource through terminal refresh and captures the live revision',async()=>{
+test('SSH Run preserves selection through terminal refresh and captures live revisions',async()=>{
   let selected={id:'chosen',revision:4};const active={id:'active',revision:2},terminal={id:'terminal',ssh:'active',status:{kind:'running'}};
   let profiles=[selected,active];const calls=[];
   const setup=await fixture('ssh',{listSsh:async()=>profiles,listSshTerminals:async id=>id==='active'?[terminal]:[],readText:value=>value}),owner=setup.owner;
@@ -388,7 +388,7 @@ test('SSH Run keeps its selected resource through terminal refresh and captures 
   owner.profiles=[selected,active];owner.pending={request:{}};owner.runCommand(setup.live);assert.equal(calls.length,2);
 });
 
-test('SSH Transfer worktree events require the live draft generation and unlocked valid choice',async()=>{
+test('SSH Transfer worktree events require current draft generation and unlocked valid choices',async()=>{
   const setup=await fixture('ssh'),owner=setup.owner,transfer={worktree:'first'};
   Object.assign(owner,{transfer,dialog:4,connected:true,pending:null,worktrees:[{id:'first',project:'project'},{id:'second',project:'project'},{id:'unowned',project:null}]});
   owner.control({id:'ssh-worktree-3',value:'second'},setup.live);assert.equal(transfer.worktree,'first');

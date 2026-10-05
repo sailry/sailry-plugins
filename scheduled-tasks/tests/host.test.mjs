@@ -46,7 +46,7 @@ test("management lists tasks without a queue settings lookup",async()=>{
   assert.deepEqual(JSON.parse(JSON.stringify(listed)),{Ok:{items:[],after:null}});
   assert.deepEqual(setup.requests.map(command=>command.data.action.kind),["list_schedules"]);
 });
-test("native states follow all job pages and keep active runs ahead of later completions",async()=>{
+test("native states span job pages and prioritize active runs over later completions",async()=>{
   const setup=await fixture();
   setup.pages.set(null,{jobs:[
     {handler:"repeat",status:"completed"},{handler:"finished",status:"failed"},
@@ -63,7 +63,7 @@ test("native states follow all job pages and keep active runs ahead of later com
     [{before:null,limit:100},{before:21,limit:100},{before:10,limit:100}]);
   assert.equal(setup.transactions.length,0);
 });
-test("new handlers capture the Node-validated explicit config without exporting or choosing defaults",async()=>{
+test("new handlers capture Node-validated configuration without exporting or choosing defaults",async()=>{
   const setup=await fixture(),requested={...setup.config,effort:"low"};setup.input.config=requested;
   const saved=await setup.api.save(setup.input);
   assert.deepEqual(JSON.parse(JSON.stringify(saved.Ok.config)),setup.config);

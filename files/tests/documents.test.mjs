@@ -119,7 +119,7 @@ test('background and rejected closes preserve focus while confirmed active disca
   assert.deepEqual(plain(calls.at(-1)),['action','next',{kind:'focus'}]);
 });
 
-test('a snapshot before the close reply preserves focus handoff without overriding a newer selection', async () => {
+test('early snapshots preserve close focus handoff without overriding newer selections', async () => {
   for (const select of [false,true]) {
     let complete;
     const pending = new Promise(resolve => { complete = resolve; });

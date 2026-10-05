@@ -37,7 +37,7 @@ test("bids increase by quantity then face and skip eliminated seats", () => {
   assert.equal(game.history.length, 2);
 });
 
-test("challenge counts exact faces with no wild ones and loser opens next round", () => {
+test("challenges count exact faces without wild ones; losers open next round", () => {
   const game = deal(random(3), [2, 1, 1], 0);
   game.hands = [[1, 2], [1], [2]];
   assert(!challenge(game, 0));

@@ -113,7 +113,7 @@ test('uses independent configuration revisions and revokes prepared writes throu
   const prepared=await f.mutations.putOperations(entry(1,'Waiting on approval'),0,project);
   const request=await f.settings.prepareMemorySettings({...settings,auto_write:false});
   const outcome=await f.sdk.completeRequest(request);
-  assert.equal(f.settings.settingsOutput(outcome.Ok).revision,1);
+  assert.equal(f.settings.outcome(outcome.Ok).revision,1);
   assert.throws(()=>f.apply(prepared.operations),error=>error.code==='revision_conflict');
   assert.equal(f.get('memory/entry/'+id(1)).present,false);
   await assert.rejects(f.mutations.putOperations(entry(1,'Denied live write'),0,project),error=>error.code==='permission_denied');
@@ -157,7 +157,7 @@ test('review rejects metadata edits made while body pages are being read',async(
   await assert.rejects(f.retrieval.reviewMemories({review_after_days:90},{project,all_projects:false}),error=>error.code==='revision_conflict');
 });
 
-test('maximal consolidation and full retained catalog fit generic operation, value, key and byte bounds',async()=>{
+test('maximal consolidation and full catalogs respect operation, value, key and byte bounds',async()=>{
   const f=await fixture(), han=Array.from({length:2730},(_,index)=>String.fromCodePoint(0x4e00+index)).join('');
   const escaped='\u0001'.repeat(8191)+'a', title='"'.repeat(160);
   const entries=Array.from({length:limits.active+limits.archived-16},(_,index)=>entry(index,index < 34 ? (index%2 ? '\u0001'.repeat(8190)+String(index).padStart(2,'0') : han+String(index).padStart(2,'0')) : 'Retained fact '+index,

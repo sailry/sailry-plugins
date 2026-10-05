@@ -123,7 +123,7 @@ test('empty search fills its viewport', () => {
   }
 });
 
-test('main document tabs publish into the Shell header and embedded tabs stay local', async () => {
+test('main document tabs use Shell headers; embedded tabs stay local', async () => {
   const documentSource = (await readFile(new URL('../dev.sailry.platform/desktop/document-view.js',import.meta.url),'utf8'))
     .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
   const header = vm.runInNewContext(`${documentSource}\nheader`,{

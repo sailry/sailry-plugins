@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {State,query,choices,nodeId} from '../dev.sailry.platform/desktop/state.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
-import {requestRows} from '../dev.sailry.platform/desktop/requests.js';
+import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
 test('normalizes public endpoint bytes into an opaque stable selection',()=>{
@@ -57,7 +57,7 @@ test('composer distinguishes unknown usage from known zero and exposes context t
 });
 test('requests preserve exact token details and complete identity despite rounded display',()=>{
   const request={position,model:'model',provider_name:'Removed provider',scope_name:'Removed project',tokens:{input:'18446744073709551615',output:'1',cached_input:'0',reasoning:'0'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:null};
-  const rows=requestRows([request],text);assert.equal(rows.rows[0].length,6);assert.equal(rows.cells[0].length,6);
+  const rows=formatRows([request],text);assert.equal(rows.rows[0].length,6);assert.equal(rows.cells[0].length,6);
   assert.equal(rows.rows[0][2],`${request.tokens.input} · 1`);assert.equal(rows.details[0][2],`Input: ${request.tokens.input}\nOutput: 1`);
   assert.equal(rows.cells[0][4].primary.text,'1.3 ms');assert.equal(rows.cells[0][4].secondary.text,'1.00 s');assert.equal(rows.rows[0][5],'—');
   assert.equal(rows.details[0][4],'First token: 1250 µs\nDuration: 1000000 µs');
@@ -69,7 +69,7 @@ test('unassigned requests use a localized scope without changing response identi
   const request={session:'session-a',position,model:'model',provider_name:'Provider',scope_name:'',
     tokens:{input:'12',output:'4',cached_input:'0',reasoning:'0'},first_token_us:null,elapsed_us:null,usd_micros:null};
   for(const locale of ['en','zh-CN']) {
-    const text=messages(locale),rows=requestRows([request],text);
+    const text=messages(locale),rows=formatRows([request],text);
     assert.equal(rows.cells[0][1].primary.text,text.usage_unassigned);assert(rows.details[0][1].includes(text.usage_unassigned));
     assert.equal(rows.row_ids[0],`node-a:1:${position.sequence}`);
     assert.equal(rows.rows[0][2],'12 · 4');
@@ -78,7 +78,7 @@ test('unassigned requests use a localized scope without changing response identi
 test('request cells keep missing counters unknown and exact microdollar costs available',()=>{
   const request={position,model:'model',provider_name:'Provider',scope_name:'Project',tokens:{input:null,output:'0',cached_input:null,reasoning:'0'},
     first_token_us:null,elapsed_us:null,usd_micros:'18446744073709551615'};
-  const rows=requestRows([request],text);
+  const rows=formatRows([request],text);
   assert.equal(rows.cells[0][2].primary.text,'—');assert.equal(rows.cells[0][2].secondary.text,'0');
   assert.equal(rows.details[0][2],'Input: —\nOutput: 0');assert.equal(rows.details[0][3],'Cached: —\nReasoning: 0');
   assert.equal(rows.details[0][4],'First token: —\nDuration: —');

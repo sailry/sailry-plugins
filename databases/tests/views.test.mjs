@@ -130,7 +130,7 @@ for(const packageName of ['databases','ssh']) {
   });
 }
 
-test('database catalog failure keeps its tree and header refresh without a duplicate retry bar',async()=>{
+test('database catalog failures retain trees and header refresh without duplicate retry',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);
   owner.opened='first';owner.catalog.failed.add('');
   setup.functions.render(owner);
@@ -172,7 +172,7 @@ test('SSH Transfer worktree selects preserve selection and pending guards',async
   }
 });
 
-test('SSH keeps a terminal after profile removal while unmounting its assistant and file navigation',async()=>{
+test('SSH profile removal preserves terminals but unmounts assistants and file navigation',async()=>{
   const setup=await fixture('ssh'),owner=view('ssh',profiles);
   owner.terminals=[{id:'retained',ssh:'removed',status:{kind:'running'}}];owner.terminal='retained';
   setup.functions.render(owner);
@@ -182,7 +182,7 @@ test('SSH keeps a terminal after profile removal while unmounting its assistant 
   assert.equal(setup.nodes.has('ssh-assistant-removed'),false);
 });
 
-test('SSH assistant is bound to the active existing profile, not a selected saved connection',async()=>{
+test('SSH assistants use active profiles rather than selected saved connections',async()=>{
   const setup=await fixture('ssh'),owner=view('ssh',profiles);
   owner.selected='first';owner.terminals=[{id:'active',ssh:'second'}];owner.terminal='active';
   setup.functions.render(owner);
@@ -192,7 +192,7 @@ test('SSH assistant is bound to the active existing profile, not a selected save
   assert.equal(setup.nodes.get('ssh-workspace').props.navigation,'resource');
 });
 
-test('SSH Files gives its native context and tree a flex column that fills navigation height',async()=>{
+test('SSH Files native context and tree fill navigation height using flex columns',async()=>{
   const setup=await fixture('ssh'),owner=view('ssh',profiles);
   owner.terminals=[{id:'active',ssh:'first'}];owner.terminal='active';owner.jobs=[];owner.fileMenu=()=>[];
   owner.files=()=>({input:'path-input',path:'/',pending:false,profile:profiles[0],entries:[{name:'fixture.txt',kind:'file'}],selected:[],current:null,items:()=>[]});
@@ -231,7 +231,7 @@ test('empty SSH directories fill their viewport without cards',async()=>{
   }
 });
 
-test('database catalog and assistant use native resource slots, with an empty striped result',async()=>{
+test('database catalogs and assistants use native slots with empty striped results',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';
   setup.functions.render(owner);
   assert.equal(setup.nodes.get('database-workspace').props.navigation,'resource');

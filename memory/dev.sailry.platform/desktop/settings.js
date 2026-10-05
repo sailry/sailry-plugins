@@ -8,7 +8,7 @@ import {modal_closed,toast,nextControlEvent} from 'sailry/ui';
 import {messages} from './locales.js';
 import {render} from './view.js';
 import {bytes} from '../host/policy.js';
-import {readMemorySettings,prepareMemorySettings,settingsOutput} from '../host/settings.js';
+import {readMemorySettings,prepareMemorySettings,outcome} from '../host/settings.js';
 import {listMemories,browseMemories,reviewMemories} from '../host/retrieval.js';
 import {readMemory} from '../host/storage.js';
 import {prepareMemory,prepareRemoveMemory,prepareMergeMemories,memoryOutput} from '../host/mutations.js';
@@ -110,7 +110,7 @@ export default class Settings extends View {
           owner.error = result.Err.code === 'revision_conflict' ? 'memory_settings_conflict' : errorKey(result.Err.code);
           if (!uncertain(result.Err.code)) { forgetRequest(owner.request); owner.request = null; }
         } else if (result.Ok?.kind === 'plugin_transaction') {
-          this.saved = settingsOutput(result.Ok); this.draft = clone(this.saved); forgetRequest(owner.request); owner.request = null;
+          this.saved = outcome(result.Ok); this.draft = clone(this.saved); forgetRequest(owner.request); owner.request = null;
         } else owner.error = 'memory_unknown';
       } catch { owner.error = owner.request ? 'memory_unknown' : 'memory_failed'; }
       finally { owner.pending = false;if(owner.error)this.fail(owner,owner.error);cx.notify(); }

@@ -16,9 +16,23 @@ reinstall packages removed by the user.
 Use Python 3.12 or newer and Node.js 22.22.1:
 
 ```sh
+python3 -m unittest discover -s scripts/tests -v
+python3 scripts/check-names.py
+node --experimental-vm-modules scripts/check-packages.mjs
 python3 scripts/test.py
 python3 scripts/catalog.py --check
 ```
+
+CI also checks workflow syntax. Package checks cover all official packages and
+examples, v1 contracts, declared assets, static imports and JavaScript syntax
+without executing plugin initialization. Behavior tests include controllers,
+host handlers, games and localized UI contracts; real Node integration remains
+in the application repository.
+
+Keep function and test names concise. Files, modules and classes supply context;
+do not repeat their names as prefixes or add groups just to shorten labels.
+The shared naming check allows seven semantic words in identifiers and twelve
+in test labels, excluding required Python `test_` prefixes and generated source.
 
 After changing package metadata, regenerate `catalog.json` with
 `python3 scripts/catalog.py`. The official marketplace reads this index from

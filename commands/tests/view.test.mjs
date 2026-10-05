@@ -61,7 +61,7 @@ test('stopped CLI and SSH terminals remain stopped without automatic launch cont
   }
 });
 
-test('catalog failures do not add a retry bar or claim an attached terminal', () => {
+test('catalog failures add neither retry bars nor attached terminals', () => {
   const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}}, 'loadFailed');
   assert.equal(setup.nodes.has('terminal-retry'), false);
   assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);

@@ -72,7 +72,7 @@ test('bounds native reads and reports changed revisions without partial hints',a
   }),now),error=>error.code==='revision_conflict');
 });
 
-test('reviews a full-size CJK catalog with compact exact fingerprints',async()=>{
+test('handles a full-size CJK catalog with compact exact fingerprints',async()=>{
   const body=Array.from({length:2730},(_,index)=>String.fromCodePoint(0x4e00+index)).join('');
   const entries=Array.from({length:512},(_,index)=>entry(String(index).padStart(3,'0'),body));
   const {hints,reads}=await candidates(entries);

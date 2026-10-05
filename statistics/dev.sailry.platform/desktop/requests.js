@@ -7,7 +7,7 @@ function timestamp(value) {
   const offset=-date.getTimezoneOffset(),zone=`${offset<0?'-':'+'}${pad(Math.floor(Math.abs(offset)/60))}:${pad(Math.abs(offset)%60)}`;
   return [label,`${label}.${pad(date.getMilliseconds(),3)} ${zone}`];
 }
-export function requestRows(items,text) {
+export function formatRows(items,text) {
   const unknown=text.composer_metric_unknown;
   const duration=value=>value==null?unknown:Number(value)<1000000?text.usage_duration_ms.replace('%{value}',(Number(value)/1000).toFixed(1))
     :text.usage_duration_value.replace('%{value}',(Number(value)/1000000).toFixed(2));

@@ -94,7 +94,7 @@ test("create uses a stable canonical call ID and one atomic scheduled transactio
   assert.equal(setup.entries.size,1);
 });
 
-test("update and delete require revisions and reject foreign or unassigned records before schedule reads", async () => {
+test("mutations require revisions and reject foreign or unassigned records before schedule reads", async () => {
   const setup = await fixture(); await start(setup);
   setup.seed(item(1,{project:foreign})); setup.seed(item(2,{project:null})); setup.seed(item(3));
   for (const action of ["update","delete"]) for (const number of [1,2]) {
@@ -107,7 +107,7 @@ test("update and delete require revisions and reject foreign or unassigned recor
   assert.equal(setup.queries.length,0); assert.equal(setup.prepared.length,0);
 });
 
-test("updates editable fields and returns actual revisions before deleting the same project reminder", async () => {
+test("updates return actual revisions before deleting the same project reminder", async () => {
   const setup = await fixture(); await start(setup); setup.seed(item(1,{message:"Keep note"}),"4");
   const changed = await call(setup,{action:"update",id:id(1),revision:"4",completed:true});
   const value = changed.call.arguments.operations[0].data.value;

@@ -13,7 +13,7 @@ const original = {id:'role-one',revision:9,key:'old',name:'Original',description
   appearance:{icon:'ai',color:'blue'},model:{provider:'missing',model:'old/model',effort:'high'},
   max_turns:8,skills:['retained-skill'],instructions:'Original instructions'};
 
-test('fixed source uses the first provider default and keeps the full model identifier',() => {
+test('fixed sources use first-provider defaults and preserve complete model identifiers',() => {
   const state = create(null,'new',catalog({models:[models[2],...models.slice(0,2),models[3]]}));
   source(state,true);
   assert.deepEqual(state.model,{provider:'provider-a',model:'vendor/reasoned',effort:'high'});
@@ -45,7 +45,7 @@ test('editing preserves unavailable model identity and unexposed description and
   source(state,false); assert.equal(profile(state,fields).model,null);
 });
 
-test('validates exact key, UTF-8 and u32 turn limits before preparing a command',() => {
+test('validates exact keys, UTF-8 and u32 turn limits before command preparation',() => {
   const state = create(null,'new',[]);
   for (const key of ['', 'UPPER', '-leading', 'trailing-', 'with space', 'x'.repeat(129)]) {
     assert.throws(() => profile(state,{...fields,key}),/role_invalid/);

@@ -110,7 +110,7 @@ test("raise confirmation validates the amount and cannot act during the opponent
   assert.equal(advances, 1);
 });
 
-test("new hands clear the raise dialog and give results a fresh dismissal identity", () => {
+test("new hands clear raise dialogs and renew result dismissal identity", () => {
   const scope = { ...game, View: class {} };
   vm.runInNewContext(source, scope);
   const view = new scope.Poker();

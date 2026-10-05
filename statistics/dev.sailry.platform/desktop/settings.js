@@ -2,7 +2,7 @@ import {View} from 'gpui-kit';
 import {context,header_action} from 'sailry';
 import {readUsageInventory,readUsageChoices,watchUsage,nextUsageChange,refreshUsage} from 'sailry/sdk';
 import {nextTableEvent,writeClipboard,toast} from 'sailry/ui';
-import {requestRows} from './requests.js';
+import {formatRows} from './requests.js';
 import {messages} from './locales.js';
 import {State,query,choices} from './state.js';
 import {render} from './view.js';
@@ -15,7 +15,7 @@ export default class Usage extends View {
     cx.spawn(async ()=>{try {while(true) {
       const event=await nextTableEvent();
       if(event.table!=='usage-requests'||event.kind!=='copy'||event.revision!==`${this.state.generation}:${this.state.cursor}`)continue;
-      const rows=requestRows(this.state.data()?.requests.items??[],this.text).rows;
+      const rows=formatRows(this.state.data()?.requests.items??[],this.text).rows;
       writeClipboard(event.rows.filter(index=>rows[index]).map(index=>rows[index].join('\t')).join('\n'));
     }} catch (_) { /* Releasing the table closes its event stream. */ }});
     cx.spawn(async cx=>{

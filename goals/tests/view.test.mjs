@@ -51,7 +51,7 @@ test('long Unicode descriptions are not truncated',()=>{
   assert.equal(render(setup).props.items.length,300);
 });
 
-test('read failures retain the goal without a retry bar while pending actions keep recovery',()=>{
+test('read failures preserve goals without retry bars; pending actions remain recoverable',()=>{
   const setup=view({description:'Retained goal',state:'active'});
   setup.readFailed=true;
   assert.deepEqual(render(setup).items.map(item=>item.id),['goal-stop','goal-clear']);

@@ -43,7 +43,7 @@ test('paste waits for the pending capture instead of using the previous owner', 
   assert.equal(f.transfers.capturing,null);
 });
 
-test('transfer outcomes are reported once while retaining the transfer and recovery controls',async()=>{
+test('reports outcomes once and retains transfers and recovery controls',async()=>{
   const f=fixture();await f.transfers.move('source.txt','target/source.txt',cx);const id=f.transfers.current;
   f.update(id,{stage:'uncertain',can_start:false,can_check:true});f.transfers.refresh(cx);f.transfers.refresh(cx);
   assert.deepEqual(f.notices,[{key:'files_move_unknown',kind:'error'}]);assert.equal(f.transfers.current,id);assert.equal(f.transfers.value().can_check,true);

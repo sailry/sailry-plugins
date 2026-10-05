@@ -26,7 +26,7 @@ export async function prepareMemorySettings(value) {
   return prepareTransaction([write(current.record,current.value),
     {kind:'write',data:{key:settingsKey,value:{v:1,settings:stored},expected_revision:String(value.revision)}}]);
 }
-export function settingsOutput(output) {
+export function outcome(output) {
   if (output?.kind !== 'plugin_transaction' || !Array.isArray(output.data)) fail('memory settings outcome is unavailable','outcome_unknown');
   const saved = output.data.find(value => value.kind === 'plugin_value' && value.data?.key === settingsKey);
   if (!saved) fail('memory settings outcome is unavailable','outcome_unknown');

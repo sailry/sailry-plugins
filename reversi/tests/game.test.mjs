@@ -113,7 +113,7 @@ test("model can choose only an offered public-board move", () => {
     assert.throws(() => decision(response, moves));
 });
 
-test("seeded complete games conserve squares and stop with neither side able to move", () => {
+test("seeded games conserve squares and finish when neither side can move", () => {
   for (let seed = 1; seed <= 30; seed++) {
     const game = newGame();
     let state = seed, turns = 0;

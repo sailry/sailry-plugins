@@ -25,7 +25,7 @@ async function controller(file, bindings) {
   }};
 }
 
-test('page changes preserve an address draft and selecting a stable tab replaces it', async () => {
+test('page updates preserve drafts; selecting another tab replaces them', async () => {
   let focused = true, address = '', requests = [];
   const snapshot = (selected,url,cursor) => ({selected,cursor,tabs:[{id:selected,url,title:'Page',loading:false,error:null}],history:[false,false]});
   const {view,cx,complete} = await controller('main',{

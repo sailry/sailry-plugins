@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {State,query,choices} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {compact,ranking} from '../dev.sailry.platform/desktop/format.js';
-import {requestRows} from '../dev.sailry.platform/desktop/requests.js';
+import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/settings.js', import.meta.url), 'utf8'))
   .replace(/^import .*;\n/gm, '').replace('export default class Usage', 'class Usage');
@@ -159,7 +159,7 @@ test('request content starts with the native six-column two-line table',async()=
     return proxy;
   }
   const {requests}=vm.runInNewContext(`${viewSource}\n({requests})`,{
-    div:()=>element(),DataTable:{new:(id,props)=>element('DataTable',id,props)},requestRows,
+    div:()=>element(),DataTable:{new:(id,props)=>element('DataTable',id,props)},formatRows,
   });
   const state=new State(node),request={position:{node,timestamp_ms:'1',sequence:'1'},model:'Model',provider_name:'Provider',scope_name:'Project',
     tokens:{input:'1200',output:'340',cached_input:'100',reasoning:'20'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:'123'};

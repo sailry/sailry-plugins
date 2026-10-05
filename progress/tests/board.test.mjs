@@ -26,7 +26,7 @@ test('the workbench groups canonical lanes and omits archived and delegated sess
   assert.equal(result.running[0].appearance.icon,'code');
 });
 
-test('completed terminal grouping uses the shared controller unread state and preserves actual failures', () => {
+test('completed terminals use shared unread state and preserve failures', () => {
   const data = catalog([]);
   data.terminals = [{id:'completed',worktree:'tree',title:null},{id:'failed',worktree:'tree',title:'CLI'},
     {id:'ssh',worktree:null,title:'SSH'},{id:'closed',worktree:'tree',title:'Closed'}];
@@ -40,7 +40,7 @@ test('completed terminal grouping uses the shared controller unread state and pr
   assert.equal(result.running.length,0);
 });
 
-test('preview text must match the current turn and failed or waiting cards retain their status', () => {
+test('previews require current turns; failed and waiting cards retain status', () => {
   const waiting = session('waiting','waiting'), failed = session('failed','failed'), stale = session('running');
   waiting.activity.waiting = 'approval';
   const result = sections(catalog([waiting,failed,stale]),new Map([
@@ -139,7 +139,7 @@ test('preview reads use bounded batches and stop after the active catalog change
   assert.equal(state.previews.has(cards[0].id),false);assert.equal(reads.length,4);
 });
 
-test('catalog updates are not blocked by optional previews and discard late preview generations', async () => {
+test('catalog updates bypass optional previews and discard stale generations', async () => {
   let cursor = 1, finishPreview;
   const state = new State(async () => ({...catalog([session('running')]),cursor:String(cursor)}),
     () => new Promise(resolve => {finishPreview = resolve;}),() => {});

@@ -31,7 +31,7 @@ async function fixture() {
     ['gpui-kit',synthetic({View:class{}})],['sailry',synthetic({context:()=>JSON.stringify({locale:'en'})})],
     ['sailry/sdk',synthetic(sdk)],['sailry/forms',synthetic(forms)],['sailry/ui',synthetic({modal_closed:pending,nextControlEvent:pending,toast:value=>notices.push(value)})],
     ['./view.js',synthetic({render:()=>null})],
-    ['../host/settings.js',synthetic({readMemorySettings:sdk.readMemorySettings,prepareMemorySettings:sdk.prepareMemorySettings,settingsOutput:output=>output.data.settings})],
+    ['../host/settings.js',synthetic({readMemorySettings:sdk.readMemorySettings,prepareMemorySettings:sdk.prepareMemorySettings,outcome:output=>output.data.settings})],
     ['../host/retrieval.js',synthetic({listMemories:sdk.listMemories,browseMemories:sdk.browseMemories,
       reviewMemories:async(settings,filter)=>review(await sdk.listMemories(),settings,filter,sdk.readMemory)})],
     ['../host/storage.js',synthetic({readMemory:sdk.readMemory})],

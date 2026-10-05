@@ -34,7 +34,7 @@ test("victory particles finish without driving the game", async () => {
   assert.equal(motion.fireworks,null);
   assert.equal(game.history.length,0);
 });
-test("passes retain the last card animation without collecting or delaying the next turn", async () => {
+test("passes retain card animations without collecting or delaying turns", async () => {
   const time = clock(), motion = new Motion();
   const last = {player:1,cards:[3]};
   const game = {phase:"play",turn:2,history:[last],last};

@@ -4,7 +4,7 @@ import {theme,Header} from 'sailry';
 import {EmptyState,SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar} from 'sailry/ui';
 import {compact,total,integer,amount,speed,ranking} from './format.js';
 import {heatmap,trend} from './charts.js';
-import {requestRows} from './requests.js';
+import {formatRows} from './requests.js';
 
 const column = () => div().v_flex().min_w_0().gap_3();
 const label = text => div().text_sm().font_semibold().child(text);
@@ -48,7 +48,7 @@ function ranks(view,data) {
     }));
 }
 function requests(view,data) {
-  const {state,text}=view,rows=requestRows(data.requests.items,text);
+  const {state,text}=view,rows=formatRows(data.requests.items,text);
   const fields=['model_provider','project_time','input_output','cached_reasoning','first_token_duration','cost'];
   const rowHeight=48;
   return column().child(div().id('usage-table').w_full().min_w_0().h(rowHeight+(rows.rows.length?rows.rows.length*rowHeight:192))

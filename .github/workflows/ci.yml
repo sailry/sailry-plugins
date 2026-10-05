@@ -9,9 +9,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: plugin-checks-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   packages:
+    name: Packages and SDK examples
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
@@ -22,5 +28,23 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '22.22.1'
-      - run: python3 scripts/catalog.py --check
-      - run: python3 scripts/test.py
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.0.0
+        with:
+          go-version: '1.26.1'
+          cache: false
+      - name: Workflow syntax and expressions
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint" -shellcheck= -pyflakes=
+      - name: Script fixtures and syntax
+        run: |
+          python3 -m unittest discover -s scripts/tests -v
+          python3 -m compileall -q scripts
+      - name: Concise function and test names
+        run: python3 scripts/check-names.py
+      - name: Package assets, imports and JavaScript syntax
+        run: node --experimental-vm-modules scripts/check-packages.mjs
+      - name: Official catalog
+        run: python3 scripts/catalog.py --check
+      - name: Behavior and localized UI contracts
+        run: python3 scripts/test.py

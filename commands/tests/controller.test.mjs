@@ -67,7 +67,7 @@ test('reopens the captured stopped shell once with its existing identity', async
   assert.equal(setup.prepared.length, 1);
 });
 
-test('opens only the selected ordinary shell and never replays CLI or SSH launches', async () => {
+test('opens selected ordinary shells without replaying CLI or SSH launches', async () => {
   for (const item of [
     {...shell(), tool:'claude'}, {...shell(), ssh:'saved-host'},
     {...shell(), status:{kind:'exited', data:{code:0}}}, {...shell(), status:{kind:'running'}},
@@ -159,7 +159,7 @@ test('a subsequent stopped revision reopens the same shell exactly once', async 
   assert.equal(setup.prepared.length, 2);
 });
 
-test('switching after an open failure opens another shell and preserves explicit retry for the failed revision', async () => {
+test('switching after failure opens another shell and preserves revision-specific retry', async () => {
   const setup = await fixture([shell('first'), shell('second')], null);
   setup.view.selected = 'first';
   setup.host.complete = async () => ({Err:{code:'busy'}});
@@ -205,7 +205,7 @@ test('a preparation failure retains the open target for an explicit retry', asyn
   assert.equal(setup.view.items[0].status.kind, 'running');
 });
 
-test('a pending unknown open keeps the pane busy and rejects new actions until explicit retry', async () => {
+test('uncertain opens keep panes busy and reject actions until explicit retry', async () => {
   const setup = await fixture(); setup.host.complete = async () => ({Err:{code:'outcome_unknown'}});
   setup.view.refresh(setup.cx); await setup.settle();
   assert.equal(setup.view.busy, false);

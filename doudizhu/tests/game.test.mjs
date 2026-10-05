@@ -119,7 +119,7 @@ test("model response must identify one offered move", () => {
   }
 });
 
-test("the table keeps only the latest cards through passes and replaces them on a new play", () => {
+test("passes retain latest cards; new plays replace them", () => {
   const game = deal(random(5));
   assert.equal(tablePlay(game), null);
   bid(game, 0, 3);

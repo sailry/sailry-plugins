@@ -82,7 +82,7 @@ test("loading retains its placeholder without an empty card in either tab", () =
   }
 });
 
-test("failed reads retain both tabs without a retry bar and keep pending action recovery", () => {
+test("failed reads preserve both tabs without retry bars; pending actions remain recoverable", () => {
   const setup = fixture();
   setup.view.error = "loadFailed";
   for (const tab of [0,1]) {
@@ -200,7 +200,7 @@ test("task cards combine title and project before fixed status, toggle and actio
   assert.deepEqual(plain(setup.calls[1]),["remove",{id:"row",revision:"2"}]);
 });
 
-test("task status follows native state independently of history and retains the next time", () => {
+test("task status follows native state independently of history and retains next time", () => {
   const setup=fixture(), next=1792000000000;
   const item={id:"row",name:"Review",project:null,enabled:true,next_ms:next};
   setup.view.items=[item];
