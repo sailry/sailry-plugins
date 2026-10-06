@@ -7,19 +7,18 @@ const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export /gm,'');
-const host = vm.runInNewContext(`${source}\n({list,read,write,search,runtime,office,pdf})`);
+const host = vm.runInNewContext(`${source}\n({list,read,write,search,office,pdf})`);
 const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
 const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
 const plain = value => JSON.parse(JSON.stringify(value));
 const tool = name => extension.tools.find(tool => tool.name === name);
 
-test('seven tool declarations preserve operations and unformatted native outputs', () => {
+test('tool declarations preserve operations and unformatted native outputs', () => {
   const expected = [
     ['list_directory','list','files.list','summary'],
     ['read_file','read','files.read','summary'],
     ['write_file','write','files.write','details'],
     ['search_files','search','files.search','summary'],
-    ['get_office_runtime','runtime','office.runtime','summary'],
     ['read_office','office','office.read','summary'],
     ['export_pdf','pdf','office.export','summary'],
   ];
@@ -45,7 +44,7 @@ test('seven tool declarations preserve operations and unformatted native outputs
   }
   assert.match(tool('write_file').description,/conflict requires reading the current file/);
   assert.match(tool('read_file').description,/do not treat it as the whole file/);
-  assert.match(tool('get_office_runtime').description,/No download or installation/);
+  assert.equal(tool('get_office_runtime'),undefined);
   assert.match(tool('read_office').description,/including continuations of long parts/);
   assert.match(tool('export_pdf').description,/Destination replacement requires its revision/);
 });
@@ -104,9 +103,6 @@ test('search defaults keep original expressions and globs without interpreting t
 });
 
 test('Office schemas preserve generated defaults and nullable export revisions', () => {
-  assert.deepEqual(tool('get_office_runtime').handler.parameters,{
-    type:'object',properties:{},additionalProperties:false,
-  });
   assert.deepEqual(tool('read_office').handler.parameters,{
     $schema:'https://json-schema.org/draft/2020-12/schema',title:'Read',type:'object',
     properties:{path:{type:'string'},offset:{
@@ -119,7 +115,6 @@ test('Office schemas preserve generated defaults and nullable export revisions',
     properties:{source:{type:'string'},path:{type:'string'},expected_revision:{type:['string','null']}},
     required:['source','path'],additionalProperties:false,
   });
-  assert.deepEqual(plain(host.runtime({})),{});
   assert.deepEqual(plain(host.office({path:'报告.docx'})),{path:'报告.docx',offset:0});
   assert.deepEqual(plain(host.office({path:'book.xlsx',offset:41})),{path:'book.xlsx',offset:41});
   assert.deepEqual(plain(host.pdf({source:'report.docx',path:'output/report.pdf'})),{
@@ -132,7 +127,7 @@ test('Office schemas preserve generated defaults and nullable export revisions',
 test('invalid argument shapes fail before requesting an operation', () => {
   const examples = {
     list:{path:'.'},read:{path:'file.txt'},write:{path:'file.txt',text:'x',expected_revision:null},
-    search:{query:'x'},runtime:{},office:{path:'book.xlsx'},pdf:{source:'book.xlsx',path:'book.pdf'},
+    search:{query:'x'},office:{path:'book.xlsx'},pdf:{source:'book.xlsx',path:'book.pdf'},
   };
   for (const [name,valid] of Object.entries(examples)) {
     for (const args of [null,[],true,'path',42,...['worktree','session','node','turn','unexpected'].map(key => ({...valid,[key]:'foreign'}))]) {

@@ -9,7 +9,7 @@ description: Read, generate, render and edit PDF documents, merge/split/rotate p
 
 ## Execution
 
-Load `get_office_runtime` to obtain the execution Node's bundled Python executable and exact package versions. Use that executable with the existing `run_command` tool to run a script saved in the current worktree. Quote the executable and file paths. The runtime is already packaged: do not install into system Python, download another runtime, or change the bundled packages. Use the complete library APIs for both generation and editing. Inspect installed APIs with Python `help()` or `inspect` when needed; do not guess unavailable methods.
+Use the existing `run_command` tool on the execution Node to inspect available interpreters and required libraries before running a script saved in the current worktree. Sailry does not bundle Python or document libraries. Reuse a suitable project environment; install missing task dependencies only when needed, in a project-local virtual environment and under the session's command permissions. Do not install globally or change the application's files. If an interpreter, network access or permission is unavailable, report what is missing instead of claiming the task succeeded. Loading this skill does not itself install anything. Quote executable and file paths, and inspect library APIs with `help()` or `inspect` when needed.
 
 Native `read_office` and `export_pdf` provide inspection and PDF conversion. Author and edit with the script libraries. Scripts use the existing command tool's permissions and working directory. If command execution is disabled or denied, report that constraint without bypassing it.
 
@@ -19,7 +19,7 @@ Before any save, create the destination directory with `Path(destination).parent
 
 ## PDF authoring
 
-Use `reportlab` to generate PDFs with precise layout and fonts, `pypdf` for page operations, metadata and forms, and `pdfplumber` for text/table extraction. `pypdfium2` (bundled with pdfplumber) renders pages for inspection. Keep the editable Word/Excel/PPT source when text must reflow; regenerate its PDF after changes.
+Use `reportlab` to generate PDFs with precise layout and fonts, `pypdf` for page operations, metadata and forms, `pdfplumber` for text/table extraction, and `pypdfium2` for page rendering. Prepare only the libraries needed for the task in the selected project environment. Keep the editable Word/Excel/PPT source when text must reflow; regenerate its PDF after changes.
 
 ```python
 from reportlab.pdfgen import canvas
@@ -39,7 +39,7 @@ Register an available Unicode font for multilingual documents; base PDF fonts do
 
 ## Package resources
 
-- `templates/create.py` is an editable starter script, not a restricted authoring API. Read it with `read_skill_resource`, copy it into the worktree, then adapt its full library calls to the user's document. Run it with the shared Python executable and an output path. It creates missing parent directories and refuses to replace an existing file.
+- `templates/create.py` is an editable starter script, not a restricted authoring API. Read it with `read_skill_resource`, copy it into the worktree, then adapt its full library calls to the user's document. Run it with the selected project interpreter and an output path. It creates missing parent directories and refuses to replace an existing file.
 - `scripts/inspect_file.py` prints the saved file's content for verification. Run `<python> <skill-directory>/scripts/inspect_file.py <file>` using the absolute directory returned by `load_skill`. Quote paths and keep package resources unchanged. Structural inspection alone does not prove layout fidelity.
 
-The plugin contains no interpreter. `get_office_runtime`, `read_office` and `export_pdf` are supplied by Sailry's Files capability; `run_command` uses Commands. If a required capability is unavailable, explain what must be enabled. Installing or enabling this skill does not grant execution permission.
+The plugin contains instructions, scripts and templates, not an interpreter. `read_office` and `export_pdf` are supplied by Sailry's Files capability; `run_command` uses Commands on the execution Node. If a required capability is unavailable, explain what must be enabled. Installing or enabling this skill does not grant execution permission.

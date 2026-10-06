@@ -511,58 +511,6 @@
           ]
         },
         {
-          "name": "get_office_runtime",
-          "presentation": "summary",
-          "description": "Locate the bundled Python interpreter and full Office libraries on this execution Node. Use the returned executable with run_command; use an applicable document skill for authoring when available. No download or installation is performed.",
-          "handler": {
-            "name": "runtime",
-            "operation": "office.runtime",
-            "parameters": {
-              "type": "object",
-              "properties": {},
-              "additionalProperties": false
-            }
-          },
-          "display": {
-            "label": "Office environment",
-            "locales": {
-              "zh-CN": "Office 环境"
-            },
-            "icon": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "rows": {
-                      "value": {
-                        "source": "result",
-                        "path": "/data/packages"
-                      },
-                      "text": {
-                        "parts": [
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": ""
-                            }
-                          }
-                        ]
-                      },
-                      "separator": "\n"
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "contexts": [
-            "plugin",
-            "workspace"
-          ]
-        },
-        {
           "name": "read_office",
           "presentation": "summary",
           "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes. Returns the file revision for edits. Follow next offsets to read every section, including continuations of long parts.",
@@ -776,7 +724,6 @@
           "read",
           "write",
           "search",
-          "runtime",
           "office",
           "pdf"
         ]

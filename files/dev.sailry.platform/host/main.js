@@ -44,10 +44,6 @@ export function search(args) {
   return {query,regex,case_sensitive,globs};
 }
 
-export function runtime(args) {
-  return object(args,[]) ? {} : invalid();
-}
-
 export function office(args) {
   if (!object(args,['path','offset'])) return invalid();
   const {path,offset = 0} = args;
