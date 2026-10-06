@@ -27,7 +27,7 @@ function hero(view, cx, won = null) {
   return display;
 }
 
-function lobby(view, cx) {
+function lobby(view, cx, header) {
   const { text } = view, colors = theme().colors;
   const status = view.loading ? "loading" : view.available ? "ready" : view.error || "configure";
   const content = div().id(`ddz-status-${status}`).v_flex().items_center().justify_between()
@@ -40,7 +40,8 @@ function lobby(view, cx) {
   else if (view.available) content.child(button("ddz-deal", text.start, cx => view.start(cx)).primary().w_full().h(40));
   else if (status === "loadFailed") content.child(button("ddz-retry", text.retry, cx => view.configure(cx)));
   else if (status !== "loadFailed") content.child(div().text_sm().text_color(colors.muted_foreground).child(text[status]));
-  return div().id("ddz-lobby").size_full().v_flex().items_center().justify_center().p_6().child(content);
+  return div().id("ddz-lobby").size_full().v_flex().min_w(0).min_h(0).overflow_hidden()
+    .child(header).child(stage(content));
 }
 
 function result(view, cx) {
@@ -66,7 +67,7 @@ export function render(view, cx) {
     { label: view.text.score, value: String(view.score), tone: view.score > 0 ? "success" : view.score < 0 ? "danger" : "default" },
     { label: view.text.multiplier, value: `×${view.game?.multiplier || 1}` },
   ], actions: [{ id: "ddz-reset-score", label: view.text.resetScore, icon: "icons/rotate-cw.svg" }] }) });
-  if (!view.game) return lobby(view, cx).child(header);
+  if (!view.game) return lobby(view, cx, header);
   const { text, game } = view, colors = theme().colors;
   const compact = window.viewport_size().height < 680;
   const bodyHeight = Math.max(448, Math.min(788, window.viewport_size().height - 196));

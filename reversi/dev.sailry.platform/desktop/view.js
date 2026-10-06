@@ -26,8 +26,8 @@ function lobby(view, header) {
   else if (view.available) card.child(div().h_flex().flex_wrap().justify_center().gap_3()
     .child(action("reversi-start-black", text.startBlack, cx => view.start(cx, 1)).primary())
     .child(action("reversi-start-white", text.startWhite, cx => view.start(cx, 2)).outline()));
-  return div().size_full().v_flex().child(header)
-    .child(div().flex_1().w_full().h_flex().items_center().justify_center().p_5().child(card));
+  return div().size_full().v_flex().min_w(0).min_h(0).overflow_hidden().child(header)
+    .child(stage(card));
 }
 
 function seat(view, player, first) {

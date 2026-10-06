@@ -3,28 +3,12 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import vm from "node:vm";
 import * as model from "./model.mjs";
+import { Element, flatten } from "./elements.mjs";
 
 const plugins = ["gomoku", "reversi", "xiangqi", "poker", "liars-dice", "doudizhu", "city-trader"];
 const source = path => readFileSync(path, "utf8").replace(/^import .*;\n/gm, "");
 const player = { kind: "provider", model: "test/model" };
 
-class Element {
-  constructor(id = null) {
-    this.items = [];
-    this.props = id === null ? {} : { id };
-    return new Proxy(this, { get(target, key, receiver) {
-      if (key in target) return typeof target[key] === "function" ? target[key].bind(receiver) : target[key];
-      return (...values) => { target.props[key] = values[0]; return receiver; };
-    } });
-  }
-  child(value) { if (value !== null && value !== undefined) this.items.push(value); return this; }
-  children(values) { values.forEach(value => this.child(value)); return this; }
-  static new(id, props = {}) { const item = new Element().id(id); Object.assign(item.props, props); return item; }
-}
-
-function flatten(root) {
-  return root instanceof Element ? [root, ...root.items.flatMap(flatten)] : [root];
-}
 
 function match(name, game) {
   if (name === "gomoku" || name === "reversi") return game.newGame(2);
@@ -54,7 +38,7 @@ async function harness(name, options = {}) {
   const view = new scope.Game();
   Object.assign(view, { text: messages("en"), game: match(name, game),
     model: player, player, players: [player, player], roundPlayer: player, roundPlayers: [player, player],
-    names: ["You", "First", "Second"], name: "First", characters: [0, 1, 2], enabled: [true, true, true],
+    names: ["You", "First", "Second"], name: "First", characters: [0, 1, 2], enabled: [true, true, true], matchEnabled: [true, true, true],
     pending: "stable-turn", busy: false, animating: false, thinking: false,
     error: null, loading: false, available: true, elapsed: 0, tokens: 0, wins: 0, losses: 0, draws: 0,
     score: 0, selected: [], expanded: [0], editingCharacter: 0, dialogId: 0, dialogOpen: false,
@@ -74,7 +58,7 @@ async function harness(name, options = {}) {
     seat: leaf, portfolio: leaf, assets: leaf, auction: leaf, activity: leaf, AUCTION_HEIGHT: 0, ASSETS_HEIGHT: 0,
     card: leaf, cards: leaf, back: leaf, backs: leaf, hole: leaf, hand: leaf,
     felt: (_view, _compact, actions) => new Element().child(actions),
-    table: leaf, die: leaf, effects: () => [], fireworks: () => [], tween: value => value,
+    table: (_view, _compact, actions) => new Element().child(actions), die: leaf, effects: () => [], fireworks: () => [], tween: value => value,
   };
   for (const file of ["controls.js", "lobby.js", "view.js"]) {
     const path = new URL(file, base);

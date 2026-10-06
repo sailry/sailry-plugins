@@ -9,7 +9,7 @@ import { history } from "./history.js";
 import { result } from "./result.js";
 import { legal } from "./game.js";
 
-function lobby(view) {
+function lobby(view, header) {
   const { colors } = theme(), text = view.text;
   const status = view.loading ? "loading" : view.available ? "ready" : view.error || "configure";
   const hero = div().w(216).h(106).h_flex().items_center().justify_center().gap_2()
@@ -24,7 +24,8 @@ function lobby(view) {
   if (view.loading) panel.child(new Spinner());
   else if (view.available) panel.child(button("poker-start", text.start, cx => view.start(cx), "primary").w_full().h(40));
   else if (status !== "loadFailed") panel.child(div().text_sm().text_color(colors.muted_foreground).child(text[status]));
-  return div().id("poker-lobby").size_full().v_flex().items_center().justify_center().p_6().child(panel);
+  return div().id("poker-lobby").size_full().v_flex().min_w(0).min_h(0).overflow_hidden()
+    .child(header).child(stage(panel));
 }
 
 export function render(view) {
@@ -33,7 +34,7 @@ export function render(view) {
     { label: text.score, value: String(game?.stacks[0] ?? 1000) },
     { label: text.hand, value: String(game?.handNumber ?? 0) },
   ], actions: [{ id: "poker-reset", label: text.resetScore, icon: "icons/rotate-cw.svg" }] }) });
-  if (!game) return lobby(view).child(header);
+  if (!game) return lobby(view, header);
   const compact = window.viewport_size().height < 760;
   const bodyHeight = Math.max(448, Math.min(788, window.viewport_size().height - 196));
   const pot = game.phase === "over" ? game.settlement.pot : game.pot;

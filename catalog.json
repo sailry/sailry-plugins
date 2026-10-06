@@ -1750,7 +1750,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "doudizhu",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "description": "Play Dou Dizhu with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -5361,7 +5361,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "gomoku",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Play Gomoku against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -5419,7 +5419,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "liars-dice",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Liar's Dice with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -5450,7 +5450,14 @@
                 "dev.sailry.platform/desktop/locales.js",
                 "dev.sailry.platform/desktop/table.js",
                 "dev.sailry.platform/desktop/view.js",
-                "dev.sailry.platform/desktop/motion.js"
+                "dev.sailry.platform/desktop/motion.js",
+                "dev.sailry.platform/desktop/controls.js",
+                "dev.sailry.platform/desktop/layout.js",
+                "dev.sailry.platform/desktop/history.js",
+                "dev.sailry.platform/desktop/assets/town-pattern.png",
+                "dev.sailry.platform/desktop/assets/character-01.png",
+                "dev.sailry.platform/desktop/assets/character-02.png",
+                "dev.sailry.platform/desktop/assets/character-03.png"
               ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
@@ -6204,7 +6211,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "poker",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Play heads-up Texas Hold'em with an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -6791,7 +6798,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reversi",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Reversi against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -8029,7 +8036,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "xiangqi",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Chinese chess against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -8061,7 +8068,13 @@
                 "dev.sailry.platform/desktop/board.js",
                 "dev.sailry.platform/desktop/motion.js",
                 "dev.sailry.platform/desktop/locales.js",
-                "dev.sailry.platform/desktop/board.svg"
+                "dev.sailry.platform/desktop/board.svg",
+                "dev.sailry.platform/desktop/controls.js",
+                "dev.sailry.platform/desktop/layout.js",
+                "dev.sailry.platform/desktop/history.js",
+                "dev.sailry.platform/desktop/assets/town-pattern.png",
+                "dev.sailry.platform/desktop/assets/character-01.png",
+                "dev.sailry.platform/desktop/assets/character-02.png"
               ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",

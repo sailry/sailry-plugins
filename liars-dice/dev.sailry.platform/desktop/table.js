@@ -1,5 +1,6 @@
 import { div } from "gpui-kit";
-import { Tag } from "gpui-component";
+import { Image, theme } from "sailry";
+import { portrait } from "./layout.js";
 
 const pips = {
   1: [[1, 1]],
@@ -27,7 +28,7 @@ export function die(face, compact = false, hidden = false) {
       .w(dot).h(dot).rounded(9999).bg("#364a42")));
 }
 
-function hand(view, player, compact) {
+export function hand(view, player, compact) {
   const game = view.game;
   const rolling = view.motion?.rolling === true;
   const hidden = view.motion?.handShown === false || player !== 0
@@ -40,52 +41,50 @@ function hand(view, player, compact) {
       .child(die(face, compact, hidden))));
 }
 
-export function seat(view, player, compact = false) {
-  const { game, text } = view;
+export function seat(view, player, last) {
+  const { game, text } = view, colors = theme().colors;
   const active = game.phase === "bid" && game.turn === player;
-  const panel = div().id(`liars-seat-${player}`).v_flex().items_center().gap(compact ? 4 : 7)
-    .min_w(compact ? 170 : 220).px(compact ? 10 : 16).py(compact ? 8 : 12)
-    .rounded_xl().border_1().border_color(active ? "#e5c780" : "#83a996")
-    .bg("#153d34").text_color("#f4f7ed").shadow_sm()
-    .child(div().h_flex().items_center().gap_2()
-      .child(div().text_sm().font_medium().child(view.names[player]))
-      .child(new Tag().size("small").variant(game.counts[player] ? "secondary" : "danger")
-        .child(game.counts[player] ? `${game.counts[player]} ${text.dice}` : text.eliminated)))
-    .child(hand(view, player, compact));
-  return panel;
+  return div().id(`liars-seat-${player}`).relative().h(88).flex_1().min_w(0).px_4().py_3()
+    .border_r(last ? 0 : 1).border_color(colors.border)
+    .child(div().h_flex().h_full().items_center().gap_3()
+      .child(div().w(40).h(40).flex_shrink(0)
+        .child(Image.new(`liars-avatar-${player}`, { path: portrait(player) })))
+      .child(div().v_flex().flex_1().min_w(0).gap_1()
+        .child(div().text_sm().font_semibold().truncate().child(view.names[player]))
+        .child(div().text_xs().text_color(colors.muted_foreground)
+          .child(game.counts[player] ? `${game.counts[player]} ${text.dice}` : text.eliminated))))
+    .children(active ? [div().id(`liars-active-${player}`).absolute().left(16).right(16).bottom(0).h(2).bg(colors.ring)] : []);
 }
 
-export function table(view, compact = false) {
-  const { game, text } = view;
+export function table(view, compact = false, actions) {
+  const { game, text } = view, colors = theme().colors;
   const current = game.currentBid;
   const bid = div().id("liars-current-bid").relative().v_flex().items_center().gap_1()
     .transition("top", { duration: 220, easing: "ease-out" })
     .top(view.motion?.bidPulse ? -4 : 0)
-    .child(div().text_xs().text_color("#d2e4d5").child(text.currentBid))
+    .child(div().text_xs().text_color(colors.muted_foreground).child(text.currentBid))
     .child(current ? div().h_flex().items_center().gap_2()
-      .child(div().text_2xl().font_bold().text_color("#f7df9c").child(`${current.quantity} ×`))
+      .child(div().text_2xl().font_bold().text_color(colors.foreground).child(`${current.quantity} ×`))
       .child(die(current.face, compact))
-      .child(div().text_sm().text_color("#e7ede2").child(view.names[current.player]))
-      : div().text_lg().text_color("#e7ede2").child(text.noBid));
-  const center = div().v_flex().items_center().gap(compact ? 6 : 10)
-    .child(bid)
-    .child(div().max_w(420).text_center().text_xs().text_color("#c9dccd").child(text.rule));
+      .child(div().text_sm().text_color(colors.foreground).child(view.names[current.player]))
+      : div().text_lg().text_color(colors.foreground).child(text.noBid));
+  const center = div().v_flex().items_center().gap_2().child(bid);
   if (game.result) center.child(div().id("liars-round-result").relative().v_flex().items_center().gap_1()
     .transition("opacity", { duration: 240, easing: "ease-out" })
     .transition("top", { duration: 240, easing: "ease-out" })
     .opacity(view.motion?.resultShown === false ? 0 : 1)
     .top(view.motion?.resultShown === false ? 10 : 0)
-    .child(div().text_sm().font_bold().text_color("#f7df9c")
+    .child(div().text_sm().font_bold().text_color(colors.foreground)
       .child(game.result.actual >= game.result.quantity ? text.bidHeld : text.bluffCaught))
-    .child(div().text_xs().text_color("#e7ede2")
+    .child(div().text_xs().text_color(colors.foreground)
       .child(`${text.counted(game.result.actual)} · ${text.loses(view.names[game.result.loser])}`)));
-  const inside = div().id("liars-felt").v_flex().items_center().justify_between()
-    .w_full().min_h(compact ? 370 : 450).p(compact ? 12 : 24).gap(compact ? 12 : 20)
-    .rounded(compact ? 30 : 48).border_1().border_color("#ae9567").bg("#1a5943")
-    .child(div().h_flex().items_start().justify_between().flex_wrap().w_full().gap_2()
-      .children([1, 2].filter(player => view.matchEnabled[player]).map(player => seat(view, player, compact))))
-    .child(center)
-    .child(seat(view, 0, compact));
-  return div().w_full().max_w(920).mx_auto().rounded(compact ? 36 : 55)
-    .bg("#584336").p(compact ? 5 : 8).shadow_xl().child(inside);
+  return div().id("liars-felt").v_flex().flex_1().min_h(0).w_full().p_4()
+    .items_center().justify_between().gap_4()
+    .child(div().h_flex().items_center().justify_between().w_full().gap_4()
+      .children([1, 2].filter(player => view.matchEnabled[player]).map(player =>
+        div().h_flex().items_center().gap_2()
+          .child(div().w(28).h(28).flex_shrink(0).accessibility_label(view.names[player])
+            .child(Image.new(`liars-hand-avatar-${player}`, { path: portrait(player) })))
+          .child(hand(view, player, compact)))))
+    .child(center).child(actions);
 }
