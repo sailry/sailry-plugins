@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 
-test('skills use project environments without automatic installation', () => {
+test('use project environments without automatic installation', () => {
   for (const name of ['word', 'excel', 'powerpoint', 'pdf']) {
     const content = readFileSync(new URL(`../skills/${name}/SKILL.md`, import.meta.url), 'utf8');
     assert.match(content, /execution Node/);
