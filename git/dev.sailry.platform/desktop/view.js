@@ -6,6 +6,7 @@ import {TextField} from 'sailry/forms';
 import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, DiffSurface, SourceSurface, Modal, Picker, SegmentedTabs, EmptyState, Collapse, CollapseSlot} from 'sailry/ui';
 import {rows, checkbox, selectedId} from './changes.js';
 export const defaultOpen = true;
+const COUNTS_WIDTH = 96;
 const fileName = path => path.split('/').at(-1);
 const parent = path => path.includes('/') ? path.slice(0,path.lastIndexOf('/')) : '';
 const click = (view,value) => (_,cx) => view.run(() => view.actions.invoke(value),cx);
@@ -88,7 +89,7 @@ function decorated(view,row) {
   const expanded = view.expanded.get(row.id) !== false;
   view.nodes.set(row.id,{row,entries,scope});
   const menu = view.menus.files(entries,scope,row.id.startsWith('dir/')).map(nativeItem);
-  const result = {id:row.id,label:row.label,expanded,menu,children:(row.children ?? []).map(row => decorated(view,row)),decoration:{selector:`git-${row.id.replace('/','-')}`}};
+  const result = {id:row.id,label:row.label,expanded,menu,children:(row.children ?? []).map(row => decorated(view,row)),decoration:{selector:`git-${row.id.replace('/','-')}`,badges_width:COUNTS_WIDTH}};
   if (row.entry) {
     const entry = row.entry, selected = checkbox([entry]);
     const kind = scope === 'staged' ? entry.staged : scope === 'unstaged' ? entry.unstaged : entry.unstaged ?? entry.staged;

@@ -79,6 +79,23 @@ test('deleted counts and file glyphs use the semantic danger tone',()=>{
   assert.deepEqual(Array.from(values,value=>value.style.text_color[0]),[colors.success,colors.destructive]);
 });
 
+test('count columns stay fixed for full partial and empty stats',()=>{
+  const view={expanded:new Map(),nodes:new Map(),text:{git_stage_file:'Stage file'},
+    menus:{files:()=>[]},repo:{navigation:{hierarchical:false},writable:()=>true}};
+  const path=`nested/${'long-file-name-'.repeat(12)}.txt`;
+  for(const [additions,deletions] of [[237,164],[237,0],[0,164],[0,0]]) {
+    const entry={path,conflicted:false,untracked:false,staged:null,unstaged:'modified',diff:{additions,deletions}};
+    const row=decorated(view,{id:`tracked/${path}`,label:path.split('/').at(-1),entry});
+    assert.equal(row.decoration.badges_width,96);
+    assert.equal(row.decoration.detail,'nested');
+    assert.equal(row.decoration.check.id,`git-index-tracked-${path}`);
+    assert.deepEqual(JSON.parse(JSON.stringify(row.decoration.badges)),[
+      ...(additions?[{text:`+${additions}`,tone:'success'}]:[]),
+      ...(deletions?[{text:`−${deletions}`,tone:'danger'}]:[]),
+    ]);
+  }
+});
+
 test('history rows preserve full identities and controlled selection', () => {
   const initial = 'a'.repeat(40), latest = 'b'.repeat(40);
   const view = {repo:{selected:`commit:${initial}`,history:{offset:0,next:null,entries:[
