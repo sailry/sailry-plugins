@@ -49,7 +49,7 @@ export function render(view) {
           ? page?.error ? div().flex_1().min_h_0()
             : EmptyState.new(page?.loaded ? 'files_directory_empty' : 'files_loading',{
                 variant:'list',fill_height:true,icon:'folder',label:text[page?.loaded ? 'files_directory_empty' : 'files_loading']})
-          : div().flex_1().min_h_0().p_2().child(ResourceTree.new('files-tree',{items:explorer.items(text,actions.treeMenu()),
+          : div().flex_1().min_h_0().p_2().child(ResourceTree.new('files-tree',{items:JSON.stringify(explorer.items(text,actions.treeMenu())),
               selected:explorer.paths(),current:explorer.current,menu:actions.tree('')})))
         .children(page?.partial ? [div().px_3().pb_2().text_xs().text_color(colors.muted_foreground)
           .child(text.files_listing_partial)] : [])));

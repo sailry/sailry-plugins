@@ -23,7 +23,7 @@ export class Repository {
     this.tabs = []; this.selected = null; this.documents = new Map();
     this.read = 0; this.historyRead = 0; this.documentRead = 0; this.closed = false;
     this.refreshing = null;
-    this.navigation = {hierarchical:false,grouping:'tracked',sort:'path'};
+    this.navigation = {hierarchical:true,grouping:'tracked',sort:'path'};
   }
 
   writable() { return this.connected && !this.loading && !this.pending && this.status?.index_revision != null; }

@@ -113,7 +113,7 @@ function changes(view) {
   const items = rows(view.repo.status,view.repo.navigation,view.text).map(row => decorated(view,row));
   const document = view.repo.documents.get(view.repo.selected), entry = view.repo.status.entries.find(entry => entry.path === document?.request.path);
   const selected = selectedId(entry,view.repo.navigation.grouping,document?.request.scope ?? 'all');
-  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items,selected:selected ? [selected] : [],current:selected,indent:14,skip_depth:1}));
+  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items:JSON.stringify(items),selected:selected ? [selected] : [],current:selected,indent:14,skip_depth:1}));
 }
 function historyMetadata(repo,entry,colors) {
   const current = repo.status?.branch;

@@ -17,6 +17,18 @@ function fixture(extra = {}) {
   const owner=new Repository(api,()=>{},key=>reported.push(key));owner.status=status();return {owner,prepared,completed,forgotten,reported};
 }
 
+test('starts with a tree and preserves explicit navigation choices',async()=>{
+  const {owner}=fixture();
+  assert.deepEqual(owner.navigation,{hierarchical:true,grouping:'tracked',sort:'path'});
+  const nested={...status(),entries:[{...status().entries[0],path:'src/main.rs'}]};
+  const text={git_tracked:'Tracked',git_untracked:'Untracked'};
+  assert.equal(rows(nested,owner.navigation,text)[0].children[0].id,'dir/tracked/src');
+  owner.navigation.hierarchical=false;
+  await owner.refresh();
+  assert.equal(owner.navigation.hierarchical,false);
+  assert.equal(rows(nested,owner.navigation,text)[0].children[0].id,'tracked/src/main.rs');
+});
+
 test('initialization retains its request until recovery and then enables normal writes',async()=>{
   let attempt=0,initialized=false;
   const {owner,prepared,completed,forgotten}=fixture({

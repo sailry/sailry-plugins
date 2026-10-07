@@ -108,7 +108,7 @@ function navigation(view) {
   return div().id('db-catalog').v_flex().size_full().min_h_0().min_w_0()
     .child(PanelHeader.new('database-catalog-header',{size:'row',draggable:false,bordered:true}).child(div().h_flex().w_full().items_center().justify_end()
       .child(IconButton.new('db-refresh-catalog',{icon:'rotate-cw',label:text.refresh,disabled:!!catalog.loading.size}))))
-    .child(div().flex_1().min_h_0().p_1().child(ResourceTree.new('database-tree',{variant:'branch',items:catalog.items(text,(table,database)=>view.tableMenu(table,database)),current:catalog.current,selected:[]})));
+    .child(div().flex_1().min_h_0().p_1().child(ResourceTree.new('database-tree',{variant:'branch',items:JSON.stringify(catalog.items(text,(table,database)=>view.tableMenu(table,database))),current:catalog.current,selected:[]})));
 }
 
 export function render(view) {

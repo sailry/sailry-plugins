@@ -34,7 +34,7 @@ function files(view){const files=view.files(),{text}=view;if(!files)return div()
     .child(IconButton.new('ssh-files-parent',{icon:'arrow-up',label:text.ssh_files_parent,disabled:files.pending||files.path==='/'}))))
   .child(div().v_flex().flex_1().min_h_0().min_w_0().p_2().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')}).child(empty
     ? EmptyState.new('ssh-files-empty',{variant:'list',fill_height:true,icon:'folder',label:text.files_directory_empty})
-    : ResourceTree.new('ssh-files',{external_files:!view.locked(),items:files.items(path=>view.fileMenu(path)),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
+    : ResourceTree.new('ssh-files',{external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path))),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
   .children(files.next?[new Button('ssh-files-more').ghost().label(text.files_load_more).disabled(files.pending).on_click((_,cx)=>view.run(cx=>files.load(files.path,cx,true),cx))]:[])
   .child(div().h_8().h_flex().px_2().gap_2().text_xs().text_color(theme().colors.muted_foreground).child(format(text.ssh_files_count,{count:files.entries.length})))
   .children(view.jobs.filter(job=>job.profile===files.profile.id).map(job=>transferJob(view,job)));}
