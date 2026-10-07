@@ -7538,7 +7538,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -7570,7 +7570,7 @@
                     "zh-CN": "速度"
                   }
                 },
-                "icon": "arrow-up",
+                "icon": "gauge",
                 "order": 10
               },
               {
@@ -7583,6 +7583,7 @@
                     "zh-CN": "费用"
                   }
                 },
+                "icon": "dollar-sign",
                 "order": 20
               },
               {
@@ -7608,7 +7609,7 @@
                     "zh-CN": "轮次"
                   }
                 },
-                "icon": "rotate-cw",
+                "icon": "messages-square",
                 "order": 40
               },
               {

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {State,query,choices,nodeId} from '../dev.sailry.platform/desktop/state.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
@@ -51,9 +52,25 @@ test('filter changes reset dependent fields and preserve frozen deleted model ch
   assert.equal(query(7,Date.UTC(2026,8,30,23)).end_ms,Date.UTC(2026,9,1));
 });
 test('composer distinguishes unknown usage from known zero and exposes context thresholds',()=>{
-  const unknown=metrics({has_messages:true},text);assert.equal(unknown[0].value,'—');assert.equal(unknown[2].value,'—');
+  const unknown=metrics({has_messages:true},text);assert.equal(unknown[0].value,'—');assert.equal(unknown[2].value,'0.00');
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100'},context_limit:100,compacting:true},text);
   assert.equal(zero[0].value,'0');assert.equal(zero.at(-1).value.tone,'danger');assert(zero.at(-1).value.loading);
+});
+test('footer values keep speed units turn counts and unknown cost details',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const icons=Object.fromEntries(manifest.extensions['dev.sailry.platform'].ui.map(entry=>[entry.id,entry.icon]));
+  assert.equal(icons.composer_speed,'gauge');assert.equal(icons.composer_cost,'dollar-sign');assert.equal(icons.composer_turns,'messages-square');
+  for(const locale of ['en','zh-CN']) {
+    const text=messages(locale),statistics={turns:'7',responses:'12',generation:{output_tokens:'43',elapsed_us:'2000000',responses:'3'},cost:null};
+    const before=structuredClone(statistics),values=metrics({has_messages:true,statistics},text);
+    const metric=id=>values.find(value=>value.id===id);
+    assert.equal(metric('composer_speed').value,'21.5/s');assert.equal(metric('composer_turns').value,'7');
+    assert.equal(metric('composer_turns').details[0].value,'12');assert.equal(metric('composer_cost').value,'0.00');
+    assert(metric('composer_cost').details.every(detail=>detail.value===text.composer_metric_unknown));
+    assert.deepEqual(statistics,before);
+    const zero=metrics({has_messages:true,statistics:{...statistics,cost:{usd_micros:'0',responses:'12',breakdown:{input:'0',output:'0',cache_read:'0',cache_write:'0'}}}},text).find(value=>value.id==='composer_cost');
+    assert.equal(zero.value,'0.00');assert.equal(zero.details[0].value,'$0.00');assert.equal(zero.details.at(-1).value,'12');
+  }
 });
 test('requests preserve exact token details and complete identity despite rounded display',()=>{
   const request={position,model:'model',provider_name:'Removed provider',scope_name:'Removed project',tokens:{input:'18446744073709551615',output:'1',cached_input:'0',reasoning:'0'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:null};
