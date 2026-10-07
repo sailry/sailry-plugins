@@ -15,9 +15,8 @@ function choice(owner,value,label,checked) {
   return {id:`${owner.token}:${value}`,label,enabled:true,checked};
 }
 function effortLabel(view,value) {
-  if (value === null || value === 'default') return view.text.role_effort_inherit;
-  if (typeof value === 'object') return value.budget === -1 ? view.text.effort_dynamic
-    : view.text.effort_budget.replace('%{tokens}',String(value.budget));
+  if (value === null) return view.text.role_effort_inherit;
+  if (typeof value === 'object') return String(value.budget);
   return value;
 }
 function empty(view) {

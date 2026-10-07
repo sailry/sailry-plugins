@@ -57,12 +57,10 @@ function strength(view, disabled) {
   const {text,editing} = view;
   const model = view.models.find(model => model.id === editing.model);
   const choices = (model?.efforts ?? []).filter(effort => effort !== "default");
-  const label = effort => typeof effort === "string" ? text[`effort_${effort}`]
-    : effort.budget === -1 ? text.effort_dynamic : `${effort.budget} ${text.tokens}`;
   return SelectField.new("task-strength",{label:text.strength,
     placeholder:model && !choices.length ? text.noStrength : text.strengthPlaceholder,
     selected:editing.draft.config ? effortKey(editing.draft.config.effort) : null,
-    items:choices.map(effort => ({id:effortKey(effort),label:label(effort)})),
+    items:choices.map(effort => ({id:effortKey(effort),label:effortKey(effort)})),
     disabled:disabled || !choices.length || editing.modelLoading});
 }
 export function render(view) {

@@ -1617,7 +1617,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6803,7 +6803,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {

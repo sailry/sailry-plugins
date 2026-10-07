@@ -290,7 +290,7 @@ test("host scope retains public task capabilities and localized tab copy", async
   const extension = manifest.extensions["dev.sailry.platform"];
   assert.equal(extension.scope, "host");
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.1.1");
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);
   assert.equal(extension.tools.length,1);
   assert.deepEqual(extension.tools[0].contexts,["workspace","plugin"]);

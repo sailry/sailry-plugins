@@ -64,7 +64,7 @@ test("model changes preserve queues and policies; strength choices update only c
   setup.view.editing=setup.api.editor(item,setup.view.text);setup.render();
   assert.equal(setup.nodes.get("task-project").props.selected,"removed");assert.equal(setup.nodes.get("task-project").props.items.at(-1).label,"Unavailable");
   assert.equal(setup.nodes.get("task-worktree").props.selected,"missing");
-  assert.deepEqual(plain(setup.nodes.get("task-strength").props.items),[{id:"low",label:"Low"},{id:"high",label:"High"}]);
+  assert.deepEqual(plain(setup.nodes.get("task-strength").props.items),[{id:"low",label:"low"},{id:"high",label:"high"}]);
   setup.view.control({id:"task-strength",value:"low"},setup.cx);assert.equal(setup.view.editing.modelLoading,true);
   setup.render();assert.deepEqual(plain(setup.nodes.get("task-save").style.disabled),[true]);
   assert.equal(setup.nodes.get("task-model").props.disabled,true);
@@ -77,6 +77,22 @@ test("model changes preserve queues and policies; strength choices update only c
   setup.view.control({id:"task-worktree",value:"tree"},setup.cx);assert.equal(setup.view.editing.draft.worktree,"tree");
   setup.view.pending="original";setup.render();assert.equal(setup.nodes.get("task-project").props.disabled,true);
   setup.view.control({id:"task-project",value:"none"},setup.cx);assert.equal(setup.view.editing.draft.project,"project");
+});
+test("strength values retain raw named and numeric keys in every locale",()=>{
+  for(const locale of ["en","zh-CN"]) {
+    const setup=fixture(),values=["none","minimal","low","medium","high","xhigh","max",{budget:-1},{budget:1024}];
+    setup.view.text=messages(locale);
+    setup.view.models[0].efforts=["default",...values];
+    setup.view.editing.model="provider/explicit";
+    for(const effort of ["default",...values]) {
+      setup.view.editing.draft.config={...config,effort};setup.render();
+      const props=setup.nodes.get("task-strength").props;
+      assert.equal(props.label,setup.view.text.strength);
+      assert.equal(props.selected,setup.api.effortKey(effort));
+      assert.deepEqual(plain(props.items),values.map(value=>({id:setup.api.effortKey(value),label:setup.api.effortKey(value)})));
+      assert.equal(setup.nodes.get("task-model").props.effort,effort);
+    }
+  }
 });
 test("model choices wait for delayed models and supported effort to resolve together",async()=>{
   const calls=[];let reply;

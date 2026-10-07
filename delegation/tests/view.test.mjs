@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -59,4 +60,20 @@ test('catalog failures keep the role list without a retry bar',()=>{
   assert.equal(setup.nodes.has('role-reload'),false);
   assert.ok(setup.nodes.has('role-edit-retained'));
   assert.ok(setup.nodes.has('role-delete-retained'));
+});
+
+test('effort values retain raw names and budgets without changing inheritance',()=>{
+  const {effortLabel}=vm.runInNewContext(`${source}\n({effortLabel})`);
+  for(const locale of ['en','zh-CN']) {
+    const view={text:messages(locale)};
+    assert.equal(effortLabel(view,null),view.text.role_effort_inherit);
+    for(const raw of ['default','none','minimal','low','medium','high','xhigh','max']) {
+      assert.equal(effortLabel(view,raw),raw);
+    }
+    for(const budget of [-1,1024,8192]) {
+      const value={budget};
+      assert.equal(effortLabel(view,value),String(budget));
+      assert.deepEqual(value,{budget});
+    }
+  }
 });
