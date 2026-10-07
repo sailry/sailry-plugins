@@ -79,21 +79,39 @@ test('deleted counts and file glyphs use the semantic danger tone',()=>{
   assert.deepEqual(Array.from(values,value=>value.style.text_color[0]),[colors.success,colors.destructive]);
 });
 
-test('count columns stay fixed for full partial and empty stats',()=>{
+test('counts use intrinsic width for full partial and empty stats',()=>{
   const view={expanded:new Map(),nodes:new Map(),text:{git_stage_file:'Stage file'},
     menus:{files:()=>[]},repo:{navigation:{hierarchical:false},writable:()=>true}};
-  const path=`nested/${'long-file-name-'.repeat(12)}.txt`;
+  const path=`长目录/${'日本語文件名-'.repeat(12)}.txt`;
   for(const [additions,deletions] of [[237,164],[237,0],[0,164],[0,0]]) {
     const entry={path,conflicted:false,untracked:false,staged:null,unstaged:'modified',diff:{additions,deletions}};
     const row=decorated(view,{id:`tracked/${path}`,label:path.split('/').at(-1),entry});
-    assert.equal(row.decoration.badges_width,96);
-    assert.equal(row.decoration.detail,'nested');
+    assert.equal(Object.hasOwn(row.decoration,'badges_width'),false);
+    assert.equal(row.decoration.detail,'长目录');
     assert.equal(row.decoration.check.id,`git-index-tracked-${path}`);
+    assert.equal(row.id,`tracked/${path}`);
+    assert.equal(view.nodes.get(row.id).entries[0].path,path);
     assert.deepEqual(JSON.parse(JSON.stringify(row.decoration.badges)),[
       ...(additions?[{text:`+${additions}`,tone:'success'}]:[]),
       ...(deletions?[{text:`−${deletions}`,tone:'danger'}]:[]),
     ]);
+    const directory=decorated(view,{id:'dir/tracked/长目录',label:'长目录',children:[{id:`tracked/${path}`,label:path.split('/').at(-1),entry}]});
+    assert.equal(Object.hasOwn(directory.decoration,'badges_width'),false);
+    assert.equal(directory.decoration.badges,undefined);
   }
+});
+
+test('change trees enable guides without changing group indentation', () => {
+  const {changes}=vm.runInNewContext(`${source}\n({changes})`,{
+    div:()=>element('div'),ResourceTree:{new:(id,props)=>element('tree',{id,...props})},
+    rows:()=>[{id:'tracked',label:'Tracked',children:[],entries:[]}],selectedId:()=>null,checkbox,
+  });
+  const view={expanded:new Map(),nodes:new Map(),text:{},menus:{files:()=>[]},
+    repo:{status:{entries:[{path:'长目录/日本語.rs'}]},documents:new Map(),navigation:{hierarchical:true},writable:()=>true}};
+  const tree=descendants(changes(view)).find(node=>node.kind==='tree');
+  assert.equal(tree.props.guides,true);
+  assert.equal(tree.props.indent,14);
+  assert.equal(tree.props.skip_depth,1);
 });
 
 test('history rows preserve full identities and controlled selection', () => {

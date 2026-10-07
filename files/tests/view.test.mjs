@@ -215,6 +215,10 @@ test('populated explorers retain native tree insets and header control states', 
   assert.ok(inset);
   assert.deepEqual(Array.from(inset.props.p_2),[]);
   assert.deepEqual(Array.from(inset.props.flex_1),[]);
+  const tree=nodes.find(node=>node?.kind==='tree');
+  assert.equal(tree.props.guides,true);
+  assert.equal(tree.props.indent,undefined);
+  assert.equal(tree.props.skip_depth,undefined);
   assert.equal(nodes.find(node => node?.props?.id === 'file-create-menu').props.size,'medium');
   assert.equal(nodes.find(node => node?.props?.id === 'file-search-toggle').props.size,'medium');
   assert.equal(nodes.find(node => node?.props?.id === 'file-search-toggle').props.selected,false);

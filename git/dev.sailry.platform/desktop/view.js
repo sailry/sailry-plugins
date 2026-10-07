@@ -6,7 +6,6 @@ import {TextField} from 'sailry/forms';
 import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, DiffSurface, SourceSurface, Modal, Picker, SegmentedTabs, EmptyState, Collapse, CollapseSlot} from 'sailry/ui';
 import {rows, checkbox, selectedId} from './changes.js';
 export const defaultOpen = true;
-const COUNTS_WIDTH = 96;
 const fileName = path => path.split('/').at(-1);
 const parent = path => path.includes('/') ? path.slice(0,path.lastIndexOf('/')) : '';
 const click = (view,value) => (_,cx) => view.run(() => view.actions.invoke(value),cx);
@@ -89,7 +88,7 @@ function decorated(view,row) {
   const expanded = view.expanded.get(row.id) !== false;
   view.nodes.set(row.id,{row,entries,scope});
   const menu = view.menus.files(entries,scope,row.id.startsWith('dir/')).map(nativeItem);
-  const result = {id:row.id,label:row.label,expanded,menu,children:(row.children ?? []).map(row => decorated(view,row)),decoration:{selector:`git-${row.id.replace('/','-')}`,badges_width:COUNTS_WIDTH}};
+  const result = {id:row.id,label:row.label,expanded,menu,children:(row.children ?? []).map(row => decorated(view,row)),decoration:{selector:`git-${row.id.replace('/','-')}`}};
   if (row.entry) {
     const entry = row.entry, selected = checkbox([entry]);
     const kind = scope === 'staged' ? entry.staged : scope === 'unstaged' ? entry.unstaged : entry.unstaged ?? entry.staged;
@@ -113,7 +112,7 @@ function changes(view) {
   const items = rows(view.repo.status,view.repo.navigation,view.text).map(row => decorated(view,row));
   const document = view.repo.documents.get(view.repo.selected), entry = view.repo.status.entries.find(entry => entry.path === document?.request.path);
   const selected = selectedId(entry,view.repo.navigation.grouping,document?.request.scope ?? 'all');
-  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items:JSON.stringify(items),selected:selected ? [selected] : [],current:selected,indent:14,skip_depth:1}));
+  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items:JSON.stringify(items),selected:selected ? [selected] : [],current:selected,guides:true,indent:14,skip_depth:1}));
 }
 function historyMetadata(repo,entry,colors) {
   const current = repo.status?.branch;
