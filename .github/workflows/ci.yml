@@ -45,6 +45,36 @@ jobs:
       - name: Package assets, imports and JavaScript syntax
         run: node --experimental-vm-modules scripts/check-packages.mjs
       - name: Official catalog
-        run: python3 scripts/catalog.py --check
+        run: |
+          python3 scripts/catalog.py
+          python3 scripts/catalog.py --check
       - name: Behavior and localized UI contracts
         run: python3 scripts/test.py
+
+  catalog:
+    name: Publish official catalog
+    needs: packages
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: '3.12'
+      - name: Generate catalog
+        run: |
+          python3 scripts/catalog.py
+          python3 scripts/catalog.py --check
+      - name: Commit catalog changes
+        run: |
+          if git diff --quiet -- catalog.json; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add catalog.json
+          git commit -m 'Update official catalog'
+          git push origin HEAD:main

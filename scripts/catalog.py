@@ -8,9 +8,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def catalog():
+def catalog(root=ROOT):
     packages = []
-    for manifest in sorted(ROOT.glob("*/plugin.json")):
+    for manifest in sorted(root.glob("*/plugin.json")):
         data = json.loads(manifest.read_text(encoding="utf-8"))
         name = data["name"]
         if name != manifest.parent.name:

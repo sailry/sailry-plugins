@@ -34,10 +34,13 @@ do not repeat their names as prefixes or add groups just to shorten labels.
 The shared naming check allows seven semantic words in identifiers and twelve
 in test labels, excluding required Python `test_` prefixes and generated source.
 
-After changing package metadata, regenerate `catalog.json` with
-`python3 scripts/catalog.py`. The official marketplace reads this index from
-this repository. Installations resolve a package path to an immutable Git commit
-through the execution Node; clients do not execute Git or receive credentials.
+CI regenerates `catalog.json` from package manifests and publishes changes after
+successful checks on `main`. Run `python3 scripts/catalog.py` to review index
+changes locally. The marketplace and update checks read the same versions and
+descriptions from this index. Official package changes require a higher semantic
+version to appear as an update. Explicit installations and updates resolve a
+package path to an immutable Git commit through the execution Node; clients do
+not execute Git or receive credentials.
 
 ## License and provenance
 
