@@ -12,12 +12,37 @@ function host(roles = []) {
 }
 test('the admitted roster controls selection and instructions',()=>{
   const policy = host([{key:'review',name:'Review',description:'Inspect changes'}]);
-  assert.match(policy.initialized.instruction,/review: Inspect changes/);
+  assert.match(policy.initialized.instruction,/review \(Review\): Inspect changes/);
   assert.deepEqual(plain(policy.initialized.tools),['spawn_agent']);
   const args = {role:'review',task:'Review the change',title:'检查 🙂'};
   assert.deepEqual(plain(policy.prepare(args)),args);
-  for (const role of [null,'unknown',undefined]) assert.equal(policy.prepare({...args,role}).isError,true);
+  for (const role of ['unknown',undefined]) assert.equal(policy.prepare({...args,role}).isError,true);
   assert.equal(host().prepare({role:null,task:'Independent task'}).isError,undefined);
+});
+test('fresh default children accept omitted or null roles with any roster',()=>{
+  for (const roles of [[],[{key:'review',name:'Review',description:'Inspect'}]]) {
+    const policy = host(roles);
+    for (const args of [{task:'第一轮：读取并总结'},{role:null,task:'第一轮：读取并总结'}]) {
+      assert.deepEqual(plain(policy.prepare(args)),args);
+    }
+    const schema = policy.initialized.parameters.spawn_agent;
+    assert.deepEqual(plain(schema.required),['task']);
+    assert.match(policy.initialized.instruction,/omit role or use null/);
+    assert.match(policy.initialized.instruction,/normally omit role to preserve its original role and frozen configuration/);
+    if (roles.length) {
+      assert.match(policy.initialized.instruction,/Choose a role from the admitted roster when it fits the delegated task/);
+      assert.match(policy.initialized.instruction,/use its exact listed key and never invent a role/);
+      assert.match(policy.initialized.instruction,/If no role fits, omit role or use null/);
+      assert.deepEqual(plain(schema.properties.role.type),['string','null']);
+      assert.deepEqual(plain(schema.properties.role.enum),['review',null]);
+      assert.match(schema.properties.role.description,/review \(Review\): Inspect/);
+      assert.match(schema.properties.role.description,/selection metadata only/);
+    } else {
+      assert.match(policy.initialized.instruction,/No delegation roles are configured: omit role or use null/);
+      assert.equal(schema.properties.role.type,'null');
+    }
+    for(const role of ['unknown','',false,0]) assert.equal(policy.prepare({role,task:'Task'}).isError,true);
+  }
 });
 test('reuse keeps role selection optional and validates session IDs',()=>{
   const session = '11111111-1111-4111-8111-111111111111';
@@ -31,7 +56,7 @@ test('reuse keeps role selection optional and validates session IDs',()=>{
     }
     assert.equal(policy.prepare({...args,role:'unknown'}).isError,true);
     assert.equal(policy.prepare({...args,role:roles.length ? 'review' : null}).isError,undefined);
-    if(roles.length) assert.equal(policy.prepare({...args,role:null}).isError,true);
+    assert.equal(policy.prepare({...args,role:null}).isError,undefined);
   }
 });
 test('manifest and initialized schemas expose reuse consistently',async()=>{
@@ -40,6 +65,10 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
   assert.match(tool.description,/new child inherits/);
+  assert.match(tool.description,/Choose a role from the admitted roster when it fits the delegated task/);
+  assert.match(tool.description,/use its exact listed key and never invent a role/);
+  assert.match(tool.description,/If no role fits or the roster is empty, omit role or use null/);
+  assert.match(tool.description,/session ID and normally omit role/);
   assert.match(tool.description,/reuse an idle child/);
   assert.match(tool.description,/retains its own history/);
 });
