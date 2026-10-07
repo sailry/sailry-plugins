@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "delegation",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -16,7 +16,7 @@
           "name": "spawn_agent",
           "presentation": "details",
           "grouping": "standalone",
-          "description": "Delegate an independent task to a child agent and await its result. Provide a short title in the user's language for display, separate from the full task instructions. Multiple calls can run concurrently. Children have isolated conversation history, inherit this turn's project, work mode and permission, and cannot delegate further. Optionally select a registered worktree in the same project; otherwise the child uses this turn's worktree. The parent keeps its own worktree. Use only when delegation fits the user's instructions.",
+          "description": "Delegate a task and await its result. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission; select an admitted role and optionally a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID. It retains its own history, role, model, worktree and frozen configuration; omit role or select its original role. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions.",
           "contexts": [
             "workspace"
           ],
@@ -26,10 +26,13 @@
               "type": "object",
               "additionalProperties": false,
               "required": [
-                "role",
                 "task"
               ],
               "properties": {
+                "session": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                },
                 "role": {
                   "type": [
                     "string",
