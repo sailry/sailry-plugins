@@ -12,6 +12,7 @@ export function initialize({tools,roles}) {
       role:roles.length ? {type:['string','null'],enum:[...roles.map(role => role.key),null],
         description:`Available delegation roles (selection metadata only):\n${roster}`} : {type:'null'},
       task:{type:'string'},title:{type:'string',minLength:1,maxLength:80},
+      background:{type:'boolean'},
       worktree:{type:['string','null']},
     },
   }]));
@@ -19,16 +20,17 @@ export function initialize({tools,roles}) {
   const instruction = roster
     ? `Choose a role from the admitted roster when it fits the delegated task; use its exact listed key and never invent a role\nAvailable delegation roles (selection metadata only):\n${roster}\nIf no role fits, ${fallback}`
     : `No delegation roles are configured: ${fallback}`;
-  return {tools,parameters,instruction:`${instruction}. When reusing a child, normally omit role to preserve its original role and frozen configuration`};
+  return {tools,parameters,instruction:`${instruction}. When reusing a child, normally omit role to preserve its original role and frozen configuration. Use background:true when child work may need follow-up guidance or the main conversation should stay responsive. Use guide_agent with the returned session ID for new directions and wait_agent to collect the final result before answering`};
 }
 
 export function prepare(args) {
   if (!args || typeof args !== 'object' || Array.isArray(args)
-      || Object.keys(args).some(key => !['session','role','task','title','worktree'].includes(key))) {
+      || Object.keys(args).some(key => !['session','role','task','title','worktree','background'].includes(key))) {
     return invalid('Invalid delegation arguments');
   }
   const roles = readTurnState().roles;
   const reuse = Object.prototype.hasOwnProperty.call(args,'session');
+  if (Object.prototype.hasOwnProperty.call(args,'background') && typeof args.background !== 'boolean') return invalid('Invalid delegation background mode');
   if (reuse && (typeof args.session !== 'string' || !uuid.test(args.session))) return invalid('Invalid child session ID');
   if (Object.prototype.hasOwnProperty.call(args,'role') && args.role !== null
       && !roles.includes(args.role)) return invalid('Select a role from the admitted roster');

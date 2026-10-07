@@ -83,3 +83,18 @@ test('child outcomes remain authoritative, including literal failures',()=>{
   const result = {session:'child',turn:'turn',status:'completed',response:'Ready'};
   assert.deepEqual(plain(policy.result({output:{kind:'delegation',data:result}})),result);
 });
+test('background mode retains synchronous default and exposes child control',async()=>{
+  const policy = host(), base = {task:'Independent work'};
+  assert.deepEqual(plain(policy.prepare(base)),base);
+  assert.deepEqual(plain(policy.prepare({...base,background:true})),{...base,background:true});
+  assert.deepEqual(plain(policy.prepare({...base,background:false})),{...base,background:false});
+  for(const background of [null,0,'true',undefined]) assert.equal(policy.prepare({...base,background}).isError,true);
+  assert.equal(policy.initialized.parameters.spawn_agent.properties.background.type,'boolean');
+  assert.match(policy.initialized.instruction,/Use background:true/);
+  assert.match(policy.initialized.instruction,/wait_agent to collect the final result before answering/);
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools = manifest.extensions['dev.sailry.platform'].tools;
+  assert.equal(tools[0].handler.parameters.properties.background.type,'boolean');
+  assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
+  assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
+});
