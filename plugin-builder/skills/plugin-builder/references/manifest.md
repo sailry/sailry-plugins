@@ -1,0 +1,151 @@
+# Package and manifest
+
+## Layout
+
+```text
+<name>/
+  plugin.json                     required manifest
+  skills/<skill>/SKILL.md         optional skills, one folder each
+  mcp.json                        optional MCP servers
+  dev.sailry.platform/            every script, locale module and asset Sailry loads
+    settings.json                 optional settings form schema
+    host/main.js                  optional headless callbacks
+    desktop/main.js               optional desktop entry
+```
+
+Package names are lowercase kebab-case (`task-notes`) and must equal the folder name. Versions are semantic versions such as `0.1.0`.
+
+## plugin.json
+
+```json
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "release-notes",
+  "version": "0.1.0",
+  "description": "Draft release notes from recent changes",
+  "extensions": {
+    "dev.sailry.platform": {
+      "api_version": "v1",
+      "actions": [],
+      "display": {
+        "label": "Release notes",
+        "locales": {"zh-CN": "发布说明"},
+        "icon": "reicon:files/file-text"
+      },
+      "description": {
+        "label": "Draft release notes from recent changes",
+        "locales": {"zh-CN": "根据最近的变更起草发布说明"}
+      }
+    }
+  }
+}
+```
+
+Unknown fields are rejected anywhere in the extension. Only include the sections below that the package uses.
+
+| Field | Purpose |
+| --- | --- |
+| `api_version` | Always `"v1"` |
+| `scope` | `"host"` (default): runs on the execution Node and works from every controller. `"desktop"`: bound to the desktop's local Node |
+| `actions` | Capabilities the package needs; see below |
+| `display` | Localized catalog name and icon |
+| `description` | Localized one-line description |
+| `icon` | Package-relative PNG for catalogs, as an alternative to a `reicon:` icon in `display` |
+| `instructions` | Short package instructions supplied to the model together with the package's tools |
+| `settings_schema` | Path to a settings form schema, such as `dev.sailry.platform/settings.json` |
+| `settings_page` | Settings navigation entry, with an optional custom desktop `entry` |
+| `storage` | Optional JSON schemas for private storage collections |
+| `tools` | Agent tools; see `tools.md` |
+| `host` | Headless callback entry; see `host.md` |
+| `desktop`, `ui` | Panels, navigation, assistants and controls; see `desktop.md` |
+
+### Localized text
+
+Every label uses the same shape. `label` is the default (English) text; `locales` adds translations keyed by locale, for example `"zh-CN"`.
+
+```json
+{"label": "Release notes", "locales": {"zh-CN": "发布说明"}}
+```
+
+### Icons
+
+Catalog and navigation icons use the bundled icon set as `reicon:<group>/<name>`, for example `reicon:files/file-text`, `reicon:ui/database`, `reicon:it/code-square`, `reicon:time/calendar` or `reicon:notifications/bell`. Composer controls in `ui` use plain control icon names such as `eye`, `file-text` or `rotate-cw`. Reuse names that existing official plugins use when unsure.
+
+## Actions
+
+Declare only what the package uses. Each action grants one capability family:
+
+| Action | Grants |
+| --- | --- |
+| `storage.read`, `storage.write` | The package's private key-value storage on the Node |
+| `http.request` | HTTP requests made by the Node |
+| `files.read`, `files.write` | Files in the captured worktree |
+| `git.read`, `git.write` | Git status and history; staging and commits |
+| `worktrees.read`, `worktrees.write` | Registered worktrees |
+| `projects.read` | The registered project catalog |
+| `conversation.read`, `conversation.control` | The captured conversation; sending messages and stopping turns |
+| `sessions.start` | Starting new conversations |
+| `models.read`, `models.generate` | The model catalog; model requests through the Node |
+| `notifications.publish` | Application notifications |
+| `dispatch.manage` | Scheduled and queued plugin work |
+| `process.read`, `process.control`, `terminals.read`, `terminals.control` | Commands and terminals |
+| `databases.read`, `databases.control`, `databases.manage` | Database connections |
+| `ssh.read`, `ssh.control`, `ssh.manage` | SSH connections |
+| `browser.read`, `browser.control`, `external_browser.read`, `external_browser.control` | Built-in and external browsers |
+| `computer.read`, `computer.control` | Screen capture and desktop control |
+| `media.inspect`, `media.image`, `media.video`, `media.settings.read`, `media.settings.write` | Media understanding and generation |
+| `agents.delegate`, `roles.read`, `roles.write` | Subagents and delegation roles |
+| `activity.read`, `usage.read` | Activity and usage reports |
+
+A skill-only package needs `"actions": []`.
+
+## Skills
+
+Each skill is `skills/<skill>/SKILL.md` with YAML frontmatter. The skill `name` must equal its folder name; it uses lowercase letters, digits and single hyphens, up to 64 characters. `description` is required (up to 1024 characters) and tells the model when to load the skill. `metadata` values must be strings.
+
+```markdown
+---
+name: release-notes
+metadata:
+  display-name: Release notes
+description: Draft release notes from recent commits and merged changes. Use when the user asks for a changelog or release summary.
+---
+
+# Release notes
+
+1. Read the Git log since the last tag with the available Git tools.
+2. Group changes into Added, Changed and Fixed.
+3. Write `RELEASE_NOTES.md` only when the user asks for a file.
+```
+
+Skill files are limited to 128 KiB, with up to 64 skills per package. Other files in the skill folder are resources the model reads with `read_skill_resource`; scripts run through the ordinary command tool, resolved against the directory returned by `load_skill`.
+
+## Settings form
+
+`settings_schema` points to a bounded JSON Schema that Sailry renders as a native form. Up to 32 fields, each `string`, `integer`, `number` or `boolean`.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "base_url": {"type": "string", "title": "Server", "default": "https://api.example.com"},
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "x-sailry-secret": {"origin": "https://api.example.com", "header": "Authorization", "prefix": "Bearer "}
+    },
+    "model": {"type": "string", "title": "Model", "x-sailry-model": true}
+  },
+  "required": ["base_url"],
+  "x-sailry-locales": {"zh-CN": {"base_url": "服务器", "token": "令牌", "model": "模型"}}
+}
+```
+
+- `x-sailry-secret` stores the value in the Node's protected storage. Code never reads it; the Node injects it only into HTTP requests for that origin when a request names the field as its `credential`.
+- `x-sailry-model: true` renders a model picker. A separate string field with `"x-sailry-model-effort": "model"` renders the reasoning-effort picker for the model field named `model`.
+- `x-sailry-tabs` groups fields into tabs: `[{"id": "general", "title": "General", "fields": ["base_url"]}]`.
+- Add `"settings_page": {"navigation": {"label": "Release notes"}}` to give the form its own entry in Settings.
+
+Read values with `readSettings()` from the SDK, or with a tool bound to the `settings.read` operation.
