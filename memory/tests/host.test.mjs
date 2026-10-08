@@ -149,3 +149,14 @@ test('package review shares the captured content budget and never grants replace
   state.remaining = 1;
   assert.deepEqual(plain(await main.review({})),{candidates:[]});
 });
+
+
+test('guidance scopes retrieval and saves durable user corrections',async () => {
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const instruction = manifest.extensions['dev.sailry.platform'].instructions;
+  assert.match(instruction,/Before project work that could depend on prior decisions or preferences/);
+  assert.match(instruction,/Skip irrelevant retrieval for self-contained questions/);
+  assert.match(instruction,/When the user corrects you or states a stable preference/);
+  assert.match(instruction,/Do not save facts directly derivable from the code/);
+  assert.match(instruction,/current user instructions take precedence/);
+});

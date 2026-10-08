@@ -104,6 +104,56 @@ test('requires the action behind a bound operation', () => {
   assert.match(result.output, /needs the storage\.write action/);
 });
 
+const operations = [
+  ['files.edit', 'files.write'],
+  ['files.find', 'files.read'],
+  ['git.show', 'git.read'],
+  ['git.blame', 'git.read'],
+];
+
+function bindings(operation) {
+  return [
+    {name: 'invoke', operation},
+    {name: 'invoke', handler: {name: 'invoke', operation, parameters: {type: 'object'}}},
+  ];
+}
+
+function operationPackage(tool, actions) {
+  return fixture({
+    'plugin.json': manifest({
+      actions,
+      tools: [tool],
+      host: {
+        entry: 'dev.sailry.platform/host/main.js',
+        resources: ['dev.sailry.platform/host/main.js'],
+        handlers: ['invoke'],
+      },
+    }),
+    'dev.sailry.platform/host/main.js': 'export function invoke(args) { return args; }\n',
+  });
+}
+
+for (const [operation, action] of operations) {
+  test(`requires ${action} for ${operation}`, () => {
+    const unrelated = action === 'files.write' ? 'files.read' : 'files.write';
+    for (const tool of bindings(operation)) {
+      for (const actions of [[], [unrelated]]) {
+        const result = check(operationPackage(tool, actions));
+        assert.equal(result.code, 1, result.output);
+        assert.ok(result.output.includes(`needs the ${action} action`), result.output);
+      }
+    }
+  });
+
+  test(`accepts ${action} for ${operation}`, () => {
+    for (const tool of bindings(operation)) {
+      const result = check(operationPackage(tool, [action]));
+      assert.equal(result.code, 0, result.output);
+      assert.match(result.output, /^ok:/m);
+    }
+  });
+}
+
 test('rejects a skill whose name differs from its folder', () => {
   const result = check(fixture({'plugin.json': manifest(), 'skills/notes/SKILL.md': skill}));
   assert.match(result.output, /skills\/notes: name must equal the folder name/);

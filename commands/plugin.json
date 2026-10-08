@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -15,7 +15,7 @@
         {
           "name": "run_command",
           "presentation": "content",
-          "description": "Run a noninteractive shell command on the execution Node. CWD defaults to this session's worktree; an explicit cwd may be an absolute directory or a path relative to the worktree, including '.'. For bundled skill scripts, use the absolute script path from load_skill's directory or explicitly select that directory. Invoke directly for authorized work: Ask and Project modes present approval before execution; Full runs directly. Do not request tool permission through ask_user. This is not an OS sandbox: the command has the execution Node user's access. Output is bounded with explicit truncation. Timeout defaults to 120000 ms, up to 900000 ms. Use background=true for long-lived processes: they return an ID, survive this turn, and have no timeout. Inspect with read_command and stop with stop_command. Keep the command in the shell foreground (no & or nohup). Foreground commands stop on exit, cancellation or timeout.",
+          "description": "Run a noninteractive shell command on the execution Node. Include description to explain what the command checks or changes in the approval card. CWD defaults to this session's worktree; an explicit cwd may be an absolute directory or a path relative to the worktree, including '.'. For bundled skill scripts, use the absolute script path from load_skill's directory or explicitly select that directory. Invoke directly for authorized work: Ask and Project modes present approval before execution; Full runs directly. Do not request tool permission through ask_user. This is not an OS sandbox: the command has the execution Node user's access. Output is bounded with explicit truncation. Timeout defaults to 120000 ms, up to 900000 ms. Use background=true for long-lived processes: they return an ID, survive this turn, and have no timeout. Inspect with read_command and stop with stop_command. Keep the command in the shell foreground (no & or nohup). Foreground commands stop on exit, cancellation or timeout.",
           "handler": {
             "name": "run",
             "operation": "process.run",
@@ -26,6 +26,11 @@
               "properties": {
                 "command": {
                   "type": "string"
+                },
+                "description": {
+                  "type": ["string", "null"],
+                  "maxLength": 2000,
+                  "description": "Optional concise explanation shown with the command before approval"
                 },
                 "cwd": {
                   "type": "string",
@@ -63,6 +68,17 @@
               "zh-CN": "命令"
             },
             "icon": "reicon:it/terminal-square",
+            "approval": [
+              {
+                "message": {"label": "%{command}", "locales": {"zh-CN": "%{command}"}},
+                "values": {"command": {"source": "arguments", "path": "/command"}}
+              },
+              {
+                "message": {"label": "%{description}", "locales": {"zh-CN": "%{description}"}},
+                "values": {"description": {"source": "arguments", "path": "/description"}},
+                "when": {"all": [{"value": {"source": "arguments", "path": "/description"}, "equals": null, "negate": true}]}
+              }
+            ],
             "input": {
               "summary": {
                 "path": "/command",

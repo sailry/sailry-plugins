@@ -46,8 +46,10 @@ OPERATION_ACTIONS = {
     "storage.get": "storage.read", "storage.list": "storage.read",
     "storage.set": "storage.write", "storage.delete": "storage.write",
     "http.request": "http.request", "files.list": "files.read", "files.read": "files.read",
-    "files.search": "files.read", "files.write": "files.write", "git.status": "git.read",
-    "git.diff": "git.read", "git.log": "git.read", "worktrees.list": "worktrees.read",
+    "files.search": "files.read", "files.find": "files.read", "files.write": "files.write",
+    "files.edit": "files.write", "git.status": "git.read", "git.diff": "git.read",
+    "git.log": "git.read", "git.show": "git.read", "git.blame": "git.read",
+    "worktrees.list": "worktrees.read",
 }
 SETTING_KINDS = {"string", "integer", "number", "boolean"}
 

@@ -27,18 +27,17 @@ test('fresh default children accept omitted or null roles with any roster',()=>{
     }
     const schema = policy.initialized.parameters.spawn_agent;
     assert.deepEqual(plain(schema.required),['task']);
-    assert.match(policy.initialized.instruction,/omit role or use null/);
-    assert.match(policy.initialized.instruction,/normally omit role to preserve its original role and frozen configuration/);
+    assert.ok(!policy.initialized.instruction.includes('Choose a role'));
+    assert.ok(!policy.initialized.instruction.includes('frozen configuration'));
     if (roles.length) {
-      assert.match(policy.initialized.instruction,/Choose a role from the admitted roster when it fits the delegated task/);
-      assert.match(policy.initialized.instruction,/use its exact listed key and never invent a role/);
-      assert.match(policy.initialized.instruction,/If no role fits, omit role or use null/);
+      assert.match(policy.initialized.instruction,/Configured delegation roles/);
+      assert.match(policy.initialized.instruction,/review \(Review\): Inspect/);
       assert.deepEqual(plain(schema.properties.role.type),['string','null']);
       assert.deepEqual(plain(schema.properties.role.enum),['review',null]);
       assert.match(schema.properties.role.description,/review \(Review\): Inspect/);
       assert.match(schema.properties.role.description,/selection metadata only/);
     } else {
-      assert.match(policy.initialized.instruction,/No delegation roles are configured: omit role or use null/);
+      assert.match(policy.initialized.instruction,/No delegation roles are configured/);
       assert.equal(schema.properties.role.type,'null');
     }
     for(const role of ['unknown','',false,0]) assert.equal(policy.prepare({role,task:'Task'}).isError,true);
@@ -65,7 +64,7 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
   assert.match(tool.description,/new child inherits/);
-  assert.match(tool.description,/Choose a role from the admitted roster when it fits the delegated task/);
+  assert.match(tool.description,/Choose a role from the roles listed in this tool when it fits the delegated task/);
   assert.match(tool.description,/use its exact listed key and never invent a role/);
   assert.match(tool.description,/If no role fits or the roster is empty, omit role or use null/);
   assert.match(tool.description,/session ID and normally omit role/);
@@ -90,11 +89,13 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.deepEqual(plain(policy.prepare({...base,background:false})),{...base,background:false});
   for(const background of [null,0,'true',undefined]) assert.equal(policy.prepare({...base,background}).isError,true);
   assert.equal(policy.initialized.parameters.spawn_agent.properties.background.type,'boolean');
-  assert.match(policy.initialized.instruction,/Use background:true/);
-  assert.match(policy.initialized.instruction,/wait_agent to collect the final result before answering/);
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const tools = manifest.extensions['dev.sailry.platform'].tools;
   assert.equal(tools[0].handler.parameters.properties.background.type,'boolean');
+  assert.match(tools[0].description,/Use guide_agent for new directions and wait_agent/);
+  assert.match(tools[0].description,/child does not see this conversation/);
+  assert.match(tools[0].description,/self-contained task with the goal, relevant paths, constraints and expected output/);
+  assert.match(tools[0].description,/disjoint files/);
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
 });

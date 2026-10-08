@@ -16,11 +16,10 @@ export function initialize({tools,roles}) {
       worktree:{type:['string','null']},
     },
   }]));
-  const fallback = 'omit role or use null for a default child with this conversation\'s model and instructions';
   const instruction = roster
-    ? `Choose a role from the admitted roster when it fits the delegated task; use its exact listed key and never invent a role\nAvailable delegation roles (selection metadata only):\n${roster}\nIf no role fits, ${fallback}`
-    : `No delegation roles are configured: ${fallback}`;
-  return {tools,parameters,instruction:`${instruction}. When reusing a child, normally omit role to preserve its original role and frozen configuration. Use background:true when child work may need follow-up guidance or the main conversation should stay responsive. Use guide_agent with the returned session ID for new directions and wait_agent to collect the final result before answering`};
+    ? `Configured delegation roles (selection metadata only):\n${roster}`
+    : 'No delegation roles are configured';
+  return {tools,parameters,instruction};
 }
 
 export function prepare(args) {
@@ -33,7 +32,7 @@ export function prepare(args) {
   if (Object.prototype.hasOwnProperty.call(args,'background') && typeof args.background !== 'boolean') return invalid('Invalid delegation background mode');
   if (reuse && (typeof args.session !== 'string' || !uuid.test(args.session))) return invalid('Invalid child session ID');
   if (Object.prototype.hasOwnProperty.call(args,'role') && args.role !== null
-      && !roles.includes(args.role)) return invalid('Select a role from the admitted roster');
+      && !roles.includes(args.role)) return invalid('Select a role listed in this tool');
   if (typeof args.task !== 'string' || !args.task.trim()) return invalid('A delegation task is required');
   if (args.title != null && (typeof args.title !== 'string' || !args.title.trim() || [...args.title].length > 80 || /[\n\r]/.test(args.title))) return invalid('Invalid delegation title');
   if (args.worktree != null && (typeof args.worktree !== 'string' || !uuid.test(args.worktree))) return invalid('Invalid worktree ID');
