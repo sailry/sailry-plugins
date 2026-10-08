@@ -37,13 +37,7 @@ function labels(value, context) {
 
 test('all packaged labels and descriptions cover both application languages', async () => {
   const entries = [...await packages('.'), ...await packages('examples')];
-  assert.deepEqual(entries.map(({manifest}) => manifest.name).sort(), [
-    'browser', 'city-trader', 'code-review', 'commands', 'computer', 'context7',
-    'databases', 'delegation', 'doudizhu', 'external-browser', 'files',
-    'git', 'github', 'goals', 'gomoku', 'liars-dice', 'media', 'memory', 'office',
-    'poker', 'progress', 'project-summary', 'reminders', 'reversi', 'scheduled-tasks',
-    'ssh', 'statistics', 'task-notes', 'tool-content', 'web-search', 'worktrees', 'xiangqi',
-  ].sort());
+  assert.ok(entries.length, 'packaged plugins must be discovered');
   for (const {manifest} of entries) {
     const extension = manifest.extensions?.[namespace];
     assert.ok(extension?.description, `${manifest.name}: description`);

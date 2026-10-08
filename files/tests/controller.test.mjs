@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
+import {fileURLToPath} from 'node:url';
+import {checkPackage} from '../../scripts/check-packages.mjs';
 
 const root = new URL('../',import.meta.url);
 const source = (await readFile(new URL('dev.sailry.platform/desktop/main.js',root),'utf8'))
@@ -141,7 +143,8 @@ test('native menu selection retains its original targets and ignores closed docu
   assert.deepEqual(copied,['old.txt']);
 });
 
-test('the shipped workspace and preview metadata includes every imported resource', async () => {
+test('workspace metadata validates packaged imports and preview limits', async () => {
+  checkPackage(fileURLToPath(new URL('plugin.json',root)));
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const desktop = manifest.extensions['dev.sailry.platform'].desktop;
   assert.deepEqual(desktop.navigation_options,{pinned:true,order:400,target:'worktree',details:true});
@@ -150,9 +153,6 @@ test('the shipped workspace and preview metadata includes every imported resourc
   let bytes = 0;
   for (const path of desktop.resources) {
     const content = await readFile(new URL(path,root),'utf8'); bytes += Buffer.byteLength(content);
-    for (const [,relative] of content.matchAll(/from ['"]\.\/(.*?)['"]/g)) {
-      assert.ok(desktop.resources.includes(`dev.sailry.platform/desktop/${relative}`),`${path} imports unlisted ${relative}`);
-    }
   }
   assert.ok(bytes <= 256 * 1024);
 });

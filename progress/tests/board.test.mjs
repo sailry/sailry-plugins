@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
+import {fileURLToPath} from 'node:url';
+import {checkPackage} from '../../scripts/check-packages.mjs';
 
 const root = new URL('../',import.meta.url);
 const stateSource = (await readFile(new URL('dev.sailry.platform/desktop/state.js',root),'utf8')).replace(/^export /gm,'');
@@ -168,15 +170,10 @@ test('hiding invalidates previews and showing the cached page resumes them', asy
   assert.equal(state.previews.get('running').text,'Visible');
 });
 
-test('the shipped page has ordinary navigation and lists every imported package file', async () => {
+test('navigation metadata validates packaged imports', async () => {
+  checkPackage(fileURLToPath(new URL('plugin.json',root)));
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const desktop = manifest.extensions['dev.sailry.platform'].desktop;
   assert.equal(desktop.navigation_options.target,'node');assert.equal(desktop.navigation_options.order,100);
   assert.equal(desktop.navigation_options.pinned,true);
-  for (const name of desktop.resources) {
-    const source = await readFile(new URL(name,root),'utf8');
-    for (const [,path] of source.matchAll(/from ['"]\.\/([^'"]+)['"]/g)) {
-      assert.ok(desktop.resources.includes(`dev.sailry.platform/desktop/${path}`),`${name} imports unlisted ${path}`);
-    }
-  }
 });
