@@ -31,7 +31,7 @@ export default class Git extends View {
     this.message = createText('',{multiline:true,label:this.text.git_commit_message,placeholder:this.text.git_commit_message});
     this.repo = new Repository(sdk,() => this.notify(),key => this.report(key));
     this.actions = new Actions(this); this.menus = new Menus(this);
-    this.expanded = new Map(); this.nodes = new Map();
+    this.expanded = new Map(); this.nodes = new Map(); this.current = null;
     this.watch(nextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
     this.watch(nextContextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
     this.watch(nextControlEvent,(event,cx) => this.control(event.id,cx,event.value),cx);
@@ -39,7 +39,7 @@ export default class Git extends View {
     this.watch(nextNavigationTabEvent,(event,cx) => {
       if (event.bar !== 'git-tabs') return;
       if (event.kind === 'close') this.closeDocument(event.id);
-      else if (this.repo.documents.has(event.id)) { this.repo.selected = event.id; this.focusDocument(); }
+      else if (this.repo.documents.has(event.id)) { this.repo.selected = event.id; this.current = null; this.focusDocument(); }
       cx.notify();
     },cx);
     this.watch(nextPickerEvent,(event,cx) => {
@@ -122,7 +122,7 @@ export default class Git extends View {
   closeDocument(id) {
     const active = this.repo.selected === id;
     this.repo.close(id);
-    if (active) this.focusDocument();
+    if (active) { this.current = null; this.focusDocument(); }
   }
   amend(cx) { this.repo.toggleAmend(); setText(this.message,this.repo.message); cx.notify(); }
   control(id,cx,value) {
@@ -152,11 +152,10 @@ export default class Git extends View {
     if (!node) return;
     if (event.kind === 'expand' || event.kind === 'collapse') this.expanded.set(event.id,event.kind === 'expand');
     else if (event.kind === 'check') {
-      const staged = node.scope === 'staged', selected = checkbox(node.entries);
-      const operation = staged ? 'unstage' : selected.operation;
-      const paths = staged ? node.entries.filter(entry => !entry.conflicted && entry.staged !== null).map(entry => entry.path) : selected.paths;
-      this.run(() => this.repo.index(paths,operation),cx);
+      const selected = checkbox(node.entries,node.scope);
+      this.run(() => this.repo.index(selected.paths,selected.operation),cx);
     } else if (event.kind === 'select' || event.kind === 'open') {
+      this.current = event.id;
       if (node.row.entry) this.run(() => this.repo.open({kind:'file',path:node.row.entry.path,scope:node.scope}),cx);
     }
     cx.notify();

@@ -288,8 +288,9 @@ test('closing the selected document focuses the actual successor surface',()=>{
   ];
   owner.repo.tabs=documents.map(document=>document.id);
   owner.repo.documents=new Map(documents.map(document=>[document.id,document]));
-  owner.repo.selected='first';choices.set('diff-file-combined/hidden.txt',false);
+  owner.repo.selected='first';owner.current='tracked/first.txt';choices.set('diff-file-combined/hidden.txt',false);
   owner.closeDocument('first');assert.equal(owner.repo.selected,'output');
+  assert.equal(owner.current,null);
   owner.closeDocument('output');assert.equal(owner.repo.selected,'combined');
   assert.deepEqual(surfaces,['git-output-output','git-diff-combined/visible.txt']);
   choices.set('diff-file-combined/visible.txt',false);owner.focusDocument();
@@ -315,5 +316,6 @@ test('closing a background document does not change content focus',()=>{
   const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusSurface:()=>assert.fail('background close must not focus')});
   const owner=new Git();owner.repo=new Repository({},()=>{});
   owner.repo.tabs=['first','second'];owner.repo.documents=new Map(owner.repo.tabs.map(id=>[id,{id,request:{kind:'file'}}]));
-  owner.repo.selected='second';owner.closeDocument('first');assert.equal(owner.repo.selected,'second');
+  owner.repo.selected='second';owner.current='dir/tracked/src';
+  owner.closeDocument('first');assert.equal(owner.repo.selected,'second');assert.equal(owner.current,'dir/tracked/src');
 });

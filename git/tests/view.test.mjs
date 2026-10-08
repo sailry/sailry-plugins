@@ -52,7 +52,7 @@ test('tree leaves encode an empty child array for the native descriptor', () => 
   const entry = {path:'src/main.rs',conflicted:false,untracked:false,
     staged:null,unstaged:'modified',diff:{additions:1,deletions:0}};
   const leaf = {id:'tracked/src/main.rs',label:'main.rs',entry};
-  const view = {expanded:new Map(),nodes:new Map(),text:{git_stage_file:'Stage file'},
+  const view = {expanded:new Map(),nodes:new Map(),text:{git_stage:'Stage',git_unstage:'Unstage'},
     menus:{files:() => []},repo:{navigation:{hierarchical:false},writable:() => true}};
   const value = decorated(view,{id:'tracked',label:'Tracked',entries:[entry],children:[leaf]});
   assert.ok(Array.isArray(value.children));
@@ -62,7 +62,7 @@ test('tree leaves encode an empty child array for the native descriptor', () => 
 });
 
 test('deleted counts and file glyphs use the semantic danger tone',()=>{
-  const view={expanded:new Map(),nodes:new Map(),text:{git_stage_file:'Stage file'},
+  const view={expanded:new Map(),nodes:new Map(),text:{git_stage:'Stage',git_unstage:'Unstage'},
     menus:{files:()=>[]},repo:{navigation:{hierarchical:false},writable:()=>true}};
   for(const kind of ['modified','deleted']) {
     const entry={path:'notes.txt',conflicted:false,untracked:false,staged:null,unstaged:kind,
@@ -80,7 +80,7 @@ test('deleted counts and file glyphs use the semantic danger tone',()=>{
 });
 
 test('counts use intrinsic width for full partial and empty stats',()=>{
-  const view={expanded:new Map(),nodes:new Map(),text:{git_stage_file:'Stage file'},
+  const view={expanded:new Map(),nodes:new Map(),text:{git_stage:'Stage',git_unstage:'Unstage'},
     menus:{files:()=>[]},repo:{navigation:{hierarchical:false},writable:()=>true}};
   const path=`长目录/${'日本語文件名-'.repeat(12)}.txt`;
   for(const [additions,deletions] of [[237,164],[237,0],[0,164],[0,0]]) {
@@ -112,6 +112,63 @@ test('change trees enable guides without changing group indentation', () => {
   assert.equal(tree.props.guides,true);
   assert.equal(tree.props.indent,14);
   assert.equal(tree.props.skip_depth,1);
+});
+
+test('directory checks preserve staged and unstaged scopes', () => {
+  const mixed={path:'src/mixed.rs',conflicted:false,untracked:false,staged:'modified',unstaged:'modified',
+    diff:{additions:2,deletions:1},staged_diff:{additions:1,deletions:0},unstaged_diff:{additions:1,deletions:1}};
+  const conflict={...mixed,path:'src/conflict.rs',conflicted:true};
+  const view={expanded:new Map(),nodes:new Map(),text:{git_stage:'Stage',git_unstage:'Unstage'},
+    menus:{files:()=>[]},repo:{navigation:{hierarchical:true},writable:()=>true}};
+  for(const scope of ['staged','unstaged','tracked']) {
+    const id=`dir/${scope}/src`;
+    const directory=decorated(view,{id,label:'src',children:[mixed,conflict].map(entry=>({id:`${scope}/${entry.path}`,label:entry.path,entry}))});
+    const check=directory.decoration.check;
+    assert.equal(check.id,`git-select-group-${id}`);
+    assert.equal(check.checked,scope==='staged');
+    assert.equal(check.mixed,scope==='tracked');
+    assert.equal(check.disabled,false);
+    assert.equal(check.label,scope==='staged'?'Unstage':'Stage');
+    assert.equal(view.nodes.get(id).scope,scope==='tracked'?'all':scope);
+    assert.deepEqual(checkbox(view.nodes.get(id).entries,view.nodes.get(id).scope).paths,['src/mixed.rs']);
+  }
+  view.repo.writable=()=>false;
+  const directory=decorated(view,{id:'dir/tracked/src',label:'src',children:[{id:'tracked/src/mixed.rs',label:'mixed.rs',entry:mixed}]});
+  assert.equal(directory.decoration.check.disabled,true);
+});
+
+test('ungrouped directories retain their first hierarchy guide', () => {
+  const {changes}=vm.runInNewContext(`${source}\n({changes})`,{
+    div:()=>element('div'),ResourceTree:{new:(id,props)=>element('tree',{id,...props})},
+    rows:()=>[{id:'dir/all/src',label:'src',children:[],entries:[]}],selectedId:()=>null,checkbox,
+  });
+  const view={expanded:new Map(),nodes:new Map(),current:'dir/all/src',text:{},menus:{files:()=>[]},
+    repo:{status:{entries:[{path:'src/main.rs'}]},documents:new Map(),navigation:{hierarchical:true,grouping:'none'},writable:()=>true}};
+  const tree=descendants(changes(view)).find(node=>node.kind==='tree');
+  assert.equal(tree.props.current,'dir/all/src');
+  assert.equal(tree.props.skip_depth,0);
+});
+
+test('folder selection retains the tree cursor without changing the diff', async () => {
+  const main=(await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
+    .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
+  const Git=vm.runInNewContext(`${main}\nGit`,{View:class {},checkbox});
+  const view=new Git(), writes=[];
+  const entry={path:'src/mixed.rs',staged:'modified',unstaged:'modified',untracked:false,conflicted:false};
+  Object.assign(view,{current:null,expanded:new Map(),nodes:new Map([
+    ['dir/staged/src',{row:{children:[]},scope:'staged',entries:[entry]}],
+  ]),repo:{selected:'file:src/mixed.rs',index:(paths,operation)=>writes.push({paths,operation}),open:()=>assert.fail('folders must not open a diff')},run:action=>action()});
+  const cx={notify(){}};
+  view.tree({tree:'git-tree',id:'dir/staged/src',kind:'select'},cx);
+  assert.equal(view.current,'dir/staged/src');
+  assert.equal(view.repo.selected,'file:src/mixed.rs');
+  view.tree({tree:'git-tree',id:'dir/staged/src',kind:'collapse'},cx);
+  assert.equal(view.expanded.get('dir/staged/src'),false);
+  view.tree({tree:'git-tree',id:'dir/staged/src',kind:'expand'},cx);
+  assert.equal(view.expanded.get('dir/staged/src'),true);
+  view.tree({tree:'git-tree',id:'dir/staged/src',kind:'check'},cx);
+  assert.deepEqual(writes,[{paths:['src/mixed.rs'],operation:'unstage'}]);
+  assert.equal(view.current,'dir/staged/src');
 });
 
 test('history rows preserve full identities and controlled selection', () => {

@@ -84,13 +84,13 @@ function nativeItem(item) {
 }
 function descendants(row) { return row.entry ? [row.entry] : row.entries ?? row.children.flatMap(descendants); }
 function decorated(view,row) {
-  const entries = descendants(row), prefix = row.id.split('/')[0], scope = ['staged','unstaged'].includes(prefix) ? prefix : 'all';
+  const entries = descendants(row), prefix = row.id.split('/')[row.id.startsWith('dir/') ? 1 : 0], scope = ['staged','unstaged'].includes(prefix) ? prefix : 'all';
   const expanded = view.expanded.get(row.id) !== false;
   view.nodes.set(row.id,{row,entries,scope});
   const menu = view.menus.files(entries,scope,row.id.startsWith('dir/')).map(nativeItem);
   const result = {id:row.id,label:row.label,expanded,menu,children:(row.children ?? []).map(row => decorated(view,row)),decoration:{selector:`git-${row.id.replace('/','-')}`}};
   if (row.entry) {
-    const entry = row.entry, selected = checkbox([entry]);
+    const entry = row.entry, selected = checkbox([entry],scope);
     const kind = scope === 'staged' ? entry.staged : scope === 'unstaged' ? entry.unstaged : entry.unstaged ?? entry.staged;
     const icon = entry.conflicted ? 'conflict' : entry.untracked ? 'added' : ['added','deleted','renamed'].includes(kind) ? kind : 'modified';
     const diff = scope === 'staged' ? entry.staged_diff : scope === 'unstaged' ? entry.unstaged_diff : entry.diff;
@@ -98,10 +98,10 @@ function decorated(view,row) {
     Object.assign(result.decoration,{icon_size:14,icon_tone:icon === 'conflict' || icon === 'deleted' ? 'danger' : icon === 'added' ? 'success' : icon === 'renamed' ? 'info' : 'warning',
       detail:view.repo.navigation.hierarchical ? undefined : parent(entry.path),
       badges:[...(diff.additions ? [{text:`+${diff.additions}`,tone:'success'}] : []),...(diff.deletions ? [{text:`−${diff.deletions}`,tone:'danger'}] : [])],
-      check:{id:`git-index-${prefix}-${entry.path}`,label:view.text.git_stage_file,checked:selected.checked || prefix === 'staged',mixed:!['staged','unstaged'].includes(prefix) && selected.mixed,disabled:!view.repo.writable() || entry.conflicted}});
-  } else if (!row.id.includes('/')) {
-    const selected = checkbox(entries);
-    result.decoration.check = {id:`git-select-group-${row.id}`,label:view.text.git_stage_file,checked:selected.checked,mixed:selected.mixed,disabled:!view.repo.writable() || !selected.paths.length};
+      check:{id:`git-index-${prefix}-${entry.path}`,label:view.text[selected.operation === 'stage' ? 'git_stage' : 'git_unstage'],checked:selected.checked,mixed:selected.mixed,disabled:!view.repo.writable() || entry.conflicted}});
+  } else {
+    const selected = checkbox(entries,scope);
+    result.decoration.check = {id:`git-select-group-${row.id}`,label:view.text[selected.operation === 'stage' ? 'git_stage' : 'git_unstage'],checked:selected.checked,mixed:selected.mixed,disabled:!view.repo.writable() || !selected.paths.length};
   }
   return result;
 }
@@ -112,7 +112,8 @@ function changes(view) {
   const items = rows(view.repo.status,view.repo.navigation,view.text).map(row => decorated(view,row));
   const document = view.repo.documents.get(view.repo.selected), entry = view.repo.status.entries.find(entry => entry.path === document?.request.path);
   const selected = selectedId(entry,view.repo.navigation.grouping,document?.request.scope ?? 'all');
-  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items:JSON.stringify(items),selected:selected ? [selected] : [],current:selected,guides:true,indent:14,skip_depth:1}));
+  const current = view.nodes.has(view.current) ? view.current : selected;
+  return div().id('git-change-list').flex_1().min_h_0().p_2().child(ResourceTree.new('git-tree',{items:JSON.stringify(items),selected:selected ? [selected] : [],current,guides:true,indent:14,skip_depth:view.repo.navigation.grouping === 'none' ? 0 : 1}));
 }
 function historyMetadata(repo,entry,colors) {
   const current = repo.status?.branch;

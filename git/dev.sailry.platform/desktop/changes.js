@@ -14,10 +14,12 @@ export function indexPaths(entries, operation) {
     ? entry.unstaged !== null || entry.untracked : entry.staged !== null)).map(entry => entry.path);
 }
 
-export function checkbox(entries) {
-  const checked = entries.length > 0 && entries.every(entry => entry.staged !== null && entry.unstaged === null && !entry.untracked);
-  return {checked, mixed:!checked && entries.some(entry => entry.staged !== null),
-    operation:checked ? 'unstage' : 'stage', paths:indexPaths(entries,checked ? 'unstage' : 'stage')};
+export function checkbox(entries, scope = 'all') {
+  const checked = entries.length > 0 && (scope === 'staged' || (scope === 'all'
+    && entries.every(entry => entry.staged !== null && entry.unstaged === null && !entry.untracked)));
+  const operation = checked ? 'unstage' : 'stage';
+  return {checked, mixed:scope === 'all' && !checked && entries.some(entry => entry.staged !== null),
+    operation, paths:indexPaths(entries,operation)};
 }
 
 export function selectedId(entry, grouping, scope) {
