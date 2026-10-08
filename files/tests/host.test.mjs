@@ -7,7 +7,7 @@ const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export /gm,'');
-const host = vm.runInNewContext(`${source}\n({list,read,write,search,office})`);
+const host = vm.runInNewContext(`${source}\n({list,read,write,edit,find,search,office})`);
 const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
 const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -18,6 +18,8 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     ['list_directory','list','files.list','summary'],
     ['read_file','read','files.read','summary'],
     ['write_file','write','files.write','details'],
+    ['edit_file','edit','files.edit','details'],
+    ['find_files','find','files.find','summary'],
     ['search_files','search','files.search','summary'],
     ['read_office','office','office.read','summary'],
   ];
@@ -81,7 +83,7 @@ test('writes retain exact text and optimistic revision semantics', () => {
     path:'new.txt',text:'',expected_revision:null,
   });
   assert.equal(host.write({path:'text.txt',text:'\u0001'.repeat(128 * 1024)}).text.length,128 * 1024);
-  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt'});
+  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt',offset:0,limit:200});
 });
 
 test('search defaults keep original expressions and globs without interpreting them', () => {
@@ -115,7 +117,8 @@ test('Office inspection retains section offsets and defaults', () => {
 test('invalid argument shapes fail before requesting an operation', () => {
   const examples = {
     list:{path:'.'},read:{path:'file.txt'},write:{path:'file.txt',text:'x',expected_revision:null},
-    search:{query:'x'},office:{path:'book.xlsx'},
+    edit:{path:'file.txt',old_text:'x',new_text:'y',expected_revision:'a'.repeat(64)},
+    find:{globs:['**/*.txt']},search:{query:'x'},office:{path:'book.xlsx'},
   };
   for (const [name,valid] of Object.entries(examples)) {
     for (const args of [null,[],true,'path',42,...['worktree','session','node','turn','unexpected'].map(key => ({...valid,[key]:'foreign'}))]) {
@@ -127,7 +130,9 @@ test('invalid argument shapes fail before requesting an operation', () => {
   }
   const invalid = {
     list:[{path:null},{cursor:[]},{cursor:{revision:'r',directory:'yes',name:'n'}},{cursor:{revision:'r',directory:true}},{cursor:{revision:'r',directory:true,name:'n',worktree:'foreign'}}],
-    read:[{}, {path:4}],
+    read:[{}, {path:4},{path:'a',offset:-1},{path:'a',limit:0},{path:'a',limit:2001},{path:'a',offset:1.5}],
+    edit:[{}, {path:'a',old_text:'',new_text:'y',expected_revision:'a'.repeat(64)},{path:'a',old_text:'x',new_text:'y',expected_revision:null}],
+    find:[{}, {globs:[]},{globs:['']},{globs:[4]}],
     write:[{path:'a'}, {path:'a',text:[]}, {path:'a',text:'x',expected_revision:4}],
     search:[{}, {query:4}, {query:'x',regex:null}, {query:'x',case_sensitive:1}, {query:'x',globs:'*'}, {query:'x',globs:[4]}],
     office:[{}, {path:'a',offset:null}, {path:'a',offset:-1}, {path:'a',offset:1.5}, {path:'a',offset:Number.MAX_SAFE_INTEGER + 1}],
@@ -177,5 +182,22 @@ test('result recipes refer to original data and preserve file-specific choices',
   assert.deepEqual(partial.when.any,[
     {value:reference('result','/data/truncated'),equals:true},
     {value:reference('result','/data/unsupported_names'),equals:0,negate:true},
+  ]);
+});
+
+
+test('line pages retain offsets and exact edit fragments', () => {
+  assert.deepEqual(plain(host.read({path:'large.txt',offset:3000,limit:25})),{path:'large.txt',offset:3000,limit:25});
+  const args = {path:'large.txt',old_text:'old\r\n',new_text:'new\r\n',expected_revision:'a'.repeat(64)};
+  assert.deepEqual(plain(host.edit(args)),args);
+  assert.deepEqual(tool('edit_file').handler.parameters.required,['path','old_text','new_text','expected_revision']);
+  assert.equal(tool('edit_file').display.approval[0].message.label,'Edit %{path}');
+  assert.deepEqual(plain(host.find({globs:['**/*.rs','src/**/mod.rs']})),{globs:['**/*.rs','src/**/mod.rs']});
+  assert.equal(tool('find_files').handler.operation,'files.find');
+  assert.equal(tool('read_file').handler.parameters.properties.offset.minimum,0);
+  assert.equal(tool('read_file').handler.parameters.properties.limit.maximum,2000);
+  assert.deepEqual(tool('read_file').display.output.notices[0].when.any,[
+    {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
+    {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
   ]);
 });

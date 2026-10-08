@@ -29,3 +29,26 @@ export function log(args) {
       !Number.isSafeInteger(cursor.offset) || cursor.offset < 0)) return invalid();
   return {worktree:args.worktree ?? null,limit,cursor};
 }
+
+function page(args) {
+  const {offset = 0, limit = 200} = args;
+  return Number.isSafeInteger(offset) && offset >= 0 &&
+    Number.isSafeInteger(limit) && limit >= 1 && limit <= 500 &&
+    Number.isSafeInteger(offset + limit);
+}
+
+export function show(args) {
+  if (!object(args,['worktree','revision','path','offset','limit']) || !target(args.worktree) ||
+      !page(args) || (args.revision !== undefined && typeof args.revision !== 'string') ||
+      (args.path !== undefined && args.path !== null && typeof args.path !== 'string')) return invalid();
+  const {revision = 'HEAD', path = null, offset = 0, limit = 200} = args;
+  if (path === null && offset !== 0) return invalid();
+  return {worktree:args.worktree ?? null,revision,path,offset,limit};
+}
+
+export function blame(args) {
+  if (!object(args,['worktree','revision','path','offset','limit']) || !target(args.worktree) ||
+      !page(args) || !target(args.revision) || typeof args.path !== 'string') return invalid();
+  return {worktree:args.worktree ?? null,revision:args.revision ?? null,path:args.path,
+    offset:args.offset ?? 0,limit:args.limit ?? 200};
+}

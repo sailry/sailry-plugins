@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {status,diff,log} from '../dev.sailry.platform/host/main.js';
+import {status,diff,log,show,blame} from '../dev.sailry.platform/host/main.js';
 
 test('history preserves first-page defaults and exact continuation', () => {
   assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null});
@@ -30,4 +30,21 @@ test('arguments cannot inject project or execution commands', () => {
   for (const args of [{limit:0},{limit:101},{limit:null},{worktree:7}]) {
     assert.equal(log(args).isError,true);
   }
+});
+
+test('show and blame preserve literal paths and immutable continuation', () => {
+  assert.deepEqual(show({}), {worktree:null,revision:'HEAD',path:null,offset:0,limit:200});
+  assert.deepEqual(show({path:'-quoted[1].rs',revision:'HEAD~1',offset:8,limit:2}),
+    {worktree:null,revision:'HEAD~1',path:'-quoted[1].rs',offset:8,limit:2});
+  assert.deepEqual(blame({path:'资料.rs'}),
+    {worktree:null,revision:null,path:'资料.rs',offset:0,limit:200});
+  for (const handler of [show,blame]) {
+    for (const args of [{path:'file',offset:-1},{path:'file',limit:501},
+      {path:'file',offset:Number.MAX_SAFE_INTEGER},{path:'file',project:'outside'},
+      {path:'file',revision:3},{path:2}]) {
+      assert.equal(handler(args).isError,true);
+    }
+  }
+  assert.equal(show({offset:1}).isError,true);
+  assert.equal(blame({}).isError,true);
 });

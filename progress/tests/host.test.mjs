@@ -42,5 +42,7 @@ test('the ordinary package uses canonical progress presentation without session 
   assert.equal(tool.presentation,'progress'); assert.equal(tool.grouping,'standalone');
   assert.deepEqual(tool.contexts,['plugin','workspace']);
   assert.equal(tool.handler.operation,undefined); assert.equal(tool.handler.name,'update');
+  assert.match(extension.instructions,/Skip plans for direct questions and simple changes/);
+  assert.match(extension.instructions,/complete current list with honest statuses/);
   assert.equal(tool.handler.parameters.properties.steps.maxItems,256);
 });

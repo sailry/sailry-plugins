@@ -10,16 +10,18 @@ function invalid(message) {
 }
 
 export function run(args) {
-  if (!object(args, ['command', 'cwd', 'timeout_ms', 'background', 'attachments']))
+  if (!object(args, ['command', 'description', 'cwd', 'timeout_ms', 'background', 'attachments']))
     return invalid('Invalid command arguments');
-  const { command, cwd = '', timeout_ms = 120000, background = false, attachments = [] } = args;
+  const { command, description = null, cwd = '', timeout_ms = 120000, background = false, attachments = [] } = args;
   if (typeof command !== 'string' || typeof cwd !== 'string' || typeof background !== 'boolean' ||
       !Number.isSafeInteger(timeout_ms) || timeout_ms < 1 || timeout_ms > 900000 ||
       !Array.isArray(attachments) || attachments.length > 8 || attachments.some(id => typeof id !== 'string') ||
       new Set(attachments).size !== attachments.length) {
     return invalid('Invalid command arguments');
   }
-  return { command, cwd, timeout_ms, background, attachments };
+  if (description !== null && (typeof description !== 'string' || !description.trim() ||
+      [...description].length > 2000 || description.includes('\0'))) return invalid('Invalid command description');
+  return { command, description, cwd, timeout_ms, background, attachments };
 }
 
 export function read(args) {

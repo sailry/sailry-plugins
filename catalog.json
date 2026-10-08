@@ -965,7 +965,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -979,7 +979,7 @@
               {
                 "name": "run_command",
                 "presentation": "content",
-                "description": "Run a noninteractive shell command on the execution Node. CWD defaults to this session's worktree; an explicit cwd may be an absolute directory or a path relative to the worktree, including '.'. For bundled skill scripts, use the absolute script path from load_skill's directory or explicitly select that directory. Invoke directly for authorized work: Ask and Project modes present approval before execution; Full runs directly. Do not request tool permission through ask_user. This is not an OS sandbox: the command has the execution Node user's access. Output is bounded with explicit truncation. Timeout defaults to 120000 ms, up to 900000 ms. Use background=true for long-lived processes: they return an ID, survive this turn, and have no timeout. Inspect with read_command and stop with stop_command. Keep the command in the shell foreground (no & or nohup). Foreground commands stop on exit, cancellation or timeout.",
+                "description": "Run a noninteractive shell command on the execution Node. Include description to explain what the command checks or changes in the approval card. CWD defaults to this session's worktree; an explicit cwd may be an absolute directory or a path relative to the worktree, including '.'. For bundled skill scripts, use the absolute script path from load_skill's directory or explicitly select that directory. Invoke directly for authorized work: Ask and Project modes present approval before execution; Full runs directly. Do not request tool permission through ask_user. This is not an OS sandbox: the command has the execution Node user's access. Output is bounded with explicit truncation. Timeout defaults to 120000 ms, up to 900000 ms. Use background=true for long-lived processes: they return an ID, survive this turn, and have no timeout. Inspect with read_command and stop with stop_command. Keep the command in the shell foreground (no & or nohup). Foreground commands stop on exit, cancellation or timeout.",
                 "handler": {
                   "name": "run",
                   "operation": "process.run",
@@ -990,6 +990,14 @@
                     "properties": {
                       "command": {
                         "type": "string"
+                      },
+                      "description": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 2000,
+                        "description": "Optional concise explanation shown with the command before approval"
                       },
                       "cwd": {
                         "type": "string",
@@ -1027,6 +1035,48 @@
                     "zh-CN": "命令"
                   },
                   "icon": "reicon:it/terminal-square",
+                  "approval": [
+                    {
+                      "message": {
+                        "label": "%{command}",
+                        "locales": {
+                          "zh-CN": "%{command}"
+                        }
+                      },
+                      "values": {
+                        "command": {
+                          "source": "arguments",
+                          "path": "/command"
+                        }
+                      }
+                    },
+                    {
+                      "message": {
+                        "label": "%{description}",
+                        "locales": {
+                          "zh-CN": "%{description}"
+                        }
+                      },
+                      "values": {
+                        "description": {
+                          "source": "arguments",
+                          "path": "/description"
+                        }
+                      },
+                      "when": {
+                        "all": [
+                          {
+                            "value": {
+                              "source": "arguments",
+                              "path": "/description"
+                            },
+                            "equals": null,
+                            "negate": true
+                          }
+                        ]
+                      }
+                    }
+                  ],
                   "input": {
                     "summary": {
                       "path": "/command",
@@ -1617,7 +1667,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1632,7 +1682,7 @@
                 "name": "spawn_agent",
                 "presentation": "details",
                 "grouping": "standalone",
-                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the admitted roster when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID and normally omit role. It retains its own history, role, model, worktree and frozen configuration. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions.",
+                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the roles listed in this tool when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID and normally omit role. It retains its own history, role, model, worktree and existing settings. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions. The child does not see this conversation. Write a self-contained task with the goal, relevant paths, constraints and expected output. Give concurrent children sharing one project directory disjoint files, then integrate and verify their findings.",
                 "contexts": [
                   "workspace"
                 ],
@@ -3351,7 +3401,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3509,7 +3559,7 @@
               {
                 "name": "read_file",
                 "presentation": "summary",
-                "description": "Read UTF-8 text from the session worktree. A large file returns a bounded preview with truncated=true; do not treat it as the whole file.",
+                "description": "Read UTF-8 lines from files up to 64 MiB in the session worktree. offset is zero-based and defaults to 0; limit defaults to 200 (maximum 2000). Each page is bounded to 128 KiB. Results include one-based line numbers, the full file revision and next_offset for another page. Keep the returned line text exactly, including newlines, when preparing edit_file. A page is partial evidence; do not treat it as the whole file.",
                 "handler": {
                   "name": "read",
                   "operation": "files.read",
@@ -3519,6 +3569,17 @@
                       "path": {
                         "type": "string",
                         "description": "Relative to the session worktree, with forward slashes"
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2000,
+                        "default": 200
                       }
                     },
                     "required": [
@@ -3545,9 +3606,31 @@
                     "preview": {
                       "parts": [
                         {
-                          "value": {
-                            "source": "result",
-                            "path": "/data/text"
+                          "rows": {
+                            "value": {
+                              "source": "result",
+                              "path": "/data/lines"
+                            },
+                            "text": {
+                              "parts": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/number"
+                                  }
+                                },
+                                {
+                                  "text": ": "
+                                },
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/text"
+                                  }
+                                }
+                              ]
+                            },
+                            "separator": ""
                           }
                         }
                       ]
@@ -3565,9 +3648,18 @@
                             {
                               "value": {
                                 "source": "result",
-                                "path": "/data/truncated"
+                                "path": "/data/next_offset"
                               },
-                              "equals": true
+                              "equals": null,
+                              "negate": true
+                            },
+                            {
+                              "value": {
+                                "source": "result",
+                                "path": "/data/offset"
+                              },
+                              "equals": 0,
+                              "negate": true
                             }
                           ]
                         }
@@ -3589,7 +3681,7 @@
               {
                 "name": "write_file",
                 "presentation": "details",
-                "description": "Write UTF-8 text in the session worktree under this turn's permission mode. Pass the revision from read_file to replace a file, or null to create a new file without replacing an existing entry. Missing parent directories are created for new files. A conflict requires reading the current file before another edit.",
+                "description": "Write a complete UTF-8 file up to 128 KiB. Pass the revision from read_file to replace a file, or null to create a new file without replacing an existing entry. Missing parent directories are created for new files. A conflict requires reading the current file before another edit. Prefer edit_file for partial changes and larger files.",
                 "handler": {
                   "name": "write",
                   "operation": "files.write",
@@ -3719,6 +3811,206 @@
                       }
                     }
                   ]
+                },
+                "contexts": [
+                  "plugin",
+                  "workspace"
+                ]
+              },
+              {
+                "name": "edit_file",
+                "presentation": "details",
+                "description": "Replace old_text with new_text in an existing UTF-8 file. Each fragment is limited to 128 KiB. old_text must be nonempty and occur exactly once; preserve its exact whitespace and line endings. Pass the full file revision from read_file as expected_revision. A conflict requires reading the current file before another edit. Supports files up to 64 MiB without sending the whole file.",
+                "handler": {
+                  "name": "edit",
+                  "operation": "files.edit",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "description": "Relative to the session worktree, with forward slashes"
+                      },
+                      "old_text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "new_text": {
+                        "type": "string"
+                      },
+                      "expected_revision": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]{64}$",
+                        "description": "Full file revision from read_file"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "old_text",
+                      "new_text",
+                      "expected_revision"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Edit file",
+                  "locales": {
+                    "zh-CN": "编辑文件"
+                  },
+                  "icon": {
+                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
+                  },
+                  "input": {
+                    "summary": {
+                      "path": "/path",
+                      "code": true
+                    },
+                    "target": {
+                      "path": "/path"
+                    }
+                  },
+                  "output": {
+                    "notices": [
+                      {
+                        "message": {
+                          "label": "Written",
+                          "locales": {
+                            "zh-CN": "已写入"
+                          }
+                        }
+                      }
+                    ],
+                    "body": {
+                      "text": {
+                        "source": "arguments",
+                        "path": "/new_text"
+                      }
+                    }
+                  },
+                  "approval": [
+                    {
+                      "message": {
+                        "label": "Edit %{path}",
+                        "locales": {
+                          "zh-CN": "编辑 %{path}"
+                        }
+                      },
+                      "values": {
+                        "path": {
+                          "source": "arguments",
+                          "path": "/path"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "contexts": [
+                  "plugin",
+                  "workspace"
+                ]
+              },
+              {
+                "name": "find_files",
+                "presentation": "summary",
+                "description": "Find files by worktree-relative glob patterns without reading their contents or running a command. Examples: **/*.rs, src/**/mod.rs. Results are bounded and report skipped files and truncation; narrow globs when needed.",
+                "handler": {
+                  "name": "find",
+                  "operation": "files.find",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "globs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 64,
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 4096
+                        }
+                      }
+                    },
+                    "required": [
+                      "globs"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Find files",
+                  "locales": {
+                    "zh-CN": "查找文件"
+                  },
+                  "icon": {
+                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <circle cx=\"11\" cy=\"11\" r=\"8\"/> <path d=\"m21 21-4.3-4.3\"/> </svg>"
+                  },
+                  "input": {
+                    "summary": {
+                      "path": "/globs",
+                      "code": true
+                    }
+                  },
+                  "output": {
+                    "preview": {
+                      "parts": [
+                        {
+                          "rows": {
+                            "value": {
+                              "source": "result",
+                              "path": "/data/paths"
+                            },
+                            "text": {
+                              "parts": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": ""
+                                  }
+                                }
+                              ]
+                            },
+                            "separator": "\n"
+                          }
+                        }
+                      ]
+                    },
+                    "notices": [
+                      {
+                        "message": {
+                          "label": "Partial results",
+                          "locales": {
+                            "zh-CN": "仅显示部分结果"
+                          }
+                        },
+                        "when": {
+                          "any": [
+                            {
+                              "value": {
+                                "source": "result",
+                                "path": "/data/truncated"
+                              },
+                              "equals": true
+                            },
+                            {
+                              "value": {
+                                "source": "result",
+                                "path": "/data/skipped"
+                              },
+                              "equals": 0,
+                              "negate": true
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "paths": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/paths"
+                      }
+                    }
+                  }
                 },
                 "contexts": [
                   "plugin",
@@ -3945,6 +4237,8 @@
                 "list",
                 "read",
                 "write",
+                "edit",
+                "find",
                 "search",
                 "office"
               ]
@@ -4007,7 +4301,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4039,7 +4333,9 @@
               "handlers": [
                 "status",
                 "diff",
-                "log"
+                "log",
+                "show",
+                "blame"
               ]
             },
             "tools": [
@@ -4851,6 +5147,132 @@
                     ]
                   }
                 }
+              },
+              {
+                "name": "git_show",
+                "presentation": "details",
+                "description": "Read a commit patch, or a UTF-8 file at a commit without changing the checkout. revision defaults to HEAD; omit path for the bounded commit patch. For file pages offset is a zero-based line offset and limit defaults to 200, at most 500. Text includes one-based line numbers. Use the returned immutable commit and next offset for continuation. Pages are bounded to 48 KiB and files to 32 MiB; truncation and an incomplete line are explicit. Binary files return a binary marker. Select only registered worktrees in this session project.",
+                "contexts": [
+                  "workspace"
+                ],
+                "handler": {
+                  "name": "show",
+                  "operation": "git.show",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "worktree": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "revision": {
+                        "type": "string",
+                        "description": "Git commit revision; defaults to HEAD"
+                      },
+                      "path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Literal worktree-relative path"
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 200
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Git show",
+                  "locales": {
+                    "zh-CN": "Git 查看"
+                  },
+                  "icon": "reicon:newicons/hierarchy2",
+                  "input": {
+                    "summary": {
+                      "path": "/path"
+                    },
+                    "context": {
+                      "path": "/revision"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "git_blame",
+                "presentation": "details",
+                "description": "Read committed line authorship without changing the checkout. path is literal and worktree-relative; revision defaults to HEAD, excluding uncommitted changes. offset is zero-based and limit defaults to 200, at most 500. Use the returned immutable commit and next offset for continuation. Pages contain at most 48 KiB of line text; individual truncated lines are marked. Files must be committed regular UTF-8 text files at most 32 MiB. Select only registered worktrees in this session project.",
+                "contexts": [
+                  "workspace"
+                ],
+                "handler": {
+                  "name": "blame",
+                  "operation": "git.blame",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "worktree": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "revision": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Git commit revision; defaults to HEAD"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "Literal worktree-relative path"
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 200
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Git blame",
+                  "locales": {
+                    "zh-CN": "Git 行归属"
+                  },
+                  "icon": "reicon:newicons/hierarchy2",
+                  "input": {
+                    "summary": {
+                      "path": "/path"
+                    },
+                    "context": {
+                      "path": "/revision"
+                    }
+                  }
+                }
               }
             ],
             "scope": "host",
@@ -5523,11 +5945,12 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
+            "instructions": "Before project work that could depend on prior decisions or preferences, search relevant current-project and global memory with focused terms. Skip irrelevant retrieval for self-contained questions. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
             "storage": {
               "collections": [
                 {
@@ -6142,11 +6565,12 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
+            "instructions": "Use update_plan for substantial multi-step tasks and keep one complete current list with honest statuses. Include affected files, implementation steps and verification; record risks and questions when they matter. Skip plans for direct questions and simple changes. Mark completed only after the described result is verified. Create a persistent goal only when the user requests one. Progress does not approve a plan or grant execution authority.",
             "actions": [
               "activity.read"
             ],
