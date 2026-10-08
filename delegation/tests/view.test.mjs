@@ -17,16 +17,19 @@ function fixture() {
       if(key==='child')return child=>{target.items.push(child);return proxy;};
       if(key==='children')return children=>{target.items.push(...children);return proxy;};
       if(key in target)return target[key];
-      if(key==='on_click')return callback=>{target.on_click=callback;return proxy;};
+      if(key==='on_click'||key==='on_change')return callback=>{target[key]=callback;return proxy;};
       return (...args)=>{target.style[key]=args;return proxy;};
     }});
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','Modal']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),Button:function(id){return element('Button',id);},...adapters,
+    div:()=>element(),Button:function(id){return element('Button',id);},
+    Checkbox:function(id){return element('Checkbox',id);},
+    Field:function(){return element('Field');},Form:function(){return element('Form');},...adapters,
+    efforts:()=>[null],window:{viewport_size:()=>({width:1280,height:820})},
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:{settings_empty:'No roles',settings_add:'Add',settings_edit:'Edit',settings_delete:'Delete',roles_profiles:'Roles'},
@@ -42,6 +45,29 @@ test('empty roles reuse their settings card and retain the add action',()=>{
   assert.equal(group.items[1],empty);
   setup.nodes.get('role-add').items[0].on_click({},{});
   assert.deepEqual(setup.calls,[['edit',null]]);
+});
+
+test('readonly editing reuses Checkbox and locks uncertain drafts',()=>{
+  const setup=fixture(),owner={kind:'edit',token:'dialog',readOnly:true,request:null,
+    fields:{key:'key',name:'name',turns:'turns',instructions:'instructions'},models:[],fixed:false,model:null};
+  setup.view.text=messages('en'); setup.view.dialog=owner; setup.render();
+  let control=setup.nodes.get('role-read-only-toggle');
+  assert.equal(control.kind,'Checkbox');
+  assert.deepEqual(plain(control.style.checked),[true]);
+  assert.deepEqual(plain(control.style.label),['Read only']);
+  control.on_change(false,{notify(){}}); assert.equal(owner.readOnly,false);
+  owner.request='uncertain'; setup.render(); control=setup.nodes.get('role-read-only-toggle');
+  assert.deepEqual(plain(control.style.disabled),[true]);
+  control.on_change(true,{notify(){throw new Error('locked draft changed');}});
+  assert.equal(owner.readOnly,false);
+});
+
+test('readonly copy exists in every supported locale',()=>{
+  for(const locale of ['en','de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']) {
+    assert.equal(typeof messages(locale).role_read_only,'string');
+    assert.ok(messages(locale).role_read_only.length>0);
+    if(locale!=='en')assert.notEqual(messages(locale).role_read_only,messages('en').role_read_only);
+  }
 });
 
 test('populated roles retain native appearance and action targets without an empty state',()=>{

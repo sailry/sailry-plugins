@@ -1,6 +1,6 @@
 // Existing role records and forms composed with the same native Kit controls.
 import {div} from 'gpui-kit';
-import {Button,Field,Form} from 'gpui-component';
+import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
 import {EmptyState,SettingsGroup,IconButton,Appearance,AppearancePicker,Menu,Modal} from 'sailry/ui';
@@ -40,6 +40,12 @@ function editor(view,owner) {
     .child(new Field().label(text.role_model_source).child(source))
     .children(owner.fixed ? [new Field().label(text.provider_models).child(model)] : [])
     .child(new Field().label(text.provider_default_effort).child(effort))
+    .child(new Field().child(div().id('role-read-only').child(new Checkbox('role-read-only-toggle')
+      .label(text.role_read_only).checked(owner.readOnly).disabled(locked)
+      .on_change((checked,cx) => {
+        if (owner.request) return;
+        owner.readOnly = checked; owner.error = null; cx.notify();
+      }))))
     .child(new Field().label(text.role_max_turns).child(div().id('role-max-turns').child(TextField.new(owner.fields.turns,props))));
   const instructions = div().v_flex().gap_2()
     .child(div().h_flex().w_full().justify_between().gap_2().text_sm().font_medium()

@@ -5,7 +5,7 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function initialize({tools,roles}) {
   stageTurnState({roles:roles.map(role => role.key)});
-  const roster = roles.map(role => `${role.key} (${role.name})${role.description.trim() ? `: ${role.description.trim()}` : ''}`).join('\n');
+  const roster = roles.map(role => `${role.key} (${role.name})${role.read_only ? ' [read only]' : ''}${role.description.trim() ? `: ${role.description.trim()}` : ''}`).join('\n');
   const parameters = Object.fromEntries(tools.map(name => [name, {
     type:'object',additionalProperties:false,required:['task'],properties:{
       session:{type:'string',pattern:uuid.source},

@@ -3,7 +3,7 @@ const en = {
   roles_profiles:'Subagents',role_editor:'Edit subagent',role_id:'Identifier',settings_name:'Name',settings_empty:'No items',
   role_model_source:'Model source',role_fixed:'Fixed model',role_inherit:'Inherit session model',
   provider_models:'Models',provider_default_effort:'Default reasoning effort',role_max_turns:'Default maximum turns',
-  role_instructions:'Instructions',role_appearance:'Icon and color',role_presets:'Presets',
+  role_instructions:'Instructions',role_read_only:'Read only',role_appearance:'Icon and color',role_presets:'Presets',
   role_preset_review:'Code review',role_preset_research:'Research',role_preset_implement:'Implementation',
   role_prompt_review:'Review code and changes within the assigned scope, focusing on correctness, edge cases, regression risks and existing conventions.\nRead relevant implementations and tests first, then report evidence-backed findings with locations, impact and recommendations. Do not modify files unless asked; state plainly when no issues are found.',
   role_prompt_research:'Investigate the assigned objective, prioritizing existing materials, code and reliable primary sources.\nDistinguish confirmed facts, inferences and open questions, and provide concise conclusions with supporting evidence. Identify missing information when needed; do not invent results.',
@@ -23,7 +23,7 @@ const zh = {
   roles_profiles:'子代理',role_editor:'编辑子代理',role_id:'标识',settings_name:'名称',settings_empty:'暂无内容',
   role_model_source:'模型来源',role_fixed:'固定模型',role_inherit:'继承会话模型',
   provider_models:'模型',provider_default_effort:'默认推理强度',role_max_turns:'默认最大轮数',
-  role_instructions:'提示词',role_appearance:'图标和颜色',role_presets:'预设',
+  role_instructions:'提示词',role_read_only:'只读',role_appearance:'图标和颜色',role_presets:'预设',
   role_preset_review:'代码审查',role_preset_research:'调查分析',role_preset_implement:'开发实现',
   role_prompt_review:'审查指定范围内的代码和变更，重点检查正确性、边界条件、回归风险和现有规范。\n先阅读相关实现与测试，再报告有证据支持的问题，注明位置、影响和建议。不要自行修改文件；没有发现问题时如实说明。',
   role_prompt_research:'围绕交付的目标开展调查，优先阅读现有资料、代码和可靠的一手来源。\n区分已确认事实、推断和待验证问题，给出简洁结论及依据。需要进一步信息时明确指出，不编造结果。',
@@ -37,4 +37,10 @@ const zh = {
   media_unconfigured:'未配置',form_role_id_hint:'如 code-reviewer',form_name_hint:'输入名称',
   form_turns_hint:'留空不限制',form_role_instructions_hint:'填写提示词',effort_dynamic:'dynamic',effort_budget:'%{tokens} Token'
 };
-export function messages(locale) { return {...en,...(locale === 'zh-CN' ? zh : {})}; }
+const readOnly = {
+  de:'Nur lesen',es:'Solo lectura',fr:'Lecture seule',ja:'読み取り専用',ko:'읽기 전용',
+  'pt-BR':'Somente leitura',ru:'Только чтение','zh-TW':'唯讀'
+};
+export function messages(locale) {
+  return {...en,...(locale === 'zh-CN' ? zh : {}),...(readOnly[locale] ? {role_read_only:readOnly[locale]} : {})};
+}

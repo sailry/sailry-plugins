@@ -9,7 +9,7 @@ const models = [
   {kind:'unsupported',id:'unsupported/private',provider:'Unavailable',model:'private',default:false,reasoning:false,efforts:[],default_effort:'none'}
 ];
 const fields = {key:'reviewer',name:'Reviewer',turns:'',instructions:'Review changes'};
-const original = {id:'role-one',revision:9,key:'old',name:'Original',description:'Preserved description',
+const original = {id:'role-one',revision:9,key:'old',name:'Original',description:'Preserved description',read_only:true,
   appearance:{icon:'ai',color:'blue'},model:{provider:'missing',model:'old/model',effort:'high'},
   max_turns:8,skills:['retained-skill'],instructions:'Original instructions'};
 
@@ -42,7 +42,17 @@ test('editing preserves unavailable model identity and unexposed description and
   assert.deepEqual(result.model,original.model); assert.equal(result.description,original.description);
   assert.deepEqual(result.skills,original.skills); assert.equal(result.max_turns,25);
   assert.equal(original.instructions,'Original instructions');
+  assert.equal(result.read_only,true);
+  state.readOnly = false; assert.equal(profile(state,fields).read_only,false);
   source(state,false); assert.equal(profile(state,fields).model,null);
+});
+
+test('new roles inherit the parent write capability until explicitly restricted',() => {
+  const state = create(null,'new',[]);
+  assert.equal(state.readOnly,false);
+  assert.equal(profile(state,fields).read_only,false);
+  state.readOnly = true;
+  assert.equal(profile(state,fields).read_only,true);
 });
 
 test('validates exact keys, UTF-8 and u32 turn limits before command preparation',() => {

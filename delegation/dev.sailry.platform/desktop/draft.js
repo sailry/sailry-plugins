@@ -58,14 +58,14 @@ export function profile(draft,fields) {
     || max_turns !== null && (!Number.isInteger(max_turns) || max_turns < 1 || max_turns > 0xffffffff)
     || draft.fixed && draft.model === null) throw new Error('role_invalid');
   return {...clone(draft.original),key,name,appearance:clone(draft.appearance),
-    model:draft.fixed ? clone(draft.model) : null,max_turns,instructions:fields.instructions};
+    read_only:draft.readOnly,model:draft.fixed ? clone(draft.model) : null,max_turns,instructions:fields.instructions};
 }
 
 export function create(profile,id,models) {
   const original = profile ? clone(profile) : {id,revision:0,key:'',name:'',appearance:null,
-    description:'',model:null,max_turns:null,skills:[],instructions:''};
+    description:'',read_only:false,model:null,max_turns:null,skills:[],instructions:''};
   return {original,models:clone(models),appearance:clone(original.appearance ?? {icon:'ai',color:'none'}),
-    fixed:original.model !== null,model:clone(original.model),request:null,pending:false,error:null,closed:false};
+    readOnly:original.read_only,fixed:original.model !== null,model:clone(original.model),request:null,pending:false,error:null,closed:false};
 }
 
 export function errorKey(code) {

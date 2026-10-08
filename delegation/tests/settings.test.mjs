@@ -18,7 +18,7 @@ function events() {
 }
 const model = {kind:'provider',id:'provider/model',provider:'Provider',model:'model',reasoning:true,
   default:true,efforts:['low','high'],default_effort:'high'};
-const role = {id:'existing',revision:5,key:'review',name:'Review',appearance:null,description:'Kept',
+const role = {id:'existing',revision:5,key:'review',name:'Review',appearance:null,description:'Kept',read_only:true,
   model:null,max_turns:null,skills:['retained'],instructions:'Original'};
 
 async function settings(options = {}) {
@@ -53,6 +53,7 @@ async function settings(options = {}) {
 test('saves the complete captured draft without changing hidden fields or model choices',async () => {
   const f = await settings(); f.view.edit(f.view.roles[0],f.cx);
   const owner = f.view.dialog;
+  assert.equal(owner.readOnly,true);
   f.edit('key',' reviewer '); f.edit('name',' New name '); f.edit('turns','7');
   await f.act(() => f.choose('role-source','fixed'));
   f.catalog([{...role,revision:99}],[]);

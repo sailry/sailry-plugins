@@ -10,6 +10,12 @@ function host(roles = []) {
   const initialized = functions.initialize({tools:['spawn_agent'],roles});
   return {...functions,initialized};
 }
+test('explicit constraints describe exploration independently of editable role names',()=>{
+  const policy = host([{key:'renamed',name:'Customized',description:'Inspect sources',read_only:true}]);
+  assert.match(policy.initialized.instruction,/renamed \(Customized\) \[read only\]: Inspect sources/);
+  assert.match(policy.initialized.parameters.spawn_agent.properties.role.description,/\[read only\]/);
+  assert.equal(policy.prepare({role:'renamed',task:'Inspect'}).isError,undefined);
+});
 test('the admitted roster controls selection and instructions',()=>{
   const policy = host([{key:'review',name:'Review',description:'Inspect changes'}]);
   assert.match(policy.initialized.instruction,/review \(Review\): Inspect changes/);
