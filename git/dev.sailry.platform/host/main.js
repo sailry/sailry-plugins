@@ -52,3 +52,27 @@ export function blame(args) {
   return {worktree:args.worktree ?? null,revision:args.revision ?? null,path:args.path,
     offset:args.offset ?? 0,limit:args.limit ?? 200};
 }
+
+export function changes(args) {
+  if (!object(args,['worktree','target','cursor','limit']) || !target(args.worktree) ||
+      !page({limit:args.limit})) return invalid();
+  const cursor = args.cursor ?? null;
+  const selected = args.target === undefined
+    ? (cursor === null ? {kind:'worktree',data:{scope:'all'}} : null) : args.target;
+  if ((selected === null) === (cursor === null) ||
+      (selected !== null && !object(selected,['kind','data'])) ||
+      (cursor !== null && (!object(cursor,['snapshot','after_path']) ||
+        !object(cursor.snapshot,['target','metadata_revision']) || !target(cursor.after_path)))) return invalid();
+  return {worktree:args.worktree ?? null,target:selected,cursor,limit:args.limit ?? 200};
+}
+
+export function change(args) {
+  if (!object(args,['worktree','snapshot','path','expected_metadata_revision','expected_revision','offset','limit']) ||
+      !target(args.worktree) || !page(args) || typeof args.path !== 'string' ||
+      !object(args.snapshot,['target','metadata_revision']) ||
+      typeof args.expected_metadata_revision !== 'string' || !target(args.expected_revision) ||
+      ((args.offset ?? 0) > 0 && args.expected_revision == null)) return invalid();
+  return {worktree:args.worktree ?? null,snapshot:args.snapshot,path:args.path,
+    expected_metadata_revision:args.expected_metadata_revision,expected_revision:args.expected_revision ?? null,
+    offset:args.offset ?? 0,limit:args.limit ?? 200};
+}

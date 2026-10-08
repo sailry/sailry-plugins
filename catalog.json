@@ -936,13 +936,18 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "scope": "host",
-            "actions": [],
+            "actions": [
+              "git.read",
+              "conversation.read",
+              "storage.read",
+              "storage.write"
+            ],
             "display": {
               "label": "Code review",
               "locales": {
@@ -955,7 +960,363 @@
               "locales": {
                 "zh-CN": "审查代码变更与拉取请求"
               }
-            }
+            },
+            "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict requires a fresh tool invocation and re-reading current scope; do not retry within a failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
+            "storage": {
+              "collections": [
+                {
+                  "scope": "node",
+                  "prefix": "review/",
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "v",
+                      "kind"
+                    ],
+                    "properties": {
+                      "v": {
+                        "const": 1
+                      },
+                      "kind": {
+                        "enum": [
+                          "head",
+                          "scope",
+                          "finding",
+                          "receipt"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "host": {
+              "entry": "dev.sailry.platform/host/main.js",
+              "resources": [
+                "dev.sailry.platform/host/main.js",
+                "dev.sailry.platform/host/policy.js",
+                "dev.sailry.platform/host/git.js",
+                "dev.sailry.platform/host/filter.js",
+                "dev.sailry.platform/host/groups.js",
+                "dev.sailry.platform/host/records.js",
+                "dev.sailry.platform/host/rules.js",
+                "dev.sailry.platform/host/matching.js",
+                "dev.sailry.platform/host/scope.js",
+                "dev.sailry.platform/host/findings.js",
+                "dev.sailry.platform/host/complete.js"
+              ],
+              "handlers": [
+                "scope",
+                "finding",
+                "complete"
+              ]
+            },
+            "tools": [
+              {
+                "name": "review_scope",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
+                "handler": {
+                  "name": "scope",
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "target": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "const": "worktree"
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "enum": [
+                                      "all",
+                                      "staged",
+                                      "unstaged"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "const": "commit"
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "revision": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "revision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "const": "range"
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "base": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "head": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "base",
+                                  "head"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "review_id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Review scope",
+                  "locales": {
+                    "zh-CN": "审查范围"
+                  },
+                  "icon": "reicon:it/code"
+                }
+              },
+              {
+                "name": "report_finding",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Record one demonstrated P0-P3 finding in an open review. Pass the scoped path and strong revision, side new for added lines or old for deleted lines, and a complete source-line snippet with LF separators (one trailing LF allowed). The snippet must uniquely match mapped diff lines on that side and contain a changed line; context-only or ambiguous snippets fail. A unique match corrects a mistaken line number. State the trigger and consequence in explanation and concrete supporting evidence; confidence or agreement is not evidence. A stale revision requires a new review.",
+                "handler": {
+                  "name": "finding",
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "review_id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                      },
+                      "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 4096
+                      },
+                      "revision": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256
+                      },
+                      "side": {
+                        "enum": [
+                          "new",
+                          "old"
+                        ]
+                      },
+                      "line": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "snippet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8192
+                      },
+                      "severity": {
+                        "enum": [
+                          "P0",
+                          "P1",
+                          "P2",
+                          "P3"
+                        ]
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 240
+                      },
+                      "explanation": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8192
+                      },
+                      "evidence": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8192
+                      }
+                    },
+                    "required": [
+                      "review_id",
+                      "path",
+                      "revision",
+                      "side",
+                      "line",
+                      "snippet",
+                      "severity",
+                      "title",
+                      "explanation",
+                      "evidence"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Report finding",
+                  "locales": {
+                    "zh-CN": "记录问题"
+                  },
+                  "icon": "reicon:it/code"
+                }
+              },
+              {
+                "name": "review_complete",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it rechecks frozen inventory and every eligible strong revision. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
+                "handler": {
+                  "name": "complete",
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "review_id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                      },
+                      "reviewed_files": {
+                        "type": "array",
+                        "maxItems": 256,
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "path": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 4096
+                            },
+                            "revision": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            }
+                          },
+                          "required": [
+                            "path",
+                            "revision"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "reviewed_groups": {
+                        "type": "array",
+                        "maxItems": 256,
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        }
+                      },
+                      "finalize": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "review_id",
+                      "reviewed_files",
+                      "reviewed_groups",
+                      "finalize"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Complete review",
+                  "locales": {
+                    "zh-CN": "完成审查"
+                  },
+                  "icon": "reicon:it/code"
+                }
+              }
+            ]
           }
         }
       }
@@ -4301,7 +4662,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4335,7 +4696,9 @@
                 "diff",
                 "log",
                 "show",
-                "blame"
+                "blame",
+                "changes",
+                "change"
               ]
             },
             "tools": [
@@ -5270,6 +5633,492 @@
                     },
                     "context": {
                       "path": "/revision"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "list_git_changes",
+                "presentation": "details",
+                "description": "List changed file metadata without reading source bodies. Omit target and cursor for all working changes; select an explicit worktree, commit or range target otherwise. Exactly one target or cursor is accepted. Continue using next verbatim; use cursor {snapshot,after_path:null} to repeat from the same frozen target. Commits and ranges resolve once to full SHAs. Each page has at most 500 entries and 48 KiB encoded JSON. Only exhausted=true and omitted_paths=0 proves complete inventory. No patches, statistics or rename similarity are computed. Select only registered worktrees in this session project.",
+                "contexts": [
+                  "workspace"
+                ],
+                "handler": {
+                  "name": "changes",
+                  "operation": "git.changes",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "worktree": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "target": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "worktree"
+                                ]
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "scope": {
+                                    "type": "string",
+                                    "enum": [
+                                      "all",
+                                      "staged",
+                                      "unstaged"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "scope"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "commit"
+                                ]
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "revision": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "revision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "range"
+                                ]
+                              },
+                              "data": {
+                                "type": "object",
+                                "properties": {
+                                  "base": {
+                                    "type": "string"
+                                  },
+                                  "head": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "base",
+                                  "head"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "data"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "cursor": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "snapshot": {
+                                "type": "object",
+                                "properties": {
+                                  "target": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "worktree"
+                                            ]
+                                          },
+                                          "data": {
+                                            "type": "object",
+                                            "properties": {
+                                              "scope": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "all",
+                                                  "staged",
+                                                  "unstaged"
+                                                ]
+                                              },
+                                              "head": {
+                                                "type": [
+                                                  "string",
+                                                  "null"
+                                                ]
+                                              },
+                                              "index_revision": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "scope",
+                                              "head",
+                                              "index_revision"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "data"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "commit"
+                                            ]
+                                          },
+                                          "data": {
+                                            "type": "object",
+                                            "properties": {
+                                              "revision": {
+                                                "type": "string"
+                                              },
+                                              "parent": {
+                                                "type": [
+                                                  "string",
+                                                  "null"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "revision",
+                                              "parent"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "data"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "range"
+                                            ]
+                                          },
+                                          "data": {
+                                            "type": "object",
+                                            "properties": {
+                                              "base": {
+                                                "type": "string"
+                                              },
+                                              "head": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "base",
+                                              "head"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "data"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  },
+                                  "metadata_revision": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "target",
+                                  "metadata_revision"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "after_path": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "snapshot",
+                              "after_path"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 200
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Git changes",
+                  "locales": {
+                    "zh-CN": "Git 变更"
+                  },
+                  "icon": "reicon:newicons/hierarchy2",
+                  "input": {
+                    "summary": {
+                      "path": "/target/kind"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "read_git_change",
+                "presentation": "details",
+                "description": "Read a literal file diff from a returned Git changes snapshot. Pass its path and expected_metadata_revision. The first request uses offset=0 and no expected_revision; every continuation or later check supplies the returned strong revision. offset counts mapped diff lines, limit defaults to 200 and is at most 500. Complete source lines preserve whitespace except terminal CR/LF and carry one-based old/new line numbers. Pages are bounded to 48 KiB encoded JSON without truncating lines. Binary, non-UTF-8, unsupported modes, oversized files and oversized lines return an explicit skip_reason. Commit snapshots remain fixed when references move; working snapshots reject metadata or content changes. Files are bounded to 32 MiB. Select only registered worktrees in this session project.",
+                "contexts": [
+                  "workspace"
+                ],
+                "handler": {
+                  "name": "change",
+                  "operation": "git.change",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "worktree": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "snapshot": {
+                        "type": "object",
+                        "properties": {
+                          "target": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "worktree"
+                                    ]
+                                  },
+                                  "data": {
+                                    "type": "object",
+                                    "properties": {
+                                      "scope": {
+                                        "type": "string",
+                                        "enum": [
+                                          "all",
+                                          "staged",
+                                          "unstaged"
+                                        ]
+                                      },
+                                      "head": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "index_revision": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "scope",
+                                      "head",
+                                      "index_revision"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "data"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "commit"
+                                    ]
+                                  },
+                                  "data": {
+                                    "type": "object",
+                                    "properties": {
+                                      "revision": {
+                                        "type": "string"
+                                      },
+                                      "parent": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "revision",
+                                      "parent"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "data"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "range"
+                                    ]
+                                  },
+                                  "data": {
+                                    "type": "object",
+                                    "properties": {
+                                      "base": {
+                                        "type": "string"
+                                      },
+                                      "head": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "base",
+                                      "head"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "data"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "metadata_revision": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "target",
+                          "metadata_revision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "expected_metadata_revision": {
+                        "type": "string"
+                      },
+                      "expected_revision": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 200
+                      }
+                    },
+                    "required": [
+                      "snapshot",
+                      "path",
+                      "expected_metadata_revision"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Git file change",
+                  "locales": {
+                    "zh-CN": "Git 文件变更"
+                  },
+                  "icon": "reicon:newicons/hierarchy2",
+                  "input": {
+                    "summary": {
+                      "path": "/path"
                     }
                   }
                 }
@@ -6505,7 +7354,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {

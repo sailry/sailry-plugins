@@ -109,6 +109,8 @@ const operations = [
   ['files.find', 'files.read'],
   ['git.show', 'git.read'],
   ['git.blame', 'git.read'],
+  ['git.changes', 'git.read'],
+  ['git.change', 'git.read'],
 ];
 
 function bindings(operation) {

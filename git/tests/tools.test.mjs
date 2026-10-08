@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {status,diff,log,show,blame} from '../dev.sailry.platform/host/main.js';
+import {status,diff,log,show,blame,changes,change} from '../dev.sailry.platform/host/main.js';
 
 test('history preserves first-page defaults and exact continuation', () => {
   assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null});
@@ -47,4 +47,30 @@ test('show and blame preserve literal paths and immutable continuation', () => {
   }
   assert.equal(show({offset:1}).isError,true);
   assert.equal(blame({}).isError,true);
+});
+
+test('change inventory keeps frozen cursors and explicit target alternatives', () => {
+  const target = {kind:'worktree',data:{scope:'all'}};
+  assert.deepEqual(changes({}), {worktree:null,target,cursor:null,limit:200});
+  const snapshot = {target:{kind:'commit',data:{revision:'a'.repeat(40),parent:null}},metadata_revision:'b'.repeat(64)};
+  for (const after_path of [null,'src/file.rs']) {
+    const cursor = {snapshot,after_path};
+    assert.deepEqual(changes({cursor}), {worktree:null,target:null,cursor,limit:200});
+    assert.equal(changes({target,cursor}).isError,true);
+  }
+  for (const args of [{target:null},{limit:0},{limit:501},{project:'outside'},{cursor:{snapshot,after_path:3}}]) {
+    assert.equal(changes(args).isError,true);
+  }
+});
+
+test('mapped changes require strong revision on continuation', () => {
+  const snapshot = {target:{kind:'range',data:{base:'a'.repeat(40),head:'b'.repeat(40)}},metadata_revision:'c'.repeat(64)};
+  const initial = {snapshot,path:'-file[1].rs',expected_metadata_revision:'d'.repeat(64)};
+  assert.deepEqual(change(initial), {...initial,worktree:null,expected_revision:null,offset:0,limit:200});
+  assert.equal(change({...initial,offset:1}).isError,true);
+  assert.deepEqual(change({...initial,expected_revision:'e'.repeat(64),offset:10}),
+    {...initial,worktree:null,expected_revision:'e'.repeat(64),offset:10,limit:200});
+  for (const args of [{...initial,limit:501},{...initial,command:'checkout'},{...initial,offset:-1}]) {
+    assert.equal(change(args).isError,true);
+  }
 });

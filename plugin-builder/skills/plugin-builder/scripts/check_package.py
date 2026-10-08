@@ -49,6 +49,7 @@ OPERATION_ACTIONS = {
     "files.search": "files.read", "files.find": "files.read", "files.write": "files.write",
     "files.edit": "files.write", "git.status": "git.read", "git.diff": "git.read",
     "git.log": "git.read", "git.show": "git.read", "git.blame": "git.read",
+    "git.changes": "git.read", "git.change": "git.read",
     "worktrees.list": "worktrees.read",
 }
 SETTING_KINDS = {"string", "integer", "number", "boolean"}
