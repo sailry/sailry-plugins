@@ -1,7 +1,7 @@
 // Settings captions from Sailry 5d0ac251, localized for the package.
 const en = {
-  media_roles:'Media model roles',
-  media_follow:'Follow session model',
+  media_roles:'Fallback models',
+  media_follow:'Automatic',
   media_disabled:'Disabled',
   media_unavailable:'Unavailable',
   media_model_unavailable:'Model unavailable',
@@ -16,8 +16,8 @@ const en = {
   media_video_generation:'Video generation'
 };
 const zh = {
-  media_roles:'媒体模型用途',
-  media_follow:'跟随会话模型',
+  media_roles:'备用模型',
+  media_follow:'自动',
   media_disabled:'关闭',
   media_unavailable:'暂未接入',
   media_model_unavailable:'模型不可用',

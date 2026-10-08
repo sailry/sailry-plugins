@@ -49,7 +49,7 @@ test('selects and clears a role while retaining other configured roles', async (
   const choices = view.items('vision-menu','vision');
   assert.equal(choices.length,3);
   assert.equal(choices[0].checked,true);
-  assert.equal(choices[0].label,'Follow session model');
+  assert.equal(choices[0].label,'Automatic');
   assert.equal(choices[1].label,'Disabled');
   assert.equal(choices[2].label,'First / vision');
   assert.equal(view.items('video-menu','video')[2].label,'Second / image');
@@ -82,9 +82,10 @@ test('open menu choices retain their binding and reject stale revisions', async 
   assert.equal(view.saved.revision,9);
 });
 
-test('follow, disabled and override are distinct revision-checked choices', async () => {
+test('automatic, disabled and fallback retain distinct choices', async () => {
   const fixture = await settings(), {view,cx} = fixture;
-  assert.equal(view.label('image'),'Follow session model');
+  assert.equal(view.text.media_roles,'Fallback models');
+  assert.equal(view.label('image'),'Automatic');
   const choices = view.items('image-menu','image');
   assert.deepEqual(plain(choices.map(choice => choice.checked)),[true,false,false]);
   await fixture.act(() => view.select('image-menu',choices[1].id,cx));
@@ -95,7 +96,7 @@ test('follow, disabled and override are distinct revision-checked choices', asyn
   assert.equal(view.label('image'),'Second / image');
   await fixture.act(() => view.select('image-menu',view.items('image-menu','image')[0].id,cx));
   assert.deepEqual(plain(view.saved),{revision:3,bindings:{}});
-  assert.equal(view.label('image'),'Follow session model');
+  assert.equal(view.label('image'),'Automatic');
 });
 
 test('late reads cannot replace newer settings and missing providers remain explicit', async () => {

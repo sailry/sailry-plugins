@@ -5,7 +5,7 @@ description: Generate raster images such as photos, illustrations, textures and 
 
 # Image generation
 
-Use the available `generate_image` tool from this package. The execution Node selects the admitted session model or its explicit media override and saves the real PNG result; this skill does not supply a model, credentials or tool permissions.
+Use the available `generate_image` tool from this package. The execution Node tries the admitted session model first and uses an explicitly configured fallback only when unsupported, then saves the real PNG result. This skill does not select a model, credentials or tool permissions. Authentication, quota and uncertain failures do not trigger fallback.
 
 1. Turn the user's request into a clear prompt covering purpose, subject, style, composition and important constraints. Preserve requested text, colors and reference details. Make reasonable assumptions without adding unnecessary questions.
 2. Generate the image with the tool. Never replace a requested raster image with SVG, a canvas drawing or a placeholder. If generation is unavailable, explain the limitation and the needed media configuration rather than claiming success.

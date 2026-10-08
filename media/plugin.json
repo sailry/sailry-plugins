@@ -32,7 +32,7 @@
         {
           "name": "inspect_image",
           "presentation": "details",
-          "description": "Ask the session's configured vision model about one image. Supply either a worktree-relative path or an attachment ID from this conversation, and a question in prompt.",
+          "description": "Ask the admitted session model about one image; an explicit fallback is used only when unsupported. Supply a worktree-relative path or an attachment ID from this conversation and a question in prompt. Do not replay an uncertain request.",
           "handler": {
             "name": "inspect",
             "operation": "media.inspect",
@@ -69,7 +69,7 @@
         {
           "name": "generate_image",
           "presentation": "details",
-          "description": "Generate a real PNG with the admitted session model or its explicit media override. Describe the subject, purpose, style, composition and constraints in prompt. Save under assets/generated without replacing existing files. file_name is an optional plain .png name. Do not substitute SVG or replay an uncertain generation.",
+          "description": "Generate a real PNG with the admitted session model; an explicit fallback is used only when unsupported. Describe the subject, purpose, style, composition and constraints in prompt. Save under assets/generated without replacing existing files. file_name is an optional plain .png name. Do not substitute SVG or replay an uncertain generation.",
           "handler": {
             "name": "image",
             "operation": "media.image",
@@ -103,7 +103,7 @@
         {
           "name": "generate_video",
           "presentation": "details",
-          "description": "Generate a video using this session's configured companion model. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .mp4. Stopping local work does not cancel a job already accepted by the provider. Do not replay an uncertain generation.",
+          "description": "Generate a video with the admitted session model; an explicit fallback is used only when unsupported. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .mp4. Stopping local work does not cancel a job already accepted by the provider. Do not replay an uncertain generation.",
           "handler": {
             "name": "video",
             "operation": "media.video",
