@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -15,7 +15,7 @@
         {
           "name": "run_command",
           "presentation": "content",
-          "description": "Run a noninteractive shell command on the execution Node. Include description to explain what the command checks or changes in the approval card. CWD defaults to this session's worktree; an explicit cwd may be an absolute directory or a path relative to the worktree, including '.'. For bundled skill scripts, use the absolute script path from load_skill's directory or explicitly select that directory. Invoke directly for authorized work: Ask and Project modes present approval before execution; Full runs directly. Do not request tool permission through ask_user. This is not an OS sandbox: the command has the execution Node user's access. Output is bounded with explicit truncation. Timeout defaults to 120000 ms, up to 900000 ms. Use background=true for long-lived processes: they return an ID, survive this turn, and have no timeout. Inspect with read_command and stop with stop_command. Keep the command in the shell foreground (no & or nohup). Foreground commands stop on exit, cancellation or timeout.",
+          "description": "Run a noninteractive command on the Node. Provide description to explain its purpose. On macOS and Linux, access=workspace is the default: commands can write only in the current worktree and their temporary directory, and cannot use the network. These confined commands run without approval. Request access=unrestricted for network access or paths outside the worktree; every such call requires a fresh user approval, including Full mode. Windows retains the permission-mode approval policy. Invoke the tool directly; its approval card obtains consent. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms and is limited to 900000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Read it with read_command and stop it with stop_command. Keep the shell command in the foreground. Foreground commands stop on exit, cancellation or timeout.",
           "handler": {
             "name": "run",
             "operation": "process.run",
@@ -27,6 +27,12 @@
                 "command": {
                   "type": "string"
                 },
+                "access": {
+                  "type": "string",
+                  "enum": ["workspace", "unrestricted"],
+                  "default": "workspace",
+                  "description": "Workspace access blocks network and confines writes on macOS/Linux. Unrestricted access requires fresh user approval."
+                },
                 "description": {
                   "type": ["string", "null"],
                   "maxLength": 2000,
@@ -35,7 +41,7 @@
                 "cwd": {
                   "type": "string",
                   "default": "",
-                  "description": "Working directory on the execution Node. Omit or use '.' for the session worktree; relative paths resolve from that worktree. Absolute paths are supported."
+                  "description": "Working directory on the Node. Omit or use a relative path for the admitted worktree. Workspace access cannot select a directory outside that worktree."
                 },
                 "background": {
                   "type": "boolean",

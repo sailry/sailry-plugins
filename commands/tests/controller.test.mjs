@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import {selection} from '../dev.sailry.platform/desktop/access.js';
 
 const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{kind:'stopped'}});
 
@@ -20,7 +21,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     'sailry/sdk':{
       listTerminals:async () => host.items,
       listTerminalTools:async () => [],
-      prepareTerminal:target => prepare('create', target),
+      prepareTerminal:(target,access) => { const id = prepare('create', target); requests.get(id).access = access; return id; },
       prepareOpenTerminal:target => { if (host.prepareError) throw host.prepareError; return prepare('open', target); },
       prepareCloseTerminal:target => prepare('close', target),
       completeRequest:async id => {
@@ -39,6 +40,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     './locales.js':{messages:() => ({terminal:'Terminal', tools:{},failed:'Terminal action failed',unknown:'Outcome unknown',loadFailed:'Could not load terminals'})},
     './view.js':{render() {}},
     './labels.js':{title:() => null, directory:() => null},
+    './access.js':{selection},
   };
   const module = new vm.SourceTextModule(await readFile(new URL('../dev.sailry.platform/desktop/main.js', import.meta.url), 'utf8'), {context});
   await module.link(name => new vm.SyntheticModule(Object.keys(exports[name]), function() {
@@ -220,4 +222,21 @@ test('uncertain opens keep panes busy and reject actions until explicit retry', 
   assert.deepEqual(setup.completed, ['request-0', 'request-0']);
   assert.equal(setup.prepared.length, 1);
   assert.equal(setup.updates.filter(update => Object.hasOwn(update, 'busy')).at(-1).busy, false);
+});
+
+
+test('new terminals default to workspace and explicit choices freeze full access', async () => {
+  const setup = await fixture([],null);
+  setup.view.perform('create', null, setup.cx); await setup.settle();
+  assert.equal(setup.prepared[0].access,'workspace');
+  setup.host.complete = async () => ({Err:{code:'outcome_unknown'}});
+  setup.view.perform('create','claude:unrestricted',setup.cx); await setup.settle();
+  assert.deepEqual(setup.prepared[1],{id:'request-1',action:'create',target:'claude',access:'unrestricted'});
+  setup.view.perform('create',null,setup.cx); await setup.settle();
+  assert.equal(setup.prepared.length,2);
+  setup.host.complete = async () => ({Ok:{kind:'terminal',data:{id:'full'}}});
+  setup.view.retry(setup.cx); await setup.settle();
+  assert.equal(setup.prepared.length,2);
+  assert.deepEqual(setup.completed,['request-0','request-1','request-1']);
+  assert.equal(setup.view.pending,null);
 });

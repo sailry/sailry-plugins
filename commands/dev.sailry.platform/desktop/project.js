@@ -5,6 +5,7 @@ import {listTerminals, listTerminalTools, prepareTerminal, completeRequest, forg
 import {openPane, publishResourceTitles, toast, dismissToast, nextToastEvent} from 'sailry/ui';
 import {messages} from './locales.js';
 import {title, directory} from './labels.js';
+import {selection, choices as accessChoices} from './access.js';
 
 const notification = 'terminal-launch';
 
@@ -49,9 +50,10 @@ export default class Project extends View {
     const reply = id => event?.id === id ? {reply_to:event.sequence} : {};
     const recovery = this.pending ? 'retry' : 'refresh';
     const choices = [];
-    choices.push(...this.tools.map(entry => ({id:entry.tool,
-      label:{label:this.text.tools[entry.tool]}, icon:'square-terminal', group:{label:this.text.cli},
-      enabled:entry.available && !this.busy && !this.pending})));
+    choices.push(...accessChoices(this.tools,this.text).map(entry => ({id:entry.id,
+      label:{label:entry.label}, icon:'square-terminal',
+      group:{label:entry.id.includes(':') ? this.text.full : this.text.cli},
+      enabled:entry.enabled && !this.busy && !this.pending})));
     choices.push({id:recovery, label:{label:this.text[recovery]}, icon:'rotate-cw',
       group:{label:this.text[recovery]}, enabled:!this.busy && !this.loading});
     const enabled = this.connected && !this.busy;
@@ -75,16 +77,18 @@ export default class Project extends View {
   }
 
   start(tool, event, cx) {
+    const chosen = tool === null ? {tool:null,access:'workspace'} : selection(tool);
     if (this.busy || (tool !== null && this.loading) || (!this.pending && tool !== null &&
-      !this.tools.some(entry => entry.tool === tool && entry.available))) {
+      chosen.tool !== null && !this.tools.some(entry => entry.tool === chosen.tool && entry.available))) {
       this.publish(event); return;
     }
     this.busy = true; this.error = null; this.publish(event);
     dismissToast(notification);
     cx.spawn(async cx => {
       try {
-        if (!this.pending) this.pending = prepareTerminal(tool);
+        if (!this.pending) this.pending = prepareTerminal(chosen.tool, chosen.access);
         const result = await completeRequest(this.pending);
+        if (result.Err?.code === 'outcome_unknown') { this.error = 'unknown'; return; }
         if (result.Err) this.error = result.Err.code === 'not_configured' ? 'unavailable' : 'launchFailed';
         else this.reveal = result.Ok.data.id;
         forgetRequest(this.pending); this.pending = null;

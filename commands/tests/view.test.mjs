@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
+import {choices} from '../dev.sailry.platform/desktop/access.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js', import.meta.url), 'utf8'))
   .replace(/^import .*;\n/gm, '').replace(/^export /gm, '');
@@ -25,7 +26,7 @@ function fixture(item, error = null) {
   const constructors = Object.fromEntries(['Button', 'Tab', 'TabBar'].map(kind =>
     [kind, function(id) { return element(kind, id); }]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
-    div:() => element(), ...constructors, theme:() => ({colors:{destructive:'danger'}}),
+    div:() => element(), choices, ...constructors, theme:() => ({colors:{destructive:'danger'}}),
     Terminal:{new:(id, props) => element('Terminal', id, props)},
     Menu:{new:(id, props) => element('Menu', id, props)},
   });
@@ -33,7 +34,7 @@ function fixture(item, error = null) {
     busy:!error, pending:null, openRetry:error === 'failed' ? item.id : null, error, retry:() => calls.push('retry')};
   const root = render(view);
   const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
-  return {nodes, calls, text:text(root)};
+  return {nodes, calls, view, render:() => render(view), text:text(root)};
 }
 
 test('stopped ordinary shells show loading without a stopped or open interstitial', () => {
@@ -65,4 +66,20 @@ test('catalog failures add neither retry bars nor attached terminals', () => {
   const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}}, 'loadFailed');
   assert.equal(setup.nodes.has('terminal-retry'), false);
   assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);
+});
+
+
+test('workspace stays default and full choices describe filesystem and network',()=>{
+  const setup=fixture({id:'existing',status:{kind:'running'}});
+  Object.assign(setup.view,{resource:null,busy:false,tools:[{tool:'claude',available:true}],perform:(...args)=>setup.calls.push(args)});
+  setup.render();
+  setup.nodes.get('terminal-new').handlers.on_click(null,{});
+  assert.deepEqual(setup.calls[0].slice(0,2),['create',null]);
+  const access=setup.nodes.get('terminal-access');
+  assert.equal(access.kind,'Menu');
+  assert.deepEqual(Array.from(access.props.items,item=>item.id),['workspace','unrestricted']);
+  assert.match(access.props.items[1].label,/filesystem and network/);
+  const tools=setup.nodes.get('terminal-tools').props.items;
+  assert.equal(tools[0].id,'claude');
+  assert.ok(tools.find(item=>item.id==='claude:unrestricted').label.includes('filesystem and network'));
 });

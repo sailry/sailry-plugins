@@ -2,6 +2,7 @@ import {div} from 'gpui-kit';
 import {Button, Tab, TabBar} from 'gpui-component';
 import {Terminal, theme} from 'sailry';
 import {Menu} from 'sailry/ui';
+import {choices} from './access.js';
 
 export function render(view) {
   const {text} = view, disabled = view.busy || !!view.pending;
@@ -12,8 +13,12 @@ export function render(view) {
     .children(!view.resource ? [div().h_flex().flex_shrink(0).gap_1().px_2().py_1()
       .child(new Button('terminal-new').ghost().label(text.create).disabled(disabled)
         .on_click((_, cx) => view.perform('create', null, cx)))
+      .child(Menu.new('terminal-access', {label:text.access, disabled, items:[
+        {id:'workspace',label:`${text.create} · ${text.workspace}`,enabled:true},
+        {id:'unrestricted',label:`${text.create} · ${text.full}`,enabled:true},
+      ]}))
       .child(Menu.new('terminal-tools', {label:text.cli, disabled,
-        items:view.tools.map(entry => ({id:entry.tool,label:text.tools[entry.tool],enabled:entry.available}))}))
+        items:choices(view.tools,text)}))
       .child(div().flex_1())
       .children(selected ? [new Button('terminal-close').ghost().label(text.close).disabled(disabled)
         .on_click((_, cx) => view.perform('close', selected.id, cx))] : [])] : [])

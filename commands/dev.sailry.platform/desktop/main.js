@@ -6,6 +6,7 @@ import {nextMenuEvent, pane, openPane, updatePane, closePane, nextPaneEvent,toas
 import {messages} from './locales.js';
 import {render} from './view.js';
 import {title, directory} from './labels.js';
+import {selection} from './access.js';
 
 export default class Commands extends View {
   init(_props, cx) {
@@ -24,6 +25,7 @@ export default class Commands extends View {
       try { while (true) {
         const event = await nextMenuEvent();
         if (event.menu === 'terminal-tools') this.perform('create', event.id, cx);
+        if (event.menu === 'terminal-access') this.perform('create', `shell:${event.id}`, cx);
       } } catch (_) { /* View release ends menu observation. */ }
     });
     cx.spawn(async cx => {
@@ -108,7 +110,10 @@ export default class Commands extends View {
       try {
         if (!this.pending) {
           const id = action === 'close' ? prepareCloseTerminal(target)
-            : action === 'open' ? prepareOpenTerminal(target) : prepareTerminal(target);
+            : action === 'open' ? prepareOpenTerminal(target) : (() => {
+              const chosen = target === null ? {tool:null,access:'workspace'} : selection(target);
+              return prepareTerminal(chosen.tool, chosen.access);
+            })();
           this.pending = {id, action, target};
         }
         const result = await completeRequest(this.pending.id);
