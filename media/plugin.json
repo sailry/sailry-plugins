@@ -69,7 +69,7 @@
         {
           "name": "generate_image",
           "presentation": "details",
-          "description": "Generate an image using this session's configured companion model. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .png. Do not replay an uncertain generation.",
+          "description": "Generate a real PNG with the admitted session model or its explicit media override. Describe the subject, purpose, style, composition and constraints in prompt. Save under assets/generated without replacing existing files. file_name is an optional plain .png name. Do not substitute SVG or replay an uncertain generation.",
           "handler": {
             "name": "image",
             "operation": "media.image",

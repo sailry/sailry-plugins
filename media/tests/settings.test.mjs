@@ -47,17 +47,19 @@ test('selects and clears a role while retaining other configured roles', async (
   const fixture = await settings({saved:{revision:4,bindings:{image:{provider:'provider-b',model:'image'}}}});
   const {view,cx,menus,prepared} = fixture;
   const choices = view.items('vision-menu','vision');
-  assert.equal(choices.length,2);
+  assert.equal(choices.length,3);
   assert.equal(choices[0].checked,true);
-  assert.equal(choices[1].label,'First / vision');
-  assert.equal(view.items('video-menu','video')[1].label,'Second / image');
-  await fixture.act(() => menus.send({id:'vision-menu',value:choices[1].id}));
+  assert.equal(choices[0].label,'Follow session model');
+  assert.equal(choices[1].label,'Disabled');
+  assert.equal(choices[2].label,'First / vision');
+  assert.equal(view.items('video-menu','video')[2].label,'Second / image');
+  await fixture.act(() => menus.send({id:'vision-menu',value:choices[2].id}));
   assert.deepEqual(prepared[0],{revision:4,bindings:{
     vision:{provider:'provider-a',model:'vision'},image:{provider:'provider-b',model:'image'}
   }});
   assert.equal(view.saved.revision,5);
   assert.equal(view.label('vision'),'First / vision');
-  assert.equal(view.items('vision-menu','vision')[1].checked,true);
+  assert.equal(view.items('vision-menu','vision')[2].checked,true);
   await fixture.act(() => view.select('vision-menu',view.items('vision-menu','vision')[0].id,cx));
   assert.deepEqual(plain(view.saved),{revision:6,bindings:{image:{provider:'provider-b',model:'image'}}});
   assert.equal(view.label(null),'Unavailable');
@@ -65,7 +67,7 @@ test('selects and clears a role while retaining other configured roles', async (
 
 test('open menu choices retain their binding and reject stale revisions', async () => {
   const fixture = await settings(), {view,cx,prepared} = fixture;
-  const captured = view.items('vision-menu','vision')[1];
+  const captured = view.items('vision-menu','vision')[2];
   fixture.setModels([{provider:'new',provider_name:'New',model:'replacement',kinds:['vision']}]);
   await fixture.act(() => view.load(cx));
   view.items('vision-menu','vision');
@@ -78,6 +80,22 @@ test('open menu choices retain their binding and reject stale revisions', async 
   assert.equal(view.error,'media_conflict');
   assert.equal(prepared.length,1);
   assert.equal(view.saved.revision,9);
+});
+
+test('follow, disabled and override are distinct revision-checked choices', async () => {
+  const fixture = await settings(), {view,cx} = fixture;
+  assert.equal(view.label('image'),'Follow session model');
+  const choices = view.items('image-menu','image');
+  assert.deepEqual(plain(choices.map(choice => choice.checked)),[true,false,false]);
+  await fixture.act(() => view.select('image-menu',choices[1].id,cx));
+  assert.deepEqual(plain(view.saved),{revision:1,bindings:{image:null}});
+  assert.equal(view.label('image'),'Disabled');
+  assert.deepEqual(plain(view.items('image-menu','image').map(choice => choice.checked)),[false,true,false]);
+  await fixture.act(() => view.select('image-menu',view.items('image-menu','image')[2].id,cx));
+  assert.equal(view.label('image'),'Second / image');
+  await fixture.act(() => view.select('image-menu',view.items('image-menu','image')[0].id,cx));
+  assert.deepEqual(plain(view.saved),{revision:3,bindings:{}});
+  assert.equal(view.label('image'),'Follow session model');
 });
 
 test('late reads cannot replace newer settings and missing providers remain explicit', async () => {
@@ -94,7 +112,7 @@ test('disconnect and pending saves disable actions without duplicate dispatch', 
   let finish;
   const fixture = await settings({complete:() => new Promise(resolve => {finish = resolve;})});
   const {view,cx,changes,calls} = fixture;
-  const selected = view.items('vision-menu','vision')[1];
+  const selected = view.items('vision-menu','vision')[2];
   changes.send({cursor:'1',connected:false}); await tick();
   view.select('vision-menu',selected.id,cx);
   assert.equal(calls.length,0);
@@ -117,7 +135,7 @@ test('uncertain saves reconcile by reading and never replay the request', async 
   ]) {
     const fixture = await settings({complete:completion}), {view,cx,calls,forgotten} = fixture;
     fixture.setSaved({revision:1,bindings:{vision:{provider:'provider-a',model:'vision'}}});
-    await fixture.act(() => view.select('vision-menu',view.items('vision-menu','vision')[1].id,cx));
+    await fixture.act(() => view.select('vision-menu',view.items('vision-menu','vision')[2].id,cx));
     assert.equal(view.error,'media_unknown');
     assert.equal(view.saved.revision,1);
     assert.equal(view.label('vision'),'First / vision');
@@ -130,7 +148,7 @@ test('business failures keep their existing localized feedback', async () => {
   for (const [code,key] of [['revision_conflict','media_conflict'],['invalid_request','media_model_unavailable'],
     ['not_configured','media_model_unavailable'],['unavailable','media_unknown'],['permission_denied','media_failed']]) {
     const fixture = await settings({complete:async () => ({Err:{code}})}), {view,cx,notices} = fixture;
-    await fixture.act(() => view.select('vision-menu',view.items('vision-menu','vision')[1].id,cx));
+    await fixture.act(() => view.select('vision-menu',view.items('vision-menu','vision')[2].id,cx));
     assert.equal(view.error,key);
     assert.equal(notices.at(-1).message,messages('en')[key]);
     assert.equal(notices.at(-1).kind,'error');

@@ -8,7 +8,8 @@ import {messages} from './locales.js';
 import {render} from './view.js';
 
 const notice = 'media-save';
-const same = (left, right) => left?.provider === right?.provider && left?.model === right?.model;
+const same = (left, right) => left === right || (!!left && !!right &&
+  left.provider === right.provider && left.model === right.model);
 
 export default class Settings extends View {
   init(_props, cx) {
@@ -40,15 +41,16 @@ export default class Settings extends View {
   label(kind) {
     if (!kind) return this.text.media_unavailable;
     const selected = this.saved.bindings[kind];
-    if (!selected) return this.text.media_unconfigured;
+    if (selected === undefined) return this.text.media_follow;
+    if (selected === null) return this.text.media_disabled;
     const provider = this.models.find(model => model.provider === selected.provider);
     return `${provider?.provider_name ?? this.text.media_model_unavailable} / ${selected.model}`;
   }
 
   items(menu, kind) {
     const selected = this.saved.bindings[kind];
-    return [null,...this.models.filter(model => model.kinds.includes(kind))].map(model => {
-      const binding = model ? {provider:model.provider,model:model.model} : null;
+    return [undefined,null,...this.models.filter(model => model.kinds.includes(kind))].map(model => {
+      const binding = model ? {provider:model.provider,model:model.model} : model;
       const choice = {menu,kind,revision:this.saved.revision,binding};
       const key = JSON.stringify(choice);
       let id = this.choiceIds.get(key);
@@ -56,7 +58,8 @@ export default class Settings extends View {
         id = `choice-${this.choices.size}`;
         this.choiceIds.set(key,id); this.choices.set(id,choice);
       }
-      return {id,label:model ? `${model.provider_name} / ${model.model}` : this.text.media_unconfigured,
+      return {id,label:model ? `${model.provider_name} / ${model.model}`
+        : model === null ? this.text.media_disabled : this.text.media_follow,
         checked:same(binding,selected),enabled:!this.busy()};
     });
   }
@@ -95,8 +98,8 @@ export default class Settings extends View {
     if (!choice || choice.menu !== menu || this.busy()) return;
     if (choice.revision !== this.saved.revision) { this.fail('media_conflict'); cx.notify(); return; }
     const settings = {revision:choice.revision,bindings:{...this.saved.bindings}};
-    if (choice.binding) settings.bindings[choice.kind] = {...choice.binding};
-    else delete settings.bindings[choice.kind];
+    if (choice.binding === undefined) delete settings.bindings[choice.kind];
+    else settings.bindings[choice.kind] = choice.binding === null ? null : {...choice.binding};
     this.pending = true; this.error = null; dismissToast(notice); cx.notify();
     cx.spawn(async cx => {
       let request;
