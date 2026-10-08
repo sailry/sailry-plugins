@@ -932,6 +932,121 @@
       }
     },
     {
+      "id": "code",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "code",
+        "version": "0.1.0",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "actions": [
+              "code.read"
+            ],
+            "display": {
+              "label": "Code intelligence",
+              "locales": {
+                "zh-CN": "代码智能",
+                "zh-TW": "程式碼智慧",
+                "ja": "コード支援",
+                "ko": "코드 인텔리전스",
+                "de": "Code-Intelligenz",
+                "es": "Inteligencia de código",
+                "fr": "Intelligence du code",
+                "pt-BR": "Inteligência de código",
+                "ru": "Анализ кода"
+              },
+              "icon": "reicon:it/code"
+            },
+            "description": {
+              "label": "Query installed language services",
+              "locales": {
+                "zh-CN": "查询已安装的语言服务"
+              }
+            },
+            "instructions": "Read-only code queries use language servers installed on the execution Node. An Ask-mode cold start requests approval for that workspace and exact server configuration. A package suggestion does not install software. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
+            "tools": [
+              {
+                "name": "code_diagnostics",
+                "operation": "code.diagnostics",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Read at most 100 diagnostics for a saved project file. Supply path and optionally severity. A missing server returns not_installed; do not claim the file is error-free.",
+                "display": {
+                  "label": "Diagnostics",
+                  "locales": {
+                    "zh-CN": "诊断"
+                  }
+                }
+              },
+              {
+                "name": "code_definition",
+                "operation": "code.definition",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Locate a literal symbol on a one-based line. Returns confined relative paths and one-based positions. Read the returned files for surrounding code.",
+                "display": {
+                  "label": "Definition",
+                  "locales": {
+                    "zh-CN": "定义"
+                  }
+                }
+              },
+              {
+                "name": "code_references",
+                "operation": "code.references",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Find at most 100 references to a literal symbol on a one-based line. Partial or indexing results do not establish the absence of other references.",
+                "display": {
+                  "label": "References",
+                  "locales": {
+                    "zh-CN": "引用"
+                  }
+                }
+              },
+              {
+                "name": "code_hover",
+                "operation": "code.hover",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Read a literal symbol signature and documentation from its one-based line. Output is limited to 8 KiB.",
+                "display": {
+                  "label": "Hover",
+                  "locales": {
+                    "zh-CN": "悬停"
+                  }
+                }
+              },
+              {
+                "name": "code_symbols",
+                "operation": "code.symbols",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "List document symbols using path, or search symbols on an already running project server using query. A project query does not scan or start arbitrary servers.",
+                "display": {
+                  "label": "Symbols",
+                  "locales": {
+                    "zh-CN": "符号"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "id": "code-review",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
