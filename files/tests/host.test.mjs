@@ -7,7 +7,7 @@ const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export /gm,'');
-const host = vm.runInNewContext(`${source}\n({list,read,write,search,office,pdf})`);
+const host = vm.runInNewContext(`${source}\n({list,read,write,search,office})`);
 const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
 const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -20,7 +20,6 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     ['write_file','write','files.write','details'],
     ['search_files','search','files.search','summary'],
     ['read_office','office','office.read','summary'],
-    ['export_pdf','pdf','office.export','summary'],
   ];
   assert.equal(manifest.name,'files');
   assert.deepEqual(extension.tools.map(tool => tool.name),expected.map(([name]) => name));
@@ -46,7 +45,6 @@ test('tool declarations preserve operations and unformatted native outputs', () 
   assert.match(tool('read_file').description,/do not treat it as the whole file/);
   assert.equal(tool('get_office_runtime'),undefined);
   assert.match(tool('read_office').description,/including continuations of long parts/);
-  assert.match(tool('export_pdf').description,/Destination replacement requires its revision/);
 });
 
 test('directory schema and pagination retain cursor identity and root spelling', () => {
@@ -102,7 +100,7 @@ test('search defaults keep original expressions and globs without interpreting t
   assert.deepEqual(args,{query:'^a.*[中]$',regex:true,case_sensitive:true,globs});
 });
 
-test('Office schemas preserve generated defaults and nullable export revisions', () => {
+test('Office inspection retains section offsets and defaults', () => {
   assert.deepEqual(tool('read_office').handler.parameters,{
     $schema:'https://json-schema.org/draft/2020-12/schema',title:'Read',type:'object',
     properties:{path:{type:'string'},offset:{
@@ -110,24 +108,14 @@ test('Office schemas preserve generated defaults and nullable export revisions',
       description:'Zero-based section offset. Long document parts continue in subsequent sections.',
     }},required:['path'],additionalProperties:false,
   });
-  assert.deepEqual(tool('export_pdf').handler.parameters,{
-    $schema:'https://json-schema.org/draft/2020-12/schema',title:'Export',type:'object',
-    properties:{source:{type:'string'},path:{type:'string'},expected_revision:{type:['string','null']}},
-    required:['source','path'],additionalProperties:false,
-  });
   assert.deepEqual(plain(host.office({path:'报告.docx'})),{path:'报告.docx',offset:0});
   assert.deepEqual(plain(host.office({path:'book.xlsx',offset:41})),{path:'book.xlsx',offset:41});
-  assert.deepEqual(plain(host.pdf({source:'report.docx',path:'output/report.pdf'})),{
-    source:'report.docx',path:'output/report.pdf',expected_revision:null,
-  });
-  const replace = {source:'deck.pptx',path:'output/deck.pdf',expected_revision:'b'.repeat(64)};
-  assert.deepEqual(plain(host.pdf(replace)),replace);
 });
 
 test('invalid argument shapes fail before requesting an operation', () => {
   const examples = {
     list:{path:'.'},read:{path:'file.txt'},write:{path:'file.txt',text:'x',expected_revision:null},
-    search:{query:'x'},office:{path:'book.xlsx'},pdf:{source:'book.xlsx',path:'book.pdf'},
+    search:{query:'x'},office:{path:'book.xlsx'},
   };
   for (const [name,valid] of Object.entries(examples)) {
     for (const args of [null,[],true,'path',42,...['worktree','session','node','turn','unexpected'].map(key => ({...valid,[key]:'foreign'}))]) {
@@ -143,7 +131,6 @@ test('invalid argument shapes fail before requesting an operation', () => {
     write:[{path:'a'}, {path:'a',text:[]}, {path:'a',text:'x',expected_revision:4}],
     search:[{}, {query:4}, {query:'x',regex:null}, {query:'x',case_sensitive:1}, {query:'x',globs:'*'}, {query:'x',globs:[4]}],
     office:[{}, {path:'a',offset:null}, {path:'a',offset:-1}, {path:'a',offset:1.5}, {path:'a',offset:Number.MAX_SAFE_INTEGER + 1}],
-    pdf:[{source:'a'}, {source:4,path:'a'}, {source:'a',path:'b',expected_revision:{}}],
   };
   for (const [name,examples] of Object.entries(invalid)) {
     for (const args of examples) assert.equal(host[name](args).error.code,'invalid_request',`${name}: ${JSON.stringify(args)}`);
@@ -152,12 +139,10 @@ test('invalid argument shapes fail before requesting an operation', () => {
 
 test('captured display selectors retain path and first-line query presentation', () => {
   assert.deepEqual(tool('search_files').display.input.summary,{path:'/query',code:true});
-  for (const name of ['read_file','write_file','read_office','export_pdf']) {
+  for (const name of ['read_file','write_file','read_office']) {
     assert.deepEqual(tool(name).display.input.summary,{path:'/path',code:true});
   }
-  for (const name of ['write_file','export_pdf']) {
-    assert.deepEqual(tool(name).display.input.target,{path:'/path'});
-  }
+  assert.deepEqual(tool('write_file').display.input.target,{path:'/path'});
   assert.ok(extension.host.resources.includes('dev.sailry.platform/host/locales.js'));
   for (const key of ['approval_create_file','approval_replace_file']) {
     assert.match(captions[key].label,/%\{path\}/);
@@ -179,13 +164,11 @@ test('result recipes refer to original data and preserve file-specific choices',
   assert.deepEqual(tool('write_file').display.output.body.diff,{
     format:'added',when:{any:[{value:reference('arguments','/expected_revision'),equals:null}]},
   });
-  for (const name of ['write_file','export_pdf']) {
-    const prompts = tool(name).display.approval;
-    assert.deepEqual(prompts[0].when,{any:[{value:reference('arguments','/expected_revision'),equals:null}]});
-    assert.equal(prompts[0].message.label,'Create %{path}');
-    assert.equal(prompts[1].message.label,'Replace %{path}');
-    assert.deepEqual(prompts[1].values.path,reference('arguments','/path'));
-  }
+  const prompts = tool('write_file').display.approval;
+  assert.deepEqual(prompts[0].when,{any:[{value:reference('arguments','/expected_revision'),equals:null}]});
+  assert.equal(prompts[0].message.label,'Create %{path}');
+  assert.equal(prompts[1].message.label,'Replace %{path}');
+  assert.deepEqual(prompts[1].values.path,reference('arguments','/path'));
   const office = tool('read_office').display.output.preview.parts[0].rows;
   assert.deepEqual(office.value,reference('result','/data/sections'));
   assert.deepEqual(office.text.parts,[{value:reference('item','/text')}]);

@@ -2,7 +2,7 @@
 name: excel
 metadata:
   display-name: Excel
-description: Create, analyze and edit Excel workbooks (.xlsx), formulas, formatting, charts, tables and validations, and prepare print previews.
+description: Create, analyze and edit Excel workbooks (.xlsx), formulas, formatting, charts, tables and validations.
 ---
 
 # Excel
@@ -11,11 +11,11 @@ description: Create, analyze and edit Excel workbooks (.xlsx), formulas, formatt
 
 Use the existing `run_command` tool on the execution Node to inspect available interpreters and required libraries before running a script saved in the current worktree. Sailry does not bundle Python or document libraries. Reuse a suitable project environment; install missing task dependencies only when needed, in a project-local virtual environment and under the session's command permissions. Do not install globally or change the application's files. If an interpreter, network access or permission is unavailable, report what is missing instead of claiming the task succeeded. Loading this skill does not itself install anything. Quote executable and file paths, and inspect library APIs with `help()` or `inspect` when needed.
 
-Native `read_office` and `export_pdf` provide inspection and PDF conversion. Author and edit with the script libraries. Scripts use the existing command tool's permissions and working directory. If command execution is disabled or denied, report that constraint without bypassing it.
+Native `read_office` provides structured inspection for DOCX, XLSX, PPTX and PDF. Author and edit with the script libraries. Scripts use the existing command tool's permissions and working directory. If command execution is disabled or denied, report that constraint without bypassing it.
 
 For existing files, inspect the original and preserve unrelated content. For focused script edits, record the source hash, load the existing file, save to a sibling temporary file, reopen and validate it, recheck the source hash immediately before replacement, then use `os.replace`. Preserve the original and report a conflict if its hash changed. Do not rebuild an existing file from extracted plain text. A library may drop unsupported package parts: inspect those parts and use a focused ZIP/XML patch when necessary. Keep relationships, namespaces and content types consistent.
 
-Before any save, create the destination directory with `Path(destination).parent.mkdir(parents=True, exist_ok=True)`. This applies to documents, images, exports, and temporary output files. Verify saved content and the requested changes. Use `export_pdf` for Office print previews, or the PDF libraries for PDF inspection/rendering. Conversion warnings are real limitations; successful export alone does not prove visual fidelity. Use the available image viewing tool to inspect representative rendered pages when layout matters. Keep editable source files. Return deliverables as ordinary standalone Markdown links, for example `[Report](output/report.docx)`. Sailry provides cards and side-panel previews; do not fabricate output paths or JSON cards.
+Before any save, create the destination directory with `Path(destination).parent.mkdir(parents=True, exist_ok=True)`. This applies to documents, images and temporary output files. Verify saved content and the requested changes. Sailry previews Office files directly in the side panel; this does not establish print-layout fidelity. When the task requires rendered layout checks, use an available renderer and inspect representative pages with the image viewing tool. Keep editable source files. Return deliverables as ordinary standalone Markdown links, for example `[Budget](output/budget.xlsx)`. Sailry provides cards and side-panel previews; do not fabricate output paths or JSON cards.
 
 ## Spreadsheet authoring
 
@@ -50,11 +50,11 @@ book.save('budget.xlsx')
 assert load_workbook('budget.xlsx')['Budget']['B4'].value == '=SUM(B2:B3)'
 ```
 
-Inspect original formulas, ranges, styles and chart relationships before editing. `keep_vba=True` can preserve VBA parts in suitable files; it does not execute macros or guarantee every unsupported Excel feature survives. Check the requested values and formulas, totals, chart data and unchanged sheets after saving. Print/PDF preview is paginated and may differ from the spreadsheet's interactive grid.
+Inspect original formulas, ranges, styles and chart relationships before editing. `keep_vba=True` can preserve VBA parts in suitable files; it does not execute macros or guarantee every unsupported Excel feature survives. Check the requested values and formulas, totals, chart data and unchanged sheets after saving. The side-panel grid does not verify recalculation or print pagination.
 
 ## Package resources
 
 - `templates/create.py` is an editable starter script, not a restricted authoring API. Read it with `read_skill_resource`, copy it into the worktree, then adapt its full library calls to the user's document. Run it with the selected project interpreter and an output path. It creates missing parent directories and refuses to replace an existing file.
 - `scripts/inspect_file.py` prints the saved file's content for verification. Run `<python> <skill-directory>/scripts/inspect_file.py <file>` using the absolute directory returned by `load_skill`. Quote paths and keep package resources unchanged. Structural inspection alone does not prove layout fidelity.
 
-The plugin contains instructions, scripts and templates, not an interpreter. `read_office` and `export_pdf` are supplied by Sailry's Files capability; `run_command` uses Commands on the execution Node. If a required capability is unavailable, explain what must be enabled. Installing or enabling this skill does not grant execution permission.
+The plugin contains instructions, scripts and templates, not an interpreter. `read_office` is supplied by Sailry's Files capability; `run_command` uses Commands on the execution Node. If a required capability is unavailable, explain what must be enabled. Installing or enabling this skill does not grant execution permission.

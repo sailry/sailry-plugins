@@ -10,8 +10,8 @@ plugins/builtin/files/office/messages.rs
 crates/protocol/src/office.rs
 locales/en.yml and locales/zh-CN.yml
 
-The Office Read and Export JSON schemas were extracted using the pinned
-schemars implementation and the compiled Sailry protocol types. Tool icons
+The Office Read JSON schema was extracted using the pinned schemars
+implementation and the compiled Sailry protocol types. Tool icons
 preserve GPUI Kit b79f4ce vector geometry from:
 crates/assets/assets/icons/book-open.svg
 crates/assets/assets/icons/file-text.svg

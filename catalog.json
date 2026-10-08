@@ -1632,7 +1632,7 @@
                 "name": "spawn_agent",
                 "presentation": "details",
                 "grouping": "standalone",
-                "description": "Delegate a task and await its result. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the admitted roster when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID and normally omit role. It retains its own history, role, model, worktree and frozen configuration. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions.",
+                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the admitted roster when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID and normally omit role. It retains its own history, role, model, worktree and frozen configuration. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions.",
                 "contexts": [
                   "workspace"
                 ],
@@ -1657,6 +1657,9 @@
                       },
                       "task": {
                         "type": "string"
+                      },
+                      "background": {
+                        "type": "boolean"
                       },
                       "title": {
                         "type": "string",
@@ -1689,6 +1692,53 @@
                     },
                     "content": {
                       "path": "/task"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "guide_agent",
+                "operation": "agents.guide",
+                "presentation": "details",
+                "grouping": "standalone",
+                "contexts": [
+                  "workspace"
+                ],
+                "description": "Give new directions to a running child owned by this conversation using its returned session ID. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. Wait for the child result before answering.",
+                "display": {
+                  "label": "Guide subagent",
+                  "locales": {
+                    "zh-CN": "引导子代理"
+                  },
+                  "icon": "reicon:users/users2",
+                  "input": {
+                    "summary": {
+                      "path": "/session"
+                    },
+                    "content": {
+                      "path": "/message"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "wait_agent",
+                "operation": "agents.wait",
+                "presentation": "details",
+                "grouping": "standalone",
+                "contexts": [
+                  "workspace"
+                ],
+                "description": "Wait for a child owned by this conversation using its returned session ID and collect its durable final status and answer. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; wait again after guiding the child. This does not create or replay work.",
+                "display": {
+                  "label": "Wait for subagent",
+                  "locales": {
+                    "zh-CN": "等待子代理"
+                  },
+                  "icon": "reicon:users/users2",
+                  "input": {
+                    "summary": {
+                      "path": "/session"
                     }
                   }
                 }
@@ -3301,7 +3351,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3883,134 +3933,6 @@
                   "plugin",
                   "workspace"
                 ]
-              },
-              {
-                "name": "export_pdf",
-                "presentation": "summary",
-                "description": "Convert DOCX, XLSX or PPTX to PDF using the native renderer. Retains the editable source; returns actual conversion warnings with the saved PDF. Missing destination directories are created automatically. Destination replacement requires its revision.",
-                "handler": {
-                  "name": "pdf",
-                  "operation": "office.export",
-                  "parameters": {
-                    "$schema": "https://json-schema.org/draft/2020-12/schema",
-                    "title": "Export",
-                    "type": "object",
-                    "properties": {
-                      "source": {
-                        "type": "string"
-                      },
-                      "path": {
-                        "type": "string"
-                      },
-                      "expected_revision": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "source",
-                      "path"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "display": {
-                  "label": "Export PDF",
-                  "locales": {
-                    "zh-CN": "导出 PDF"
-                  },
-                  "icon": {
-                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
-                  },
-                  "input": {
-                    "summary": {
-                      "path": "/path",
-                      "code": true
-                    },
-                    "target": {
-                      "path": "/path"
-                    }
-                  },
-                  "output": {
-                    "preview": {
-                      "parts": [
-                        {
-                          "value": {
-                            "source": "result",
-                            "path": "/data/file/path"
-                          }
-                        },
-                        {
-                          "rows": {
-                            "value": {
-                              "source": "result",
-                              "path": "/data/warnings"
-                            },
-                            "text": {
-                              "parts": [
-                                {
-                                  "value": {
-                                    "source": "item",
-                                    "path": ""
-                                  }
-                                }
-                              ]
-                            },
-                            "separator": "\n"
-                          }
-                        }
-                      ],
-                      "separator": "\n"
-                    }
-                  },
-                  "approval": [
-                    {
-                      "message": {
-                        "label": "Create %{path}",
-                        "locales": {
-                          "zh-CN": "创建 %{path}"
-                        }
-                      },
-                      "values": {
-                        "path": {
-                          "source": "arguments",
-                          "path": "/path"
-                        }
-                      },
-                      "when": {
-                        "any": [
-                          {
-                            "value": {
-                              "source": "arguments",
-                              "path": "/expected_revision"
-                            },
-                            "equals": null
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "message": {
-                        "label": "Replace %{path}",
-                        "locales": {
-                          "zh-CN": "覆盖 %{path}"
-                        }
-                      },
-                      "values": {
-                        "path": {
-                          "source": "arguments",
-                          "path": "/path"
-                        }
-                      }
-                    }
-                  ]
-                },
-                "contexts": [
-                  "plugin",
-                  "workspace"
-                ]
               }
             ],
             "host": {
@@ -4024,8 +3946,7 @@
                 "read",
                 "write",
                 "search",
-                "office",
-                "pdf"
+                "office"
               ]
             },
             "desktop": {
@@ -5458,7 +5379,7 @@
               {
                 "name": "inspect_image",
                 "presentation": "details",
-                "description": "Ask the session's configured vision model about one image. Supply either a worktree-relative path or an attachment ID from this conversation, and a question in prompt.",
+                "description": "Ask the admitted session model about one image; an explicit fallback is used only when unsupported. Supply a worktree-relative path or an attachment ID from this conversation and a question in prompt. Do not replay an uncertain request.",
                 "handler": {
                   "name": "inspect",
                   "operation": "media.inspect",
@@ -5495,7 +5416,7 @@
               {
                 "name": "generate_image",
                 "presentation": "details",
-                "description": "Generate an image using this session's configured companion model. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .png. Do not replay an uncertain generation.",
+                "description": "Generate a real PNG with the admitted session model; an explicit fallback is used only when unsupported. Describe the subject, purpose, style, composition and constraints in prompt. Save under assets/generated without replacing existing files. file_name is an optional plain .png name. Do not substitute SVG or replay an uncertain generation.",
                 "handler": {
                   "name": "image",
                   "operation": "media.image",
@@ -5529,7 +5450,7 @@
               {
                 "name": "generate_video",
                 "presentation": "details",
-                "description": "Generate a video using this session's configured companion model. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .mp4. Stopping local work does not cancel a job already accepted by the provider. Do not replay an uncertain generation.",
+                "description": "Generate a video with the admitted session model; an explicit fallback is used only when unsupported. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .mp4. Stopping local work does not cancel a job already accepted by the provider. Do not replay an uncertain generation.",
                 "handler": {
                   "name": "video",
                   "operation": "media.video",
@@ -6132,7 +6053,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "office",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Create and edit Word, Excel, PowerPoint and PDF files using the execution Node's tools",
         "extensions": {
           "dev.sailry.platform": {

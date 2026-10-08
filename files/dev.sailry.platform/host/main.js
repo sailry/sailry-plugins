@@ -50,9 +50,3 @@ export function office(args) {
   if (typeof path !== 'string' || !Number.isSafeInteger(offset) || offset < 0) return invalid();
   return {path,offset};
 }
-
-export function pdf(args) {
-  if (!object(args,['source','path','expected_revision']) || typeof args.source !== 'string' ||
-      typeof args.path !== 'string' || !revision(args.expected_revision)) return invalid();
-  return {source:args.source,path:args.path,expected_revision:args.expected_revision ?? null};
-}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -583,134 +583,6 @@
             "plugin",
             "workspace"
           ]
-        },
-        {
-          "name": "export_pdf",
-          "presentation": "summary",
-          "description": "Convert DOCX, XLSX or PPTX to PDF using the native renderer. Retains the editable source; returns actual conversion warnings with the saved PDF. Missing destination directories are created automatically. Destination replacement requires its revision.",
-          "handler": {
-            "name": "pdf",
-            "operation": "office.export",
-            "parameters": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "title": "Export",
-              "type": "object",
-              "properties": {
-                "source": {
-                  "type": "string"
-                },
-                "path": {
-                  "type": "string"
-                },
-                "expected_revision": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              },
-              "required": [
-                "source",
-                "path"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "display": {
-            "label": "Export PDF",
-            "locales": {
-              "zh-CN": "导出 PDF"
-            },
-            "icon": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
-            },
-            "input": {
-              "summary": {
-                "path": "/path",
-                "code": true
-              },
-              "target": {
-                "path": "/path"
-              }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/file/path"
-                    }
-                  },
-                  {
-                    "rows": {
-                      "value": {
-                        "source": "result",
-                        "path": "/data/warnings"
-                      },
-                      "text": {
-                        "parts": [
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": ""
-                            }
-                          }
-                        ]
-                      },
-                      "separator": "\n"
-                    }
-                  }
-                ],
-                "separator": "\n"
-              }
-            },
-            "approval": [
-              {
-                "message": {
-                  "label": "Create %{path}",
-                  "locales": {
-                    "zh-CN": "创建 %{path}"
-                  }
-                },
-                "values": {
-                  "path": {
-                    "source": "arguments",
-                    "path": "/path"
-                  }
-                },
-                "when": {
-                  "any": [
-                    {
-                      "value": {
-                        "source": "arguments",
-                        "path": "/expected_revision"
-                      },
-                      "equals": null
-                    }
-                  ]
-                }
-              },
-              {
-                "message": {
-                  "label": "Replace %{path}",
-                  "locales": {
-                    "zh-CN": "覆盖 %{path}"
-                  }
-                },
-                "values": {
-                  "path": {
-                    "source": "arguments",
-                    "path": "/path"
-                  }
-                }
-              }
-            ]
-          },
-          "contexts": [
-            "plugin",
-            "workspace"
-          ]
         }
       ],
       "host": {
@@ -724,8 +596,7 @@
           "read",
           "write",
           "search",
-          "office",
-          "pdf"
+          "office"
         ]
       },
       "desktop": {
