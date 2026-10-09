@@ -32,10 +32,10 @@ Ask only for what you cannot infer: the plugin's purpose, and where the package 
 5. Run the preflight check and fix every error it reports:
 
    ```sh
-   python3 "<skill-directory>/scripts/check_package.py" "<package-folder>"
+   "<python>" "<skill-directory>/scripts/check_package.py" "<package-folder>"
    ```
 
-   Use the absolute directory returned by `load_skill` as `<skill-directory>`. The check needs only Python 3.9 or newer. If Python is unavailable or command execution is denied, review the package against the references instead, and say that the check did not run.
+   Use the absolute `python` and `directory` returned by `load_skill`. If managed Python or command permission is unavailable, report that the check did not run.
 6. Tell the user how to install or update it, using the steps below.
 
 When changing an existing plugin, read its `plugin.json` and the files it loads first, and preserve unrelated declarations. Local folder updates are detected from the package contents; raise `version` before publishing, because marketplace updates compare versions.
@@ -51,6 +51,12 @@ Installation is the user's decision, because desktop plugin code runs with the t
 The folder is chosen on the computer running Sailry Desktop. When the conversation runs on a remote Sailry Host, the package files are on that Host: offer a ZIP the user can download, or ask them to copy the folder to their computer first.
 
 Installed packages are immutable snapshots. Turns that are already running keep the version they started with; new turns use the update.
+
+## Python dependencies
+
+Put a standard `requirements.txt` at the plugin root only when the plugin needs Python libraries. Pin every direct and transitive dependency and include SHA-256 hashes for its wheels. Sailry creates a shared environment keyed by the bundled runtime and exact file contents; explicit installation, enabling, or first skill/MCP use prepares it with hash checks and wheels only. Do not add custom runtime fields, setup scripts, source builds, or automatic parsing of third-party skills.
+
+Write the direct dependencies to an input file. Use the Commands Python skill to create a session-local environment, then install `pip-tools` there under normal command and network permissions. Run that environment's Python on `scripts/lock_requirements.py <input> <package-folder>` from this skill. It generates the complete lock with `pip-compile --generate-hashes`; review pins and platform wheels before publishing. Regenerate the lock when dependencies change and validate installation. Do not hand-assemble hashes, omit transitive dependencies, or install into Sailry's application/shared environment.
 
 ## Rules
 

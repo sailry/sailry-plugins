@@ -225,3 +225,25 @@ test('populated explorers retain native tree insets and header control states', 
   view.search = {};
   assert.equal(all(render(view)).find(node => node?.props?.id === 'file-search-toggle').props.selected,true);
 });
+
+
+test('notebooks use the existing document and source tabs', async () => {
+  const documentSource = (await readFile(new URL('../dev.sailry.platform/desktop/document-view.js',import.meta.url),'utf8'))
+    .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+  const toolbar = vm.runInNewContext(`${documentSource}\ntoolbar`,{
+    div:() => element('div'),IconButton:{new:(id,props) => element('button',{id,...props})},
+    TabBar:function(id) { return element('tabs',{id}); },Tab:function() { return element('tab'); },
+  });
+  const changes = [],cx = {};
+  const view = {text:{content_document:'Document',content_source:'Source'},
+    documents:{action:async (kind,context) => changes.push([kind,context])},
+    run:(action,context) => { assert.equal(context,cx); return action(context); }};
+  const document = {notebook:true,markdown:false,mode:'document',can_edit:false,can_copy:true,can_cut_paste:false,can_save:false};
+  const nodes = all(toolbar(view,document,{}));
+  const tabs = nodes.find(node => node?.kind === 'tabs');
+  assert.equal(tabs.props.selected_index,0);
+  assert.deepEqual(tabs.items.map(tab => tab.props.label),['Document','Source']);
+  assert.equal(nodes.find(node => node?.props?.id === 'files_cut').props.disabled,true);
+  await tabs.props.on_change(1,cx);
+  assert.deepEqual(changes,[['source',cx]]);
+});

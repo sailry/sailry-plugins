@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -1152,7 +1152,7 @@
         {
           "name": "read_office",
           "presentation": "summary",
-          "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes. Returns the file revision for edits. Follow next offsets to read every section, including continuations of long parts.",
+          "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes. Images and scanned PDF pages use OCR when an OCR model is installed on the Node. Returns the file revision for edits. Follow next offsets to read every section, including continuations of long parts.",
           "handler": {
             "name": "office",
             "operation": "office.read",
@@ -1222,6 +1222,170 @@
             "plugin",
             "workspace"
           ]
+        },
+        {
+          "name": "read_notebook",
+          "presentation": "summary",
+          "description": "Read numbered nbformat 4 cells without executing a kernel. Use next_offset to continue. Returned cell JSON retains source, metadata and saved outputs; truncated cells omit oversized content and include a bounded source preview.",
+          "handler": {
+            "name": "notebook_read",
+            "operation": "notebook.read",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 20
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "display": {
+            "label": "Read notebook",
+            "locales": {
+              "zh-CN": "读取 Notebook"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
+            }
+          }
+        },
+        {
+          "name": "edit_notebook",
+          "presentation": "details",
+          "description": "Apply a revision-checked atomic batch to nbformat 4 cells. Replace changes only source and retains the cell ID, metadata and saved outputs. Insert creates a cell with a new ID; delete removes a cell. Zero-based indices refer to the original notebook; multiple inserts at the same index preserve batch order. Read the current revision first. No kernel is executed.",
+          "handler": {
+            "name": "notebook_edit",
+            "operation": "notebook.edit",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "expected_revision": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{64}$"
+                },
+                "edits": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "replace"
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "source": {
+                            "type": "string",
+                            "maxLength": 524288
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "index",
+                          "source"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "insert"
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "cell_type": {
+                            "type": "string",
+                            "enum": [
+                              "code",
+                              "markdown",
+                              "raw"
+                            ]
+                          },
+                          "source": {
+                            "type": "string",
+                            "maxLength": 524288
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "index",
+                          "cell_type",
+                          "source"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "delete"
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "index"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "path",
+                "expected_revision",
+                "edits"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "display": {
+            "label": "Edit notebook",
+            "locales": {
+              "zh-CN": "编辑 Notebook"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
+            }
+          }
         }
       ],
       "host": {
@@ -1240,7 +1404,9 @@
           "mkdir",
           "find",
           "search",
-          "office"
+          "office",
+          "notebook_read",
+          "notebook_edit"
         ]
       },
       "desktop": {
@@ -1289,7 +1455,8 @@
           "application/pdf",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/x-ipynb+json"
         ]
       },
       "instructions": "Use read_file to capture the current revision before editing, moving or deleting a file. For several changes in one file, send one edit_file edits array; every match is located in the original content and the batch is saved once. Use replace_all only when every occurrence should change. Keep exact whitespace and line endings. A conflict requires reading the current file before retrying. Use create_directory and move_file for workspace file organization; delete_file moves regular files to Trash. These tools never replace an existing move destination or delete a directory. For file discovery and content search, use find_files and search_files rather than running shell commands. Scope path first, honor next_offset, and treat partial scans as incomplete: narrow path instead of claiming offset can advance an interrupted scan."

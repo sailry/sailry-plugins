@@ -9,7 +9,7 @@ description: Create, analyze and edit Excel workbooks (.xlsx), formulas, formatt
 
 ## Execution
 
-Use the existing `run_command` tool on the execution Node to inspect available interpreters and required libraries before running a script saved in the current worktree. Sailry does not bundle Python or document libraries. Reuse a suitable project environment; install missing task dependencies only when needed, in a project-local virtual environment and under the session's command permissions. Do not install globally or change the application's files. If an interpreter, network access or permission is unavailable, report what is missing instead of claiming the task succeeded. Loading this skill does not itself install anything. Quote executable and file paths, and inspect library APIs with `help()` or `inspect` when needed.
+Sailry bundles Python 3.12.13. `load_skill` prepares this plugin's hash-locked, wheel-only environment and returns its absolute `python` and `directory`. Run scripts with the quoted returned interpreter and absolute resource paths. The shared environment and plugin resources are read-only during commands; save task scripts and temporary files in `SAILRY_SESSION_DIR`, and write requested deliverables to the worktree. Use the existing command tool and its normal permissions; skill loading grants no command permission. If preparation or execution fails, report the failure and keep the draft. Do not install globally or modify Sailry's application/shared environments. For extra task dependencies, use the Commands Python skill's session-local environment. Inspect installed library APIs with `help()` or `inspect` when needed.
 
 Native `read_office` provides structured inspection for DOCX, XLSX, PPTX and PDF. Author and edit with the script libraries. Scripts use the existing command tool's permissions and working directory. If command execution is disabled or denied, report that constraint without bypassing it.
 
@@ -19,7 +19,7 @@ Before any save, create the destination directory with `Path(destination).parent
 
 ## Spreadsheet authoring
 
-Use `openpyxl` for existing workbooks and complete workbook styling/editing APIs; use `xlsxwriter` for new workbooks with charts and explicit formula result caches. Prepare only the libraries needed for the task in the selected project environment. Use typed numeric/date values, formulas for derived data, named sheets, formats, widths, freeze panes, filters, tables, charts, validations, conditional formatting and print settings as requested.
+Use the prepared `openpyxl` library for existing workbooks and complete workbook styling/editing APIs; use `xlsxwriter` for new workbooks with charts and explicit formula result caches. Use typed numeric/date values, formulas for derived data, named sheets, formats, widths, freeze panes, filters, tables, charts, validations, conditional formatting and print settings as requested.
 
 `openpyxl` writes formulas but does not calculate them. `data_only=True` reads previous cached values; it is not recalculation. Keep formulas when loading files for editing (`data_only=False`). For new XlsxWriter workbooks, calculate and verify expected formula results and pass the cache value to `write_formula`. Report unverified or unsupported calculations honestly; never replace formulas with static values just to hide an error.
 

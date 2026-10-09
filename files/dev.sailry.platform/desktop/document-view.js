@@ -41,7 +41,7 @@ function toolbar(view, document, colors) {
     .child(div().id('file-edit-actions').h_flex().flex_1().min_w_0().gap_1().overflow_x_scroll()
       .children(actions.map(([id,icon,disabled]) => button(id,icon,disabled)))
       .child(separator(colors)).child(button('files_find','search',false)))
-    .children(document.markdown ? [new TabBar('file-editor-mode').flex_shrink(0)
+    .children((document.markdown || document.notebook) ? [new TabBar('file-editor-mode').flex_shrink(0)
       .variant('segmented').size('small').selected_index(document.mode === 'source' ? 1 : 0)
       .child(new Tab().label(text.content_document))
       .child(new Tab().label(text.content_source))

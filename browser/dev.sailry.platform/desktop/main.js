@@ -41,6 +41,7 @@ export default class Browser extends View {
         if (id === 'browser-new-tab') this.perform('add', {}, cx);
         else if (id === 'browser-go') this.navigate(cx);
         else if (id === 'browser-settings') openSettings();
+        else if (id === 'browser-annotate') this.perform('annotate', {}, cx);
         else if (id === 'browser_back') this.perform('back', {}, cx);
         else if (id === 'browser_forward') this.perform('forward', {}, cx);
         else if (id === 'browser_reload') this.perform(this.selected()?.loading ? 'stop' : 'reload', {}, cx);

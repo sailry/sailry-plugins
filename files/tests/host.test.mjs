@@ -7,7 +7,7 @@ const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export /gm,'');
-const host = vm.runInNewContext(`${source}\n({list,read,write,edit,remove,move,mkdir,find,search,office})`);
+const host = vm.runInNewContext(`${source}\n({list,read,write,edit,remove,move,mkdir,find,search,office,notebook_read,notebook_edit})`);
 const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
 const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -25,6 +25,8 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     ['find_files','find','files.find','summary'],
     ['search_files','search','files.search','summary'],
     ['read_office','office','office.read','summary'],
+    ['read_notebook','notebook_read','notebook.read','summary'],
+    ['edit_notebook','notebook_edit','notebook.edit','details'],
   ];
   assert.equal(manifest.name,'files');
   assert.deepEqual(extension.tools.map(tool => tool.name),expected.map(([name]) => name));
@@ -280,4 +282,21 @@ test('scoped search modes and discovery pages preserve arguments', () => {
     {globs:['*'],path:null}, {globs:['*'],limit:0}, {globs:['*'],limit:501},
     {globs:['*'],offset:-1}, {globs:['*'],offset:0.5},
   ]) assert.equal(host.find(args).error.code,'invalid_request');
+});
+
+
+test('notebook handlers preserve original indices and exact cell sources', () => {
+  assert.deepEqual(plain(host.notebook_read({path:'report.ipynb'})),{path:'report.ipynb',offset:0,limit:20});
+  const edits = [{kind:'replace',index:1,source:'print("資料")\n'},
+    {kind:'insert',index:1,cell_type:'markdown',source:'# Added'}, {kind:'delete',index:2}];
+  const input = Object.freeze({path:'report.ipynb',expected_revision:'a'.repeat(64),edits});
+  assert.deepEqual(plain(host.notebook_edit(input)),input);
+  assert.equal(host.notebook_edit(input).edits,edits);
+  for (const change of [{kind:'execute',index:0},{kind:'delete',index:-1},
+    {kind:'insert',index:0,cell_type:'javascript',source:''},{kind:'replace',index:0,source:'bad\0'}]) {
+    assert.equal(host.notebook_edit({...input,edits:[change]}).isError,true);
+  }
+  assert.equal(host.notebook_read({path:'report.ipynb',limit:101}).isError,true);
+  assert.equal(tool('edit_notebook').handler.parameters.properties.edits.maxItems,100);
+  assert.match(tool('edit_notebook').description,/retains the cell ID, metadata and saved outputs/);
 });

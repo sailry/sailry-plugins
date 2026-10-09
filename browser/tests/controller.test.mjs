@@ -59,6 +59,28 @@ test('page updates preserve drafts; selecting another tab replaces them', async 
   assert.equal(view.state.cursor,'10');
 });
 
+test('element selection uses the captured browser without navigating', async () => {
+  let address = 'unfinished address';
+  const requests = [];
+  const snapshot = {cursor:'1',selected:7,tabs:[{id:7,url:'https://example.com/page',loaded:true,loading:false}],history:[false,false],supported:true,annotating:false};
+  const {view,cx,complete} = await controller('main',{
+    readBrowser:() => snapshot,
+    createText:() => 'address',readText:() => address,setText:(_id,value) => { address = value; },
+    isTextFocused:() => true,focusText() {},
+    browserAction:async action => { requests.push(action); return {...snapshot,cursor:'2',annotating:true}; }
+  });
+  await complete(() => view.perform('annotate',{},cx));
+  assert.deepEqual(requests.map(value => JSON.parse(JSON.stringify(value))),[{kind:'annotate'}]);
+  assert.equal(address,'unfinished address');
+  assert.equal(view.state.annotating,true);
+  assert.equal(view.selected().id,7);
+  for (const locale of ['en','zh-CN','zh-TW','ja','ko','de','fr','es','pt-BR','ru']) {
+    assert.ok(messages(locale).browser_annotate);
+    assert.ok(messages(locale).browser_cancel_selection);
+    assert.ok(messages(locale).browser_annotation_unavailable);
+  }
+});
+
 test('an uncertain browser action is reported once and never replayed', async () => {
   let calls = 0, notices = [];
   const {view,cx,complete} = await controller('main',{

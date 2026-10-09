@@ -7,6 +7,9 @@ const en = {
   "browser_forward": "Forward",
   "browser_reload": "Reload",
   "browser_go": "Open",
+  "browser_annotate": "Select element",
+  "browser_cancel_selection": "Cancel selection",
+  "browser_annotation_unavailable": "Could not select or capture the element",
   "browser_invalid_address": "Invalid address",
   "browser_unavailable": "Browser could not start",
   "browser_load_failed": "Page failed to load",
@@ -40,6 +43,9 @@ const zh = {
   "browser_forward": "前进",
   "browser_reload": "刷新",
   "browser_go": "打开",
+  "browser_annotate": "选择元素",
+  "browser_cancel_selection": "取消选择",
+  "browser_annotation_unavailable": "无法选择或截取元素",
   "browser_invalid_address": "网址无效",
   "browser_unavailable": "浏览器无法启动",
   "browser_load_failed": "网页加载失败",
@@ -65,7 +71,21 @@ const zh = {
   "browser_import_unavailable": "当前系统暂不支持 Chrome 导入",
   "browser_store_unavailable": "保留登录状态和导入需要 macOS 14 或更新版本"
 };
-export function messages(locale) { return locale === 'zh-CN' ? zh : en; }
+const annotation = {
+  'zh-TW':['選擇元素','取消選擇','無法選擇或擷取元素'],
+  ja:['要素を選択','選択をキャンセル','要素を選択または撮影できませんでした'],
+  ko:['요소 선택','선택 취소','요소를 선택하거나 캡처할 수 없습니다'],
+  de:['Element auswählen','Auswahl abbrechen','Das Element konnte nicht ausgewählt oder erfasst werden'],
+  fr:['Sélectionner un élément','Annuler la sélection','Impossible de sélectionner ou capturer l’élément'],
+  es:['Seleccionar elemento','Cancelar selección','No se pudo seleccionar o capturar el elemento'],
+  'pt-BR':['Selecionar elemento','Cancelar seleção','Não foi possível selecionar ou capturar o elemento'],
+  ru:['Выбрать элемент','Отменить выбор','Не удалось выбрать или снять элемент']
+};
+export function messages(locale) {
+  if (locale === 'zh-CN') return zh;
+  const value = annotation[locale];
+  return value ? {...en,browser_annotate:value[0],browser_cancel_selection:value[1],browser_annotation_unavailable:value[2]} : en;
+}
 export function errorKey(error, fallback = 'browser_unavailable') {
   const message = String(error?.message ?? error ?? '');
   return Object.keys(en).find(key => message === key || message.endsWith(': ' + key)) ?? fallback;

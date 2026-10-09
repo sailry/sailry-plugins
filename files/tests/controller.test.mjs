@@ -149,7 +149,13 @@ test('workspace metadata validates packaged imports and preview limits', async (
   const desktop = manifest.extensions['dev.sailry.platform'].desktop;
   assert.deepEqual(desktop.navigation_options,{pinned:true,order:400,target:'worktree',details:true});
   assert.deepEqual(desktop.renderers,[{resource:'documents',shortcut:'secondary-p'}]);
-  assert.equal(desktop.previews.length,5);
+  assert.deepEqual(desktop.previews,[
+    'text/html','application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/x-ipynb+json',
+  ]);
   let bytes = 0;
   for (const path of desktop.resources) {
     const content = await readFile(new URL(path,root),'utf8'); bytes += Buffer.byteLength(content);

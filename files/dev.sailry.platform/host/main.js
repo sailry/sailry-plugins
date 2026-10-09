@@ -105,3 +105,25 @@ export function office(args) {
   if (typeof path !== 'string' || !Number.isSafeInteger(offset) || offset < 0) return invalid();
   return {path,offset};
 }
+
+
+export function notebook_read(args) {
+  if (!object(args,['path','offset','limit']) || typeof args.path !== 'string') return invalid();
+  const {offset = 0,limit = 20} = args;
+  if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100) return invalid();
+  return {path:args.path,offset,limit};
+}
+
+export function notebook_edit(args) {
+  if (!object(args,['path','expected_revision','edits']) || typeof args.path !== 'string' ||
+      !current(args.expected_revision) || !Array.isArray(args.edits) || args.edits.length < 1 || args.edits.length > 100) return invalid();
+  for (const edit of args.edits) {
+    const keys = edit?.kind === 'insert' ? ['kind','index','cell_type','source'] :
+      edit?.kind === 'replace' ? ['kind','index','source'] : ['kind','index'];
+    if (!object(edit,keys) || !Number.isSafeInteger(edit.index) || edit.index < 0 ||
+        !['replace','insert','delete'].includes(edit.kind) ||
+        (edit.kind !== 'delete' && (typeof edit.source !== 'string' || edit.source.includes('\0'))) ||
+        (edit.kind === 'insert' && !['code','markdown','raw'].includes(edit.cell_type))) return invalid();
+  }
+  return {path:args.path,expected_revision:args.expected_revision,edits:args.edits};
+}

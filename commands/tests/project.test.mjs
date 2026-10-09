@@ -36,7 +36,7 @@ async function fixture() {
   return {view,cx,settle,host,prepared,completed,forgotten,states};
 }
 
-test('project controls preserve explicit workspace access across uncertain receipts',async()=>{
+test('controls preserve explicit workspace access across uncertain receipts',async()=>{
   const setup=await fixture();
   setup.view.publish();
   const workspace=setup.states.at(-1).find(state=>state.id==='terminal-cli').choices

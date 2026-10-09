@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "minLength": 1,
+      "maxLength": 4096,
+      "x-sailry-secret": {
+        "origin": "https://api.dingtalk.com",
+        "header": "x-acs-dingtalk-access-token"
+      }
+    },
+    "operator": {
+      "type": "string",
+      "title": "Operator",
+      "maxLength": 1024,
+      "default": ""
+    }
+  },
+  "required": [],
+  "x-sailry-locales": {
+    "en": {
+      "token": "Token",
+      "operator": "Operator ID"
+    },
+    "zh-CN": {
+      "token": "令牌",
+      "operator": "操作者 ID"
+    },
+    "zh-TW": {
+      "token": "權杖",
+      "operator": "操作者 ID"
+    },
+    "de": {
+      "token": "Token",
+      "operator": "Operator-ID"
+    },
+    "es": {
+      "token": "Token",
+      "operator": "ID del operador"
+    },
+    "fr": {
+      "token": "Jeton",
+      "operator": "ID de l’opérateur"
+    },
+    "ja": {
+      "token": "トークン",
+      "operator": "操作ユーザー ID"
+    },
+    "ko": {
+      "token": "토큰",
+      "operator": "운영자 ID"
+    },
+    "pt-BR": {
+      "token": "Token",
+      "operator": "ID do operador"
+    },
+    "ru": {
+      "token": "Токен",
+      "operator": "ID оператора"
+    }
+  }
+}

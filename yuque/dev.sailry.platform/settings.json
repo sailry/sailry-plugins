@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "minLength": 1,
+      "maxLength": 4096,
+      "x-sailry-secret": {
+        "origin": "https://www.yuque.com",
+        "header": "X-Auth-Token"
+      }
+    }
+  },
+  "required": [],
+  "x-sailry-locales": {
+    "en": {
+      "token": "Token"
+    },
+    "zh-CN": {
+      "token": "令牌"
+    },
+    "zh-TW": {
+      "token": "權杖"
+    },
+    "de": {
+      "token": "Token"
+    },
+    "es": {
+      "token": "Token"
+    },
+    "fr": {
+      "token": "Jeton"
+    },
+    "ja": {
+      "token": "トークン"
+    },
+    "ko": {
+      "token": "토큰"
+    },
+    "pt-BR": {
+      "token": "Token"
+    },
+    "ru": {
+      "token": "Токен"
+    }
+  }
+}

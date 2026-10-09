@@ -34,6 +34,7 @@ export function render(view) {
       .child(button('browser_reload',tab.loading ? 'close' : 'rotate-cw',text.browser_reload,!tab.url))
       .child(div().id('browser-address').flex_1().min_w_0().child(TextField.new(view.address)))
       .child(button('browser-go','arrow-right',text.browser_go))
+      .child(button('browser-annotate',state.annotating ? 'close' : 'mouse-pointer-2',state.annotating ? text.browser_cancel_selection : text.browser_annotate,!state.supported || !tab.loaded || tab.loading))
       .child(button('browser-settings','settings',text.settings_browser)))
     .child(div().id('browser-content').relative().flex_1().min_h_0().min_w_0()
       .child(BrowserSurface.new('browser-surface'))

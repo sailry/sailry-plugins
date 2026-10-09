@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "gmail_token": {
+      "type": "string",
+      "title": "Gmail Token",
+      "minLength": 1,
+      "maxLength": 4096,
+      "x-sailry-secret": {
+        "origin": "https://gmail.googleapis.com",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      }
+    },
+    "workspace_token": {
+      "type": "string",
+      "title": "Workspace Token",
+      "minLength": 1,
+      "maxLength": 4096,
+      "x-sailry-secret": {
+        "origin": "https://www.googleapis.com",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      }
+    }
+  },
+  "required": [],
+  "x-sailry-locales": {
+    "en": {
+      "gmail_token": "Gmail token",
+      "workspace_token": "Calendar and Drive token"
+    },
+    "zh-CN": {
+      "gmail_token": "Gmail 令牌",
+      "workspace_token": "日历与云端硬盘令牌"
+    },
+    "zh-TW": {
+      "gmail_token": "Gmail 權杖",
+      "workspace_token": "日曆與雲端硬碟權杖"
+    },
+    "de": {
+      "gmail_token": "Gmail-Token",
+      "workspace_token": "Kalender- und Drive-Token"
+    },
+    "es": {
+      "gmail_token": "Token de Gmail",
+      "workspace_token": "Token de Calendar y Drive"
+    },
+    "fr": {
+      "gmail_token": "Jeton Gmail",
+      "workspace_token": "Jeton Agenda et Drive"
+    },
+    "ja": {
+      "gmail_token": "Gmail トークン",
+      "workspace_token": "カレンダーと Drive のトークン"
+    },
+    "ko": {
+      "gmail_token": "Gmail 토큰",
+      "workspace_token": "캘린더 및 Drive 토큰"
+    },
+    "pt-BR": {
+      "gmail_token": "Token do Gmail",
+      "workspace_token": "Token do Agenda e Drive"
+    },
+    "ru": {
+      "gmail_token": "Токен Gmail",
+      "workspace_token": "Токен Calendar и Drive"
+    }
+  }
+}

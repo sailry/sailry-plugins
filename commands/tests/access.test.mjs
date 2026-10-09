@@ -18,7 +18,7 @@ test('ordinary and CLI access choices remain explicit and bounded',()=>{
   assert.equal(menu.some(item=>item.id.endsWith(':unrestricted')),false);
 });
 
-test('access consequences are translated in every supported locale',()=>{
+test('consequences are translated in every supported locale',()=>{
   for(const locale of ['en','de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']) {
     const text=messages(locale);
     for(const key of ['access','workspace','full']) {

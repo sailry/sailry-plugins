@@ -9,7 +9,7 @@ description: Read, generate, render and edit PDF documents, merge/split/rotate p
 
 ## Execution
 
-Use the existing `run_command` tool on the execution Node to inspect available interpreters and required libraries before running a script saved in the current worktree. Sailry does not bundle Python or document libraries. Reuse a suitable project environment; install missing task dependencies only when needed, in a project-local virtual environment and under the session's command permissions. Do not install globally or change the application's files. If an interpreter, network access or permission is unavailable, report what is missing instead of claiming the task succeeded. Loading this skill does not itself install anything. Quote executable and file paths, and inspect library APIs with `help()` or `inspect` when needed.
+Sailry bundles Python 3.12.13. `load_skill` prepares this plugin's hash-locked, wheel-only environment and returns its absolute `python` and `directory`. Run scripts with the quoted returned interpreter and absolute resource paths. The shared environment and plugin resources are read-only during commands; save task scripts and temporary files in `SAILRY_SESSION_DIR`, and write requested deliverables to the worktree. Use the existing command tool and its normal permissions; skill loading grants no command permission. If preparation or execution fails, report the failure and keep the draft. Do not install globally or modify Sailry's application/shared environments. For extra task dependencies, use the Commands Python skill's session-local environment. Inspect installed library APIs with `help()` or `inspect` when needed.
 
 Native `read_office` provides structured inspection for DOCX, XLSX, PPTX and PDF. Author and edit with the script libraries. Scripts use the existing command tool's permissions and working directory. If command execution is disabled or denied, report that constraint without bypassing it.
 
@@ -19,7 +19,7 @@ Before any save, create the destination directory with `Path(destination).parent
 
 ## PDF authoring
 
-Use `reportlab` to generate PDFs with precise layout and fonts, `pypdf` for page operations, metadata and forms, `pdfplumber` for text/table extraction, and `pypdfium2` for page rendering. Prepare only the libraries needed for the task in the selected project environment. Keep the editable Word/Excel/PPT source when supplied. Only convert it when the user requests conversion and a suitable renderer is available; Sailry does not bundle an Office-to-PDF converter.
+Use the prepared `reportlab` library to generate PDFs with precise layout and fonts, `pypdf` for page operations, metadata and forms, `pdfplumber` for text/table extraction, and `pypdfium2` for page rendering. Keep the editable Word/Excel/PPT source when supplied. Only convert it when the user requests conversion and a suitable renderer is available; Sailry does not bundle an Office-to-PDF converter.
 
 ```python
 from reportlab.pdfgen import canvas
