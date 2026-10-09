@@ -35,7 +35,8 @@ export async function fixture() {
       if (!bodies.has(page)) bodies.set(page,{});
       bodies.get(page)[value.summary.id]={body:value.body,revision:value.summary.revision};
       store(`memory/entry/${value.summary.id}`,{v:1,summary:value.summary,hash:equivalence(value.body),body_page:page,body_revision:value.summary.revision},String(value.summary.revision),
-        {fields:[terms(value.summary.title).join(' '),terms(value.body).join(' ')],
+        {fields:[value.summary.title,terms(value.body).join(' ')],
+          source:{key:`memory/body/${page}`,pointer:`/bodies/${value.summary.id}/body`},
           tags:[`state:${value.summary.archived ? 'archived' : 'active'}`,`scope:${value.summary.project ?? 'global'}`,`equivalent:${equivalence(value.body)}`],order:value.summary.updated_at_ms});
     }
     for (const [page,value] of bodies) store(`memory/body/${page}`,{v:1,bodies:value});
@@ -48,7 +49,7 @@ export async function fixture() {
       && (!(query.any ?? []).length || query.any.some(tag=>index.tags.includes(tag))))
       .map(([key,index])=>{
         const score=(query.terms ?? []).reduce((score,term)=>score+index.fields.reduce((sum,text,column)=>
-          sum+text.split(' ').filter(value=>value===term).length*weights[column],0),0);
+          sum+terms(text).filter(value=>value===term).length*weights[column],0),0);
         return {key,index,score};
       }).filter(value=>!(query.terms ?? []).length || value.score > 0)
       .sort((left,right)=>right.score-left.score || right.index.order-left.index.order || left.key.localeCompare(right.key));

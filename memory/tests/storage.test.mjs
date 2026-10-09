@@ -2,9 +2,37 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fixture,entry,id,project} from './store.mjs';
 import {limits} from '../dev.sailry.platform/host/model.js';
+import {readFile} from 'node:fs/promises';
 
 const plain=value=>JSON.parse(JSON.stringify(value));
 const commit=async(f,input,revision=0)=>f.apply((await f.mutations.putOperations(input,revision)).operations);
+
+test('opts only metadata into semantic indexing',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const collections=manifest.extensions['dev.sailry.platform'].storage.collections;
+  assert.deepEqual(collections.filter(collection=>collection.index?.semantic).map(collection=>collection.prefix),['memory/entry/']);
+  assert.equal(collections.filter(collection=>collection.index?.semantic).length,1);
+});
+
+test('references complete paged bodies and preserves original semantic queries',async()=>{
+  const f=await fixture(), title='Keep the Original Title!';
+  await commit(f,entry(1,'Use a complete raw body with conditions',{title}));
+  await commit(f,entry(2,'Other body sharing the page'));
+  const key='memory/entry/'+id(1), metadata=f.get(key), index=f.indexes.get(key);
+  assert.deepEqual(index.source,{key:'memory/body/0',pointer:`/bodies/${id(1)}/body`});
+  assert.equal(index.fields[0],title);
+  assert.equal(f.get(index.source.key).value.bodies[id(1)].body,'Use a complete raw body with conditions');
+  const other=await f.storage.readMemory(id(2));other.body='Updated neighboring body';
+  await commit(f,other,1);
+  assert.equal(f.get(key).revision,metadata.revision);
+  assert.equal(f.get(index.source.key).revision,'3');
+  assert.equal(f.get(index.source.key).value.bodies[id(1)].body,'Use a complete raw body with conditions');
+  const query='  raw body with conditions!  ';
+  await f.retrieval.searchMemories(project,query);
+  assert.equal(f.searches.at(-1).query,query);
+  assert.equal(f.searches.at(-1).mode,'hybrid');
+  assert.notEqual(f.searches.at(-1).terms.join(' '),query);
+});
 
 test('allocates shared pages and keeps metadata, index and bodies coherent through removal',async()=>{
   const f=await fixture();

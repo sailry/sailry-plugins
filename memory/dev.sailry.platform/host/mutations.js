@@ -1,5 +1,5 @@
 import {prepareTransaction,readProjectCatalog} from 'sailry/sdk';
-import {head,metadata,record,page,body,clock,indexed,scopeTag,write,remove,visible} from './storage.js';
+import {head,metadata,record,page,body,bodyKey,clock,indexed,scopeTag,write,remove,visible} from './storage.js';
 import {capacity,clone,equivalence,identifier,next,normalized,revision,validate,limits} from './model.js';
 import {terms} from './tokenize.js';
 import {readMemorySettings} from './settings.js';
@@ -17,7 +17,8 @@ function expected(current,value) {
 function indexedWrite(current,entry,bodyPage,bodyRevision) {
   const hash = equivalence(entry.body);
   return {kind:'index',data:{key:current.key,value:{v:1,summary:entry.summary,hash,body_page:bodyPage,body_revision:bodyRevision},
-    index:{fields:[terms(entry.summary.title).join(' '),terms(entry.body).join(' ')],
+    index:{fields:[entry.summary.title,terms(entry.body).join(' ')],
+      source:{key:bodyKey(bodyPage),pointer:`/bodies/${entry.summary.id.replace(/~/g,'~0').replace(/\//g,'~1')}/body`},
       tags:[`state:${entry.summary.archived ? 'archived' : 'active'}`,scopeTag(entry.summary.project),`equivalent:${hash}`],order:entry.summary.updated_at_ms},
     expected_revision:current.revision}};
 }

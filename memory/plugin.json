@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
@@ -27,7 +27,7 @@
             "next":{"type":"integer","minimum":0,"maximum":9007199254740991}
           }
         }},
-        {"scope":"node","prefix":"memory/entry/","schema":{
+        {"scope":"node","prefix":"memory/entry/","index":{"semantic":true},"schema":{
           "type":"object","required":["v","summary","hash","body_page","body_revision"],"properties":{
             "v":{"const":1},"hash":{"type":"string","pattern":"^[0-9a-f]{16}$"},
             "body_page":{"type":"string","pattern":"^(0|[1-9][0-9]*)$"},

@@ -17,7 +17,7 @@ async function find({project,all_projects=false,archived=false,query,recall=fals
   }
   const terms = tokenize(query);
   if (query.trim() && !terms.length) return [];
-  return indexed({terms,weights:[3,1],all,any},recall ? 20 : Infinity);
+  return indexed({terms,query:query.trim() ? query : undefined,mode:query.trim() ? 'hybrid' : 'keyword',weights:[3,1],all,any},recall ? 20 : Infinity);
 }
 async function catalog(project) {
   const before = await head();
