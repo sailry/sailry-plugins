@@ -16,7 +16,7 @@ const {render}=vm.runInNewContext(`${source}\n({render})`,{
 });
 function view(goal=null) {
   return {goal,text:{empty:'No goal',retry:'Retry',stop:'Stop',resume:'Resume',clear:'Clear'},
-    state:{connected:true,readonly:false,mode:'code'},busy:false,draft:()=>'',perform(){}};
+    state:{connected:true,readonly:false,mode:'code'},busy:false,loading:false,draft:()=>'',perform(){}};
 }
 
 test('description lines preserve source and use shared status rows',()=>{
@@ -57,4 +57,15 @@ test('read failures preserve goals without retry bars; pending actions remain re
   assert.deepEqual(render(setup).items.map(item=>item.id),['goal-stop','goal-clear']);
   setup.pending={id:'original-request'};
   assert.ok(render(setup).items.some(item=>item.id==='goal-retry'));
+});
+
+test('refresh disables controls while preserving source content',()=>{
+  for(const state of ['active','paused']) {
+    const setup=view({description:'Retained goal',state});
+    setup.loading=true;
+    assert.equal(render(setup).props.items[0].text,'Retained goal');
+    assert.ok(render(setup).items.every(item=>item.disabledValue===true));
+    setup.pending={id:'original-request'};
+    assert.ok(render(setup).items.every(item=>item.disabledValue===true));
+  }
 });

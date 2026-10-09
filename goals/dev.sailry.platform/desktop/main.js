@@ -35,7 +35,7 @@ export default class Goals extends View {
     const left=state.cursor,right=this.state.cursor;
     if (left.length>right.length || left.length===right.length && left>=right) this.state=state;
   }
-  enabled() {return this.state.connected && !this.state.busy && !this.state.readonly && !this.busy && !this.pending && this.state.mode!=='plan';}
+  enabled() {return this.state.connected && !this.state.busy && !this.state.readonly && !this.busy && !this.loading && !this.pending && this.state.mode!=='plan';}
   draft() {return this.state.command?.name==='goal' && this.state.command.package.name===this.scope.package.name ? this.state.command.arguments : null;}
   publish(event) {
     const label=this.goal ? this.text[this.goal.state] ?? this.text.goal : this.text.goal;
@@ -52,6 +52,7 @@ export default class Goals extends View {
     if (!this.state.session || !this.state.connected) {this.goal=null;return;}
     if (this.loading) {this.dirty=true;return;}
     this.loading=true;
+    this.publish();cx.notify();
     cx.spawn(async cx=>{
       try {do {
         this.dirty=false;
@@ -67,7 +68,7 @@ export default class Goals extends View {
     });
   }
   perform(kind,cx) {
-    if (this.busy || this.pending || !this.state.connected || this.state.readonly || !this.goal) return;
+    if (this.busy || this.loading || this.pending || !this.state.connected || this.state.readonly || !this.goal) return;
     this.pending={id:prepareRequest({kind:'call_plugin',data:{handler:'control',input:{kind,expected_revision:this.goal.revision}}}),kind};
     this.execute(cx);
   }
