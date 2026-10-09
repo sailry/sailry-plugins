@@ -193,6 +193,7 @@
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/project.js",
           "dev.sailry.platform/desktop/view.js",
+          "dev.sailry.platform/desktop/access.js",
           "dev.sailry.platform/desktop/labels.js",
           "dev.sailry.platform/desktop/locales.js"
         ],
