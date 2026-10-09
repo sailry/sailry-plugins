@@ -3,6 +3,19 @@ import fs from 'node:fs';
 import test from 'node:test';
 const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
+test('contributes the host language settings and shared enable control', () => {
+  assert.equal(manifest.version, '0.1.1');
+  assert.equal(extension.settings_page.native, 'code');
+  assert.equal(extension.settings_page.entry, null);
+  assert.equal(extension.settings_page.enabled_control, true);
+  assert.deepEqual(extension.settings_page.placement, {group: 'tools', order: 300});
+  assert.equal(extension.settings_page.navigation.label, 'Language services');
+  assert.equal(extension.settings_page.navigation.locales['zh-CN'], '语言服务');
+  assert.equal(extension.display.label, extension.settings_page.navigation.label);
+  assert.deepEqual(extension.display.locales, extension.settings_page.navigation.locales);
+  assert.equal(Object.keys(extension.display.locales).length, 9);
+  assert.equal(extension.desktop, undefined);
+});
 test('uses bounded native reads without shell or installation', () => {
   assert.equal(extension.api_version, 'v1');
   assert.deepEqual(extension.actions, ['code.read']);

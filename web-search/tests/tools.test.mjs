@@ -2,7 +2,19 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const extension = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8')).extensions['dev.sailry.platform'];
+const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
+const extension = manifest.extensions['dev.sailry.platform'];
+
+test('contributes host search settings and the shared enable control', () => {
+  assert.equal(manifest.version, '0.2.1');
+  assert.equal(extension.settings_page.native, 'search');
+  assert.equal(extension.settings_page.entry, null);
+  assert.equal(extension.settings_page.enabled_control, true);
+  assert.deepEqual(extension.settings_page.placement, {group: 'tools', order: 400});
+  assert.equal(extension.settings_page.navigation.label, 'Search');
+  assert.equal(extension.settings_page.navigation.locales['zh-CN'], '搜索');
+  assert.equal(extension.desktop, undefined);
+});
 
 test('binds anonymous page reads beside native search', () => {
   assert.equal(extension.api_version, 'v1');
