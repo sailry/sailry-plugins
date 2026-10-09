@@ -77,8 +77,8 @@ test('held refresh blocks stale controls until current revision',async()=>{
   assert.equal(setup.host.goal.revision,'6');
   assert.equal(setup.view.goal.revision,'5');
   assert.equal(setup.view.busy,false);
-  assert.equal(setup.view.enabled(),false);
-  assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,false);
+  assert.equal(setup.view.enabled(),true);
+  assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,true);
   assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
   const count=setup.prepared.length;
   await setup.perform('clear');
@@ -102,7 +102,8 @@ test('dirty refresh remains blocked until latest read',async()=>{
   setup.host.hold=true;
   setup.view.refresh(setup.cx);
   await Promise.resolve();
-  assert.equal(setup.view.enabled(),false);
+  assert.equal(setup.view.enabled(),true);
+  assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
   setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
   setup.view.refresh(setup.cx);
   setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
@@ -111,6 +112,25 @@ test('dirty refresh remains blocked until latest read',async()=>{
   assert.equal(setup.view.enabled(),true);
   assert.equal(setup.prepared.filter(request=>request.data.handler==='read').length,3);
   assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
+});
+
+test('refresh preserves new task command and draft',async()=>{
+  const setup=await fixture();
+  const argumentsText='New task 中文 🙂';
+  setup.view.accept({...setup.view.state,cursor:'2',
+    command:{name:'goal',package:{name:'goals'},arguments:argumentsText}});
+  const first=setup.contributions.length;
+  setup.host.hold=true;
+  setup.view.refresh(setup.cx);await Promise.resolve();
+  assert.equal(setup.view.draft(),argumentsText);
+  assert.ok(setup.contributions.slice(first).every(entries=>entries.find(item=>item.id==='goal').enabled));
+  assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
+  const count=setup.prepared.length;
+  await setup.perform('clear');
+  assert.equal(setup.prepared.length,count);
+  setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
+  assert.equal(setup.view.draft(),argumentsText);
+  assert.ok(setup.contributions.slice(first).every(entries=>entries.find(item=>item.id==='goal').enabled));
 });
 
 test('uncertain control retains exact request for retry',async()=>{
