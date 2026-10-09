@@ -10,6 +10,7 @@ test('native tools retain read and mutation boundaries', () => {
   assert.equal(extension.scope,'host');
   assert.deepEqual(extension.tools.map(tool=>[tool.name,tool.operation]),[
     ['knowledge_search','knowledge.query'],
+    ['read_knowledge_source','knowledge.read'],
     ['list_knowledge_collections','knowledge.collections'],
     ['create_knowledge_collection','knowledge.create'],
     ['rebuild_knowledge_collection','knowledge.rebuild'],
@@ -33,4 +34,8 @@ test('guidance keeps sources untrusted and models explicit', () => {
   assert.match(create.description,/Requires write permission/);
   const remove=extension.tools.find(tool=>tool.operation==='knowledge.remove');
   assert.match(remove.description,/Original files and plugin values remain intact/);
+  const read=extension.tools.find(tool=>tool.operation==='knowledge.read');
+  assert.match(read.description,/granted files outside the worktree/);
+  assert.match(read.description,/grants are rechecked on every page/);
+  assert.match(read.description,/next_offset/);
 });
