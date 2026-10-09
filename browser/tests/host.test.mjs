@@ -8,6 +8,20 @@ const extension = manifest.extensions['dev.sailry.platform'];
 // Approval groups from the original agent adapter differ from lost-response classification.
 const read = new Set('tabs read navigate scroll back forward refresh open focus frame wait'.split(' '));
 
+test('research prefers bound search and anonymous fetch tools', () => {
+  assert.match(extension.instructions, /prefer available search tools and GitHub read tools/);
+  assert.match(extension.instructions, /web_fetch when it is bound/);
+  assert.match(extension.instructions, /anonymous read can complete the task/);
+  assert.match(extension.instructions, /page interaction, login, JavaScript rendering/);
+  assert.match(extension.instructions, /page view requested by the user/);
+  assert.match(extension.instructions, /no suitable search or fetch tool/);
+  assert.match(extension.instructions, /without claiming an unavailable tool was used/);
+  for (const name of ['browser_read', 'browser_navigate', 'browser_open']) {
+    assert.match(extension.tools.find(tool => tool.name === name).description, /Prefer available search/);
+    assert.match(extension.tools.find(tool => tool.name === name).description, /web_fetch/);
+  }
+});
+
 test('all eighteen tools retain approval groups and captured action dispatch', () => {
   assert.equal(extension.tools.length,18);
   assert.equal(new Set(extension.tools.map(tool => tool.name)).size,18);

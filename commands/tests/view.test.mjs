@@ -69,7 +69,7 @@ test('catalog failures add neither retry bars nor attached terminals', () => {
 });
 
 
-test('workspace stays default and full choices describe filesystem and network',()=>{
+test('manual creation offers full access and explicit workspace choices',()=>{
   const setup=fixture({id:'existing',status:{kind:'running'}});
   Object.assign(setup.view,{resource:null,busy:false,tools:[{tool:'claude',available:true}],perform:(...args)=>setup.calls.push(args)});
   setup.render();
@@ -77,9 +77,10 @@ test('workspace stays default and full choices describe filesystem and network',
   assert.deepEqual(setup.calls[0].slice(0,2),['create',null]);
   const access=setup.nodes.get('terminal-access');
   assert.equal(access.kind,'Menu');
-  assert.deepEqual(Array.from(access.props.items,item=>item.id),['workspace','unrestricted']);
-  assert.match(access.props.items[1].label,/filesystem and network/);
+  assert.deepEqual(Array.from(access.props.items,item=>item.id),['unrestricted','workspace']);
+  assert.match(access.props.items[0].label,/filesystem and network/);
+  assert.match(access.props.items[1].label,/Workspace/);
   const tools=setup.nodes.get('terminal-tools').props.items;
   assert.equal(tools[0].id,'claude');
-  assert.ok(tools.find(item=>item.id==='claude:unrestricted').label.includes('filesystem and network'));
+  assert.ok(tools.find(item=>item.id==='claude:workspace').label.includes('Workspace'));
 });

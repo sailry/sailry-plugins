@@ -1,6 +1,13 @@
 // Role editing policy adapted from Sailry ef5e82ea delegation settings.
 const clone = value => JSON.parse(JSON.stringify(value));
 const equal = (left,right) => JSON.stringify(left) === JSON.stringify(right);
+export const RESEARCH_INSTRUCTIONS = 'Research the assigned question using the selected web-search:research skill and available read-only tools. Return supported conclusions with source links, uncertainty and conflicting evidence to the parent. Keep the inherited permissions and the task\'s budget; do not modify resources or ask the user for input.';
+
+export function research(id,name,description) {
+  return {id,revision:0,key:'research',name,appearance:null,description,read_only:true,
+    model:null,max_turns:8,skills:['web-search:research'],instructions:RESEARCH_INSTRUCTIONS};
+}
+
 function bytes(value) {
   let length = 0;
   for (const character of value) {

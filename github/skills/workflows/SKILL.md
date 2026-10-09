@@ -1,17 +1,25 @@
 ---
 name: workflows
-description: Read and manage GitHub repositories, issues, pull requests, reviews and GitHub Actions through the official MCP service. Use for hosted GitHub work, not local Git operations alone or a standalone security audit.
+description: Discover and read public GitHub projects without requiring a token, and use authenticated MCP tools for repository, issue, pull-request, review and Actions workflows. Use for hosted GitHub work, not local Git operations alone or a standalone security audit.
 metadata:
   display-name: GitHub
 ---
 
 # GitHub workflows
 
-Use this package's official GitHub MCP tools for hosted repository data. Use the existing Git, file and command tools for the execution worktree rather than treating GitHub as a local checkout. This package enables repository, issue, pull-request, Actions and user toolsets; read the available tool schemas instead of guessing names, arguments or unsupported capabilities.
+Choose from this turn's actual tool declarations. Use an available GitHub MCP tool for supported hosted operations. Use the existing Git, file and command tools for the current worktree. This package requests repository, issue, pull-request, Actions and user MCP toolsets; inspect the bound schemas instead of guessing tool names or assuming every toolset connected.
+
+## Public discovery and reading
+
+Public repository research does not require a token. Use an available repository-search tool or native web search to discover projects. When web_fetch is bound, it can also read the anonymous public REST API: search `https://api.github.com/search/repositories?q=<URL-encoded query>` or inspect a known repository at `https://api.github.com/repos/<owner>/<repo>`. Read a known public file from `https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>`; resolve the actual ref and path rather than assuming a default branch. Use the callable alias shown in the tool list and its declared URL parameter.
+
+Prefer these reads before opening a browser. Use a browser for interaction, login, JavaScript rendering, a page view requested by the user, or when no suitable read tool is available. An unavailable GitHub MCP connection does not require token setup for public research. If no suitable search or fetch tool is bound, explain that limitation and use an available browser when it can complete the task; do not invent a tool call.
+
+Anonymous access has rate limits, and some API operations require authentication even for public repositories. Inspect response status, pagination and `incomplete_results` where applicable; report incomplete coverage and avoid repeatedly retrying a limit. Do not apply the anonymous path to private repositories or writes.
 
 ## Authentication and targets
 
-The hosted service requires a GitHub personal access token. The plugin's MCP configuration takes the complete `Authorization` header value `Bearer <token>`; an empty header leaves MCP unavailable without disabling this skill. Direct the user to plugin configuration and GitHub's token settings, never ask them to paste a token into chat or place it in project files. A fine-grained token should cover only the requested repositories and necessary operations. An organization may require separate token approval; report missing access without broadening permissions automatically.
+The official hosted MCP service requires a GitHub access token. This requirement applies to that connection, not to anonymous public REST API reads. The plugin settings keep the token in the execution Node's protected storage and apply the `Bearer` header prefix. An empty token leaves MCP unavailable without disabling this skill. When authenticated work is necessary, direct the user to the GitHub plugin settings. The user can choose Import login to reuse an authenticated GitHub CLI account on that Node, or enter a token in the protected settings field. Detection does not import credentials; only that explicit action does. Never ask them to paste a token into chat, place it in project files or run a command that exposes it to the model. A fine-grained token should cover only the requested repositories and necessary operations. An organization may require separate token approval; report missing access without broadening permissions automatically.
 
 Sailry's generic MCP OAuth support does not imply that GitHub advertises an OAuth flow for this client. Do not start a speculative login or substitute another account. Credentials and MCP execution belong to the current session's Node; local authorization does not configure another Node.
 

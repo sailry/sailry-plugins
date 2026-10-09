@@ -33,7 +33,7 @@ function fixture() {
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:{settings_empty:'No roles',settings_add:'Add',settings_edit:'Edit',settings_delete:'Delete',roles_profiles:'Roles'},
-    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role])};
+    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role]),research:()=>calls.push(['research'])};
   return {view,nodes,calls,render(){nodes.clear();return render(view);}};
 }
 
@@ -45,6 +45,28 @@ test('empty roles reuse their settings card and retain the add action',()=>{
   assert.equal(group.items[1],empty);
   setup.nodes.get('role-add').items[0].on_click({},{});
   assert.deepEqual(setup.calls,[['edit',null]]);
+});
+
+test('research has an explicit action and preserves existing role edits',()=>{
+  const setup=fixture();setup.view.text=messages('en');setup.render();
+  const action=setup.nodes.get('role-add-research').items[0];
+  assert.deepEqual(plain(action.style.label),['Add research']);
+  assert.deepEqual(plain(action.style.disabled),[false]);
+  action.on_click({},{});
+  assert.deepEqual(setup.calls,[['research']]);
+  setup.view.roles=[{id:'existing',key:'research',name:'Custom researcher'}];setup.render();
+  assert.deepEqual(plain(setup.nodes.get('role-add-research').items[0].style.disabled),[true]);
+  assert.ok(setup.nodes.has('role-edit-existing'));
+});
+
+test('research labels are translated while instructions stay English',()=>{
+  for(const locale of ['en','de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']) {
+    const text=messages(locale);
+    assert.ok(text.role_add_research.length>0);
+    assert.ok(text.role_research_description.length>0);
+    assert.equal(text.role_prompt_research,messages('en').role_prompt_research);
+    if(locale!=='en')assert.notEqual(text.role_add_research,messages('en').role_add_research);
+  }
 });
 
 test('readonly editing reuses Checkbox and locks uncertain drafts',()=>{

@@ -111,7 +111,7 @@ export default class Commands extends View {
         if (!this.pending) {
           const id = action === 'close' ? prepareCloseTerminal(target)
             : action === 'open' ? prepareOpenTerminal(target) : (() => {
-              const chosen = target === null ? {tool:null,access:'workspace'} : selection(target);
+              const chosen = target === null ? {tool:null,access:'unrestricted'} : selection(target);
               return prepareTerminal(chosen.tool, chosen.access);
             })();
           this.pending = {id, action, target};

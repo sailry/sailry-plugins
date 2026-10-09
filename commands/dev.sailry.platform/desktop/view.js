@@ -14,8 +14,8 @@ export function render(view) {
       .child(new Button('terminal-new').ghost().label(text.create).disabled(disabled)
         .on_click((_, cx) => view.perform('create', null, cx)))
       .child(Menu.new('terminal-access', {label:text.access, disabled, items:[
-        {id:'workspace',label:`${text.create} · ${text.workspace}`,enabled:true},
         {id:'unrestricted',label:`${text.create} · ${text.full}`,enabled:true},
+        {id:'workspace',label:`${text.create} · ${text.workspace}`,enabled:true},
       ]}))
       .child(Menu.new('terminal-tools', {label:text.cli, disabled,
         items:choices(view.tools,text)}))

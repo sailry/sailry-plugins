@@ -68,7 +68,7 @@ export default class Settings extends View {
   edit(profile,cx) {
     if (!this.connected || !this.ready) return;
     this.close(cx);
-    const owner = draft.create(profile,newRoleId(),this.models), value = owner.original;
+    const owner = draft.create(profile,profile?.id ?? newRoleId(),this.models), value = owner.original;
     owner.kind = 'edit'; owner.token = `role-dialog-${++this.serial}`;
     owner.fields = {
       key:createText(value.key,{label:this.text.role_id,placeholder:this.text.form_role_id_hint}),
@@ -79,6 +79,11 @@ export default class Settings extends View {
         placeholder:this.text.form_role_instructions_hint})
     };
     this.dialog = owner; cx.notify();
+  }
+
+  research(cx) {
+    if (this.roles.some(role => role.key === 'research')) return;
+    this.edit(draft.research(newRoleId(),this.text.role_preset_research,this.text.role_research_description),cx);
   }
 
   remove(profile,cx) {

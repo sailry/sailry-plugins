@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -15,7 +15,7 @@
         {
           "name": "run_command",
           "presentation": "content",
-          "description": "Run a noninteractive command on the Node. Provide description to explain its purpose. On macOS and Linux, access=workspace is the default: commands can write only in the current worktree and their temporary directory, and cannot use the network. These confined commands run without approval. Request access=unrestricted for network access or paths outside the worktree; every such call requires a fresh user approval, including Full mode. Windows retains the permission-mode approval policy. Invoke the tool directly; its approval card obtains consent. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms and is limited to 900000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Read it with read_command and stop it with stop_command. Keep the shell command in the foreground. Foreground commands stop on exit, cancellation or timeout.",
+          "description": "Run a command on the Node. Provide description to explain its purpose. On macOS and Linux, access=workspace is the default: commands can write only in the current worktree and their temporary directory, and cannot use the network. These confined commands run without approval. Request access=unrestricted for network access or paths outside the worktree. Full mode permits unrestricted commands automatically; Ask and Project require fresh approval for each unrestricted command. Windows uses the selected permission mode. Invoke the tool directly; its approval card obtains consent when needed. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms and is limited to 900000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Read it with read_command, send input with write_command, and stop it with stop_command. Set pty=true with background=true when the command needs a terminal (prompts, REPLs or debuggers); PTY output combines stdout and stderr. Ordinary background commands also accept stdin. A successful write acknowledges queued input; read output to confirm the application accepted it. Keep the shell command in the foreground. Foreground commands stop on exit, cancellation or timeout.",
           "handler": {
             "name": "run",
             "operation": "process.run",
@@ -29,12 +29,18 @@
                 },
                 "access": {
                   "type": "string",
-                  "enum": ["workspace", "unrestricted"],
+                  "enum": [
+                    "workspace",
+                    "unrestricted"
+                  ],
                   "default": "workspace",
-                  "description": "Workspace access blocks network and confines writes on macOS/Linux. Unrestricted access requires fresh user approval."
+                  "description": "Workspace access blocks network and confines writes on macOS/Linux. Full mode allows unrestricted access automatically; Ask and Project require fresh approval for each unrestricted command."
                 },
                 "description": {
-                  "type": ["string", "null"],
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "maxLength": 2000,
                   "description": "Optional concise explanation shown with the command before approval"
                 },
@@ -61,6 +67,11 @@
                     "type": "string"
                   },
                   "description": "Attachment IDs to read at SAILRY_ATTACHMENTS/<id> using the shell's environment-variable and path syntax. Copies last for this command; edits do not modify the originals."
+                },
+                "pty": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Allocate a PTY for a background command that requires a terminal. Requires background=true."
                 }
               },
               "required": [
@@ -76,13 +87,44 @@
             "icon": "reicon:it/terminal-square",
             "approval": [
               {
-                "message": {"label": "%{command}", "locales": {"zh-CN": "%{command}"}},
-                "values": {"command": {"source": "arguments", "path": "/command"}}
+                "message": {
+                  "label": "%{command}",
+                  "locales": {
+                    "zh-CN": "%{command}"
+                  }
+                },
+                "values": {
+                  "command": {
+                    "source": "arguments",
+                    "path": "/command"
+                  }
+                }
               },
               {
-                "message": {"label": "%{description}", "locales": {"zh-CN": "%{description}"}},
-                "values": {"description": {"source": "arguments", "path": "/description"}},
-                "when": {"all": [{"value": {"source": "arguments", "path": "/description"}, "equals": null, "negate": true}]}
+                "message": {
+                  "label": "%{description}",
+                  "locales": {
+                    "zh-CN": "%{description}"
+                  }
+                },
+                "values": {
+                  "description": {
+                    "source": "arguments",
+                    "path": "/description"
+                  }
+                },
+                "when": {
+                  "all": [
+                    {
+                      "value": {
+                        "source": "arguments",
+                        "path": "/description"
+                      },
+                      "equals": null,
+                      "negate": true
+                    }
+                  ]
+                }
               }
             ],
             "input": {
@@ -157,6 +199,40 @@
               ]
             }
           }
+        },
+        {
+          "name": "write_command",
+          "presentation": "summary",
+          "display": {
+            "label": "Write command",
+            "locales": {
+              "zh-CN": "输入命令"
+            },
+            "icon": "reicon:it/terminal-square"
+          },
+          "description": "Send input to a running background command in this session. Pass its id and input exactly, including a newline when submitting a line. Accepts at most 64 KiB of UTF-8 input. A success acknowledges queued input; use read_command to inspect the response. Cannot write to another session or a finished command. Writing input has side effects and follows the current permission policy.",
+          "handler": {
+            "name": "write",
+            "operation": "process.write",
+            "result": "result",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "input": {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              },
+              "required": [
+                "id",
+                "input"
+              ]
+            }
+          }
         }
       ],
       "display": {
@@ -182,13 +258,20 @@
           "run",
           "read",
           "stop",
-          "result"
+          "result",
+          "write"
         ]
       },
       "desktop": {
         "entry": "dev.sailry.platform/desktop/main.js",
         "ui_entry": "dev.sailry.platform/desktop/project.js",
-        "renderers": [{ "resource": "terminal", "create": "terminal-new", "shortcut": "ctrl-`" }],
+        "renderers": [
+          {
+            "resource": "terminal",
+            "create": "terminal-new",
+            "shortcut": "ctrl-`"
+          }
+        ],
         "resources": [
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/project.js",
@@ -210,7 +293,12 @@
           "id": "terminal-cli",
           "slot": "project",
           "kind": "menu",
-          "label": { "label": "CLI", "locales": {"zh-CN": "CLI"} },
+          "label": {
+            "label": "CLI",
+            "locales": {
+              "zh-CN": "CLI"
+            }
+          },
           "icon": "square-terminal",
           "order": 10,
           "handler": "cli"
@@ -219,7 +307,12 @@
           "id": "terminal-new",
           "slot": "project",
           "kind": "button",
-          "label": { "label": "New terminal", "locales": { "zh-CN": "新建终端" } },
+          "label": {
+            "label": "New terminal",
+            "locales": {
+              "zh-CN": "新建终端"
+            }
+          },
           "icon": "square-terminal",
           "order": 20,
           "handler": "create"
@@ -228,7 +321,12 @@
           "id": "terminal-menu-new",
           "slot": "project_menu",
           "kind": "button",
-          "label": { "label": "New terminal", "locales": { "zh-CN": "新建终端" } },
+          "label": {
+            "label": "New terminal",
+            "locales": {
+              "zh-CN": "新建终端"
+            }
+          },
           "icon": "square-terminal",
           "order": 10,
           "handler": "create"
@@ -237,7 +335,12 @@
           "id": "terminal-menu-cli",
           "slot": "project_menu",
           "kind": "menu",
-          "label": { "label": "CLI", "locales": {"zh-CN": "CLI"} },
+          "label": {
+            "label": "CLI",
+            "locales": {
+              "zh-CN": "CLI"
+            }
+          },
           "icon": "square-terminal",
           "order": 20,
           "handler": "cli"

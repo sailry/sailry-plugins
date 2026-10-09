@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -420,7 +420,7 @@
         {
           "name": "edit_file",
           "presentation": "details",
-          "description": "Replace old_text with new_text in an existing UTF-8 file. Each fragment is limited to 128 KiB. old_text must be nonempty and occur exactly once; preserve its exact whitespace and line endings. Pass the full file revision from read_file as expected_revision. A conflict requires reading the current file before another edit. Supports files up to 64 MiB without sending the whole file.",
+          "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for up to 128 replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. Each fragment is limited to 128 KiB and files to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit.",
           "handler": {
             "name": "edit",
             "operation": "files.edit",
@@ -442,15 +442,80 @@
                   "type": "string",
                   "pattern": "^[0-9a-fA-F]{64}$",
                   "description": "Full file revision from read_file"
+                },
+                "replace_all": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "edits": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 128,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "old_text": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "new_text": {
+                        "type": "string"
+                      },
+                      "replace_all": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    },
+                    "required": [
+                      "old_text",
+                      "new_text"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
                 "path",
-                "old_text",
-                "new_text",
                 "expected_revision"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "old_text",
+                    "new_text"
+                  ],
+                  "not": {
+                    "required": [
+                      "edits"
+                    ]
+                  }
+                },
+                {
+                  "required": [
+                    "edits"
+                  ],
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "old_text"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "new_text"
+                        ]
+                      }
+                    ]
+                  },
+                  "properties": {
+                    "replace_all": {
+                      "const": false
+                    }
+                  }
+                }
+              ]
             }
           },
           "display": {
@@ -486,6 +551,29 @@
                   "source": "arguments",
                   "path": "/new_text"
                 }
+              },
+              "preview": {
+                "parts": [
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "arguments",
+                        "path": "/edits"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/new_text"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  }
+                ]
               }
             },
             "approval": [
@@ -511,9 +599,210 @@
           ]
         },
         {
+          "name": "delete_file",
+          "presentation": "summary",
+          "description": "Move a regular file to the execution Node's Trash using its current revision. Does not permanently delete files or delete directories. A conflict requires reading the current file before retrying.",
+          "handler": {
+            "name": "remove",
+            "operation": "files.delete",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Relative to the session worktree, with forward slashes"
+                },
+                "expected_revision": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{64}$",
+                  "description": "Full current file revision"
+                }
+              },
+              "required": [
+                "path",
+                "expected_revision"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "display": {
+            "label": "Move to Trash",
+            "locales": {
+              "zh-CN": "移到废纸篓"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
+            },
+            "input": {
+              "summary": {
+                "path": "/path",
+                "code": true
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "approval": [
+              {
+                "message": {
+                  "label": "Move %{path} to Trash",
+                  "locales": {
+                    "zh-CN": "将 %{path} 移到废纸篓"
+                  }
+                },
+                "values": {
+                  "path": {
+                    "source": "arguments",
+                    "path": "/path"
+                  }
+                }
+              }
+            ]
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ]
+        },
+        {
+          "name": "move_file",
+          "presentation": "summary",
+          "description": "Move a regular file to another path in the same worktree using its current revision. The destination parent must exist and the destination must be absent; never overwrite an existing entry. A conflict requires inspecting both paths before retrying.",
+          "handler": {
+            "name": "move",
+            "operation": "files.move",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Relative to the session worktree, with forward slashes"
+                },
+                "destination": {
+                  "type": "string",
+                  "description": "Relative to the session worktree, with forward slashes"
+                },
+                "expected_revision": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{64}$",
+                  "description": "Full current file revision"
+                }
+              },
+              "required": [
+                "path",
+                "destination",
+                "expected_revision"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "display": {
+            "label": "Move file",
+            "locales": {
+              "zh-CN": "移动文件"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
+            },
+            "input": {
+              "summary": {
+                "path": "/path",
+                "code": true
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "approval": [
+              {
+                "message": {
+                  "label": "Move %{path} to %{destination}",
+                  "locales": {
+                    "zh-CN": "将 %{path} 移动到 %{destination}"
+                  }
+                },
+                "values": {
+                  "path": {
+                    "source": "arguments",
+                    "path": "/path"
+                  },
+                  "destination": {
+                    "source": "arguments",
+                    "path": "/destination"
+                  }
+                }
+              }
+            ]
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ]
+        },
+        {
+          "name": "create_directory",
+          "presentation": "summary",
+          "description": "Create one directory in an existing parent within the session worktree. An existing directory is unchanged; an existing file or symbolic link is a conflict. Missing parents are not created automatically.",
+          "handler": {
+            "name": "mkdir",
+            "operation": "files.mkdir",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "Relative to the session worktree, with forward slashes"
+                }
+              },
+              "required": [
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "display": {
+            "label": "Create directory",
+            "locales": {
+              "zh-CN": "新建文件夹"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
+            },
+            "input": {
+              "summary": {
+                "path": "/path",
+                "code": true
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "approval": [
+              {
+                "message": {
+                  "label": "Create %{path}",
+                  "locales": {
+                    "zh-CN": "创建 %{path}"
+                  }
+                },
+                "values": {
+                  "path": {
+                    "source": "arguments",
+                    "path": "/path"
+                  }
+                }
+              }
+            ]
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ]
+        },
+        {
           "name": "find_files",
           "presentation": "summary",
-          "description": "Find files by worktree-relative glob patterns without reading their contents or running a command. Examples: **/*.rs, src/**/mod.rs. Results are bounded and report skipped files and truncation; narrow globs when needed.",
+          "description": "Find regular file paths by worktree-relative globs within path (default root), respecting .gitignore and never following symlinks. Results are newest first, with a stable path order for equal modification times. limit defaults to 500 (maximum 500); request next_offset for another page. Partial scans have no continuation: narrow path before retrying. No shell approval is needed.",
           "handler": {
             "name": "find",
             "operation": "files.find",
@@ -529,6 +818,22 @@
                     "minLength": 1,
                     "maxLength": 4096
                   }
+                },
+                "path": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Worktree-relative file or directory; empty or . selects the root"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 500,
+                  "default": 500
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
                 }
               },
               "required": [
@@ -620,7 +925,7 @@
         {
           "name": "search_files",
           "presentation": "summary",
-          "description": "Search text in the session worktree, optionally with a regular expression and relative path globs. Results include line numbers and truncation.",
+          "description": "Search UTF-8 files with embedded ripgrep matching within path (a file or directory, default worktree root), respecting .gitignore and never following symlinks. mode selects content rows (default), matching file paths, or matching line counts. context adds up to 5 lines before and after each match; type uses ripgrep language names such as rust, js, and python. multiline permits matches across newlines. limit defaults to 200 (maximum 200); content limits include context rows. Use next_offset for another complete-scan page. Scans have a 20-second deadline and a 64 MiB per-file bound; diagnostics identify skipped large files or incomplete scans. Incomplete scans have no continuation: narrow path before retrying. Lines longer than 16 KiB are explicitly marked truncated. No shell approval is needed.",
           "handler": {
             "name": "search",
             "operation": "files.search",
@@ -633,10 +938,12 @@
                   "description": "Non-empty text or regular expression to search inside files; globs only filter which files are searched"
                 },
                 "regex": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "default": false
                 },
                 "case_sensitive": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "default": false
                 },
                 "globs": {
                   "type": "array",
@@ -644,7 +951,50 @@
                   "items": {
                     "type": "string",
                     "maxLength": 4096
-                  }
+                  },
+                  "default": []
+                },
+                "path": {
+                  "type": "string",
+                  "default": "",
+                  "description": "Worktree-relative file or directory; empty or . selects the root"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 200,
+                  "default": 200
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "content",
+                    "files",
+                    "count"
+                  ],
+                  "default": "content"
+                },
+                "context": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 5,
+                  "default": 0
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "A ripgrep file type name such as rust, js, or python"
+                },
+                "multiline": {
+                  "type": "boolean",
+                  "default": false
                 }
               },
               "required": [
@@ -700,6 +1050,53 @@
                             "value": {
                               "source": "item",
                               "path": "/line"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/paths"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": ""
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/counts"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/path"
+                            }
+                          },
+                          {
+                            "text": ": "
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/count"
                             }
                           }
                         ]
@@ -838,6 +1235,9 @@
           "read",
           "write",
           "edit",
+          "remove",
+          "move",
+          "mkdir",
           "find",
           "search",
           "office"
@@ -891,7 +1291,8 @@
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         ]
-      }
+      },
+      "instructions": "Use read_file to capture the current revision before editing, moving or deleting a file. For several changes in one file, send one edit_file edits array; every match is located in the original content and the batch is saved once. Use replace_all only when every occurrence should change. Keep exact whitespace and line endings. A conflict requires reading the current file before retrying. Use create_directory and move_file for workspace file organization; delete_file moves regular files to Trash. These tools never replace an existing move destination or delete a directory. For file discovery and content search, use find_files and search_files rather than running shell commands. Scope path first, honor next_offset, and treat partial scans as incomplete: narrow path instead of claiming offset can advance an interrupted scan."
     }
   }
 }

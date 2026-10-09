@@ -52,7 +52,7 @@ export default class Project extends View {
     const choices = [];
     choices.push(...accessChoices(this.tools,this.text).map(entry => ({id:entry.id,
       label:{label:entry.label}, icon:'square-terminal',
-      group:{label:entry.id.includes(':') ? this.text.full : this.text.cli},
+      group:{label:entry.id.includes(':') ? this.text.workspace : this.text.cli},
       enabled:entry.enabled && !this.busy && !this.pending})));
     choices.push({id:recovery, label:{label:this.text[recovery]}, icon:'rotate-cw',
       group:{label:this.text[recovery]}, enabled:!this.busy && !this.loading});
@@ -77,7 +77,7 @@ export default class Project extends View {
   }
 
   start(tool, event, cx) {
-    const chosen = tool === null ? {tool:null,access:'workspace'} : selection(tool);
+    const chosen = tool === null ? {tool:null,access:'unrestricted'} : selection(tool);
     if (this.busy || (tool !== null && this.loading) || (!this.pending && tool !== null &&
       chosen.tool !== null && !this.tools.some(entry => entry.tool === chosen.tool && entry.available))) {
       this.publish(event); return;

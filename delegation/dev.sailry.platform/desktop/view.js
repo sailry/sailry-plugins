@@ -88,6 +88,10 @@ export function render(view) {
   if (view.dialog) modal = modal.child(view.dialog.kind === 'edit' ? editor(view,view.dialog) : removal(view,view.dialog));
   return div().id('role-settings').v_flex().gap_6()
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
-      .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)).children(rows.length ? rows : [empty(view)]))
+      .child(div().h_flex().gap_2().flex_wrap()
+        .child(button('role-add-research',text.role_add_research,(_,cx) => view.research(cx),
+          disabled || view.roles.some(role => role.key === 'research')))
+        .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))
+      .children(rows.length ? rows : [empty(view)]))
     .child(modal);
 }

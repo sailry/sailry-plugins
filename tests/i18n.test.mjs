@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readdir, readFile} from 'node:fs/promises';
 import {resolve, dirname} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import vm from 'node:vm';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,6 +35,25 @@ function labels(value, context) {
   for (const [key, child] of Object.entries(value)) labels(child, `${context}.${key}`);
 }
 
+async function dictionaries(path) {
+  const context = vm.createContext({});
+  const modules = new Map();
+  async function load(id, inspect = false) {
+    if (!modules.has(id)) {
+      let source = await readFile(fileURLToPath(id), 'utf8');
+      if (inspect) source += '\nexport const dictionaries = ' +
+        'typeof messages === "function" ? {en:messages("en"),zh:messages("zh-CN")} : ' +
+        'typeof locales === "undefined" ? {en, zh} : {en:locales.en, zh:locales["zh-CN"]};';
+      modules.set(id, new vm.SourceTextModule(source, {context, identifier:id}));
+    }
+    return modules.get(id);
+  }
+  const entry = await load(pathToFileURL(path).href, true);
+  await entry.link((id, parent) => load(new URL(id, parent.identifier).href));
+  await entry.evaluate();
+  return entry.namespace.dictionaries;
+}
+
 test('all packaged labels and descriptions cover both application languages', async () => {
   const entries = [...await packages('.'), ...await packages('examples')];
   assert.ok(entries.length, 'packaged plugins must be discovered');
@@ -49,11 +68,8 @@ test('desktop dictionaries have matching keys and placeholders without cross-lan
   for (const {path, manifest} of [...await packages('.'), ...await packages('examples')]) {
     const resource = manifest.extensions?.[namespace]?.desktop?.resources.find(path => path.endsWith('/desktop/locales.js'));
     if (!resource) continue;
-    const source = await readFile(resolve(path, resource), 'utf8');
-    const dictionaries = vm.runInNewContext(source.replace(/^export /gm, '') +
-      '\n;typeof messages === "function" ? {en:messages("en"),zh:messages("zh-CN")} : ' +
-      'typeof locales === "undefined" ? {en, zh} : {en:locales.en, zh:locales["zh-CN"]}');
-    const en = dictionaries.en, zh = dictionaries.zh;
+    const values = await dictionaries(resolve(path, resource));
+    const en = values.en, zh = values.zh;
     assert.deepEqual(Object.keys(en).sort(), Object.keys(zh).sort(), manifest.name);
     for (const [key, english] of Object.entries(en)) {
       if (typeof english !== 'string') continue;

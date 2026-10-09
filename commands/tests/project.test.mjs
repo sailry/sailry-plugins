@@ -36,21 +36,22 @@ async function fixture() {
   return {view,cx,settle,host,prepared,completed,forgotten,states};
 }
 
-test('project controls preserve full consent across an uncertain receipt',async()=>{
+test('project controls preserve explicit workspace access across uncertain receipts',async()=>{
   const setup=await fixture();
   setup.view.publish();
-  const full=setup.states.at(-1).find(state=>state.id==='terminal-cli').choices
-    .find(choice=>choice.id==='claude:unrestricted');
-  assert.match(full.label.label,/filesystem and network/);
-  assert.equal(full.enabled,true);
-  setup.view.start('claude:unrestricted',null,setup.cx);await setup.settle();
-  assert.deepEqual(setup.prepared,[{id:'request-0',tool:'claude',access:'unrestricted'}]);
+  const workspace=setup.states.at(-1).find(state=>state.id==='terminal-cli').choices
+    .find(choice=>choice.id==='claude:workspace');
+  assert.match(workspace.label.label,/Workspace/);
+  assert.equal(workspace.group.label,'Workspace');
+  assert.equal(workspace.enabled,true);
+  setup.view.start('claude:workspace',null,setup.cx);await setup.settle();
+  assert.deepEqual(setup.prepared,[{id:'request-0',tool:'claude',access:'workspace'}]);
   assert.equal(setup.view.pending,'request-0');
   assert.equal(setup.view.error,'unknown');
   assert.deepEqual(setup.forgotten,[]);
   const choices=setup.states.at(-1).find(state=>state.id==='terminal-cli').choices;
-  assert.equal(choices.find(choice=>choice.id==='shell:unrestricted').enabled,false);
-  setup.host.result={Ok:{kind:'terminal',data:{id:'full'}}};
+  assert.equal(choices.find(choice=>choice.id==='shell:workspace').enabled,false);
+  setup.host.result={Ok:{kind:'terminal',data:{id:'workspace'}}};
   setup.view.start(null,null,setup.cx);await setup.settle();
   assert.equal(setup.prepared.length,1);
   assert.deepEqual(setup.completed,['request-0','request-0']);
@@ -58,8 +59,8 @@ test('project controls preserve full consent across an uncertain receipt',async(
   assert.equal(setup.view.pending,null);
 });
 
-test('ordinary project creation keeps workspace access',async()=>{
-  const setup=await fixture();setup.host.result={Ok:{kind:'terminal',data:{id:'workspace'}}};
+test('ordinary project creation defaults to full access',async()=>{
+  const setup=await fixture();setup.host.result={Ok:{kind:'terminal',data:{id:'full'}}};
   setup.view.start(null,null,setup.cx);await setup.settle();
-  assert.deepEqual(setup.prepared,[{id:'request-0',tool:null,access:'workspace'}]);
+  assert.deepEqual(setup.prepared,[{id:'request-0',tool:null,access:'unrestricted'}]);
 });

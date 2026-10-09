@@ -225,16 +225,16 @@ test('uncertain opens keep panes busy and reject actions until explicit retry', 
 });
 
 
-test('new terminals default to workspace and explicit choices freeze full access', async () => {
+test('new terminals default to full and retain workspace retries', async () => {
   const setup = await fixture([],null);
   setup.view.perform('create', null, setup.cx); await setup.settle();
-  assert.equal(setup.prepared[0].access,'workspace');
+  assert.equal(setup.prepared[0].access,'unrestricted');
   setup.host.complete = async () => ({Err:{code:'outcome_unknown'}});
-  setup.view.perform('create','claude:unrestricted',setup.cx); await setup.settle();
-  assert.deepEqual(setup.prepared[1],{id:'request-1',action:'create',target:'claude',access:'unrestricted'});
+  setup.view.perform('create','claude:workspace',setup.cx); await setup.settle();
+  assert.deepEqual(setup.prepared[1],{id:'request-1',action:'create',target:'claude',access:'workspace'});
   setup.view.perform('create',null,setup.cx); await setup.settle();
   assert.equal(setup.prepared.length,2);
-  setup.host.complete = async () => ({Ok:{kind:'terminal',data:{id:'full'}}});
+  setup.host.complete = async () => ({Ok:{kind:'terminal',data:{id:'workspace'}}});
   setup.view.retry(setup.cx); await setup.settle();
   assert.equal(setup.prepared.length,2);
   assert.deepEqual(setup.completed,['request-0','request-1','request-1']);
