@@ -31,7 +31,8 @@ async function fixture() {
       if(host.failure) return {Err:{code:host.failure,message:'Unconfirmed action'}};
       assert.equal(request.data.input.expected_revision,host.goal.revision);
       const revision=String(BigInt(host.goal.revision)+1n);
-      host.goal=request.data.input.kind==='clear' ? null : {...host.goal,state:'paused',revision};
+      host.goal=request.data.input.kind==='clear' ? null : {...host.goal,
+        state:request.data.input.kind==='resume' ? 'active' : 'paused',revision};
       return {Ok:{data:{goal:plain(host.goal)}}};
     },
     forgetRequest:id=>forgotten.push(id),faultCode:message=>message,
@@ -43,7 +44,10 @@ async function fixture() {
     'sailry/sdk':sdk,
     'sailry/ui':{StatusList:{new:element},
       readComposer:()=>({session:'session',connected:true,readonly:false,busy:false,mode:'code',cursor:'1'}),
-      nextComposerChange:never,toast:value=>notices.push(plain(value))},
+      nextComposerChange:never,toast:value=>{
+        if(!['info','error'].includes(value.kind)) throw new TypeError('Unsupported notification kind');
+        notices.push(plain(value));
+      }},
   };
   async function load(name) {
     if(modules.has(name)) return modules.get(name);
@@ -68,6 +72,29 @@ async function fixture() {
   }
   return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices};
 }
+
+test('successful controls use supported notifications',async()=>{
+  const setup=await fixture();
+  await setup.perform('pause');
+  assert.equal(setup.host.goal.state,'paused');
+  await setup.perform('resume');
+  assert.equal(setup.host.goal.state,'active');
+  await setup.perform('clear');
+  assert.equal(setup.host.goal,null);
+  assert.equal(setup.view.goal,null);
+  assert.equal(setup.view.pending,null);
+  assert.deepEqual(setup.notices,[
+    {id:'goal-action',kind:'info',message:setup.view.text.paused},
+    {id:'goal-action',kind:'info',message:setup.view.text.active},
+    {id:'goal-action',kind:'info',message:setup.view.text.cleared},
+  ]);
+  const controls=setup.prepared.flatMap((request,index)=>request.data.handler==='control' ? [String(index)] : []);
+  assert.equal(controls.length,3);
+  for(const id of controls) {
+    assert.equal(setup.completed.filter(value=>value===id).length,1);
+    assert.equal(setup.forgotten.filter(value=>value===id).length,1);
+  }
+});
 
 test('held refresh blocks stale controls until current revision',async()=>{
   const setup=await fixture();

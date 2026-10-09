@@ -82,7 +82,7 @@ export default class Goals extends View {
         if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
         forgetRequest(pending.id);this.pending=null;
         if (pending.kind==='clear') this.open=false;
-        toast({id:'goal-action',kind:'success',message:this.text[pending.kind==='clear'?'cleared':pending.kind==='pause'?'paused':'active']});
+        toast({id:'goal-action',kind:'info',message:this.text[pending.kind==='clear'?'cleared':pending.kind==='pause'?'paused':'active']});
       } catch(error) {
         const code=error.code ?? faultCode(error.message ?? String(error));
         const uncertain=['outcome_unknown','unavailable','busy'].includes(code);
