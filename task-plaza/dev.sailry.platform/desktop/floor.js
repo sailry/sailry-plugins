@@ -2,19 +2,11 @@
 import {sections} from './state.js';
 export const ROOM_COUNT = 8;
 export const SEAT_COUNT = 6;
-export const TILE_SIZE = 320;
-export const WORLD_SIZE = TILE_SIZE * 3;
-export const ROOM_CELLS = [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2]];
-export const DESK_SIZE = 72;
-export const PERSON_SIZE = 62;
 
 export function character(id) {
   let hash = 0;
   for (const value of id) hash = (hash * 31 + value.charCodeAt(0)) >>> 0;
-  return hash % 4;
-}
-export function seatPosition(index) {
-  return {left:36 + index % 3 * 76,top:116 + Math.floor(index / 3) * 76};
+  return hash % 6;
 }
 export class Floor {
   constructor() {

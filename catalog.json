@@ -9091,16 +9091,14 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "instructions": "Use update_plan for substantial multi-step tasks and keep one complete current list with honest statuses. Include affected files, implementation steps and verification; record risks and questions when they matter. Skip plans for direct questions and simple changes. Mark completed only after the described result is verified. Create a persistent goal only when the user requests one. Progress does not approve a plan or grant execution authority.",
             "actions": [
-              "activity.read",
-              "conversation.read",
-              "conversation.control"
+              "activity.read"
             ],
             "display": {
               "label": "Plan",
@@ -9121,12 +9119,7 @@
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/state.js",
                 "dev.sailry.platform/desktop/view.js",
-                "dev.sailry.platform/desktop/locales.js",
-                "dev.sailry.platform/desktop/floor.js",
-                "dev.sailry.platform/desktop/scene.js",
-                "dev.sailry.platform/desktop/dialogs.js",
-                "dev.sailry.platform/desktop/art.js",
-                "dev.sailry.platform/desktop/assets/office-atlas.png"
+                "dev.sailry.platform/desktop/locales.js"
               ],
               "navigation": {
                 "label": "Activity",
@@ -10605,6 +10598,69 @@
               "navigation_options": {
                 "order": 900,
                 "surface": "workspace"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "task-plaza",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "task-plaza",
+        "version": "0.1.0",
+        "description": "Project rooms and session activity",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "actions": [
+              "activity.read",
+              "conversation.read",
+              "conversation.control"
+            ],
+            "display": {
+              "label": "Task Plaza",
+              "locales": {
+                "zh-CN": "任务广场"
+              },
+              "icon": "reicon:building/buildings"
+            },
+            "description": {
+              "label": "Project rooms and session activity",
+              "locales": {
+                "zh-CN": "项目房间与会话动态"
+              }
+            },
+            "desktop": {
+              "entry": "dev.sailry.platform/desktop/main.js",
+              "resources": [
+                "dev.sailry.platform/desktop/main.js",
+                "dev.sailry.platform/desktop/state.js",
+                "dev.sailry.platform/desktop/view.js",
+                "dev.sailry.platform/desktop/locales.js",
+                "dev.sailry.platform/desktop/floor.js",
+                "dev.sailry.platform/desktop/geometry.js",
+                "dev.sailry.platform/desktop/scene.js",
+                "dev.sailry.platform/desktop/dialogs.js",
+                "dev.sailry.platform/desktop/art.js",
+                "dev.sailry.platform/desktop/assets/environment.png",
+                "dev.sailry.platform/desktop/assets/workers.png"
+              ],
+              "navigation": {
+                "label": "Task Plaza",
+                "locales": {
+                  "zh-CN": "任务广场"
+                },
+                "icon": "reicon:building/buildings"
+              },
+              "navigation_options": {
+                "pinned": true,
+                "order": 110,
+                "target": "node",
+                "retention": {
+                  "mode": "always"
+                }
               }
             }
           }

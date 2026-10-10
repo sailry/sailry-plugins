@@ -6,10 +6,6 @@ const en = {
   activity_approval:'Awaiting approval',activity_input:'Awaiting reply',activity_running:'Running',
   chat_interrupted:'Interrupted',turn_cancelled:'Stopped',terminal:'Terminal',live_disconnected:'Disconnected',
   activity_read_failed:'Could not load activity',retry:'Retry',
-  approval_plaza:'Approvals',no_approvals:'No pending approvals',open_conversation:'Open conversation',
-  room_running:count => `Running ${count}`,room_approvals:count => `Approval ${count}`,
-  approval_count:count => `Approvals ${count}`,floor:(current,total) => `Floor ${current} / ${total}`,
-  previous:'Previous',next:'Next',zoom_out:'Zoom out',zoom_in:'Zoom in',zoom_reset:'Reset zoom',
 };
 const zh = {
   activity_board_waiting:'待审批',activity_board_running:'运行中',activity_board_empty:'暂无活动',
@@ -18,9 +14,5 @@ const zh = {
   activity_approval:'待批准',activity_input:'待回复',activity_running:'进行中',
   chat_interrupted:'已中断',turn_cancelled:'已停止',terminal:'终端',live_disconnected:'已断开',
   activity_read_failed:'无法加载活动',retry:'重试',
-  approval_plaza:'审批广场',no_approvals:'暂无待审批',open_conversation:'打开会话',
-  room_running:count => `运行 ${count}`,room_approvals:count => `待审批 ${count}`,
-  approval_count:count => `待审批 ${count}`,floor:(current,total) => `楼层 ${current} / ${total}`,
-  previous:'上一页',next:'下一页',zoom_out:'缩小',zoom_in:'放大',zoom_reset:'重置缩放',
 };
 export const messages = locale => locale === 'zh-CN' ? zh : en;

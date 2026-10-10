@@ -35,10 +35,10 @@ test('schema and execution preserve the original UTF-8 byte limits', () => {
   assert.ok(update({title:null,steps:Array.from({length:8},() => step('a'.repeat(8192)))}).progress);
 });
 
-test('progress reports plans and declares shared conversation controls', async () => {
+test('the ordinary package uses canonical progress presentation without session mutation authority', async () => {
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'], tool = extension.tools[0];
-  assert.equal(manifest.name,'progress'); assert.deepEqual(extension.actions,['activity.read','conversation.read','conversation.control']);
+  assert.equal(manifest.name,'progress'); assert.deepEqual(extension.actions,['activity.read']);
   assert.equal(tool.presentation,'progress'); assert.equal(tool.grouping,'standalone');
   assert.deepEqual(tool.contexts,['plugin','workspace']);
   assert.equal(tool.handler.operation,undefined); assert.equal(tool.handler.name,'update');

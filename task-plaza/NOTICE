@@ -1,0 +1,15 @@
+Task Plaza package
+
+Activity projection and status copy derive from the reviewed Progress package
+at cd6dda4 and Sailry ef5e82ea desktop/activity source, under Apache-2.0.
+The independent package owns campus composition, stable seating and dialogs;
+authoritative session activity, approvals and navigation remain shared services.
+
+The transparent environment and worker atlases were generated with the built-in
+OpenAI ImageGen tool, using the user-approved Task Plaza design as the reference.
+The art direction follows the committed City Trader package at 6b09490695ae4d592ba3e4b8ee1b1eef73fd33f0;
+no City Trader artwork is copied. Prompts accompany the final assets.
+
+GPUI Kit has no miniature campus component. Only the scene illustration uses
+custom image layers; toolbar, buttons, focus, tooltips, modal and conversation
+use the existing Kit-backed public plugin SDK.
