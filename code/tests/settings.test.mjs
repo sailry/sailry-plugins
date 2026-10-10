@@ -2,22 +2,24 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {rows,installed,override} from '../dev.sailry.platform/desktop/model.js';
+import {rows,installed,available,failure,override} from '../dev.sailry.platform/desktop/model.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace('export default class','class');
 const plain=value=>JSON.parse(JSON.stringify(value));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-async function fixture() {
+async function fixture(locale='en') {
   let saved={revision:0,enabled:true,after_edit:true,servers:{},languages:{}};
   const commands=[],calls=[],forgotten=[],notices=[],fields=new Map(),releases=[];
   let serial=0,fail=null,hold=false,held=null;
   const requests=new Map(),row={server:'analyzer',languages:['Rust'],candidate:{server:'analyzer',package:{install:{package:'analyzer',version:'1',revision:'exact',urls:['https://example.com/pinned']}}}};
   const Type=vm.runInNewContext(source+'\nSettings',{
-    View:class{},context:()=>'{"locale":"en"}',messages,rows,override,
+    View:class{},context:()=>JSON.stringify({locale}),messages,rows,override,failure,
     prepareRequest(command){const id='request-'+(++serial);requests.set(id,plain(command));commands.push(plain(command));return id;},
     async completeRequest(id){calls.push(id);const request=requests.get(id);
-      if(fail){const failure=fail;fail=null;return {Err:{code:failure}};}
+      if(fail && (!fail.kind || fail.kind===request.kind)){
+        const {code,message}=fail;fail=null;return {Err:{code,message}};
+      }
       if(request.kind==='read_code_settings') {
         const result={Ok:{data:plain(saved)}};
         if(hold){hold=false;return new Promise(resolve=>{held=()=>resolve(result);});}
@@ -42,7 +44,7 @@ async function fixture() {
   async function settle(){for(let i=0;i<12;i++)await tick();}
   await settle();
   return {view,cx,row,fields,calls,commands,forgotten,notices,releases,settle,
-    saved:()=>saved,fail:code=>{fail=code;},external:()=>{saved={...saved,revision:saved.revision+1,after_edit:false};},
+    saved:()=>saved,fail:(code,message,kind)=>{fail={code,message,kind};},external:()=>{saved={...saved,revision:saved.revision+1,after_edit:false};},
     hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;}};
 }
 
@@ -53,6 +55,76 @@ test('unions installed packages and language descriptions',()=>{
   assert.throws(()=>override(['','[1]','',''],null));
   assert.throws(()=>override(['','','','{"ENV":1}'],null));
   assert.equal(override(['','','',''],{disabled:true}).disabled,true);
+});
+test('available rows use Node install descriptors',()=>{
+  const candidate=(name,install,status='not_installed')=>({server:name,status,package:{name,install}});
+  const catalog=[{name:'Ada',servers:[candidate('build',null),candidate('platform',null),
+    candidate('source',null),candidate('toolchain',null),candidate('supported',{package:'supported'}),
+    candidate('global',null,'stopped'),candidate('managed',null)]}];
+  const installations=[{package:'managed',status:'ready',receipt:{version:'1'}},
+    {package:'old',status:'ready',receipt:{version:'1'}},{package:'removed',status:'downloading'}];
+  const result=rows(catalog,installations);
+  assert.deepEqual(result.filter(available).map(item=>item.server),['removed','supported']);
+  assert.deepEqual(result.filter(installed).map(item=>item.server),['global','managed','old']);
+  for (const status of ['preparing','downloading','installing']) {
+    assert(available({installation:{status}}));
+    assert(!available({installation:{status,receipt:{version:'1'}}}));
+  }
+  for (const status of ['ready','failed','cancelled']) assert(!available({installation:{status}}));
+  assert(!available({candidate:{status:'not_installed'}}));
+});
+test('rule and source failures retain their meaning',()=>{
+  const cases=[
+    ['language source requires unsupported build or version rules','code_rules_unsupported'],
+    ['language source is not supported','code_source_unsupported'],
+    ['language package source is not supported by this installer','code_source_unsupported'],
+    ['language package URL needs unsupported qualifiers','code_source_unsupported'],
+    ['language asset requires unsupported installation rules','code_source_unsupported'],
+    ['language package has no asset for this platform','code_package_unavailable'],
+    ['language package asset is unavailable on this platform','code_package_unavailable'],
+    ['npm is not available in the Node login environment','code_toolchain_unavailable'],
+    ['language package is not in the current registry','code_registry_missing'],
+    ['Mason registry checksum did not match','code_rules_failed'],
+  ];
+  for (const [message,key] of cases) {
+    assert.equal(failure('invalid_request',message),key);
+    assert.equal(failure('outcome_unknown',message),'code_unknown');
+  }
+  assert.equal(failure('invalid_request','network response','update_code_rules'),'code_rules_failed');
+  assert.equal(failure('invalid_request','invalid language asset URL','install_code_server'),'code_package_invalid');
+  assert.equal(failure('invalid_request','invalid arguments','save_code_settings'),'code_invalid');
+});
+test('every locale supplies dialog and error copy',()=>{
+  const source=readFileSync(new URL('../dev.sailry.platform/desktop/locales.js',import.meta.url),'utf8')
+    .replace(/^export /gm,'');
+  const locales=vm.runInNewContext(source+'\nlocales');
+  assert.equal(Object.keys(locales).length,10);
+  for (const [locale,values] of Object.entries(locales)) {
+    assert.deepEqual(Object.keys(values).sort(),Object.keys(locales.en).sort(),locale);
+    for (const [key,value] of Object.entries(values)) assert.equal(typeof value,'string',`${locale}:${key}`);
+    if (locale!=='en') assert.notEqual(values.settings_cancel,locales.en.settings_cancel,locale);
+  }
+  assert.equal(messages('zh-CN').settings_cancel,'取消');
+  assert.equal(messages('zh-CN').close,'关闭');
+});
+test('installation faults show translated package errors',async()=>{
+  const f=await fixture('zh-CN');
+  f.fail('invalid_request','language source requires unsupported build or version rules');
+  f.view.submit({kind:'install_code_server',data:{install:f.row.candidate.package.install}},f.cx);
+  await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('zh-CN').code_rules_unsupported);
+  assert.equal(f.view.request,null);
+  f.fail('invalid_request','language package is not in the current registry');
+  f.view.submit({kind:'install_code_server',data:{install:f.row.candidate.package.install}},f.cx);
+  await f.settle();assert.equal(f.notices.at(-1).message,messages('zh-CN').code_registry_missing);
+});
+test('read and update rule faults show translated errors',async()=>{
+  const f=await fixture('zh-CN');
+  f.fail('invalid_request','invalid response','read_code_rules');f.view.load(f.cx);
+  await f.settle();assert.equal(f.notices.at(-1).message,messages('zh-CN').code_rules_failed);
+  f.fail('invalid_request','Mason update has no registry checksum');
+  f.view.submit({kind:'update_code_rules'},f.cx);
+  await f.settle();assert.equal(f.notices.at(-1).message,messages('zh-CN').code_rules_failed);
 });
 test('autosave closes only after durable confirmation',async()=>{
   const f=await fixture();f.view.open('edit',f.row,f.cx);

@@ -5,7 +5,7 @@ import {prepareRequest,completeRequest,forgetRequest,nextChange,nextCodeInstalla
 import {createText,readText,releaseText,nextTextEvent} from 'sailry/forms';
 import {nextControlEvent,modal_closed,toast} from 'sailry/ui';
 import {messages} from './locales.js';
-import {rows,override} from './model.js';
+import {rows,override,failure} from './model.js';
 import {render} from './view.js';
 
 const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -14,7 +14,10 @@ async function read(kind) {
   const request = prepareRequest({kind});
   try {
     const result = await completeRequest(request);
-    if (result.Err) throw new Error(JSON.stringify(result.Err));
+    if (result.Err) {
+      const error = new Error(result.Err.message);
+      error.fault = result.Err; error.kind = kind; throw error;
+    }
     return result.Ok.data;
   } finally { forgetRequest(request); }
 }
@@ -71,10 +74,8 @@ export default class Settings extends View {
   }
   busy() { return !this.ready || !this.connected || this.loading || this.pending || !!this.request; }
   rows() { return rows(this.catalog,this.installations); }
-  fail(code) {
-    const key = code === 'cancelled' ? 'code_cancelled' : code === 'revision_conflict' ? 'code_conflict' : code === 'invalid_request' ? 'code_invalid'
-      : code === 'permission_denied' ? 'code_denied' : code === 'outcome_unknown' ? 'code_unknown' : 'code_failed';
-    toast({id:'code-operation',kind:'error',message:this.text[key]});
+  fail(code,message,kind) {
+    toast({id:'code-operation',kind:'error',message:this.text[failure(code,message,kind)]});
   }
   load(cx) {
     if (!this.connected) return;
@@ -89,7 +90,9 @@ export default class Settings extends View {
         const rules = await read('read_code_rules');
         this.saved = settings; this.catalog = catalog; this.installations = installations; this.rules = rules;
         this.ready = true;
-      } catch (error) { this.fail(faultCode(String(error.message))); }
+      } catch (error) {
+        this.fail(error.fault?.code ?? faultCode(String(error.message)),error.fault?.message,error.kind);
+      }
       finally {
         this.loading = false; const refresh = this.refresh; this.refresh = false;
         if (refresh) this.load(cx);
@@ -109,7 +112,7 @@ export default class Settings extends View {
       try {
         const result = await completeRequest(request.id);
         if (result.Err) {
-          this.fail(result.Err.code);
+          this.fail(result.Err.code,result.Err.message,request.command.kind);
           if (result.Err.code === 'outcome_unknown') return;
           if (request.editor) { request.editor.blocked = true; request.editor.closing = false; }
         } else {
@@ -204,7 +207,7 @@ export default class Settings extends View {
       try {
         request = prepareRequest({kind:'cancel_code_install',data:{package:packageName}});
         const result = await completeRequest(request);
-        if (result.Err) this.fail(result.Err.code);
+        if (result.Err) this.fail(result.Err.code,result.Err.message,'cancel_code_install');
         else toast({id:'code-operation',message:this.text.code_cancel_requested,kind:'info'});
       } catch (_) { this.fail('failed'); }
       finally { if (request) forgetRequest(request); cx.notify(); }

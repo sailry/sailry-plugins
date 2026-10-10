@@ -3,8 +3,8 @@ import {div} from 'gpui-kit';
 import {Button,Switch,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {SettingsGroup,SegmentedTabs,IconButton,EmptyState,Modal,toast} from 'sailry/ui';
-import {installed,installing} from './model.js';
+import {SettingsGroup,SegmentedTabs,IconButton,EmptyState,Modal} from 'sailry/ui';
+import {installed,installing,available} from './model.js';
 
 function button(id,label,action,disabled=false) {
   return div().id(id).child(new Button(id).label(label).disabled(disabled).on_click(action));
@@ -71,9 +71,7 @@ function dialog(view) {
       .children(item.languages.length ? [div().id('code-server-description').text_sm()
         .text_color(theme().colors.muted_foreground).child(text.code_server_description.replace('%{languages}',item.languages.join(', ')))] : [])
       .child(SettingsGroup.new('code_information',{heading:false}).children(details.filter(([,value])=>value)
-        .map(([key,value])=>row(`code-detail-${key}`,text[`code_${key}`],value))))
-      .children(pkg?.unavailable ? [button('code-detail-availability-info',text.code_details,()=>
-        toast({id:'code-availability',message:pkg.unavailable,kind:'info'}))] : [])).child(footer);
+        .map(([key,value])=>row(`code-detail-${key}`,text[`code_${key}`],value))))).child(footer);
   }
   const details=owner.kind==='install' ? [['package',install.package],['version',install.version],['source',install.purl],
     ['downloads',install.urls.join('\n')],['licenses',install.licenses.join(', ')],
@@ -89,7 +87,7 @@ function dialog(view) {
       .child(div().id(`code-consent-code_${key}`).child(value))))).child(footer);
 }
 export function render(view) {
-  const text=view.text,items=view.rows().filter(item=>installed(item)===(view.tab==='installed'));
+  const text=view.text,items=view.rows().filter(view.tab==='installed' ? installed : available);
   return div().id('code-settings').v_flex().gap_6()
     .children(!view.ready && !view.loading ? [button('code-reload',text.code_retry,(_,cx)=>view.load(cx))] : [])
     .children(view.request ? [button('code-retry',text.code_retry,(_,cx)=>view.retry(cx),view.pending)] : [])
