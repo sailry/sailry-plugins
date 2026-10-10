@@ -1,5 +1,5 @@
 import {div} from 'gpui-kit';
-import {Button} from 'gpui-component';
+import {Button,Spinner} from 'gpui-component';
 import {theme} from 'sailry';
 import {PanelHeader, IconButton, Menu, ResourceTree, NativeContextMenu, Toggle, EmptyState} from 'sailry/ui';
 import {TextField} from 'sailry/forms';
@@ -47,8 +47,9 @@ export function render(view) {
           .on_click((_,cx) => view.run(cx => explorer.refresh(cx),cx))] : [])
         .child(!page?.entries?.length
           ? page?.error ? div().flex_1().min_h_0()
-            : EmptyState.new(page?.loaded ? 'files_directory_empty' : 'files_loading',{
-                variant:'list',fill_height:true,icon:'folder',label:text[page?.loaded ? 'files_directory_empty' : 'files_loading']})
+            : page?.loaded ? EmptyState.new('files_directory_empty',{
+                variant:'list',fill_height:true,icon:'folder',label:text.files_directory_empty})
+              : div().id('files_loading').flex_1().h_flex().items_center().justify_center().child(new Spinner())
           : div().flex_1().min_h_0().p_2().child(ResourceTree.new('files-tree',{items:JSON.stringify(explorer.items(text,actions.treeMenu())),guides:true,
               selected:explorer.paths(),current:explorer.current,menu:actions.tree('')})))
         .children(page?.partial ? [div().px_3().pb_2().text_xs().text_color(colors.muted_foreground)

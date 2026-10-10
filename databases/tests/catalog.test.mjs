@@ -43,4 +43,5 @@ test('empty and unloaded database folders retain disabled placeholder children',
   assert.equal(items.every(item=>!item.expanded),true);
   assert.equal(items[0].children[0].id,'empty:0');assert.equal(items[0].children[0].disabled,true);
   assert.equal(items[1].children[0].id,'loading:1');assert.equal(items[1].children[0].disabled,true);
+  assert.equal(items[1].children[0].label,'');assert.equal(items[1].children[0].icon,'loader-circle');
 });

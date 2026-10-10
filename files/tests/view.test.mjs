@@ -85,6 +85,7 @@ test('empty directories fill the sidebar without cards', () => {
     IconButton:{new:id => element('icon',{id})},Menu:{new:id => element('menu',{id})},
     NativeContextMenu:{new:id => element('context',{id})},
     EmptyState:{new:(id,props) => element('empty',{id,...props})},
+    Spinner:function() {return element('spinner');},
     ResourceTree:{new:() => assert.fail('an empty directory must not mount a tree')},
   });
   const view = {text:{files_directory_empty:'Empty folder'},search:null,
@@ -94,10 +95,10 @@ test('empty directories fill the sidebar without cards', () => {
   const empty = all(render(view)).find(node => node?.kind === 'empty');
   assert.deepEqual({...empty.props},{id:'files_directory_empty',variant:'list',fill_height:true,icon:'folder',label:'Empty folder'});
   view.explorer.pages.set('',{loaded:false,entries:[]});
-  const loading = all(render(view)).find(node => node?.kind === 'empty');
+  const nodes = all(render(view)),loading = nodes.find(node => node?.props?.id === 'files_loading');
   assert.equal(loading.props.id,'files_loading');
-  assert.equal(loading.props.variant,'list');
-  assert.equal(loading.props.fill_height,true);
+  assert.equal(nodes.some(node => node?.kind === 'empty'),false);
+  assert.equal(loading.items[0].kind,'spinner');
 });
 
 test('empty search fills its viewport', () => {

@@ -26,7 +26,7 @@ function fixture() {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar"]
+  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar", "Spinner"]
     .map(kind => [kind, function(id) { return element(kind, id); }]));
   const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SettingsPage", "Toggle", "Tooltip"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
@@ -71,14 +71,15 @@ test("page matches settings layout and separates empty Tasks and Runs tabs", () 
   assert.deepEqual(plain(nodes.get("tasks-runs-empty").props), {variant:"card", icon:"calendar", label:"No records"});
 });
 
-test("loading retains its placeholder without an empty card in either tab", () => {
+test("loading uses spinners in both tabs", () => {
   const setup=fixture();setup.view.loading=true;
   for(const tab of [0,1]) {
     setup.view.tab=tab;setup.render();
     assert.equal(setup.nodes.has("tasks-empty"),false);
     assert.equal(setup.nodes.has("tasks-runs-empty"),false);
     const list=setup.nodes.get(tab?"tasks-runs":"tasks-items");
-    assert.ok(list.items.some(item=>item.items.includes(setup.view.text.loading)));
+    assert.equal(setup.nodes.get(tab?'tasks-runs-loading':'tasks-items-loading').items[0].kind,'Spinner');
+    assert.ok(!list.items.some(item=>item.items.includes(setup.view.text.loading)));
   }
 });
 
@@ -290,7 +291,7 @@ test("host scope retains public task capabilities and localized tab copy", async
   const extension = manifest.extensions["dev.sailry.platform"];
   assert.equal(extension.scope, "host");
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.1");
+  assert.equal(manifest.version, "0.1.2");
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);
   assert.equal(extension.tools.length,1);
   assert.deepEqual(extension.tools[0].contexts,["workspace","plugin"]);

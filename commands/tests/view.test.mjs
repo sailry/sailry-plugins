@@ -23,7 +23,7 @@ function fixture(item, error = null) {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(['Button', 'Tab', 'TabBar'].map(kind =>
+  const constructors = Object.fromEntries(['Button', 'Tab', 'TabBar','Spinner'].map(kind =>
     [kind, function(id) { return element(kind, id); }]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
     div:() => element(), choices, ...constructors, theme:() => ({colors:{destructive:'danger'}}),
@@ -34,12 +34,14 @@ function fixture(item, error = null) {
     busy:!error, pending:null, openRetry:error === 'failed' ? item.id : null, error, retry:() => calls.push('retry')};
   const root = render(view);
   const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
-  return {nodes, calls, view, render:() => render(view), text:text(root)};
+  return {nodes, calls, view, root, render:() => render(view), text:text(root)};
 }
 
-test('stopped ordinary shells show loading without a stopped or open interstitial', () => {
+test('stopped ordinary shells attach with a spinner', () => {
   const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}});
-  assert.match(setup.text, /Loading/);
+  assert.doesNotMatch(setup.text, /Loading/);
+  const kinds = node => typeof node === 'string' ? [] : [node.kind,...node.items.flatMap(kinds)];
+  assert(kinds(setup.root).includes('Spinner'));
   assert.doesNotMatch(setup.text, /Terminal stopped/);
   assert.equal(setup.nodes.has('terminal-resume'), false);
   assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);

@@ -19,13 +19,14 @@ function fixture(options = {}) {
   const {Transfers,status} = vm.runInNewContext(`${source}\n({Transfers,status})`,{
     join:(directory,name) => directory ? `${directory}/${name}` : name,
     readTransfers:() => state,readClipboard:() => clipboard,
-    preparePaste:async (...args) => {calls.push(['preparePaste',...args]); return add(args[2],'move');},
+    preparePaste:async (...args) => {calls.push(['preparePaste',...args]); await options.preparePaste?.(...args); return add(args[2],'move');},
     prepareMove:async (...args) => {calls.push(['prepareMove',...args]); return add(args[1],'move');},
     transferAction:async (...args) => {calls.push(['action',...args]); return state.transfers.find(value => value.id === args[0]);},
     captureClipboard:async (...args) => {calls.push(['capture',...args]); if (options.capture) clipboard = await options.capture; return clipboard;},
-    nextTransferChange:async () => {throw new Error('closed');},
+    nextTransferChange:options.nextChange ?? (async () => {throw new Error('closed');}),
   });
   return {transfers:new Transfers((key,kind)=>{errors.push(key);notices.push({key,kind});}),status,calls,errors,notices,clipboard,
+    snapshot:()=>plain(state),
     update:(id,fields) => {state={cursor:String(BigInt(state.cursor)+1n),transfers:state.transfers.map(value => value.id === id ? {...value,...fields} : value)};}};
 }
 
@@ -84,6 +85,42 @@ test('observer and action completion advance a batch only once', async () => {
   assert.deepEqual(plain(f.calls.filter(call => call[0] === 'preparePaste')),
     [['preparePaste','captured','a.txt','a.txt'],['preparePaste','captured','b.txt','b.txt']]);
   assert.equal(f.transfers.value().path,'b.txt');
+});
+
+test('failed batch preparation preserves the next file for retry', async () => {
+  let failed = false;
+  const f = fixture({preparePaste:async (_clipboard,path) => {
+    if (path === 'b.txt' && !failed) { failed = true; throw new Error('Preparation busy'); }
+  }});
+  await f.transfers.paste('target',cx);
+  const previous = f.transfers.current;
+  await assert.rejects(f.transfers.next(cx),/Preparation busy/);
+  assert.equal(f.transfers.current,previous);
+  assert.deepEqual(plain(f.transfers.queue.paths),[{path:'b.txt',kind:'file'}]);
+  assert.equal(f.transfers.advancing,null);
+  await f.transfers.next(cx);
+  assert.equal(f.transfers.value().path,'target/b.txt');
+  assert.deepEqual(plain(f.transfers.queue.paths),[]);
+  assert.deepEqual(f.calls.filter(call => call[0] === 'preparePaste').map(call => call[2]),['a.txt','b.txt','b.txt']);
+});
+
+test('batch preparation failure keeps transfer observation alive', async () => {
+  let failed = false, reads = 0, f;
+  f = fixture({preparePaste:async (_clipboard,path) => {
+    if (path === 'b.txt' && !failed) { failed = true; throw new Error('Preparation busy'); }
+  },nextChange:async () => {
+    if (++reads > 2) throw new Error('closed');
+    f.update(f.transfers.current,{stage:'done'});
+    return f.snapshot();
+  }});
+  await f.transfers.paste('target',cx);
+  const jobs = [], owner = {notify(){},spawn(work){jobs.push(work(owner));}};
+  f.transfers.observe(owner);
+  await jobs[0];
+  assert.equal(reads,3);
+  assert.deepEqual(f.errors,['files_paste_failed']);
+  assert.equal(f.transfers.value().path,'target/b.txt');
+  assert.deepEqual(plain(f.transfers.queue.paths),[]);
 });
 
 test('drag moves use a scoped handle without replacing the existing clipboard', async () => {

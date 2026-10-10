@@ -25,6 +25,7 @@ const {history} = vm.runInNewContext(`${source}\n({history})`, {
   SelectableRow:{new:(id,props) => element('row',{id,...props})},
   Icon:class { constructor(path) { return element('icon',{path}); } },
   Button:class { constructor() { throw Error('history rows must use the selectable Kit adapter'); } },
+  Spinner:class {constructor() {return element('spinner');}},
 });
 function descendants(element) {
   return typeof element === 'object' && element !== null ? [element,...element.items.flatMap(descendants)] : [];

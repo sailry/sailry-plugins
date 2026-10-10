@@ -23,7 +23,8 @@ export class Catalog {
       this.tables.has(name) ? this.tables.get(name).length ? this.tables.get(name).map((table,row)=>({id:`table:${index}:${row}`,
         label:table.schema === 'main' || table.schema === name ? table.name : `${table.schema}.${table.name}`,icon:'table',menu:menu(table,name)}))
         : [{id:`empty:${index}`,label:text.db_tables_empty,disabled:true}]
-      : [{id:`${this.failed.has(name)?'retry':'loading'}:${index}`,label:text[this.failed.has(name)?'refresh':'db_catalog_loading'],disabled:!this.failed.has(name)}]}));
+      : [{id:`${this.failed.has(name)?'retry':'loading'}:${index}`,label:this.failed.has(name)?text.refresh:'',
+        icon:this.failed.has(name)?'rotate-cw':'loader-circle',disabled:!this.failed.has(name)}]}));
   }
   target(id) {
     const [kind,index,row]=id.split(':');

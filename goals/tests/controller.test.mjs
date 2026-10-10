@@ -12,18 +12,23 @@ function element(id) {
 
 async function fixture() {
   const host={goal:{id:'goal',description:'Requested work',state:'active',revision:'5'},
-    hold:false,held:[],failure:null};
+    hold:false,held:[],failure:null,readFailure:null};
   const prepared=[],completed=[],forgotten=[],contributions=[],notices=[],jobs=[];
   const never=()=>new Promise(()=>{});
   const modules=new Map(),context=vm.createContext({});
   const sdk={
     nextChange:never,nextContributionEvent:never,
     publishContributions:value=>contributions.push(plain(value)),
-    prepareRequest:request=>{prepared.push(plain(request));return String(prepared.length-1);},
+    prepareRequest:request=>{
+      if (prepared.length-forgotten.length>=16) throw new Error('Host request capacity exceeded');
+      prepared.push(plain(request));return String(prepared.length-1);
+    },
     completeRequest:async id=>{
       completed.push(id);
       const request=prepared[Number(id)];
       if(request.data.handler==='read') {
+        if(host.readFailure instanceof Error) throw host.readFailure;
+        if(host.readFailure) return {Err:{code:host.readFailure,message:'Read failed'}};
         const result={Ok:{data:{goal:plain(host.goal)}}};
         return host.hold ? new Promise(resolve=>host.held.push(()=>resolve(result))) : result;
       }
@@ -179,4 +184,24 @@ test('uncertain control retains exact request for retry',async()=>{
   assert.equal(setup.forgotten.filter(request=>request===id).length,1);
   assert.equal(setup.view.pending,null);
   assert.equal(setup.host.goal,null);
+});
+
+test('failed reads release capacity and preserve current goal',async()=>{
+  const setup=await fixture(), previous=plain(setup.view.goal);
+  for(let index=0;index<20;index++) {
+    setup.host.readFailure=index%2 ? new Error('Read disconnected') : 'busy';
+    setup.view.refresh(setup.cx);
+    await setup.jobs.at(-1);
+    assert.deepEqual(plain(setup.view.goal),previous);
+    assert.equal(setup.prepared.length,setup.forgotten.length);
+  }
+  assert.equal(setup.notices.length,1);
+  setup.host.readFailure=null;
+  setup.view.refresh(setup.cx);await setup.jobs.at(-1);
+  assert.equal(setup.view.readFailed,false);
+  assert.equal(setup.prepared.length,22);
+  assert.equal(setup.prepared.length,setup.forgotten.length);
+  await setup.perform('pause');
+  assert.equal(setup.host.goal.state,'paused');
+  assert.equal(setup.view.pending,null);
 });

@@ -1,0 +1,49 @@
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px; background: var(--document-background); color: var(--document-foreground); font-family: var(--document-font-family); font-size: var(--document-font-size); line-height: 1.65; overflow-wrap: anywhere; }
+main { max-width: 960px; margin: auto; }
+h1,h2,h3,h4 { line-height: 1.3; margin: 1.4em 0 .6em; font-weight: 650; }
+h1 { font-size: 1.8em; } h2 { font-size: 1.45em; } h3 { font-size: 1.2em; }
+section { margin-bottom: 32px; scroll-margin-top: 16px; }
+p { margin: .7em 0; } .lead { font-size: 1.15em; color: var(--document-muted-foreground); }
+a { color: var(--document-primary); text-decoration-thickness: .08em; text-underline-offset: .15em; }
+hr { border: 0; border-top: 1px solid var(--document-border); margin: 24px 0; }
+code,pre { font-family: var(--document-mono-font-family); }
+code { background: var(--document-muted); border-radius: var(--document-radius); padding: .1em .3em; }
+pre { white-space: pre-wrap; padding: 16px; background: var(--document-muted); border: 1px solid var(--document-border); border-radius: var(--document-radius); overflow-x: auto; }
+blockquote { margin: 16px 0; padding: 0 16px; border-left: 3px solid var(--document-primary); color: var(--document-muted-foreground); }
+img,svg { max-width: 100%; } figure { margin: 20px 0; } figcaption { color: var(--document-muted-foreground); font-size: .9em; }
+.callout { border: 1px solid var(--document-border); border-left: 4px solid var(--document-primary); background: var(--document-muted); padding: 12px 16px; border-radius: var(--document-radius); margin: 16px 0; }
+.callout.warn { border-left-color: var(--document-warning); } .callout.risk { border-left-color: var(--document-danger); } .callout.ok { border-left-color: var(--document-success); }
+.document-table { overflow-x: auto; margin: 20px 0; border: 1px solid var(--document-border); border-radius: var(--document-radius); }
+table { border-collapse: collapse; min-width: 100%; text-align: left; }
+th,td { border-bottom: 1px solid var(--document-border); padding: 10px 14px; vertical-align: top; }
+th { background: var(--document-secondary); font-weight: 600; } tbody tr:nth-child(even) { background: var(--document-muted); } tr:last-child td { border-bottom: 0; }
+caption { padding: 10px; color: var(--document-muted-foreground); }
+.steps { padding-left: 32px; } .steps > li { border-left: 1px solid var(--document-border); padding: 0 0 20px 16px; } .steps > li::marker { color: var(--document-primary); font-weight: 650; }
+.files { padding-left: 20px; } .files li { margin: .5em 0; }
+.badge { display: inline-block; padding: .1em .55em; border-radius: var(--document-radius); background: var(--document-secondary); font-size: .85em; color: var(--document-secondary-foreground); }
+.badge.new { color: var(--document-success); } .badge.changed { color: var(--document-primary); } .badge.removed,.badge.risk { color: var(--document-danger); }
+.compare { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 16px; margin: 20px 0; }
+.option,details { border: 1px solid var(--document-border); border-radius: var(--document-radius); padding: 16px; background: var(--document-muted); }
+.option > h3:first-child { margin-top: 0; } details { margin: 16px 0; } summary { cursor: pointer; font-weight: 600; }
+#document-toc { max-width: 960px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 8px 16px; border-bottom: 1px solid var(--document-border); padding-bottom: 16px; font-size: .9em; }
+#document-toc:empty { display: none; }
+.document-diagram,.document-chart { margin: 20px 0; overflow-x: auto; border: 1px solid var(--document-border); border-radius: var(--document-radius); background: var(--document-background); padding: 16px; }
+.document-diagram { cursor: zoom-in; } .document-chart > svg { display: block; margin: auto; }
+.document-math { overflow-x: auto; margin: 16px 0; text-align: center; } .document-math-inline { display: inline-block; vertical-align: middle; } .document-math-inline > svg { vertical-align: -.15em; }
+form { margin: 20px 0; border: 1px solid var(--document-border); border-radius: var(--document-radius); padding: 16px; background: var(--document-muted); }
+fieldset { min-width: 0; padding: 0; border: 0; margin: 0 0 20px; } legend { font-weight: 600; margin-bottom: 8px; }
+label { display: block; margin: .4em 0; } input,textarea,select,button { font: inherit; color: inherit; }
+input[type=text],textarea,select { width: 100%; padding: 8px 10px; background: var(--document-background); border: 1px solid var(--document-border); border-radius: var(--document-radius); }
+textarea { min-height: 80px; resize: vertical; } input[type=radio],input[type=checkbox] { accent-color: var(--document-primary); }
+button { border: 1px solid var(--document-border); border-radius: var(--document-radius); padding: 6px 12px; background: var(--document-primary); color: var(--document-primary-foreground); cursor: pointer; }
+button:disabled { cursor: default; opacity: .5; } input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible { outline: 2px solid var(--document-primary); outline-offset: 2px; }
+.document-readonly { color: var(--document-muted-foreground); }
+#document-visual { width: min(96vw,1400px); height: 94vh; padding: 0; background: var(--document-background); color: var(--document-foreground); border: 1px solid var(--document-border); border-radius: var(--document-radius); }
+#document-visual::backdrop { background: color-mix(in srgb,var(--document-background) 75%,transparent); }
+#document-visual header { display: flex; justify-content: flex-end; gap: 8px; padding: 12px; border-bottom: 1px solid var(--document-border); }
+#document-visual-content { height: calc(100% - 65px); overflow: auto; padding: 24px; touch-action: pan-x pan-y; }
+#document-visual-content > svg { max-width: none; transform-origin: top left; }
+@media(max-width:480px) { body { padding: 16px; } th,td { padding: 8px 10px; } }
+@media print { #document-toc,#document-visual,button { display: none; } body { padding: 0; } details > * { display: block; } }

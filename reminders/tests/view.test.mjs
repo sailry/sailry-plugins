@@ -27,7 +27,7 @@ function fixture(items = []) {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar"]
+  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar", "Spinner"]
     .map(kind => [kind, function(id, label) { return element(kind, id, {label}); }]));
   const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SelectField", "SettingsPage", "Toggle"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
@@ -94,10 +94,11 @@ test("forms delegate heading, close guard, body and footer to shared modals", ()
   assert.equal(setup.nodes.get("reminder-dialog-0").props.dismissable,true);
 });
 
-test("loading retains its placeholder without an empty reminder card", () => {
+test("loading uses a spinner without an empty reminder card", () => {
   const setup=fixture();setup.view.loading=true;setup.render();
   assert.equal(setup.nodes.has("reminders-empty"),false);
-  assert.ok(setup.nodes.get("reminders-items").items.some(item=>item.items.includes(setup.view.text.loading)));
+  assert.equal(setup.nodes.get('reminders-loading').items[0].kind,'Spinner');
+  assert.ok(!setup.nodes.get("reminders-items").items.some(item=>item.items.includes(setup.view.text.loading)));
 });
 
 test("background refresh preserves the loaded empty card", () => {
@@ -233,7 +234,7 @@ test("desktop navigation and project tool share the host package without contrac
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.1.1");
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);
   assert.equal(extension.tools.length, 1);
   assert.deepEqual(extension.tools[0].contexts, ["workspace"]);

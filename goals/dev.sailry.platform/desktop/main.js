@@ -57,9 +57,10 @@ export default class Goals extends View {
       try {do {
         this.dirty=false;
         const id=prepareRequest({kind:'call_plugin',data:{handler:'read',input:{}}});
-        const result=await completeRequest(id);
+        let result;
+        try {result=await completeRequest(id);}
+        finally {forgetRequest(id);}
         if (result.Err) throw new Error(result.Err.message);
-        forgetRequest(id);
         this.goal=result.Ok.data.goal;
         this.readFailed=false;
       } while(this.dirty);}

@@ -1,5 +1,5 @@
 import {div} from "gpui-kit";
-import {Button, Tab, TabBar} from "gpui-component";
+import {Button, Tab, TabBar, Spinner} from "gpui-component";
 import {theme} from "sailry";
 import {CardColumn, CardList, CardRow, CardSummary, EmptyState, IconButton, Modal, SettingsPage, Toggle, Tooltip, openSession} from "sailry/ui";
 import {render as editor} from "./editor.js";
@@ -61,13 +61,13 @@ export function render(view) {
   const {text} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
   const content = view.tab === 1
     ? CardList.new("tasks-runs")
-      .children(view.loading && !view.loaded && !view.history.length ? [div().child(text.loading)] : [])
+      .children(view.loading && !view.loaded && !view.history.length ? [div().id('tasks-runs-loading').h_flex().justify_center().child(new Spinner())] : [])
       .children((view.loaded || !view.loading) && !view.history.length ? [EmptyState.new("tasks-runs-empty",{variant:"card",icon:"calendar",label:text.noRuns})] : [])
       .children(view.history.map(item => execution(view,item)))
       .children(view.more ? [new Button("tasks-more").label(text.more).disabled(view.loading)
         .on_click((_,cx) => { view.pages++; view.refresh(cx); })] : [])
     : CardList.new("tasks-items")
-      .children(view.loading && !view.loaded && !view.items.length ? [div().child(text.loading)] : [])
+      .children(view.loading && !view.loaded && !view.items.length ? [div().id('tasks-items-loading').h_flex().justify_center().child(new Spinner())] : [])
       .children((view.loaded || !view.loading) && !view.items.length ? [EmptyState.new("tasks-empty",{variant:"card",icon:"calendar",label:text.empty})] : [])
       .children(view.items.map(item => card(view,item)));
   const body = SettingsPage.new("tasks", {title:text.title, description:text.description})

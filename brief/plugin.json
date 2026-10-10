@@ -1,0 +1,141 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "brief",
+  "version": "0.1.0",
+  "extensions": {
+    "dev.sailry.platform": {
+      "api_version": "v1",
+      "actions": [
+        "artifacts.read",
+        "artifacts.write"
+      ],
+      "display": {
+        "label": "Briefs",
+        "locales": {
+          "zh-CN": "方案",
+          "zh-TW": "方案",
+          "ja": "提案",
+          "ko": "제안",
+          "de": "Entwürfe",
+          "es": "Propuestas",
+          "fr": "Propositions",
+          "pt-BR": "Propostas",
+          "ru": "Предложения"
+        },
+        "icon": "reicon:files/file-text"
+      },
+      "description": {
+        "label": "Create visual HTML briefs",
+        "locales": {
+          "zh-CN": "生成可视化 HTML 方案",
+          "zh-TW": "產生視覺化 HTML 方案",
+          "ja": "HTML で提案を可視化",
+          "ko": "HTML 제안 시각화",
+          "de": "Visuelle HTML-Entwürfe erstellen",
+          "es": "Crear propuestas visuales en HTML",
+          "fr": "Créer des propositions HTML visuelles",
+          "pt-BR": "Criar propostas visuais em HTML",
+          "ru": "Создавать наглядные HTML-предложения"
+        }
+      },
+      "instructions": "Reply with the complete ordinary conversation plan first. When a visual document would make a complex design, PRD, review or incident report easier to understand, offer an optional HTML brief with one concise question. Do not generate it until the user chooses it. If the user explicitly asks for HTML, generate it directly. Load this package's brief skill before writing. write_brief stores only a session-owned HTML fragment on the execution Node, including in Plan mode; it never authorizes project changes or starts plan execution. Only the main session can write. Read an existing brief before revising it and pass its exact id and latest revision as expected_revision. Keep the card summary short; do not return the full HTML in the final answer. Brief form answers arrive as ordinary user messages, including queued messages while a turn is active. Treat them as answers to the named brief and revision, not permission to execute a plan.",
+      "artifact_view": {
+        "template": "dev.sailry.platform/document/template.html",
+        "styles": [
+          "dev.sailry.platform/document/brief.css"
+        ],
+        "scripts": [
+          "dev.sailry.platform/document/charts.js",
+          "dev.sailry.platform/document/forms.js",
+          "dev.sailry.platform/document/brief.js"
+        ],
+        "libraries": [
+          "mermaid",
+          "echarts",
+          "mathjax"
+        ]
+      },
+      "tools": [
+        {
+          "name": "write_brief",
+          "operation": "artifacts.write",
+          "presentation": "summary",
+          "description": "Create or revise a visual HTML brief only after the user accepts the optional HTML offer, or explicitly asks for HTML. Load the brief skill for supported markup. Supply title, optional short summary, and a sanitized main-body HTML fragment. Omit id and expected_revision to create; to revise, read the latest brief and pass its exact id and revision. The session-owned document does not modify project files or approve execution. Returns a versioned preview card and small metadata, never the HTML.",
+          "display": {
+            "label": "Write brief",
+            "locales": {
+              "zh-CN": "生成方案",
+              "zh-TW": "產生方案",
+              "ja": "提案を作成",
+              "ko": "제안 작성",
+              "de": "Entwurf erstellen",
+              "es": "Crear propuesta",
+              "fr": "Créer une proposition",
+              "pt-BR": "Criar proposta",
+              "ru": "Создать предложение"
+            },
+            "input": {
+              "summary": {
+                "path": "/title"
+              }
+            }
+          }
+        },
+        {
+          "name": "read_brief",
+          "operation": "artifacts.read",
+          "presentation": "summary",
+          "description": "Read the HTML body and metadata of a brief belonging to this main session. Supply id and optional revision; omitted revision reads the latest. Use the latest revision as expected_revision when revising. Historic reads do not establish the current revision.",
+          "display": {
+            "label": "Read brief",
+            "locales": {
+              "zh-CN": "读取方案",
+              "zh-TW": "讀取方案",
+              "ja": "提案を読む",
+              "ko": "제안 읽기",
+              "de": "Entwurf lesen",
+              "es": "Leer propuesta",
+              "fr": "Lire la proposition",
+              "pt-BR": "Ler proposta",
+              "ru": "Прочитать предложение"
+            }
+          }
+        },
+        {
+          "name": "list_briefs",
+          "operation": "artifacts.list",
+          "presentation": "summary",
+          "description": "List briefs in this session without reading their HTML. To request another bounded page, pass the returned next_after cursor as after. Omit after for the first page.",
+          "display": {
+            "label": "List briefs",
+            "locales": {
+              "zh-CN": "方案列表",
+              "zh-TW": "方案清單",
+              "ja": "提案一覧",
+              "ko": "제안 목록",
+              "de": "Entwürfe auflisten",
+              "es": "Listar propuestas",
+              "fr": "Lister les propositions",
+              "pt-BR": "Listar propostas",
+              "ru": "Список предложений"
+            }
+          }
+        }
+      ],
+      "desktop": {
+        "entry": "dev.sailry.platform/desktop/main.js",
+        "resources": [
+          "dev.sailry.platform/desktop/main.js",
+          "dev.sailry.platform/desktop/controller.js",
+          "dev.sailry.platform/desktop/view.js",
+          "dev.sailry.platform/desktop/locales.js",
+          "dev.sailry.platform/document/template.html",
+          "dev.sailry.platform/document/brief.css",
+          "dev.sailry.platform/document/charts.js",
+          "dev.sailry.platform/document/forms.js",
+          "dev.sailry.platform/document/brief.js"
+        ]
+      }
+    }
+  }
+}

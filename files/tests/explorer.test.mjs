@@ -70,6 +70,7 @@ test('directory placeholders and continuation rows cannot become selected file p
   await explorer.load('',false,cx);
   const items = explorer.items({files_loading:'Reading',files_load_more:'Load more'},() => []);
   assert.equal(items[0].children[0].disabled,true);
+  assert.equal(items[0].children[0].label,'');assert.equal(items[0].children[0].icon,'loader-circle');
   assert.equal(items[1].id,'\0more');
   explorer.select('\0more');
   assert.deepEqual(plain(explorer.paths()),[]);

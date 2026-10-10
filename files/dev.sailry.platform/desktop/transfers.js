@@ -35,7 +35,10 @@ export class Transfers {
       try { while (true) {
         const state = await nextTransferChange(cursor); cursor = state.cursor;
         this.accept(state,cx);
-        if (this.value()?.stage === 'done' && this.queue?.paths.length) await this.next(cx);
+        if (this.value()?.stage === 'done' && this.queue?.paths.length) {
+          try { await this.next(cx); }
+          catch (_) { this.report('files_paste_failed'); }
+        }
       } } catch (_) { /* The core retains admitted transfers after this view closes. */ }
     });
   }
@@ -58,11 +61,12 @@ export class Transfers {
 
   async next(cx) {
     if (this.advancing) return this.advancing;
-    const queue = this.queue, entry = queue?.paths.shift();
+    const queue = this.queue, entry = queue?.paths[0];
     if (!entry) return;
     this.advancing = (async () => {
       const transfer = await preparePaste(queue.clipboard,entry.path,join(queue.directory,entry.path.split('/').at(-1)));
       if (this.queue !== queue) return;
+      queue.paths.shift();
       this.current = transfer.id; this.refresh(cx);
     })();
     try { await this.advancing; }

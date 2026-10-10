@@ -1,6 +1,6 @@
 // Accepted Git layout composed with Kit controls and retained native diff leaves.
 import {div} from 'gpui-kit';
-import {Button, Icon, StatusBar, Pagination} from 'gpui-component';
+import {Button, Icon, StatusBar, Pagination, Spinner} from 'gpui-component';
 import {Header,theme} from 'sailry';
 import {TextField} from 'sailry/forms';
 import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, DiffSurface, SourceSurface, Modal, Picker, SegmentedTabs, EmptyState, Collapse, CollapseSlot} from 'sailry/ui';
@@ -12,7 +12,8 @@ const click = (view,value) => (_,cx) => view.run(() => view.actions.invoke(value
 
 export function empty(view,changes = false) {
   const repo = view.repo, colors = theme().colors;
-  let title = !repo.status ? (repo.error ? null : 'git_loading') : repo.status.kind === 'directory' ? 'git_directory_title'
+  if (!repo.status && !repo.error) return div().id('git_loading').flex_1().min_h_0().h_flex().items_center().justify_center().child(new Spinner());
+  let title = !repo.status ? null : repo.status.kind === 'directory' ? 'git_directory_title'
     : repo.status.kind === 'unborn' ? 'git_unborn_title' : changes ? 'git_no_changes' : 'git_diff_empty';
   if (changes && repo.status && repo.status.kind !== 'directory') return div().flex_1().min_h_0().px_4().py_6().text_sm().text_color(colors.muted_foreground).child(view.text.git_no_changes);
   if (!title) return div().flex_1().min_h_0();
@@ -139,7 +140,7 @@ function history(view) {
           .child(div().size_2().rounded_full().bg(colors.muted_foreground)))
         .child(div().v_flex().flex_1().min_w_0().gap_1().child(div().truncate().child(entry.message.split('\n')[0]))
           .child(historyMetadata(repo,entry,colors))))
-        : [div().p_2().text_sm().text_color(colors.muted_foreground).child(view.text.git_loading)])
+        : [div().id('git-history-loading').p_2().h_flex().justify_center().child(new Spinner())])
       .children(page && (page.references_truncated || page.entries.some(entry => entry.truncated))
         ? [div().p_2().text_xs().text_color(colors.muted_foreground).child(view.text.git_history_partial)] : []))
     .children(page && (page.offset > 0 || page.next) ? [div().h_flex().flex_shrink(0).px_2().justify_between()

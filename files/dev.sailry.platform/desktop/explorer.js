@@ -146,9 +146,9 @@ export class Explorer {
           ...(folder ? {children:children(path)} : {})};
       });
       if (!rows.length && directory !== '') rows.push({id:`${directory}\0empty`,
-        label:text[page?.loaded ? 'files_directory_empty' : 'files_loading'],disabled:true});
+        label:page?.loaded ? text.files_directory_empty : '',...(page?.loaded ? {} : {icon:'loader-circle'}),disabled:true});
       if (page?.next) rows.push({id:`${directory}\0more`,icon:'ellipsis',
-        label:text[page.loading ? 'files_loading' : 'files_load_more'],disabled:page.loading});
+        label:text.files_load_more,disabled:page.loading});
       return rows;
     };
     return children('');
