@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -179,7 +179,10 @@
           "pinned": true,
           "order": 700,
           "target": "node",
-          "details": true
+          "details": true,
+          "retention": {
+            "mode": "always"
+          }
         },
         "conversations": [
           {

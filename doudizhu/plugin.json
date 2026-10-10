@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "doudizhu",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Play Dou Dizhu with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
@@ -39,7 +39,12 @@
           "dev.sailry.platform/desktop/history.js",
           "dev.sailry.platform/desktop/hand.js",
           "dev.sailry.platform/desktop/selection.js"
-        ]
+        ],
+        "navigation_options": {
+          "retention": {
+            "mode": "always"
+          }
+        }
       },
       "settings_schema": "dev.sailry.platform/settings.json",
       "display": {

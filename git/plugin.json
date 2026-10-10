@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -1489,7 +1489,10 @@
           "pinned": true,
           "order": 500,
           "target": "worktree",
-          "details": true
+          "details": true,
+          "retention": {
+            "mode": "always"
+          }
         },
         "panel": {
           "label": "Git",
