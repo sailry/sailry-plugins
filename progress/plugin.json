@@ -1,14 +1,16 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "progress",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Track task progress",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
       "instructions": "Use update_plan for substantial multi-step tasks and keep one complete current list with honest statuses. Include affected files, implementation steps and verification; record risks and questions when they matter. Skip plans for direct questions and simple changes. Mark completed only after the described result is verified. Create a persistent goal only when the user requests one. Progress does not approve a plan or grant execution authority.",
       "actions": [
-        "activity.read"
+        "activity.read",
+        "conversation.read",
+        "conversation.control"
       ],
       "display": {
         "label": "Plan",
@@ -29,7 +31,12 @@
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/state.js",
           "dev.sailry.platform/desktop/view.js",
-          "dev.sailry.platform/desktop/locales.js"
+          "dev.sailry.platform/desktop/locales.js",
+          "dev.sailry.platform/desktop/floor.js",
+          "dev.sailry.platform/desktop/scene.js",
+          "dev.sailry.platform/desktop/dialogs.js",
+          "dev.sailry.platform/desktop/art.js",
+          "dev.sailry.platform/desktop/assets/office-atlas.png"
         ],
         "navigation": {
           "label": "Activity",
@@ -39,7 +46,8 @@
         "navigation_options": {
           "pinned": true,
           "order": 100,
-          "target": "node"
+          "target": "node",
+          "retention": {"mode": "always"}
         }
       },
       "host": {

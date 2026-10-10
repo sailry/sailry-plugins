@@ -3,8 +3,12 @@ Progress package
 Tool description, schema, validation and display metadata are adapted from
 Sailry ef5e82ea, plugins/builtin/progress/agent/mod.rs,
 plugins/builtin/progress/desktop/messages.rs and desktop/activity/{board,cards,projects}.rs.
-The desktop package preserves its workbench grouping and card layout through
-the public activity catalog, shared Client lanes and ordinary Kit controls.
+The desktop office scene uses the public activity catalog, shared Client lanes,
+Kit controls, and the shared native conversation and modal components.
+
+The transparent office atlas was generated for this package with OpenAI ImageGen.
+Its soft miniature art direction follows the committed City Trader package at
+6b09490695ae4d592ba3e4b8ee1b1eef73fd33f0; no City Trader artwork is copied.
 
 The core records authoritative tool history and reduces task progress.
 Session activity, navigation and notifications remain core capabilities.
