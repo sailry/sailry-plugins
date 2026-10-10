@@ -64,7 +64,7 @@
               {
                 "name": "write_brief",
                 "operation": "artifacts.write",
-                "presentation": "summary",
+                "presentation": "content",
                 "description": "Create or revise a visual HTML brief only after the user accepts the optional HTML offer, or explicitly asks for HTML. Load the brief skill for supported markup. Supply title, optional short summary, and a sanitized main-body HTML fragment. Omit id and expected_revision to create; to revise, read the latest brief and pass its exact id and revision. The session-owned document does not modify project files or approve execution. Returns a versioned preview card and small metadata, never the HTML.",
                 "display": {
                   "label": "Write brief",
