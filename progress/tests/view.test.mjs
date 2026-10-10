@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {lanes,labels,sections,clock} from '../dev.sailry.platform/desktop/state.js';
+import {lanes,labels,sections,clock,plain as readable} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
@@ -24,11 +24,11 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','HoverSwap','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot']
+  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),Icon:function(id){return element('Icon',id);},
-    ...adapters,lanes,labels,sections,clock,pageInsets:()=>({rail_width:56}),
+    div:()=>element(),Icon:function(id){return element('Icon',id);},Tag:function(){return element('Tag');},
+    ...adapters,lanes,labels,sections,clock,plain:readable,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{muted_foreground:'muted',border:'border'}}),window:{rem_size:()=>16,viewport_size:()=>({width:1440})},
   });
   const view={text:messages('en'),board:{connected:true,error:false,previews:new Map(),
@@ -101,10 +101,10 @@ test('project headings and content use host slots with a natural scrolling ceili
     assert.deepEqual(plain(area.props),{max_height:520});
     assert.equal(area.selector,'captured-activity-project-activity_idle-project-cards');
     assert.equal(area.items.length,7);
-    const card=setup.nodes.get('activity-retained-0'),message=setup.nodes.get('activity-retained-0-content');
+    const card=setup.nodes.get('activity-retained-0');
     assert.equal(card.kind,'CardButton');
     assert.equal(card.props.fill_height,undefined);
-    assert.equal(message.props.lines,2);
+    assert.equal(setup.nodes.has('activity-retained-0-content'),false);
     assert.deepEqual(plain(setup.nodes.get('activity-retained-0-title').style.truncate),[]);
     assert.ok(setup.nodes.has('activity-retained-0-location'));
     assert.equal(setup.view.targets.has(selector),false);
@@ -134,35 +134,40 @@ test('native project scroll identity includes the captured node and lane',()=>{
   catalog.node='captured';setup.render();assert.equal(setup.nodes.get(key).kind,'ScrollRegion');
 });
 
-test('compact cards show muted project metadata and execution time on hover',()=>{
+test('cards show project, title, plain preview, status and timing',()=>{
   const setup=fixture(),catalog=setup.view.board.catalog;
-  const time=new Date(2026,9,3,20,30).getTime();
+  const started=new Date(2026,9,3,20,30).getTime();
   catalog.sessions=[{id:'retained',project:'project',worktree:'tree',archived:false,delegation:null,
-    activity:{title:'Retained task',queued:0,waiting:null,run:{turn:'turn',status:'running',started_ms:time}}}];
-  catalog.session_lanes.retained='running';setup.render();
-  const card=setup.nodes.get('activity-retained'),body=card.items[0],header=body.items[0];
-  assert.equal(body.items.length,2);
-  assert.equal(header.selector,'activity-retained-header');
-  assert.deepEqual(plain(header.style.w_full),[]);
-  assert.deepEqual(plain(header.style.justify_between),[]);
+    activity:{title:'Retained task',queued:0,waiting:null,run:{turn:'turn',status:'running',started_ms:started}}}];
+  catalog.session_lanes.retained='running';
+  setup.view.board.previews.set('retained',{session:'retained',turn:'turn',text:'## Summary\n\n- **Done**: `cargo test`'});
+  setup.render();
+  const card=setup.nodes.get('activity-retained'),body=card.items[0];
+  assert.deepEqual(body.items.map(item=>item.selector),
+    ['activity-retained-header','activity-retained-title','activity-retained-content','activity-retained-footer']);
+  const location=setup.nodes.get('activity-retained-location');
+  assert.equal(setup.nodes.get('activity-retained-project').items[0],'Project');
+  assert.ok(containing(location,setup.nodes.get('activity-retained-project-icon')));
   const title=setup.nodes.get('activity-retained-title');
-  assert.deepEqual(plain(title.style.flex_1),[]);
-  assert.deepEqual(plain(title.style.min_w_0),[]);
   assert.deepEqual(plain(title.style.truncate),[]);
-  assert.equal(header.items[0].kind,'ThinkingIcon');
-  assert.equal(header.items[0].props.phase,'turn_tools_running');
-  const metadata=setup.nodes.get('activity-retained-metadata');
-  assert.equal(metadata.kind,'HoverSwap');assert.equal(metadata.props.group,'activity-retained');
-  assert.equal(header.items[2],metadata);
-  assert.deepEqual(plain(setup.nodes.get('activity-retained-location').style.opacity),[0.7]);
-  assert.deepEqual(plain(setup.nodes.get('activity-retained-location').style.justify_end),[]);
-  assert.deepEqual(plain(setup.nodes.get('activity-retained-appearance').props.value).color,'none');
-  assert.equal(setup.nodes.get('activity-retained-time').items[1],'20:30');
-  assert.deepEqual(plain(setup.nodes.get('activity-retained-time').style.justify_end),[]);
-  assert.equal(setup.nodes.has('activity-retained-worktree-icon'),false);
-  assert.equal(setup.nodes.get('activity-retained-content').props.lines,2);
-  catalog.sessions[0].activity.run=null;setup.render();
+  assert.deepEqual(plain(title.style.text_base),[]);
+  assert.equal(setup.nodes.get('activity-retained-content').props.text,'Summary Done: cargo test');
+  const state=setup.nodes.get('activity-retained-state');
+  assert.equal(state.items[0].kind,'ThinkingIcon');
+  assert.equal(state.items[0].props.phase,'turn_tools_running');
+  const tag=state.items[1];
+  assert.equal(tag.kind,'Tag');
+  assert.deepEqual(plain(tag.style.variant),['primary']);
+  assert.deepEqual(plain(tag.style.rounded_full),[]);
+  assert.equal(tag.items[0],setup.view.text.activity_running);
+  assert.equal(setup.nodes.get('activity-retained-time').items[1],clock(started));
+  assert.equal(setup.nodes.has('activity-retained-duration'),false);
+  catalog.sessions[0].activity.run={turn:'turn',status:'completed',started_ms:started,finished_ms:started+94000};
+  catalog.session_lanes.retained='completed';setup.render();
   assert.equal(setup.nodes.has('activity-retained-loading'),false);
+  assert.deepEqual(plain(setup.nodes.get('activity-retained-state').items[0].style.variant),['success']);
+  assert.equal(setup.nodes.get('activity-retained-duration').items[1],'1m34s');
+  catalog.sessions[0].activity.run=null;setup.render();
   assert.equal(setup.nodes.has('activity-retained-time'),false);
-  assert.equal(setup.nodes.get('activity-retained-metadata').items.length,1);
+  assert.equal(setup.nodes.has('activity-retained-content'),false);
 });

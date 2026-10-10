@@ -14,9 +14,29 @@ export function sessionStatus(session,text) {
   return queued > 0 ? `${text[key]} · ${text.turn_queued} ${queued}` : text[key];
 }
 
-export function clock(timestamp) {
-  const date = new Date(timestamp);
-  return `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+export function clock(timestamp,now = Date.now()) {
+  const date = new Date(timestamp), today = new Date(now), pad = value => String(value).padStart(2,'0');
+  const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return date.toDateString() === today.toDateString() ? time : `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`;
+}
+
+// Finished runs report elapsed time; active runs show only their start time.
+export function duration(run) {
+  if (!Number.isFinite(run?.started_ms) || !Number.isFinite(run?.finished_ms)) return null;
+  const seconds = Math.max(0,Math.round((run.finished_ms - run.started_ms) / 1000));
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m${seconds % 60 ? `${seconds % 60}s` : ''}`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h${Math.floor(seconds % 3600 / 60) ? `${Math.floor(seconds % 3600 / 60)}m` : ''}`;
+  return `${Math.floor(seconds / 86400)}d${Math.floor(seconds % 86400 / 3600) ? `${Math.floor(seconds % 86400 / 3600)}h` : ''}`;
+}
+
+// Previews are Markdown; cards show their plain reading text.
+export function plain(text) {
+  return text.split('\n')
+    .filter(line => !/^\s*\|?\s*:?-{3,}/.test(line))
+    .map(line => line.replace(/^\s*(#{1,6}\s+|>\s?|[-*+]\s+(\[[ xX]\]\s+)?|\d+[.)]\s+)/,'').replace(/^\s*\|(.*)\|\s*$/,'$1').replace(/\s*\|\s*/g,' · '))
+    .join(' ').replace(/!?\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/(\*\*|__|~~|`)/g,'')
+    .replace(/\s+/g,' ').trim();
 }
 
 export function sections(catalog,previews,text) {
@@ -48,6 +68,7 @@ export function sections(catalog,previews,text) {
       phase:['running','stopping'].includes(session.activity.run?.status)
         ? session.activity.waiting ? 'turn_waiting' : 'turn_tools_running' : null,
       content:content?.trim() ? ['failed','waiting'].includes(lane) ? `${status} · ${content}` : content : status,
+      preview:content?.trim() ? content : null,duration:duration(session.activity.run),
       project:project?.name ?? '',path:session.project ? tree.path : '',appearance:project?.appearance ?? defaultAppearance});
   }
   for (const terminal of catalog.terminals) {
@@ -57,7 +78,7 @@ export function sections(catalog,previews,text) {
     const project = projects.get(tree.project), status = text[lane === 'waiting' ? 'activity_input' : labels[lane]];
     add(state,tree.project,{kind:'terminal',id:terminal.id,lane,
       title:terminal.title?.trim() ? terminal.title : text.terminal,status,content:status,
-      time:null,phase:lane === 'running' ? 'turn_tools_running' : null,
+      preview:null,duration:null,time:null,phase:lane === 'running' ? 'turn_tools_running' : null,
       project:project?.name ?? '',path:tree.project ? tree.path : '',appearance:project?.appearance ?? defaultAppearance});
   }
   return Object.fromEntries(lanes.map(lane => [lane,[...columns[lane].values()]
