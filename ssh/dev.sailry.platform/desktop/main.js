@@ -19,7 +19,7 @@ export default class Ssh extends View {
     this.terminalSelection=0;this.terminalClose=null;
     this.editor=null;this.picker=false;this.pickerProfile=null;this.pickerRevision=0;this.confirmation=null;this.fileEdit=null;this.commandOpen=false;this.transfer=null;this.dialog=0;this.jobs=[];this.transfersObserved=false;this.installing=null;
     this.command=createText('',{multiline:true,rows:[2,6],placeholder:this.text.ssh_command_hint});this.output=[createText('',{multiline:true,rows:[2,12]}),createText('',{multiline:true,rows:[2,12]})];
-    this.run(async cx=>{await this.refresh(cx);const catalog=await readProjectCatalog();this.projects=catalog.projects;this.worktrees=catalog.worktrees;},cx);
+    this.run(cx=>this.refresh(cx),cx);
     this.watch(nextChange,(change,cx)=>{this.connected=change.connected;if(change.connected)this.run(cx=>this.refresh(cx),cx);},cx,true);
     this.watch(nextTransfers,(value,cx)=>this.transfers(value,cx),cx,true);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
@@ -77,7 +77,10 @@ export default class Ssh extends View {
     const terminals=new Map();
     for(const id of ids){if(!profiles.some(profile=>profile.id===id))continue;for(const info of await listSshTerminals(id))terminals.set(info.id,info);}
     for(const previous of known){if(terminals.has(previous.id))continue;const info=await this.readTerminal(previous);if(info&&info.status.kind!=='closed')terminals.set(info.id,info);}
-    if(revision!==this.refreshRevision)return;this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
+    const catalog=await readProjectCatalog();
+    if(revision!==this.refreshRevision)return;this.projects=catalog.projects;this.worktrees=catalog.worktrees;
+    if(this.transfer?.worktree&&!this.worktrees.some(tree=>tree.project&&tree.id===this.transfer.worktree))this.transfer.worktree=null;
+    this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
   }
   async readTerminal(previous){const id=prepareRequest(command('inspect_terminal',{terminal:previous.id}));try{const result=await completeRequest(id);if(result.Ok?.kind==='terminal_snapshot')return result.Ok.data.info;if(result.Err?.code==='not_found')return null;return previous;}catch(error){return faultCode(error.message??String(error))==='not_found'?null:previous;}finally{forgetRequest(id);}}
   async execute(value,cx,after=null,id=null,target=this.profile()){

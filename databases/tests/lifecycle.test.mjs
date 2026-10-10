@@ -372,7 +372,7 @@ test('opening SSH Run and Transfer clears feedback while retaining trust',async(
 test('SSH Run preserves selection through terminal refresh and captures live revisions',async()=>{
   let selected={id:'chosen',revision:4};const active={id:'active',revision:2},terminal={id:'terminal',ssh:'active',status:{kind:'running'}};
   let profiles=[selected,active];const calls=[];
-  const setup=await fixture('ssh',{listSsh:async()=>profiles,listSshTerminals:async id=>id==='active'?[terminal]:[],readText:value=>value}),owner=setup.owner;
+  const setup=await fixture('ssh',{listSsh:async()=>profiles,listSshTerminals:async id=>id==='active'?[terminal]:[],readProjectCatalog:async()=>({projects:[],worktrees:[]}),readText:value=>value}),owner=setup.owner;
   const browser={profile:active};
   Object.assign(owner,{profiles,selected:'chosen',connected:true,pending:null,commandOpen:true,command:'pwd',terminals:[terminal],terminal:'terminal',
     browsers:new Map([['active',browser]]),refreshRevision:0});

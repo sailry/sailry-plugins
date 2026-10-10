@@ -95,8 +95,16 @@ export class Actions {
   }
   close() {
     const dialog = this.dialog;
-    if (dialog) { dialog.closed = true; if (dialog.input) releaseText(dialog.input); if (dialog.extra) releaseText(dialog.extra); }
+    if (dialog) {
+      dialog.closed = true;
+      if (!dialog.busy) this.forget(dialog);
+      if (dialog.input) releaseText(dialog.input);
+      if (dialog.extra) releaseText(dialog.extra);
+    }
     this.dialog = null; this.view.notify();
+  }
+  forget(dialog) {
+    if (dialog.pending) { forgetRequest(dialog.pending.id); dialog.pending = null; }
   }
   async submit() {
     const dialog = this.dialog, repo = this.view.repo;
@@ -116,21 +124,24 @@ export class Actions {
       if (dialog.operation === 'delete') delete draft.expected_index;
     } else draft = {kind:'action',action:dialog.action,...dialog.revisions};
     const key = JSON.stringify(draft);
+    if (dialog.pending?.uncertain && dialog.pending.key !== key) {
+      this.view.report(namingError(dialog.form,'outcome_unknown')); return;
+    }
     try {
       if (!dialog.pending || dialog.pending.key !== key) {
-        if (dialog.pending) forgetRequest(dialog.pending.id);
-        dialog.pending = {id:prepareGitChange(draft),key};
+        this.forget(dialog);
+        dialog.pending = {id:prepareGitChange(draft),key,uncertain:false};
       }
       dialog.busy = true; dialog.error = null; this.view.notify();
       const receipt = await completeRequest(dialog.pending.id);
       if (dialog.closed) return;
-      if (receipt.Err) { dialog.error = namingError(dialog.form,receipt.Err.code); this.view.report(dialog.error); return; }
-      if (!receipt.Ok) { dialog.error = namingError(dialog.form,'outcome_unknown'); this.view.report(dialog.error); return; }
-      forgetRequest(dialog.pending.id); dialog.pending = null;
+      if (receipt.Err) { dialog.pending.uncertain = receipt.Err.code === 'outcome_unknown'; dialog.error = namingError(dialog.form,receipt.Err.code); this.view.report(dialog.error); return; }
+      if (!receipt.Ok) { dialog.pending.uncertain = true; dialog.error = namingError(dialog.form,'outcome_unknown'); this.view.report(dialog.error); return; }
+      this.forget(dialog);
       if (this.dialog === dialog) this.close();
       await repo.refresh();
-    } catch (error) { if (!dialog.closed) { dialog.error = namingError(dialog.form,faultCode(error.message ?? String(error))); this.view.report(dialog.error); } }
-    finally { dialog.busy = false; this.view.notify(); }
+    } catch (error) { if (!dialog.closed) { if (dialog.pending) dialog.pending.uncertain = true; dialog.error = namingError(dialog.form,faultCode(error.message ?? String(error))); this.view.report(dialog.error); } }
+    finally { dialog.busy = false; if (dialog.closed) this.forget(dialog); this.view.notify(); }
   }
   async stashSwitch() {
     const pending = this.view.repo.pending;

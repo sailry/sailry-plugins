@@ -13,8 +13,21 @@ export class Controller {
   }
   accept(location) { this.location = location; this.notify(); }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
-  show(owner) { this.dialog = owner; this.notify(); return owner; }
-  close() { this.dialog = null; this.notify(); }
+  show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }
+  close() {
+    const owner = this.dialog;
+    this.dialog = null;
+    if (owner && !owner.pending) this.forget(owner);
+    this.notify();
+  }
+  forget(owner) {
+    if (owner.request) { this.api.forgetRequest(owner.request); owner.request = null; }
+  }
+  settle(owner) {
+    owner.pending = false;
+    if (this.dialog !== owner) this.forget(owner);
+    this.notify();
+  }
   fail(owner,key) {
     owner.error = key;
     this.api.toast({id:owner.token,message:this.text(key),kind:'error'});
@@ -101,7 +114,7 @@ export class Controller {
       owner.uncertain = !!owner.request;
       this.fail(owner,owner.request ? 'worktree_outcome_unknown' : 'worktree_context_changed');
       if (owner.request) this.api.toast({id:owner.token,message:this.text('worktree_outcome_unknown'),kind:'error',action:{id:'retry',label:this.text('worktree_retry')}});
-    } finally { owner.pending = false; this.notify(); }
+    } finally { this.settle(owner); }
   }
   async submit(values = this.dialog?.values) {
     const owner = this.dialog;
@@ -127,7 +140,7 @@ export class Controller {
         owner.signature = signature;
       }
       await this.execute(owner);
-    } finally { owner.pending = false; this.notify(); }
+    } finally { this.settle(owner); }
   }
   async submitManaged(owner,values) {
     const branch = values.branch.trim();
@@ -139,7 +152,7 @@ export class Controller {
       if (!owner.request) owner.request = this.api.prepareWorktreeChange({kind:'managed',project:owner.bound.project,branch,
         expected_head:owner.status.head,expected_index:owner.status.index_revision,include_changes:owner.include_changes});
       await this.execute(owner);
-    } finally { owner.pending = false; this.notify(); }
+    } finally { this.settle(owner); }
   }
   async submitRemoval(owner) {
     if (!owner.request && !this.valid(owner)) { this.fail(owner,'worktree_context_changed'); return; }
@@ -149,7 +162,7 @@ export class Controller {
     try {
       if (!owner.request) owner.request = this.api.prepareWorktreeChange({kind:'remove',worktree:owner.worktree,expected_head:owner.entry.head,expected_branch:owner.entry.branch});
       await this.execute(owner);
-    } finally { owner.pending = false; this.notify(); }
+    } finally { this.settle(owner); }
   }
   async execute(owner) {
     try {
@@ -186,7 +199,7 @@ export class Controller {
       this.api.toast({id:`${owner.token}-complete`,message:this.text('worktree_pruned'),kind:'info'});
       if (this.dialog === owner) await this.open();
     } catch (_) { owner.uncertain = !!owner.request; this.fail(owner,'worktree_prune_failed'); }
-    finally { owner.pending = false; this.notify(); }
+    finally { this.settle(owner); }
   }
   retry() {
     const pending = this.operation;

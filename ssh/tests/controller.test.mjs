@@ -8,14 +8,14 @@ async function fixture() {
   const opened=[],notices=[],focused=[];
   const profile={id:'saved-host',revision:3,name:'Saved host'};
   const terminal={id:'existing-terminal',ssh:profile.id,status:{kind:'running'}};
-  const host={profiles:[profile],terminals:[terminal],inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
+  const host={profiles:[profile],terminals:[terminal],catalog:{projects:[],worktrees:[]},catalogReads:0,inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
   host.listProfiles=async()=>host.profiles;
   host.listTerminals=async id=>host.terminals.filter(value=>value.ssh===id);
   const requests=new Map(),reads=[],forgotten=[],started=[],texts=[];
   const exports={
     'gpui-kit':{View:class{}},
     sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id)},
-    'sailry/sdk':{nextChange(){},readProjectCatalog(){},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
+    'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return Promise.resolve(host.catalog);},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
     'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);}},
     'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),nextTextEvent(){}},
     'sailry/credentials':{createSecret(){},releaseSecret(){},describeSecret(){},chooseSecretFile(){}},
@@ -23,7 +23,7 @@ async function fixture() {
     'sailry/ssh-transfers':{uploadDropped(){},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args)},
     './editor.js':{draft(){},prepare(){}},
     './requests.js':{Request:class{},failure(){}},
-    './locales.js':{messages(){},format(){}},
+    './locales.js':{messages:()=>({}),format(){}},
     './view.js':{render(){}},
   };
   const cache=new Map();
@@ -57,6 +57,29 @@ test('coalesces overlapping refreshes and awaits the latest inventory',async()=>
   latest.resolve([]);await Promise.all([initial,...queued]);
   assert.equal(reads,2);assert.equal(view.refreshing,null);
   assert.deepEqual(Array.from(view.profiles),[]);
+});
+
+test('retained entry refreshes newly registered project choices',async()=>{
+  const {view,cx,host,settle}=await fixture();let changes;
+  view.watch=(_read,handle,_cx,cursor)=>{if(cursor&&!changes)changes=handle;};
+  view.init({},cx);await settle();assert.equal(host.catalogReads,1);
+  host.catalog={projects:[{id:'new-project',name:'New'}],worktrees:[{id:'new-tree',project:'new-project',path:'/new'}]};
+  changes({connected:true,entry:'2'},cx);await settle();view.transferDialog(cx);
+  assert.equal(host.catalogReads,2);assert.deepEqual(plain(view.projects),host.catalog.projects);
+  assert.deepEqual(plain(view.worktrees),host.catalog.worktrees);assert.equal(view.transfer.worktree,'new-tree');
+});
+
+test('catalog changes remove unavailable transfer selections without losing paths',async()=>{
+  const {view,cx,host}=await fixture();
+  host.catalog={projects:[{id:'project',name:'Original'}],worktrees:[{id:'tree',project:'project',path:'/original'}]};
+  await view.refresh(cx);view.transferDialog(cx);const transfer=view.transfer;
+  transfer.inputs=['source.txt','/remote/destination.txt'];
+  host.catalog={projects:[{id:'project',name:'Renamed'}],worktrees:[{id:'other-tree',project:'project',path:'/other'}]};
+  await view.refresh(cx);
+  assert.equal(view.transfer,transfer);assert.equal(transfer.worktree,null);
+  assert.deepEqual(transfer.inputs,['source.txt','/remote/destination.txt']);
+  assert.deepEqual(plain(view.projects),host.catalog.projects);assert.deepEqual(plain(view.worktrees),host.catalog.worktrees);
+  view.control({id:`ssh-worktree-${view.dialog}`,value:'other-tree'},cx);assert.equal(transfer.worktree,'other-tree');
 });
 
 test('refresh failures remain visible and allow a later read',async()=>{

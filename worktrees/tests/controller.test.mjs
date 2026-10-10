@@ -5,7 +5,7 @@ import {listing} from '../dev.sailry.platform/desktop/policy.js';
 
 function fixture(surface = 'project') {
   let location = {cursor:'1',surface,node:'node-a',project:'project-a',worktree:'tree-a',session:surface === 'composer' ? 'session-a' : null,can_move:true,main:true,project_name:'Project',branch:'main',git:true};
-  const state = {prepared:[],completed:[],forgotten:[],selected:[],released:[],toasts:[],resolution:'head-a',reads:0,result:null,drafts:false};
+  const state = {prepared:[],requests:new Set(),completed:[],forgotten:[],selected:[],released:[],toasts:[],resolution:'head-a',reads:0,result:null,drafts:false};
   const api = {
     readLocation:() => location,
     selectLocation:async (cursor,value) => {if (value.request) assert.ok(!state.forgotten.includes(value.request));state.selected.push({cursor,value});return true;},
@@ -13,10 +13,10 @@ function fixture(surface = 'project') {
     listWorktrees:async () => ({kind:'repository',entries:[{path:'/main',branch:'main',head:'head-a',main:true,locked:false,available:true},{path:'/native',branch:'topic',head:'head-b',main:false,locked:false,available:true}],truncated:false,omitted_paths:'0'}),
     inspectGit:async () => ({head:'head-a',branch:'main',index_revision:'index-a'}),
     resolveGitRevision:async () => {state.reads++;return {commit:state.resolution};},
-    prepareWorktreeChange:value => {const id = `request-${state.prepared.length}`;state.prepared.push({id,value});return id;},
+    prepareWorktreeChange:value => {if(state.requests.size>=16)throw Error('plugin request draft capacity exhausted');const id = `request-${state.prepared.length}`;state.prepared.push({id,value});state.requests.add(id);return id;},
     prepareGitChange:value => api.prepareWorktreeChange(value),
     completeRequest:async id => {state.completed.push(id);if (state.result instanceof Error) throw state.result;if (typeof state.result === 'function') return state.result(id);return state.result ?? {Ok:{kind:'worktree',data:{id:'tree-new'}}};},
-    forgetRequest:id => state.forgotten.push(id),
+    forgetRequest:id => {state.forgotten.push(id);state.requests.delete(id);},
     worktreeHasDrafts:async (_id,request) => {if (request) assert.ok(!state.forgotten.includes(request));return state.drafts;},
     releaseWorktree:async (id,request) => {assert.ok(!state.forgotten.includes(request));state.released.push({id,request});},
     toast:value => state.toasts.push(value),newId:() => '12345678-abcd',
@@ -53,9 +53,47 @@ test('unconfirmed create retains original immutable request', async () => {
   await model.submit({...inputs,branch:'must-not-run'});
   assert.equal(state.prepared.length,1);
   assert.equal(state.completed.length,1);
+  assert.equal(state.requests.size,1);assert.deepEqual(state.forgotten,[]);
   state.result = null;
   await model.submit(inputs);
   assert.deepEqual(state.completed,['request-0','request-0']);
+  assert.equal(state.requests.size,0);
+});
+
+test('closing failed forms restores request capacity',async()=>{
+  const {model,state}=fixture();state.result={Err:{code:'conflict'}};
+  for(let index=0;index<17;index++) {
+    model.create({branch:'main'});await model.submit(inputs);model.close();
+    assert.equal(state.requests.size,0);
+  }
+  assert.equal(state.prepared.length,17);assert.equal(state.forgotten.length,17);
+});
+
+test('closing uncertain forms releases only their abandoned handle',async()=>{
+  const {model,state}=fixture();model.create({branch:'main'});state.result=Error('disconnected');
+  await model.submit(inputs);assert.equal(model.dialog.uncertain,true);
+  model.close();assert.equal(state.requests.size,0);assert.deepEqual(state.forgotten,['request-0']);
+  assert.deepEqual(state.selected,[]);assert.deepEqual(state.released,[]);
+});
+
+test('replacing failed forms releases their abandoned requests',async()=>{
+  const {model,state}=fixture();model.create({branch:'main'});state.result={Err:{code:'conflict'}};
+  await model.submit(inputs);model.create({branch:'different'});
+  assert.equal(state.requests.size,0);assert.deepEqual(state.forgotten,['request-0']);
+});
+
+test('cancelled forms release late faults without changing replacements',async()=>{
+  for(const receipt of [{Err:{code:'conflict'}},{Err:{code:'outcome_unknown'}},new Error('disconnected')]) {
+    const {model,state}=fixture();let resolve,reject;
+    state.result=()=>new Promise((accept,fail)=>{resolve=accept;reject=fail;});
+    model.create({branch:'main'});const task=model.submit(inputs);await Promise.resolve();
+    model.close();const replacement=model.create({branch:'different'});
+    assert.equal(state.requests.size,1);assert.deepEqual(state.forgotten,[]);
+    if(receipt instanceof Error)reject(receipt);else resolve(receipt);
+    await task;
+    assert.equal(model.dialog,replacement);assert.equal(state.requests.size,0);
+    assert.deepEqual(state.forgotten,['request-0']);assert.deepEqual(state.selected,[]);
+  }
 });
 
 test('closing while revision resolves cannot create a checkout', async () => {
@@ -76,6 +114,18 @@ test('late admitted completion preserves a replacement form and selection', asyn
   assert.equal(model.dialog,replacement);
   assert.deepEqual(state.selected,[]);
   assert.deepEqual(state.forgotten,['request-0']);
+});
+
+test('cancelled removal releases the worktree before abandoning its request',async()=>{
+  const {model,state}=fixture();await model.open();await model.choose('entry-1');await model.choose('action-1');
+  let finish;state.result=()=>new Promise(done=>{finish=done;});
+  const task=model.submit();await Promise.resolve();
+  model.close();const replacement=model.create({branch:'other'});
+  assert.deepEqual(state.forgotten,['request-0']);assert.equal(state.requests.size,1);
+  finish({Ok:{kind:'worktree_removed',data:{id:'tree-new'}}});await task;
+  assert.equal(model.dialog,replacement);assert.equal(state.requests.size,0);
+  assert.deepEqual(state.released,[{id:'tree-new',request:'request-1'}]);
+  assert.deepEqual(state.forgotten,['request-0','request-1']);
 });
 
 test('managed checkout keeps source revisions and deferred conversation handoff', async () => {

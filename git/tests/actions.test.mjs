@@ -7,21 +7,21 @@ const source = (await readFile(new URL('../dev.sailry.platform/desktop/actions.j
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 
 function fixture(receipts = []) {
-  const fields=new Map(),prepared=[],completed=[],forgotten=[],released=[],reported=[];
+  const fields=new Map(),drafts=new Set(),prepared=[],completed=[],forgotten=[],released=[],reported=[];
   let serial=0,refreshes=0;
   const Actions=vm.runInNewContext(`${source}\nActions`,{
     createText:value=>{const id=`field-${++serial}`;fields.set(id,value);return id;},
     readText:id=>fields.get(id),releaseText:id=>released.push(id),focusText:()=>{},
-    prepareGitChange:draft=>{prepared.push(JSON.parse(JSON.stringify(draft)));return 'captured-request';},
-    completeRequest:async id=>{completed.push(id);return receipts.shift();},
-    forgetRequest:id=>forgotten.push(id),faultCode:()=> 'outcome_unknown',
+    prepareGitChange:draft=>{if(drafts.size>=16)throw Error('plugin request draft capacity exhausted');prepared.push(JSON.parse(JSON.stringify(draft)));const id=prepared.length===1?'captured-request':`captured-request-${prepared.length-1}`;drafts.add(id);return id;},
+    completeRequest:async id=>{completed.push(id);const receipt=receipts.shift();if(receipt instanceof Error)throw receipt;return typeof receipt==='function'?receipt():receipt;},
+    forgetRequest:id=>{forgotten.push(id);drafts.delete(id);},faultCode:()=> 'outcome_unknown',
   });
   const view={text:{},notify:()=>{},report:key=>reported.push(key),repo:{
     status:{head:'captured-head',branch:'main'},
     revisions:()=>({expected_head:'captured-head',expected_index:'captured-index'}),
     refresh:async()=>{refreshes++;},
   }};
-  return {owner:new Actions(view),fields,prepared,completed,forgotten,released,reported,refreshes:()=>refreshes};
+  return {owner:new Actions(view),fields,drafts,prepared,completed,forgotten,released,reported,refreshes:()=>refreshes};
 }
 
 test('empty names report validation without replacing the form or draft',async()=>{
@@ -68,4 +68,45 @@ test('unconfirmed receipts report and retry the captured request without losing 
   assert.deepEqual(state.forgotten,['captured-request']);
   assert.deepEqual(state.released,[dialog.input]);
   assert.equal(state.refreshes(),1);
+});
+
+test('closing failed forms releases capacity for later operations',async()=>{
+  const state=fixture(Array.from({length:17},()=>({Err:{code:'conflict'}})));
+  for(let index=0;index<17;index++) {
+    state.owner.form('branch');state.fields.set(state.owner.dialog.input,'existing');
+    await state.owner.submit();state.owner.close();
+    assert.equal(state.drafts.size,0);
+  }
+  assert.equal(state.prepared.length,17);assert.equal(state.forgotten.length,17);
+});
+
+test('cancelled forms release late completions without changing replacements',async()=>{
+  for(const receipt of [{Ok:{kind:'git_branch_created',data:{}}},{Err:{code:'conflict'}},{Err:{code:'outcome_unknown'}},new Error('disconnected')]) {
+    let resolve,reject;
+    const pending=new Promise((accept,fail)=>{resolve=accept;reject=fail;});
+    const state=fixture([()=>pending]);state.owner.form('branch');
+    state.fields.set(state.owner.dialog.input,'topic');const task=state.owner.submit();
+    state.owner.close();state.owner.form('branch');const replacement=state.owner.dialog;
+    assert.equal(state.drafts.size,1);assert.deepEqual(state.forgotten,[]);
+    if(receipt instanceof Error)reject(receipt);else resolve(receipt);
+    await task;
+    assert.equal(state.owner.dialog,replacement);assert.equal(state.refreshes(),0);
+    assert.equal(state.drafts.size,0);assert.deepEqual(state.forgotten,['captured-request']);
+  }
+});
+
+test('uncertain forms retain their request until retry or abandonment',async()=>{
+  for(const receipt of [{},{Err:{code:'outcome_unknown'}},new Error('disconnected')]) {
+    const state=fixture([receipt,{Ok:{kind:'git_branch_created',data:{}}}]);
+    state.owner.form('branch');const dialog=state.owner.dialog;state.fields.set(dialog.input,'topic');
+    await state.owner.submit();assert.equal(dialog.pending.uncertain,true);
+    state.fields.set(dialog.input,'different');await state.owner.submit();
+    assert.equal(state.prepared.length,1);assert.deepEqual(state.completed,['captured-request']);
+    assert.deepEqual(state.forgotten,[]);assert.equal(state.drafts.size,1);
+    state.fields.set(dialog.input,'topic');await state.owner.submit();
+    assert.deepEqual(state.completed,['captured-request','captured-request']);assert.equal(state.drafts.size,0);
+  }
+  const state=fixture([{Err:{code:'outcome_unknown'}}]);state.owner.form('branch');
+  state.fields.set(state.owner.dialog.input,'topic');await state.owner.submit();state.owner.close();
+  assert.equal(state.drafts.size,0);assert.deepEqual(state.forgotten,['captured-request']);
 });
