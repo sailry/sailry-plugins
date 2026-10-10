@@ -1,7 +1,8 @@
+import {command,select} from "./game.js";
 import { View } from "gpui-kit";
 import { nextChange } from "sailry/sdk";
 import { context, header_action } from "sailry";
-import { errorCode, readSettings, listModels, resolveModel, prepareModel, completeRequest, forgetRequest as forget, modelChoice as select, getValue, setValue } from "sailry/sdk";
+import { errorCode, readSettings, listModels, resolveModel, prepareRequest, completeRequest, forgetRequest as forget, getValue, setValue } from "sailry/sdk";
 import { messages } from "./locales.js";
 import { newGame, restore, choices, act as applyAction, turn } from "./game.js";
 import { Motion, presentEvents } from "./motion.js";
@@ -323,7 +324,7 @@ export default class CityTrader extends View {
             this.elapsed = 0;
             cx.notify();
             const player = this.roundPlayers[game.turn - 1];
-            if (!this.pending) this.pending = prepareModel(player, turn(game, moves));
+            if (!this.pending) this.pending = prepareRequest(command(player, turn(game, moves)));
             request = this.pending;
             const result = await completeRequest(request);
             forget(request);

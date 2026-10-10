@@ -4,6 +4,7 @@ import {Icon} from 'gpui-component';
 import {BrowserSurface, theme} from 'sailry';
 import {PanelHeader, NavigationTabs, IconButton} from 'sailry/ui';
 import {TextField} from 'sailry/forms';
+import {renderReview} from './annotation.js';
 
 function empty(text, colors) {
   return div().size_full().min_h_0().v_flex().items_center().justify_center().p_6()
@@ -15,7 +16,7 @@ function empty(text, colors) {
         .text_color(colors.foreground).child(text.browser_empty)));
 }
 
-export function render(view) {
+export function render(view, cx) {
   const {text,state} = view, tab = view.selected(), colors = theme().colors;
   if (!tab) return div();
   const button = (id, icon, label, disabled = false) => IconButton.new(id, {icon,label,disabled});
@@ -37,6 +38,7 @@ export function render(view) {
       .child(button('browser-annotate',state.annotating ? 'close' : 'mouse-pointer-2',state.annotating ? text.browser_cancel_selection : text.browser_annotate,!state.supported || !tab.loaded || tab.loading))
       .child(button('browser-settings','settings',text.settings_browser)))
     .child(div().id('browser-content').relative().flex_1().min_h_0().min_w_0()
-      .child(BrowserSurface.new('browser-surface'))
-      .children(tab.loaded ? [] : [div().absolute().inset_0().child(empty(text,colors))]));
+      .child(BrowserSurface.new('browser-surface',{covered:!!view.review.current}))
+      .children(tab.loaded ? [] : [div().absolute().inset_0().child(empty(text,colors))]))
+    .child(renderReview(view,cx));
 }

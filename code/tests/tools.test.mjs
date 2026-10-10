@@ -3,10 +3,10 @@ import fs from 'node:fs';
 import test from 'node:test';
 const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
-test('contributes the host language settings and shared enable control', () => {
-  assert.equal(manifest.version, '0.1.2');
-  assert.equal(extension.settings_page.native, 'code');
-  assert.equal(extension.settings_page.entry, null);
+test('contributes packaged language settings and enable control', () => {
+  assert.equal(manifest.version, '0.1.3');
+  assert.equal(extension.settings_page.native, undefined);
+  assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.equal(extension.settings_page.enabled_control, true);
   assert.deepEqual(extension.settings_page.placement, {group: 'tools', order: 300});
   assert.equal(extension.settings_page.navigation.label, 'Language services');
@@ -14,11 +14,11 @@ test('contributes the host language settings and shared enable control', () => {
   assert.equal(extension.display.label, extension.settings_page.navigation.label);
   assert.deepEqual(extension.display.locales, extension.settings_page.navigation.locales);
   assert.equal(Object.keys(extension.display.locales).length, 9);
-  assert.equal(extension.desktop, undefined);
+  assert.ok(extension.desktop.resources.includes(extension.settings_page.entry));
 });
 test('binds native queries and lifecycle tools', () => {
   assert.equal(extension.api_version, 'v1');
-  assert.deepEqual(extension.actions, ['code.read', 'code.manage']);
+  assert.deepEqual(extension.actions, ['code.read', 'code.manage', 'code.settings.read', 'code.settings.write']);
   assert.deepEqual(extension.tools.map(tool => tool.operation), ['code.diagnostics','code.definition','code.references','code.hover','code.symbols','code.packages','code.install','code.uninstall']);
   for (const tool of extension.tools) {
     assert.deepEqual(tool.contexts, ['workspace']);

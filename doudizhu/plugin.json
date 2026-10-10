@@ -1,12 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "doudizhu",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Play Dou Dizhu with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "description": {"label": "Play Dou Dizhu with two AI opponents", "locales": {"zh-CN": "与 AI 对手玩斗地主"}},
+      "description": {
+        "label": "Play Dou Dizhu with two AI opponents",
+        "locales": {
+          "zh-CN": "与 AI 对手玩斗地主"
+        }
+      },
       "scope": "desktop",
       "actions": [
         "models.generate"

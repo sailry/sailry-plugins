@@ -1,3 +1,4 @@
+import {command,select} from "./model.js";
 import { View } from "gpui-kit";
 import { nextChange } from "sailry/sdk";
 import { context, prepare, forget, header_action } from "sailry";
@@ -5,7 +6,7 @@ import { messages } from "./locales.js";
 import { deal, bid, play, choices, turn } from "./game.js";
 import { Motion } from "./motion.js";
 import { render } from "./view.js";
-import { errorCode, readSettings, listModels, resolveModel, modelCommand as command, modelChoice as select, completeRequest as completion } from "sailry/sdk";
+import { errorCode, readSettings, listModels, resolveModel, completeRequest as completion } from "sailry/sdk";
 import { toast } from "sailry/ui";
 
 export default class DouDizhu extends View {

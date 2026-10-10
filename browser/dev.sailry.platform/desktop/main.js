@@ -1,17 +1,19 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
 import {readBrowser, nextBrowserChange, browserAction, nextNavigationTabEvent,
-  nextControlEvent, openSettings, toast} from 'sailry/ui';
+  nextControlEvent, openSettings, toast, modal_closed} from 'sailry/ui';
 import {createText, readText, setText, focusText, isTextFocused, nextTextEvent} from 'sailry/forms';
 import {messages, errorKey} from './locales.js';
 import {destination} from './address.js';
 import {render} from './view.js';
+import {Review} from './annotation.js';
 
 export default class Browser extends View {
   init(_props, cx) {
     this.text = messages(JSON.parse(context()).locale);
     this.state = readBrowser();
     this.reported = new Map();
+    this.review = new Review(this); this.annotationError = null;
     this.address = createText(this.selected()?.url ?? '', {
       placeholder:this.text.browser_address, label:this.text.browser_address
     });
@@ -22,6 +24,11 @@ export default class Browser extends View {
         const state = await nextBrowserChange(cursor); cursor = state.cursor;
         this.accept(state, false, cx);
       } } catch (_) { /* Releasing the captured resource ends observation. */ }
+    });
+    cx.spawn(async cx => {
+      try { while (true) {
+        if (await modal_closed() === 'browser-annotation-dialog') this.review.close(cx);
+      } } catch (_) { /* Releasing the captured browser ends dialog observation. */ }
     });
     cx.spawn(async cx => {
       try { while (true) {
@@ -54,6 +61,9 @@ export default class Browser extends View {
     const changed = state.selected !== this.state.selected;
     const previousUrl = this.selected()?.url ?? '';
     this.state = state;
+    this.review.accept(state.annotation);
+    if (state.annotation_error && state.annotation_error !== this.annotationError) this.report(state.annotation_error);
+    this.annotationError = state.annotation_error ?? null;
     const url = this.selected()?.url ?? '';
     if (force || changed || (url !== previousUrl && !isTextFocused(this.address))) setText(this.address, url);
     for (const tab of state.tabs) {
@@ -66,8 +76,8 @@ export default class Browser extends View {
     cx.notify();
     return true;
   }
-  report(error) {
-    toast({id:'browser-navigation',kind:'error',message:this.text[errorKey(error)]});
+  report(error, fallback) {
+    toast({id:'browser-navigation',kind:'error',message:this.text[errorKey(error,fallback)]});
   }
   navigate(cx) {
     const url = destination(readText(this.address));
@@ -85,5 +95,5 @@ export default class Browser extends View {
       } catch (error) { this.report(error); }
     });
   }
-  render() { return render(this); }
+  render(cx) { return render(this,cx); }
 }

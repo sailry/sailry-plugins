@@ -5,20 +5,20 @@ import test from 'node:test';
 const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 
-test('contributes host search settings and the shared enable control', () => {
-  assert.equal(manifest.version, '0.2.1');
-  assert.equal(extension.settings_page.native, 'search');
-  assert.equal(extension.settings_page.entry, null);
+test('contributes packaged search settings and enable control', () => {
+  assert.equal(manifest.version, '0.2.2');
+  assert.equal(extension.settings_page.native, undefined);
+  assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.equal(extension.settings_page.enabled_control, true);
   assert.deepEqual(extension.settings_page.placement, {group: 'tools', order: 400});
   assert.equal(extension.settings_page.navigation.label, 'Search');
   assert.equal(extension.settings_page.navigation.locales['zh-CN'], '搜索');
-  assert.equal(extension.desktop, undefined);
+  assert.ok(extension.desktop.resources.includes(extension.settings_page.entry));
 });
 
 test('binds anonymous page reads beside native search', () => {
   assert.equal(extension.api_version, 'v1');
-  assert.deepEqual(extension.actions, ['web.read']);
+  assert.deepEqual(extension.actions, ['web.read', 'web.settings.read', 'web.settings.write']);
   assert.equal(extension.model_tools[0].capability, 'web_search');
   assert.equal(extension.tools[0].name, 'web_fetch');
   assert.equal(extension.tools[0].operation, 'web.fetch');

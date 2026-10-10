@@ -1,12 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reversi",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Play Reversi against an AI opponent",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "description": {"label": "Play Reversi against an AI opponent", "locales": {"zh-CN": "与 AI 对手下黑白棋"}},
+      "description": {
+        "label": "Play Reversi against an AI opponent",
+        "locales": {
+          "zh-CN": "与 AI 对手下黑白棋"
+        }
+      },
       "scope": "desktop",
       "actions": [
         "models.generate"

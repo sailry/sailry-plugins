@@ -1,12 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "liars-dice",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Play Liar's Dice with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "description": {"label": "Play Liar's Dice with two AI opponents", "locales": {"zh-CN": "与 AI 对手玩骗子骰子"}},
+      "description": {
+        "label": "Play Liar's Dice with two AI opponents",
+        "locales": {
+          "zh-CN": "与 AI 对手玩骗子骰子"
+        }
+      },
       "scope": "desktop",
       "actions": [
         "models.generate"

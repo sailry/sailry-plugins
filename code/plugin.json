@@ -1,13 +1,15 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
       "actions": [
         "code.read",
-        "code.manage"
+        "code.manage",
+        "code.settings.read",
+        "code.settings.write"
       ],
       "display": {
         "label": "Language services",
@@ -31,7 +33,6 @@
         }
       },
       "settings_page": {
-        "native": "code",
         "navigation": {
           "label": "Language services",
           "locales": {
@@ -52,7 +53,7 @@
           "order": 300
         },
         "enabled_control": true,
-        "entry": null
+        "entry": "dev.sailry.platform/desktop/settings.js"
       },
       "instructions": "Read-only code queries use language servers on the execution Node. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
       "tools": [
@@ -176,7 +177,16 @@
             }
           }
         }
-      ]
+      ],
+      "desktop": {
+        "resources": [
+          "dev.sailry.platform/desktop/locales.js",
+          "dev.sailry.platform/desktop/model.js",
+          "dev.sailry.platform/desktop/settings.js",
+          "dev.sailry.platform/desktop/view.js"
+        ]
+      },
+      "enabled_service": "language"
     }
   }
 }

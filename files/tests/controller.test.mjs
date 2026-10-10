@@ -147,7 +147,7 @@ test('workspace metadata validates packaged imports and preview limits', async (
   checkPackage(fileURLToPath(new URL('plugin.json',root)));
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const desktop = manifest.extensions['dev.sailry.platform'].desktop;
-  assert.deepEqual(desktop.navigation_options,{pinned:true,order:400,target:'worktree',details:true});
+  assert.deepEqual(desktop.navigation_options,{pinned:true,order:400,target:'worktree',details:true,retention:{mode:'always'}});
   assert.deepEqual(desktop.renderers,[{resource:'documents',shortcut:'secondary-p'}]);
   assert.deepEqual(desktop.previews,[
     'text/html','application/pdf',

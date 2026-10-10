@@ -6,16 +6,18 @@ import {messages,errorKey,imported} from '../dev.sailry.platform/desktop/locales
 import {destination} from '../dev.sailry.platform/desktop/address.js';
 
 async function controller(file, bindings) {
+  const annotation = file === 'main' ? (await readFile(new URL('../dev.sailry.platform/desktop/annotation.js',import.meta.url),'utf8'))
+    .replace(/^import[\s\S]*?from '[^']+';\n/gm,'').replace(/export (class|function) /g,'$1 ') : '';
   const source = (await readFile(new URL(`../dev.sailry.platform/desktop/${file}.js`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?from '[^']+';\n/gm,'')
     .replace('export default class ','class ');
   const name = file === 'main' ? 'Browser' : 'Settings';
   const pending = () => new Promise(() => {});
   const notices=[];
-  const type = vm.runInNewContext(`${source}\n${name}`,{
+  const type = vm.runInNewContext(`${annotation}\n${source}\n${name}`,{
     View:class {},context:() => '{"locale":"en"}',messages,errorKey,imported,destination,
     nextBrowserChange:pending,nextNavigationTabEvent:pending,nextTextEvent:pending,
-    nextControlEvent:pending,modal_closed:pending,toast:value=>notices.push(value),...bindings
+    nextControlEvent:pending,modal_closed:pending,releaseText() {},toast:value=>notices.push(value),...bindings
   });
   const work = [];
   const cx = {notify() {},spawn(task) { const result = task(cx); work.push(result); return result; }};
@@ -57,6 +59,31 @@ test('page updates preserve drafts; selecting another tab replaces them', async 
   view.accept(snapshot(7,'https://example.com/older','9'),true,cx);
   assert.equal(address,'https://example.com/ten');
   assert.equal(view.state.cursor,'10');
+});
+
+test('capture updates preserve drafts and deduplicate failures', async () => {
+  const fields = new Map(), released = [], notices = [];
+  const capture = {token:'capture',element:{url:'https://example.com',selector:'#heading',text:'Heading',truncated:false}};
+  const snapshot = cursor => ({cursor,selected:1,tabs:[{id:1,url:'https://example.com'}],history:[false,false],annotation:capture});
+  const {view,cx} = await controller('main',{
+    readBrowser:() => snapshot('1'),
+    createText:value => { const id = `field-${fields.size}`; fields.set(id,value); return id; },
+    readText:id => fields.get(id),setText:(id,value) => fields.set(id,value),
+    releaseText:id => released.push(id),isTextFocused:() => true,
+    toast:notice => notices.push(notice)
+  });
+  const note = view.review.current.note;
+  fields.set(note,'Keep this annotation'); fields.set(view.address,'unfinished address');
+  view.accept({...snapshot('2'),annotation_error:'browser_annotation_unavailable'},false,cx);
+  view.accept({...snapshot('3'),annotation_error:'browser_annotation_unavailable'},false,cx);
+  assert.equal(view.review.current.note,note);
+  assert.equal(fields.get(note),'Keep this annotation');
+  assert.equal(fields.get(view.address),'unfinished address');
+  assert.equal(notices.length,1);
+  assert.equal(notices[0].message,messages('en').browser_annotation_unavailable);
+  view.accept({...snapshot('4'),annotation:null},false,cx);
+  assert.deepEqual(released,[note]);
+  assert.equal(view.review.current,null);
 });
 
 test('element selection uses the captured browser without navigating', async () => {

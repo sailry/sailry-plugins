@@ -37,7 +37,7 @@ function harness(options = {}) {
     forget: id => { forgotten.push(id); options.forget?.(id); },
   };
   scope.completeRequest = id => model.completion(id, scope.execute, scope.outcome, async () => {});
-  scope.prepareModel = (player, turn) => scope.prepare(JSON.stringify(model.command(player, turn)));
+  scope.prepareRequest = value => scope.prepare(JSON.stringify(value));
   vm.runInNewContext(source, scope);
   const view = new scope.CityTrader();
   const players = [{ model: "provider/first", kind: "provider", effort: "high" },

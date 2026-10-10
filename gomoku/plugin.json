@@ -1,12 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "gomoku",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Play Gomoku against an AI opponent",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "description": {"label": "Play Gomoku against an AI opponent", "locales": {"zh-CN": "与 AI 对手下五子棋"}},
+      "description": {
+        "label": "Play Gomoku against an AI opponent",
+        "locales": {
+          "zh-CN": "与 AI 对手下五子棋"
+        }
+      },
       "scope": "desktop",
       "actions": [
         "models.generate"

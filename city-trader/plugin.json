@@ -1,12 +1,17 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "city-trader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Build a city property portfolio against up to two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "description": {"label": "Build a city property portfolio against up to two AI opponents", "locales": {"zh-CN": "与 AI 对手经营城市地产"}},
+      "description": {
+        "label": "Build a city property portfolio against up to two AI opponents",
+        "locales": {
+          "zh-CN": "与 AI 对手经营城市地产"
+        }
+      },
       "scope": "desktop",
       "actions": [
         "models.generate",
