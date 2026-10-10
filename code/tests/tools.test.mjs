@@ -4,7 +4,7 @@ import test from 'node:test';
 const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 test('contributes the host language settings and shared enable control', () => {
-  assert.equal(manifest.version, '0.1.1');
+  assert.equal(manifest.version, '0.1.2');
   assert.equal(extension.settings_page.native, 'code');
   assert.equal(extension.settings_page.entry, null);
   assert.equal(extension.settings_page.enabled_control, true);
@@ -16,21 +16,23 @@ test('contributes the host language settings and shared enable control', () => {
   assert.equal(Object.keys(extension.display.locales).length, 9);
   assert.equal(extension.desktop, undefined);
 });
-test('uses bounded native reads without shell or installation', () => {
+test('binds native queries and lifecycle tools', () => {
   assert.equal(extension.api_version, 'v1');
-  assert.deepEqual(extension.actions, ['code.read']);
-  assert.deepEqual(extension.tools.map(tool => tool.operation), ['code.diagnostics','code.definition','code.references','code.hover','code.symbols']);
+  assert.deepEqual(extension.actions, ['code.read', 'code.manage']);
+  assert.deepEqual(extension.tools.map(tool => tool.operation), ['code.diagnostics','code.definition','code.references','code.hover','code.symbols','code.packages','code.install','code.uninstall']);
   for (const tool of extension.tools) {
     assert.deepEqual(tool.contexts, ['workspace']);
     assert.equal(tool.handler, undefined);
-    assert.match(tool.description, /(?:file|symbol|symbols)/i);
+    assert.match(tool.description, /(?:file|symbol|symbols|package|installation|managed)/i);
     assert.ok(tool.display.label && tool.display.locales['zh-CN']);
   }
 });
 test('explains cold-start consent and incomplete results', () => {
   const instructions = extension.instructions;
   assert.match(instructions, /Ask-mode cold start requests approval/);
-  assert.match(instructions, /does not install/);
+  assert.match(instructions, /code_install with that exact descriptor/);
+  assert.match(instructions, /Respect disabled services/);
+  assert.match(instructions, /only when removal is requested/);
   assert.match(instructions, /partial/);
   assert.match(instructions, /line numbers start at one/);
 });

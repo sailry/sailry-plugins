@@ -124,3 +124,9 @@ With `"presentation": "content"`, a tool can return `sailry_content` (or MCP `st
 ```
 
 Limits: 1–16 blocks and 256 KiB; tables up to 64 columns and 1000 rows, with equal row widths; diffs up to 4096 lines. Add `"truncated": true` to a table or diff that shows partial output. Invalid content falls back to plain output.
+
+Language package tools may bind `code.packages` with `code.read`, or `code.install` and
+`code.uninstall` with `code.manage`. Use direct operation declarations as in the Code
+plugin. Lifecycle calls require their exact conversation approval and do not grant
+installation authority to callbacks. Installation takes the complete returned registry
+descriptor; removal takes the installed package and version and affects the entire Node.

@@ -937,12 +937,13 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "actions": [
-              "code.read"
+              "code.read",
+              "code.manage"
             ],
             "display": {
               "label": "Language services",
@@ -989,7 +990,7 @@
               "enabled_control": true,
               "entry": null
             },
-            "instructions": "Read-only code queries use language servers installed on the execution Node. An Ask-mode cold start requests approval for that workspace and exact server configuration. A package suggestion does not install software. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
+            "instructions": "Read-only code queries use language servers on the execution Node. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
             "tools": [
               {
                 "name": "code_diagnostics",
@@ -1063,6 +1064,51 @@
                   "label": "Symbols",
                   "locales": {
                     "zh-CN": "符号"
+                  }
+                }
+              },
+              {
+                "name": "code_packages",
+                "operation": "code.packages",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Set installed=false to list project language candidates and exact install descriptors. Set installed=true to list Node-managed installations and actual versions for removal. This does not install or start anything.",
+                "display": {
+                  "label": "Language packages",
+                  "locales": {
+                    "zh-CN": "语言服务包"
+                  }
+                }
+              },
+              {
+                "name": "code_install",
+                "operation": "code.install",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Install or update a Node-wide language package. Copy all fields from the install descriptor returned by a code query or code_packages. Follow conversation approval; do not fabricate URLs, commands or revisions. Retry the original query after success.",
+                "display": {
+                  "label": "Install language service",
+                  "locales": {
+                    "zh-CN": "安装语言服务"
+                  }
+                }
+              },
+              {
+                "name": "code_uninstall",
+                "operation": "code.uninstall",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Remove the exact managed package and version returned by code_packages with installed=true. This stops that package across all projects on the Node. Use only when removal is requested.",
+                "display": {
+                  "label": "Uninstall language service",
+                  "locales": {
+                    "zh-CN": "卸载语言服务"
                   }
                 }
               }
@@ -8766,7 +8812,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.2.0",
+        "version": "0.2.1",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {

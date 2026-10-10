@@ -40,9 +40,10 @@ ACTIONS = {
     "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control",
     "terminals.read", "terminals.control", "conversation.read", "conversation.control",
     "sessions.start", "projects.read", "http.request", "models.generate", "storage.read",
-    "storage.write", "code.read",
+    "storage.write", "code.read", "code.manage",
 }
 OPERATION_ACTIONS = {
+    "code.packages":"code.read", "code.install":"code.manage", "code.uninstall":"code.manage",
     "code.diagnostics":"code.read", "code.definition":"code.read",
     "code.references":"code.read", "code.hover":"code.read", "code.symbols":"code.read",
     "storage.get": "storage.read", "storage.list": "storage.read",

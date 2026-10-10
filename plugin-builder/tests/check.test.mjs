@@ -105,6 +105,7 @@ test('requires the action behind a bound operation', () => {
 });
 
 const operations = [
+  ['code.packages','code.read'], ['code.install','code.manage'], ['code.uninstall','code.manage'],
   ['code.diagnostics','code.read'], ['code.definition','code.read'],
   ['code.references','code.read'], ['code.hover','code.read'], ['code.symbols','code.read'],
   ['files.edit', 'files.write'],
