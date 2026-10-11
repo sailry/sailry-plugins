@@ -21,7 +21,11 @@ function fixture(count=0) {
     }});
     if(id)nodes.set(id,proxy);return proxy;
   }
-  const native=Object.fromEntries(['Header','Image','Conversation','ComposedButton','PanelHeader','IconButton','Loading'].map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
+  const native=Object.fromEntries(['Header','Workspace','Image','Conversation','ComposedButton','CardButton','PanelHeader','IconButton','EmptyState','Loading','ClampedText'].map(kind=>[kind,{new:(id,props)=>{
+    const result=element(kind,id,props);
+    if(kind==='ClampedText')result.child(props.text);
+    return result;
+  }}]));
   const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
     Tag:function(){return element('Tag');},Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
@@ -44,7 +48,7 @@ function fixture(count=0) {
     inspectApprovals(){this.selected={kind:'approvals'};this.panelOpen=true;},closeDetails(){this.panelOpen=false;},
   };
   return {view,nodes,opened,...api,render(){nodes.clear();return api.render(view);},
-    click(id){if(nodes.get(id).kind==='ComposedButton')view.inspect(view.targets.get(id));
+    click(id){if(['ComposedButton','CardButton'].includes(nodes.get(id).kind))view.inspect(view.targets.get(id));
       else if(nodes.get(id).kind==='IconButton') {
         if(id==='plaza-open-conversation')opened.push(['session',view.selected.id]);
         view.closeDetails();
@@ -83,7 +87,10 @@ test('shared sidebar releases conversations on close or replacement',()=>{
   assert.deepEqual(plain(setup.nodes.get('plaza-detail-chat-session-0').props),{active:true,session:'session-0'});
   assert.ok(setup.nodes.has('plaza-detail-panel'));
   assert.equal(setup.nodes.get('plaza-detail-header').kind,'PanelHeader');
-  assert.equal(setup.nodes.get('plaza-columns').kind,'Resizable');
+  assert.equal(setup.nodes.get('plaza-workspace').kind,'Workspace');
+  assert.equal(setup.nodes.get('plaza-workspace').props.has_details,true);
+  assert.equal(setup.nodes.get('plaza-workspace').items[1],setup.nodes.get('plaza-detail-panel'));
+  assert.equal(setup.nodes.has('plaza-columns'),false);
   assert.ok(setup.nodes.get('plaza-world').style.w[0]<full);
   assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Modal').length,0);
   setup.click('plaza-session-1');setup.render();
@@ -92,6 +99,7 @@ test('shared sidebar releases conversations on close or replacement',()=>{
   setup.click('plaza-detail-close');setup.render();
   assert.equal(setup.nodes.get('plaza-detail-chat-session-1').props.active,false);
   assert.equal(setup.nodes.has('plaza-detail-panel'),false);
+  assert.equal(setup.nodes.get('plaza-workspace').props.has_details,false);
   setup.click('plaza-session-0');setup.render();setup.click('plaza-open-conversation');setup.render();
   assert.deepEqual(setup.opened,[['session','session-0']]);
   assert.equal(setup.nodes.get('plaza-detail-chat-session-0').props.active,false);
@@ -110,16 +118,13 @@ test('approval switches directly to the plaza and returns to its desk',()=>{
   assert.deepEqual(plain(setup.nodes.get('plaza-session-0-position').style),seated);
 });
 
-test('overflow and zoom retain access to every session',()=>{
+test('overflow retains access to every session',()=>{
   const setup=fixture(8);setup.render();
   assert.equal([...setup.nodes.keys()].filter(id=>/^plaza-session-\d+$/.test(id)).length,6);
   setup.click('plaza-room-next-project');setup.render();
   assert.equal([...setup.nodes.keys()].filter(id=>/^plaza-session-\d+$/.test(id)).length,2);
   setup.click('plaza-room-project');setup.render();
-  assert.equal([...setup.nodes.keys()].filter(id=>/^plaza-detail-session-/.test(id)).length,8);
-  setup.view.panelOpen=false;setup.click('plaza-zoom-in');setup.render();
-  assert.equal(setup.view.floor.zoom,1.25);
-  setup.click('plaza-zoom-reset');assert.equal(setup.view.floor.zoom,1);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='CardButton').length,8);
 });
 
 test('room lists show current previews without replacing the scene',()=>{

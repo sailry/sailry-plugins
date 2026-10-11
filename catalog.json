@@ -10609,7 +10609,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "task-plaza",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "description": "Project rooms and session activity",
         "extensions": {
           "dev.sailry.platform": {
@@ -10656,6 +10656,7 @@
               },
               "navigation_options": {
                 "pinned": true,
+                "details": true,
                 "order": 110,
                 "target": "node",
                 "retention": {

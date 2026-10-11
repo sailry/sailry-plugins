@@ -11,11 +11,11 @@ function board(view,value,index,scale) {
   const running = value?.items.filter(item => item.lane === 'running').length ?? 0;
   const waiting = value?.items.filter(item => item.approval).length ?? 0;
   const label = div().v_flex().size_full().min_w_0().justify_center().items_center().text_center().gap_1()
-    .text_color(colors.foreground).text_size(13 * scale).line_height(1.15)
+    .text_color(colors.foreground).text_sm().line_height(1.15)
     .child(div().font_semibold().truncate().child(value?.name ?? text.empty_room))
-    .children(value ? [div().text_size(10 * scale).text_color(colors.muted_foreground).truncate().child(text.room_summary(running,waiting))] : []);
+    .children(value ? [div().text_color(colors.muted_foreground).truncate().child(text.room_summary(running,waiting))] : []);
   const whiteboard = new Button(`plaza-room-${value?.key ?? index}`).outline().p_0().absolute()
-    .left(bounds.x * scale).top(bounds.y * scale).w(bounds.width * scale).h(bounds.height * scale)
+    .left(bounds.x * scale).top(bounds.y * scale).w(bounds.width * scale).h(bounds.height * scale).min_h('2.5rem')
     .bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
   if (value) whiteboard.on_click((_event,cx) => view.inspectRoom(value.key,cx));
   return whiteboard;
@@ -69,7 +69,7 @@ function plaza(view,model,scale) {
   const colors = theme().colors, width = ATRIUM.width * scale, height = ATRIUM.height * scale;
   return div().id('plaza-atrium').absolute().left(ATRIUM.x * scale).top(ATRIUM.y * scale).w(width).h(height)
     .children([0,22].map(inset => div().absolute().inset(inset * scale).rounded_full().border_1().border_color(colors.border)))
-    .child(div().absolute().bottom(6 * scale).w_full().text_center().text_size(12 * scale).text_color(colors.muted_foreground)
+    .child(div().absolute().bottom(6 * scale).w_full().text_center().text_sm().text_color(colors.muted_foreground)
       .child(model.approvals.length ? view.text.approval_count(model.approvals.length) : view.text.approval_plaza));
 }
 export function scene(view,model,scale) {

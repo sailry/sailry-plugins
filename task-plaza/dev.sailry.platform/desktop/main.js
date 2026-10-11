@@ -1,7 +1,7 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
 import {nextChange,readActivityCatalog,readActivityPreviews,nextActivityHosts} from 'sailry/sdk';
-import {openActivityTarget,nextCardEvent,nextControlEvent,toast} from 'sailry/ui';
+import {openActivityTarget,showWorkspaceDetails,nextCardEvent,nextControlEvent,toast} from 'sailry/ui';
 import {State} from './state.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
@@ -52,10 +52,10 @@ export default class Workbench extends View {
   }
   inspect(item,cx) {
     if (item.kind === 'terminal') {openActivityTarget('terminal',item.id);return;}
-    this.selected = {kind:'session',id:item.id,title:item.title};this.panelOpen = true;cx.notify();
+    this.selected = {kind:'session',id:item.id,title:item.title};this.panelOpen = true;showWorkspaceDetails();cx.notify();
   }
-  inspectRoom(id,cx) {this.selected = {kind:'room',id};this.panelOpen = true;cx.notify();}
-  inspectApprovals(cx) {this.selected = {kind:'approvals'};this.panelOpen = true;cx.notify();}
+  inspectRoom(id,cx) {this.selected = {kind:'room',id};this.panelOpen = true;showWorkspaceDetails();cx.notify();}
+  inspectApprovals(cx) {this.selected = {kind:'approvals'};this.panelOpen = true;showWorkspaceDetails();cx.notify();}
   closeDetails(cx) {this.panelOpen = false;cx.notify();}
   openConversation(cx) {
     if (this.selected?.kind !== 'session') return;

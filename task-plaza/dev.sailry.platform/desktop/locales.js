@@ -10,8 +10,8 @@ const en = {
   room_summary:(running,waiting) => `Running ${running} · Approval ${waiting}`,
   room_running:count => `Running ${count}`,room_approvals:count => `Approval ${count}`,
   approval_count:count => `Approvals ${count}`,floor:(current,total) => `Floor ${current} / ${total}`,
-  previous:'Previous',next:'Next',zoom_out:'Zoom out',zoom_in:'Zoom in',zoom_reset:'Reset zoom',
-  empty_room:'Available',close:'Close',
+  previous:'Previous',next:'Next',
+  empty_room:'Available',close:'Close',tasks:'Tasks',no_tasks:'No tasks',task_count:count => `Tasks ${count}`,
 };
 const zh = {
   activity_board_waiting:'待审批',activity_board_running:'运行中',activity_board_empty:'暂无活动',
@@ -23,7 +23,7 @@ const zh = {
   approval_plaza:'审批广场',room_summary:(running,waiting) => `运行 ${running} · 待审批 ${waiting}`,no_approvals:'暂无待审批',open_conversation:'打开会话',
   room_running:count => `运行 ${count}`,room_approvals:count => `待审批 ${count}`,
   approval_count:count => `待审批 ${count}`,floor:(current,total) => `楼层 ${current} / ${total}`,
-  previous:'上一页',next:'下一页',zoom_out:'缩小',zoom_in:'放大',zoom_reset:'重置缩放',
-  empty_room:'空房间',close:'关闭',
+  previous:'上一页',next:'下一页',
+  empty_room:'空房间',close:'关闭',tasks:'任务',no_tasks:'暂无任务',task_count:count => `任务 ${count}`,
 };
 export const messages = locale => locale === 'zh-CN' ? zh : en;

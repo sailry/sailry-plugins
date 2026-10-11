@@ -10,7 +10,7 @@ export function character(id) {
 }
 export class Floor {
   constructor() {
-    this.node = null;this.page = 0;this.zoom = 1;
+    this.node = null;this.page = 0;
     this.seats = new Map();this.roomPages = new Map();
   }
   assign(node,rooms) {
