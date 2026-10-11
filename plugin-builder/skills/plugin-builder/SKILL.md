@@ -38,7 +38,7 @@ Ask only for what you cannot infer: the plugin's purpose, and where the package 
    Use the absolute `python` and `directory` returned by `load_skill`. If managed Python or command permission is unavailable, report that the check did not run.
 6. Tell the user how to install or update it, using the steps below.
 
-When changing an existing plugin, read its `plugin.json` and the files it loads first, and preserve unrelated declarations. Local folder updates are detected from the package contents; raise `version` before publishing, because marketplace updates compare versions.
+When changing an existing plugin, read its `plugin.json` and the files it loads first, and preserve unrelated declarations. Before an explicit product release, keep Sailry-owned package versions at `0.1.0` and the extension API at `v1`. Immutable content digests identify updates without a version bump; installed configuration and historical captures remain preserved.
 
 ## Install and update
 

@@ -23,12 +23,13 @@ IMPORT = re.compile(
 MODULES = {
     "gpui-base", "gpui-component", "gpui-kit", "sailry", "sailry/ui", "sailry/forms",
     "sailry/sdk", "sailry/connections", "sailry/credentials", "sailry/documents",
-    "sailry/file-transfers", "sailry/ssh-transfers",
+    "sailry/file-transfers", "sailry/ssh-transfers", "sailry/artifacts", "sailry/search",
 }
 FIELDS = {
     "api_version", "scope", "actions", "display", "description", "icon", "instructions",
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
-    "desktop", "ui",
+    "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
+    "enabled_service", "oauth",
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",
@@ -40,7 +41,9 @@ ACTIONS = {
     "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control",
     "terminals.read", "terminals.control", "conversation.read", "conversation.control",
     "sessions.start", "projects.read", "http.request", "models.generate", "storage.read",
-    "storage.write", "code.read", "code.manage",
+    "storage.write", "code.read", "code.manage", "artifacts.read", "artifacts.write",
+    "code.settings.read", "code.settings.write", "web.read", "web.settings.read",
+    "web.settings.write", "knowledge.read", "knowledge.write",
 }
 OPERATION_ACTIONS = {
     "code.packages":"code.read", "code.install":"code.manage", "code.uninstall":"code.manage",

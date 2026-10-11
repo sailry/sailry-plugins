@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {mkdirSync, mkdtempSync, rmSync, writeFileSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -45,7 +45,10 @@ test('accepts a skill package', () => {
 });
 
 test('accepts every official package and example', () => {
-  for (const directory of ['plugin-builder', 'progress', 'goals', 'context7', 'examples/task-notes', 'examples/project-summary']) {
+  const packages = parent => readdirSync(path.join(root, parent), {withFileTypes: true})
+    .filter(entry => entry.isDirectory() && existsSync(path.join(root, parent, entry.name, 'plugin.json')))
+    .map(entry => path.join(parent, entry.name));
+  for (const directory of [...packages(''), ...packages('examples')]) {
     const result = check(path.join(root, directory));
     assert.equal(result.code, 0, `${directory}: ${result.output}`);
   }

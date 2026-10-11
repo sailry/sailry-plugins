@@ -7,8 +7,8 @@ export class Menus {
     return {id:key,label:this.view.text[key] ?? key,enabled,value,...extra};
   }
   run(key,action,enabled = true) { return this.item(key,{kind:'run',action},this.view.repo.writable() && enabled); }
-  confirm(key,action,target,enabled = true) { return this.item(key,{kind:'confirm',title:key,action,target},this.view.repo.writable() && enabled); }
-  choose(key,items) { return this.item(key,{kind:'choose',title:key,items},this.view.repo.writable() && items.length > 0); }
+  confirm(key,action,target,enabled = true,label = key) { return this.item(key,{kind:'confirm',title:key,action,target},this.view.repo.writable() && enabled,{label:this.view.text[label] ?? label}); }
+  choose(key,items,label = key) { return this.item(key,{kind:'choose',title:key,items},this.view.repo.writable() && items.length > 0,{label:this.view.text[label] ?? label}); }
   section(key,children) { return this.item(key,null,true,{children}); }
   choice(label,value,extra = {}) { return {id:label,label,value,...extra}; }
   remote(action) {
@@ -28,7 +28,7 @@ export class Menus {
   branchActions() {
     const text = this.view.text, entries = this.view.repo.branches?.entries ?? [];
     return [this.choice(text.git_new_branch,{kind:'form',form:'branch'},{icon:'plus',group:text.git_branch_actions}),
-      ...(entries.length ? [this.choice(text.git_branch_from,{kind:'choose',title:'git_branch_from',items:this.branches('create')},{icon:'network',group:text.git_branch_actions}),
+      ...(entries.length ? [this.choice(text.git_branch_from_open,{kind:'choose',title:'git_branch_from',items:this.branches('create')},{icon:'network',group:text.git_branch_actions}),
         this.choice(text.git_copy_branch,{kind:'choose',title:'git_copy_branch',items:this.branches('copy')},{icon:'copy',group:text.git_branch_actions})] : [])];
   }
   checkout() {
@@ -40,11 +40,11 @@ export class Menus {
   management() {
     const repo = this.view.repo, text = this.view.text;
     return (repo.branches?.entries ?? []).map(branch => {
-      const items = [['git_checkout','switch',!branch.current],['git_copy_branch','copy',true],['git_branch_from','create',true],
+      const items = [['git_checkout','switch',!branch.current],['git_copy_branch','copy',true],['git_branch_from_open','create',true],
         ['git_rename_branch','rename',!branch.remote],['git_delete_branch','delete',!branch.remote && !branch.current],
         ['git_merge_branch','merge',!branch.current],['git_rebase','rebase',!branch.current]]
         .filter(([, ,enabled]) => enabled).map(([key,operation]) => this.choice(text[key],{kind:'branch',operation,branch}));
-      if (branch.remote) items.push(this.choice(text.git_delete_remote_branch,{kind:'confirm',title:'git_delete_remote_branch',target:branch.name,
+      if (branch.remote) items.push(this.choice(text.git_delete_remote_branch_open,{kind:'confirm',title:'git_delete_remote_branch',target:branch.name,
         action:{delete_remote_branch:{branch:branch.name,commit:branch.commit}}}));
       if (this.view.worktrees) items.push(this.choice(text.worktree_create,{kind:'worktree',branch:branch.name,commit:branch.commit}));
       return this.choice(branch.name,{kind:'choose',title:branch.name,literal:true,items}, {
@@ -102,13 +102,13 @@ export class Menus {
       return remote ? [this.choice(branch.name,{kind:'run',action:{pull:{rebase:false,remote,branch:branch.name.slice(remote.length + 1)}}})] : [];
     });
     return [this.run('git_sync',{sync:{rebase:false}},upstream),this.run('git_sync_rebase',{sync:{rebase:true}},upstream),separator(),
-      this.run('git_pull',{pull:{rebase:false,remote:null,branch:null}},upstream),this.run('git_pull_rebase',{pull:{rebase:true,remote:null,branch:null}},upstream),this.choose('git_pull_from',pulls),separator(),
+      this.run('git_pull',{pull:{rebase:false,remote:null,branch:null}},upstream),this.run('git_pull_rebase',{pull:{rebase:true,remote:null,branch:null}},upstream),this.choose('git_pull_from',pulls,'git_pull_from_open'),separator(),
       this.push(),this.choose('git_push_to',this.remote(remote => ({kind:'run',action:{push:{remote,publish:false,force:false}}}))),this.push(true),separator(),
       ...[['git_fetch',false,false],['git_fetch_prune',true,false],['git_fetch_all',false,true]].map(([key,prune,all]) => this.run(key,{fetch:{remote:null,prune,all}},!!remotes.length))];
   }
   remotes() {
     return [this.item('git_add_remote',{kind:'form',form:'remote'},this.view.repo.writable()),
-      this.choose('git_remove_remote',this.remote(name => ({kind:'confirm',title:'git_remove_remote',target:name,action:{remove_remote:{name}}})))];
+      this.choose('git_remove_remote',this.remote(name => ({kind:'confirm',title:'git_remove_remote',target:name,action:{remove_remote:{name}}})),'git_remove_remote_open')];
   }
   stashes() {
     const repo = this.view.repo, stashes = repo.branches?.sync.stashes ?? [];
@@ -119,21 +119,21 @@ export class Menus {
       items.push(separator(),this.item(latest,choices[0]?.value,repo.writable() && !!choices.length),this.choose(pick,choices));
     }
     return items.concat(separator(),this.choose('git_stash_drop',stashes.map(stash => this.choice(stash.message,{kind:'confirm',title:'git_stash_drop',target:stash.message,action:{drop_stash:{commit:stash.commit}}}))),
-      this.confirm('git_stash_drop_all',{drop_all_stashes:{commits:stashes.map(stash => stash.commit)}},stashes.map(stash => stash.message).join('\n'),!!stashes.length),separator(),
-      this.choose('git_stash_view',stashes.map(stash => this.choice(stash.message,{kind:'open',request:{kind:'stash',commit:stash.commit}}))));
+      this.confirm('git_stash_drop_all',{drop_all_stashes:{commits:stashes.map(stash => stash.commit)}},stashes.map(stash => stash.message).join('\n'),!!stashes.length,'git_stash_drop_all_open'),separator(),
+      this.choose('git_stash_view',stashes.map(stash => this.choice(stash.message,{kind:'open',request:{kind:'stash',commit:stash.commit}})),'git_stash_view_open'));
   }
   tags() {
     const repo = this.view.repo;
-    return [this.item('git_tag_create',{kind:'form',form:'tag'},repo.writable() && !!repo.status?.head),
-      this.choose('git_tag_delete',(repo.branches?.sync.tags ?? []).map(tag => this.choice(tag.name,{kind:'confirm',title:'git_tag_delete',target:tag.name,action:{delete_tag:{name:tag.name,commit:tag.commit,remote:null}}}))),
-      this.choose('git_tag_delete_remote',this.remote(remote => ({kind:'remote_tags',remote}))),separator(),
-      this.choose('git_tag_push',this.remote(remote => ({kind:'run',action:{push_tags:{remote}}})))];
+    return [this.item('git_tag_create',{kind:'form',form:'tag'},repo.writable() && !!repo.status?.head,{label:this.view.text.git_tag_create_open}),
+      this.choose('git_tag_delete',(repo.branches?.sync.tags ?? []).map(tag => this.choice(tag.name,{kind:'confirm',title:'git_tag_delete',target:tag.name,action:{delete_tag:{name:tag.name,commit:tag.commit,remote:null}}})),'git_tag_delete_open'),
+      this.choose('git_tag_delete_remote',this.remote(remote => ({kind:'remote_tags',remote})),'git_tag_delete_remote_open'),separator(),
+      this.choose('git_tag_push',this.remote(remote => ({kind:'run',action:{push_tags:{remote}}})),'git_tag_push_open')];
   }
   root() {
     const repo = this.view.repo;
     return [this.section('git_view_options',this.viewOptions()),separator(),
       this.run('git_pull',{pull:{rebase:false,remote:null,branch:null}},!!repo.branches?.sync.upstream),this.push(),
-      this.item('git_clone',{kind:'clone'}),this.choose('git_checkout',this.checkout()),this.run('git_fetch',{fetch:{remote:null,prune:false,all:false}},!!repo.branches?.sync.remotes.length),separator(),
+      this.item('git_clone',{kind:'clone'}),this.choose('git_checkout',this.checkout(),'git_checkout_open'),this.run('git_fetch',{fetch:{remote:null,prune:false,all:false}},!!repo.branches?.sync.remotes.length),separator(),
       this.section('git_commit',this.commits()),this.section('git_changes_menu',this.changes()),this.section('git_pull_push',this.network()),
       this.choose('git_manage_branches',this.management()),this.section('git_remotes',this.remotes()),this.section('git_stash_menu',this.stashes()),this.section('git_tags',this.tags()),
       ...(this.view.worktrees ? [this.item('worktree_manage',{kind:'worktrees'},repo.writable())] : []),separator(),

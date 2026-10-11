@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {Menus} from '../dev.sailry.platform/desktop/menus.js';
+import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/actions.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -23,6 +25,49 @@ function fixture(receipts = []) {
   }};
   return {owner:new Actions(view),fields,drafts,prepared,completed,forgotten,released,reported,refreshes:()=>refreshes};
 }
+
+test('opening labels preserve plain dialogs and direct actions',async()=>{
+  for(const locale of ['en','zh-CN']) {
+    const state=fixture(),view=state.owner.view,switched=[];
+    view.text=messages(locale);
+    Object.assign(view.repo,{
+      writable:()=>true,options:{},navigation:{},
+      status:{head:'captured-head',branch:'main',entries:[]},
+      branches:{entries:[{name:'topic',commit:'captured-head',current:false,remote:false}],
+        sync:{tracking:{},remotes:['origin'],remote_urls:{origin:'https://example.com/repo.git'},
+          tags:[{name:'v1',commit:'captured-head'}],stashes:[]}},
+      branch:async(operation,target)=>switched.push({operation,target}),
+    });
+    const menus=new Menus(view),checkout=menus.root().find(item=>item.id==='git_checkout');
+    assert.equal(checkout.label.endsWith('…'),true);
+    await state.owner.invoke(checkout.value);
+    assert.equal(state.owner.picker.title,view.text.git_search_branches);
+    state.owner.picker=null;
+    const direct=menus.management()[0].value.items.find(item=>item.value.operation==='switch');
+    assert.equal(direct.label,view.text.git_checkout);
+    assert.equal(direct.label.endsWith('…'),false);
+    await state.owner.invoke(direct.value);
+    assert.equal(switched.length,1);
+    assert.equal(switched[0].operation,'switch');
+    assert.equal(state.owner.dialog,null);
+    assert.equal(state.owner.picker,null);
+    const create=menus.tags().find(item=>item.id==='git_tag_create');
+    assert.equal(create.label.endsWith('…'),true);
+    await state.owner.invoke(create.value);
+    assert.equal(view.text[state.owner.dialog.title].endsWith('…'),false);
+    state.owner.close();
+    const remove=menus.tags().find(item=>item.id==='git_tag_delete');
+    assert.equal(remove.label.endsWith('…'),true);
+    await state.owner.invoke(remove.value);
+    assert.equal(state.owner.picker.title,view.text.git_tag_delete);
+    assert.equal(state.owner.picker.title.endsWith('…'),false);
+    await state.owner.invoke(state.owner.picker.items[0].value);
+    assert.equal(state.owner.dialog.title,'git_tag_delete');
+    assert.equal(view.text[state.owner.dialog.title].endsWith('…'),false);
+    assert.equal(state.owner.dialog.action.delete_tag.name,'v1');
+    state.owner.close();
+  }
+});
 
 test('empty names report validation without replacing the form or draft',async()=>{
   for(const form of ['branch','rename','tag']) {
