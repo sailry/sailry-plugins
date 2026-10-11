@@ -66,11 +66,78 @@ test('footer values keep speed units turn counts and unknown cost details',async
     const metric=id=>values.find(value=>value.id===id);
     assert.equal(metric('composer_speed').value,'21.5/s');assert.equal(metric('composer_turns').value,'7');
     assert.equal(metric('composer_turns').details[0].value,'12');assert.equal(metric('composer_cost').value,'0.00');
-    assert(metric('composer_cost').details.every(detail=>detail.value===text.composer_metric_unknown));
+    assert.deepEqual(metric('composer_cost').details,[
+      {label:{label:text.composer_this_session},value:text.composer_metric_unknown},
+      {label:{label:text.composer_subagents},value:'$0.00'}]);
     assert.deepEqual(statistics,before);
     const zero=metrics({has_messages:true,statistics:{...statistics,cost:{usd_micros:'0',responses:'12',breakdown:{input:'0',output:'0',cache_read:'0',cache_write:'0'}}}},text).find(value=>value.id==='composer_cost');
-    assert.equal(zero.value,'0.00');assert.equal(zero.details[0].value,'$0.00');assert.equal(zero.details.at(-1).value,'12');
+    assert.equal(zero.value,'0.00');assert.equal(zero.details[0].value,'$0.00');assert.equal(zero.details[1].value,'$0.00');
   }
+});
+
+test('composer combines child totals and preserves own metrics',()=>{
+  const statistics={turns:'7',responses:'2',context_tokens:'60',
+    usage:{input:'100',output:'20',cached_input:'25',reasoning:'5'},
+    generation:{output_tokens:'43',elapsed_us:'2000000',responses:'2'},
+    cost:{usd_micros:'15000',responses:'2'},
+    delegated:{responses:'3',tokens:{input:'200',output:'80',cached_input:'200',reasoning:'50'},
+      cost:{usd_micros:'15000',responses:'3'},
+      generation:{output_tokens:'4000',elapsed_us:'1',responses:'3'}}};
+  const before=structuredClone(statistics);
+  for(const locale of ['en','zh-CN']) {
+    const text=messages(locale),values=metrics({has_messages:true,statistics,context_limit:100},text);
+    const metric=id=>values.find(value=>value.id===id);
+    assert.equal(metric('composer_tokens').value,'400');
+    assert.deepEqual(metric('composer_tokens').details,[
+      {label:{label:text.composer_this_session},value:'120'},
+      {label:{label:text.composer_subagents},value:'280'}]);
+    assert.equal(metric('composer_cost').value,'0.03');
+    assert.deepEqual(metric('composer_cost').details,[
+      {label:{label:text.composer_this_session},value:'$0.01'},
+      {label:{label:text.composer_subagents},value:'$0.01'}]);
+    assert.equal(metric('composer_speed').value,'21.5/s');
+    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43']);
+    assert.equal(metric('composer_cache').value,'25%');
+    assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
+    assert.equal(metric('composer_turns').value,'7');
+    assert.equal(metric('composer_turns').details[0].value,'2');
+    assert.equal(metric('context').value.percent,60);
+    assert.equal(metric('context').value.hint,'60 / 100');
+    assert.ok(text.composer_this_session && text.composer_subagents);
+  }
+  assert.equal(messages('en').composer_this_session,'This session');
+  assert.equal(messages('en').composer_subagents,'Subagents');
+  assert.equal(messages('zh-CN').composer_this_session,'本会话');
+  assert.equal(messages('zh-CN').composer_subagents,'子代理');
+  assert.deepEqual(statistics,before);
+});
+
+test('composer defaults absent children without changing own values',()=>{
+  const statistics={turns:'4',responses:'2',usage:{input:'100',output:'20',cached_input:'0',reasoning:'0'},
+    cost:{usd_micros:'30000',responses:'1'}};
+  const state={has_messages:true,statistics};
+  const absent=metrics(state,text),empty=metrics({...state,statistics:{...statistics,
+    delegated:{responses:'0',tokens:null,cost:null,generation:null}}},text);
+  assert.deepEqual(absent,empty);
+  const metric=id=>absent.find(value=>value.id===id);
+  assert.equal(metric('composer_tokens').value,'120');
+  assert.deepEqual(metric('composer_tokens').details.map(detail=>detail.value),['120','0']);
+  assert.equal(metric('composer_cost').value,'0.03+');
+  assert.deepEqual(metric('composer_cost').details.map(detail=>detail.value),['$0.03+','$0.00']);
+});
+
+test('composer retains partial prices and exact microdollar sums',()=>{
+  const statistics={responses:'2',cost:{usd_micros:'9007199254749998',responses:'1'},
+    delegated:{responses:'3',cost:{usd_micros:'1',responses:'2'}}};
+  let values=metrics({has_messages:true,statistics},text);
+  let charge=values.find(value=>value.id==='composer_cost');
+  assert.equal(charge.value,'9007199254.74+');
+  assert.deepEqual(charge.details.map(detail=>detail.value),['$9007199254.74+','$0.00+']);
+  values=metrics({has_messages:true,statistics:{responses:'2',cost:null,
+    delegated:{responses:'3',cost:{usd_micros:'20000',responses:'3'}}}},text);
+  charge=values.find(value=>value.id==='composer_cost');
+  assert.equal(charge.value,'0.02+');
+  assert.deepEqual(charge.details.map(detail=>detail.value),[text.composer_metric_unknown,'$0.02']);
 });
 test('requests preserve exact token details and complete identity despite rounded display',()=>{
   const request={position,model:'model',provider_name:'Removed provider',scope_name:'Removed project',tokens:{input:'18446744073709551615',output:'1',cached_input:'0',reasoning:'0'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:null};
