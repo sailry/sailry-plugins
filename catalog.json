@@ -6,7 +6,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -150,7 +150,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "browser",
-        "version": "0.1.3",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -908,7 +908,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "city-trader",
-        "version": "0.1.2",
+        "version": "0.1.0",
         "description": "Build a city property portfolio against up to two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -1087,7 +1087,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.4",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1282,7 +1282,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.3.1",
+        "version": "0.1.0",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -1672,7 +1672,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.3.2",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2026,7 +2026,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "computer",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2129,7 +2129,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.3",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2428,7 +2428,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.2.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2760,7 +2760,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "doudizhu",
-        "version": "0.1.17",
+        "version": "0.1.0",
         "description": "Play Dou Dizhu with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -4412,7 +4412,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.3.2",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -5883,7 +5883,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.7",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -7447,7 +7447,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "github",
-        "version": "0.2.1",
+        "version": "0.1.0",
         "description": "Public GitHub research and authenticated repository, issue, pull-request and CI workflows",
         "homepage": "https://github.com/github/github-mcp-server",
         "extensions": {
@@ -7480,7 +7480,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -7730,7 +7730,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "gomoku",
-        "version": "0.1.5",
+        "version": "0.1.0",
         "description": "Play Gomoku against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -7948,7 +7948,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "liars-dice",
-        "version": "0.1.4",
+        "version": "0.1.0",
         "description": "Play Liar's Dice with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -8236,7 +8236,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.2.0",
+        "version": "0.1.0",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -8968,7 +8968,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "office",
-        "version": "0.2.0",
+        "version": "0.1.0",
         "description": "Create and edit Word, Excel, PowerPoint and PDF files using the execution Node's tools",
         "extensions": {
           "dev.sailry.platform": {
@@ -8997,7 +8997,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.2.1",
+        "version": "0.1.0",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -9026,7 +9026,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "poker",
-        "version": "0.1.5",
+        "version": "0.1.0",
         "description": "Play heads-up Texas Hold'em with an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -9091,7 +9091,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.4",
+        "version": "0.1.0",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
@@ -9223,7 +9223,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -9622,7 +9622,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reversi",
-        "version": "0.1.4",
+        "version": "0.1.0",
         "description": "Play Reversi against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -9685,7 +9685,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.2",
+        "version": "0.1.0",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -10262,7 +10262,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.3",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10472,7 +10472,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10723,7 +10723,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.2.2",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10966,7 +10966,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.1",
+        "version": "0.1.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11235,7 +11235,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "xiangqi",
-        "version": "0.1.4",
+        "version": "0.1.0",
         "description": "Play Chinese chess against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {

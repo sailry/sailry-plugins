@@ -53,7 +53,7 @@
     const {type,data,title = ''} = chart;
     const colors = [theme.primary,theme.success,theme.warning,theme.danger,theme.foreground];
     const axis = {axisLine:{lineStyle:{color:theme.border}},axisLabel:{color:theme.muted_foreground},
-      axisTick:{lineStyle:{color:theme.border}},splitLine:{lineStyle:{color:theme.border,type:'dashed'}}};
+      axisTick:{lineStyle:{color:theme.border}},splitLine:{show:true,lineStyle:{color:theme.border,type:'dashed'}}};
     const output = {animation:false,backgroundColor:theme.background,color:colors,
       textStyle:{color:theme.foreground,fontFamily:theme.font_family},
       title:{text:title,left:'center',textStyle:{color:theme.foreground,fontFamily:theme.font_family,fontSize:16}},series:[]};

@@ -44,3 +44,13 @@ test('all chart strokes and series use injected semantic colors',() => {
   assert.equal(render(JSON.stringify(chart),palette,10000),'<svg></svg>');
   assert.equal(calls[0].width,960);assert.equal(calls.at(-1),'dispose');assert.doesNotMatch(source,/#(?:[a-f0-9]{3,8})\b/i);
 });
+test('cartesian grids use both themed axes',() => {
+  for (const type of ['line','bar','area','candlestick']) {
+    const data = type === 'candlestick' ? [{label:'A',open:2,close:3,low:1,high:4}] : [point];
+    const chart = parse(JSON.stringify({type,data})),value = option(chart,palette);
+    for (const axis of [value.xAxis,value.yAxis]) {
+      assert.equal(axis.splitLine.show,true,type);
+      assert.equal(axis.splitLine.lineStyle.color,palette.border,type);
+    }
+  }
+});

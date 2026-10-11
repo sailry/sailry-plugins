@@ -8,8 +8,59 @@ Each top-level package is an ordinary Agent Plugins package with Sailry's v1
 extension manifest. `examples/` contains optional developer examples. Package
 sources are maintained here only; the application pins this repository as a Git
 submodule and embeds its reviewed package snapshot for offline installation.
-New Node profiles install the selected default packages. Restarting does not
-reinstall packages removed by the user.
+Startup adds missing default packages and refreshes changed bundled contents,
+preserving configuration and enable choices. It does not reinstall packages
+removed by the user.
+
+## Versions and immutable packages
+
+Until an explicit release decision, every official package manifest stays at
+`0.1.0`; individual changes do not increment it. Sailry's extension API remains
+`v1`, and numeric format versions remain `1`. Immutable content digests distinguish
+package contents while preserving captured resources and sent-turn references.
+Updates apply to new admission; historical captures keep their recorded package.
+The application detects content changes without requiring a version increment.
+
+## Working with the application submodule
+
+This repository has its own Git history. The application's `plugins/` directory
+is a Git submodule that records a reviewed commit, not a symbolic link. Clone the
+application with its pinned submodules:
+
+```sh
+git clone --recurse-submodules https://github.com/sailry/sailry-harness.git
+```
+
+For an existing application checkout, run this from its root after pulling parent
+changes, preserving any local work first:
+
+```sh
+git submodule update --init --recursive
+```
+
+A submodule checkout commonly has a detached HEAD. Before committing plugin
+changes, select an existing owned branch or create one from the pinned commit:
+
+```sh
+git -C plugins status --short
+git -C plugins switch -c feature/plugin-change
+```
+
+Commit plugin changes inside this repository, then commit the updated `plugins/`
+pointer separately in the application repository. A parent commit or ordinary
+push does not commit or publish plugin files. When publication is requested,
+push the plugin commit first, then push the parent commit that references it.
+This keeps the recorded plugin snapshot available to recursive checkouts.
+
+After both repositories have their changes committed on branches, Git can push
+required plugin commits before the parent in one command:
+
+```sh
+git push --recurse-submodules=on-demand
+```
+
+This does not commit pending file changes. Repository-local
+`push.recurseSubmodules=on-demand` can make it the default for future pushes.
 
 ## Checks and catalog
 
@@ -37,9 +88,9 @@ in test labels, excluding required Python `test_` prefixes and generated source.
 CI regenerates `catalog.json` from package manifests and publishes changes after
 successful checks on `main`. Run `python3 scripts/catalog.py` to review index
 changes locally. The marketplace and update checks read the same versions and
-descriptions from this index. Official package changes require a higher semantic
-version to appear as an update. Explicit installations and updates resolve a
-package path to an immutable Git commit through the execution Node; clients do
+descriptions from this index. Check the regenerated index with
+`python3 scripts/catalog.py --check`. Explicit installations and updates resolve
+a package path to an immutable Git commit through the execution Node; clients do
 not execute Git or receive credentials.
 
 ## License and provenance

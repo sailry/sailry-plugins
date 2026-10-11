@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "progress",
-  "version": "0.1.4",
+  "version": "0.1.0",
   "description": "Track task progress",
   "extensions": {
     "dev.sailry.platform": {

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync} from 'node:fs';
+import {execFileSync, spawnSync} from 'node:child_process';
+import {copyFileSync, mkdtempSync, mkdirSync, realpathSync, writeFileSync, rmSync, symlinkSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -70,12 +71,39 @@ test('identity, contract and duplicate declarations fail clearly', t => {
 
 test('versions accept previews and reject invalid SemVer identifiers', t => {
   const {manifest, data} = fixture(t);
-  for (const value of ['0.1.0', '0.1.0-alpha.1', '0.1.0-alpha.1+build.01']) {
+  for (const value of ['0.1.0', '2.3.4', '0.1.0-alpha.1', '0.1.0-alpha.1+build.01']) {
     writeFileSync(manifest, JSON.stringify({...data, version: value}));
     assert.equal(checkPackage(manifest), 0);
   }
   for (const value of ['01.1.0', '0.01.0', '0.1.0-alpha.01', '0.1.0-bad_name', '0.1.0-']) {
     writeFileSync(manifest, JSON.stringify({...data, version: value}));
     assert.throws(() => checkPackage(manifest), /semantic version/);
+  }
+});
+
+test('repository packages and examples keep the pre-release version', t => {
+  const {temp, manifest, data} = fixture(t);
+  const scripts = path.join(temp, 'scripts');
+  mkdirSync(scripts);
+  const checker = path.join(scripts, 'check-packages.mjs');
+  copyFileSync(new URL('../check-packages.mjs', import.meta.url), checker);
+  const example = path.join(temp, 'examples', 'sample', 'plugin.json');
+  mkdirSync(path.dirname(example), {recursive: true});
+  writeFileSync(example, JSON.stringify(data));
+  execFileSync('git', ['init', '--quiet'], {cwd: temp});
+  execFileSync('git', ['add', '.'], {cwd: temp});
+
+  const check = () => spawnSync(process.execPath, ['--experimental-vm-modules', realpathSync(checker)], {
+    cwd: temp, encoding: 'utf8',
+  });
+  const valid = check();
+  assert.equal(valid.status, 0, valid.stderr);
+  assert.match(valid.stdout, /Checked 2 packages/);
+  for (const filename of [manifest, example]) {
+    writeFileSync(filename, JSON.stringify({...data, version: '0.1.1'}));
+    const invalid = check();
+    assert.equal(invalid.status, 1);
+    assert.ok(invalid.stderr.includes(`${path.relative(temp, filename)}: Repository package version must stay 0.1.0`));
+    writeFileSync(filename, JSON.stringify(data));
   }
 });
