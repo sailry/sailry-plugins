@@ -1,6 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {run,write} from '../dev.sailry.platform/host/main.js';
+
+test('command format affects only the summary', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools
+    .find(tool => tool.name === 'run_command');
+  assert.deepEqual(declaration.display.input.summary, {path:'/command',code:true,format:'command'});
+  assert.deepEqual(declaration.display.input.content, {path:'/command'});
+  assert.equal(declaration.handler.operation, 'process.run');
+  for (const command of [
+    "cd '/tmp/worktree with spaces' && '/tmp/node/python/bin/python3' -c 'print(1)'",
+    'SAILRY_PROJECT=fixture /usr/bin/env python3 -m unittest',
+    "printf '%s\\n' '$HOME' 'quoted content'",
+    "python3 - <<'PY'\nprint('🙂')\nPY",
+  ]) {
+    assert.equal(run({command}).command, command);
+  }
+});
 
 test('description preserves command and optional metadata', () => {
   const command = "printf '%s' 'quoted\ncontent'";

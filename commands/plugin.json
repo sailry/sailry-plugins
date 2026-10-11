@@ -130,7 +130,8 @@
             "input": {
               "summary": {
                 "path": "/command",
-                "code": true
+                "code": true,
+                "format": "command"
               },
               "context": {
                 "path": "/cwd",
