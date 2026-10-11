@@ -93,7 +93,7 @@ export function render(view){const{text}=view,active=view.home?null:view.termina
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})
     .child(Header.new('ssh-header',{content:JSON.stringify({title:text.ssh,tabs:view.terminals.length?{id:'ssh-tabs',selected:view.home?null:view.terminal,close_label:text.close,max_width:180,items:view.terminals.map(info=>({id:info.id,label:view.profiles.find(profile=>profile.id===info.ssh)?.name??text.ssh,closable:true,icon:'terminal'}))}:undefined,
       actions:[{id:'ssh-connections-menu',label:text.ssh_connections,icon:'icons/network.svg',disabled:view.locked()},
-        {id:'ssh-home',label:text.home,icon:'house',disabled:view.locked()||!active}]})}))
+        {id:'ssh-home',label:text.home,icon:'icons/house.svg',disabled:view.locked()||!active}]})}))
     .child(Workspace.new('ssh-workspace',{has_details:!!profile,details_label:text.ssh_assistant,min_navigation_width:200,min_details_width:320,navigation:profile?'resource':'none'}).children([
       body,
       profile?div().id('ssh-assistant-panel').size_full().min_h_0().child(Conversation.new(`ssh-assistant-${profile.id}`,{assistant:'ssh',resource:{kind:'ssh',id:profile.id},heading:text.ssh_assistant})):div(),

@@ -122,7 +122,7 @@ export function render(view) {
     .child(Header.new('database-header',{content:JSON.stringify({title:text.database,
       tabs:current?{id:'db-tabs',selected:view.home?null:current.id,max_width:180,close_label:text.close,items:[{id:current.id,label:current.name,icon:'hard-drive',closable:true,close_disabled:!!view.pending}]}:undefined,
       actions:[{id:'db-connections-menu',label:text.db_connections,icon:'icons/hard-drive.svg',disabled:view.locked()},
-        {id:'db-home',label:text.home,icon:'house',disabled:view.locked()||!profile}]})}))
+        {id:'db-home',label:text.home,icon:'icons/house.svg',disabled:view.locked()||!profile}]})}))
     .child(Workspace.new('database-workspace',{has_details:!!profile,details_label:text.connection_assistant,min_navigation_width:200,min_details_width:320,navigation:profile?'resource':'none'}).children([
       div().relative().size_full().min_h_0().child(content(view)).children(connecting?[Loading.new('db-connecting')]:[]),
       profile?div().id('db-assistant-panel').size_full().min_h_0().child(Conversation.new(`database-assistant-${view.opened}`,{assistant:'database',resource:{kind:'database',id:view.opened},heading:text.connection_assistant})):div(),

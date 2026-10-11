@@ -97,7 +97,9 @@ for(const packageName of ['databases','ssh']) {
     const header=JSON.parse(setup.nodes.get(packageName==='ssh'?'ssh-header':'database-header').props.content);
     assert.equal(header.title,packageName==='ssh'?'ssh':'database');
     assert.equal(header.actions[0].id,`${prefix}-connections-menu`);
-    assert.deepEqual(header.actions[1],{id:`${prefix}-home`,label:'home',icon:'house',disabled:true});
+    assert.deepEqual(header.actions.map(action=>action.icon),[packageName==='ssh'?'icons/network.svg':'icons/hard-drive.svg','icons/house.svg'],
+      'Header actions pass complete asset paths to the native Icon');
+    assert.deepEqual(header.actions[1],{id:`${prefix}-home`,label:'home',icon:'icons/house.svg',disabled:true});
     const menu=setup.nodes.get(`${prefix}-connection-second`);
     assert.equal(menu.type,'NativeContextMenu');
     assert.deepEqual(plain(menu.props.items),['edit','remove'].map(action=>({id:`connection:${JSON.stringify({id:'second',revision:7,action})}`,label:action==='edit'?'connection_action_edit':'settings_delete',enabled:true})));
