@@ -99,6 +99,7 @@ test('counts use intrinsic width for full partial and empty stats',()=>{
     const directory=decorated(view,{id:'dir/tracked/长目录',label:'长目录',children:[{id:`tracked/${path}`,label:path.split('/').at(-1),entry}]});
     assert.equal(Object.hasOwn(directory.decoration,'badges_width'),false);
     assert.equal(directory.decoration.badges,undefined);
+    assert.equal(directory.decoration.group,undefined);
   }
 });
 
@@ -113,6 +114,7 @@ test('change trees enable guides without changing group indentation', () => {
   assert.equal(tree.props.guides,true);
   assert.equal(tree.props.indent,14);
   assert.equal(tree.props.skip_depth,1);
+  assert.equal(JSON.parse(tree.props.items)[0].decoration.group,true);
 });
 
 test('directory checks preserve staged and unstaged scopes', () => {

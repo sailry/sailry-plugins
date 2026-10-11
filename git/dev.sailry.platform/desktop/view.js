@@ -102,6 +102,7 @@ function decorated(view,row) {
       check:{id:`git-index-${prefix}-${entry.path}`,label:view.text[selected.operation === 'stage' ? 'git_stage' : 'git_unstage'],checked:selected.checked,mixed:selected.mixed,disabled:!view.repo.writable() || entry.conflicted}});
   } else {
     const selected = checkbox(entries,scope);
+    if (row.entries) result.decoration.group = true;
     result.decoration.check = {id:`git-select-group-${row.id}`,label:view.text[selected.operation === 'stage' ? 'git_stage' : 'git_unstage'],checked:selected.checked,mixed:selected.mixed,disabled:!view.repo.writable() || !selected.paths.length};
   }
   return result;
