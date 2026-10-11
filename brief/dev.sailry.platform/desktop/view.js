@@ -12,7 +12,7 @@ export function render(view) {
       {id:'brief-export',label:text.brief_export,icon:'ellipsis-vertical',disabled:disabled || state.exporting || !state.artifact}],
   })});
   const content = state.artifact ? ArtifactSurface.new(`brief-preview-${state.artifact.id}`,{
-    artifact:state.artifact.id,...(state.follow ? {} : {revision:state.artifact.revision}),
+    artifact:state.artifact.id,...(state.follow ? {} : {revision:state.revision}),
     labels:{contents:text.brief_contents,submit:text.brief_submit,required:text.brief_form_required,
       invalid_form:text.brief_form_invalid,render_error:text.brief_render_failed},
   }) : state.loading ? Loading.new('brief-loading')
