@@ -20,13 +20,21 @@ const find = (view,id) => flatten(render(view)).find(item => item instanceof Ele
 
 test('panel header owns version selection and the export action',() => {
   const view = setup(),header = JSON.parse(find(view,'brief-header').props.content),menu = find(view,'brief-export-picker');
-  assert.equal(header.filters[0].selected,'2');assert.equal(header.filters[0].label,'版本');assert.equal(header.actions[0].icon,'ellipsis-vertical');
+  assert.equal(header.filters[0].selected,'2');assert.equal(header.filters[0].label,'版本');assert.equal(header.actions[0].icon,'icons/ellipsis-vertical.svg');
   assert.deepEqual(JSON.parse(JSON.stringify(menu.props.items)),[
     {id:'brief-export-html',label:'HTML',disabled:false,value:{format:'html'}},{id:'brief-export-image',label:'图片',disabled:false,value:{format:'png'}},
   ]);
   const surface = find(view,'brief-preview-artifact');assert.equal(surface.props.artifact,'artifact');assert.equal(surface.props.revision,undefined);
   view.state.follow = false;assert.equal(find(view,'brief-preview-artifact').props.revision,2);
   assert.equal(surface.props.labels.submit,'提交');
+});
+test('header actions use complete bundled icon paths',() => {
+  const view = setup();view.state.before = 1;
+  const header = JSON.parse(find(view,'brief-header').props.content);
+  assert.deepEqual(header.actions.map(({id,icon}) => ({id,icon})),[
+    {id:'brief-more-versions',icon:'icons/ellipsis.svg'},
+    {id:'brief-export',icon:'icons/ellipsis-vertical.svg'},
+  ]);
 });
 test('refresh keeps the preview and disables actions without loading text',() => {
   const view = setup();view.state.loading = true;

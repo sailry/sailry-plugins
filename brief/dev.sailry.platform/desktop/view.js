@@ -8,8 +8,8 @@ export function render(view) {
   const header = Header.new('brief-header',{content:JSON.stringify({title:state.artifact?.title ?? '',
     filters:[{id:'brief-version',label:text.brief_version,selected:state.revision === null ? '' : String(state.revision),
       primary:true,disabled:disabled || !state.artifact,items:state.versions()}],
-    actions:[...(state.before === null ? [] : [{id:'brief-more-versions',icon:'ellipsis',label:text.brief_more_versions,disabled}]),
-      {id:'brief-export',label:text.brief_export,icon:'ellipsis-vertical',disabled:disabled || state.exporting || !state.artifact}],
+    actions:[...(state.before === null ? [] : [{id:'brief-more-versions',icon:'icons/ellipsis.svg',label:text.brief_more_versions,disabled}]),
+      {id:'brief-export',label:text.brief_export,icon:'icons/ellipsis-vertical.svg',disabled:disabled || state.exporting || !state.artifact}],
   })});
   const content = state.artifact ? ArtifactSurface.new(`brief-preview-${state.artifact.id}`,{
     artifact:state.artifact.id,...(state.follow ? {} : {revision:state.revision}),
