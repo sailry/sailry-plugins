@@ -30,8 +30,8 @@ async function current(entry=undefined) {
   }
   return {entry,value};
 }
-async function anchor() {
-  const history=await readConversation();
+async function anchor(history=undefined) {
+  history ??= await readConversation();
   return history.page.runs.filter(run=>run.turn!==context().turn).at(-1)?.turn ?? null;
 }
 function argumentsOf(args,keys) {
@@ -103,7 +103,9 @@ export async function control(args) {
   } else if (args.kind==='resume' && ['paused','blocked','failed'].includes(value.state)) {
     const session=await readSession();
     if (session.config.mode==='plan') throw new Error('Goal execution requires Code mode');
-    operations.push(write(entry,{...entry.value,state:'active',after:await anchor()}));
+    const history=await readConversation();
+    operations.push({kind:'queue_pause',data:{session:context().session,expected_revision:history.page.queue.revision,paused:false}});
+    operations.push(write(entry,{...entry.value,state:'active',after:await anchor(history)}));
     operations.push(next({...entry,revision:String(BigInt(entry.revision)+1n)}));
   } else throw new Error('Invalid goal action');
   await execute(prepareTransaction(operations));

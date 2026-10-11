@@ -16,7 +16,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
   let current=plain(entry),state;
   const requests=[];
   const scope={session:'session-id',turn:null};
-  const history={page:{runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}]},next_before:null};
+  const history={page:{runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}],queue:{revision:'9007199254740993',paused:true,items:[]}},next_before:null};
   const sdk={context:()=>scope,newId:()=> 'new-goal',getConversationValue:async key=>{
     assert.equal(key,'goal');return plain(current);
   },setConversationValue:(key,value,revision)=>prepare([{kind:'conversation_write',data:{key,value,expected_revision:revision}}]),
@@ -78,15 +78,17 @@ test('only explicit resume writes a live state and submits work',async()=>{
   assert.equal(result.goal.state,'active');
   assert.equal(current().restored,false);
   assert.equal(requests.length,1);
-  assert.deepEqual(requests[0].map(operation=>operation.kind),['conversation_write','continue']);
-  assert.equal(requests[0][0].data.key,'goal');
-  assert.equal(requests[0][0].data.value.after,'last-turn');
-  assert.equal(requests[0][1].data.session,'session-id');
-  assert.equal(requests[0][1].data.expected_revision,'6');
+  assert.deepEqual(requests[0].map(operation=>operation.kind),['queue_pause','conversation_write','continue']);
+  assert.deepEqual(requests[0][0].data,{session:'session-id',expected_revision:'9007199254740993',paused:false});
+  assert.equal(requests[0][1].data.key,'goal');
+  assert.equal(requests[0][1].data.value.after,'last-turn');
+  assert.equal(requests[0][2].data.session,'session-id');
+  assert.equal(requests[0][2].data.expected_revision,'6');
   await api.completed({turn:'last-turn'});
   assert.equal(requests[1][0].kind,'continue');
   assert.equal(requests[1][0].data.scope,'conversation');
   assert.equal(requests[1][0].data.expected_revision,'6');
+  assert.equal(requests[1].length,1);
 });
 
 test('guidance keeps a goal active and the next completed turn continues',async()=>{
