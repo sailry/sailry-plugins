@@ -3,19 +3,32 @@ import {Button,Icon,Tag} from 'gpui-component';
 import {theme} from 'sailry';
 import {ComposedButton} from 'sailry/ui';
 import {sprite} from './art.js';
+import {statusColors,statusColor} from './state.js';
 import {ROOMS,WORLD_WIDTH,WORLD_HEIGHT,PERSON_SIZE,DESK_WIDTH,DESK_HEIGHT,SEATED,STANDING,ATRIUM,seatPosition,approvalPosition} from './geometry.js';
 export const variants = {waiting:'warning',running:'primary',completed:'success',failed:'danger',idle:'secondary'};
 
 function board(view,value,index,scale) {
   const {board:bounds} = ROOMS[index], {text} = view, colors = theme().colors;
-  const running = value?.items.filter(item => item.lane === 'running').length ?? 0;
-  const waiting = value?.items.filter(item => item.approval).length ?? 0;
-  const label = div().v_flex().size_full().min_w_0().justify_center().items_center().text_center().gap_1()
+  const counts = {running:0,approval:0,completed:0,idle:0};
+  for (const item of value?.items ?? []) {
+    if (item.approval) counts.approval += 1;
+    else if (item.lane in counts) counts[item.lane] += 1;
+  }
+  const id = `plaza-room-${value?.key ?? index}`, width = Math.max(bounds.width * scale,220);
+  // A definite height lets the native button's content fill the final size,
+  // including room for its border and the three theme-sized text rows.
+  const height = Math.max(bounds.height * scale,window.rem_size() * 4.25);
+  const entries = [['running',text.room_running],['approval',text.room_approvals],['completed',text.room_completed],['idle',text.room_idle]];
+  const label = div().v_flex().size_full().min_w_0().justify_center().items_center().text_center().gap_0p5().px_3().py_1()
     .text_color(colors.foreground).text_sm().line_height(1.15)
-    .child(div().font_semibold().truncate().child(value?.name ?? text.empty_room))
-    .children(value ? [div().text_color(colors.muted_foreground).truncate().child(text.room_summary(running,waiting))] : []);
-  const whiteboard = new Button(`plaza-room-${value?.key ?? index}`).outline().p_0().absolute()
-    .left(bounds.x * scale).top(bounds.y * scale).w(bounds.width * scale).h(bounds.height * scale).min_h('2.5rem')
+    .child(div().w_full().font_semibold().truncate().child(value?.name ?? text.empty_room))
+    .children(value ? [div().id(`${id}-statistics`).v_flex().w_full().gap_0p5()
+      .children([0,2].map(offset => div().id(`${id}-row-${offset / 2}`).h_flex().w_full().gap_3()
+        .children(entries.slice(offset,offset + 2).map(([state,title]) => div().id(`${id}-${state}`).h_flex().flex_1().min_w_0().items_center().justify_between().gap_2()
+          .child(div().truncate().text_color(colors.muted_foreground).child(title))
+          .child(div().flex_none().font_medium().text_color(colors[statusColors[state]]).child(String(counts[state])))))))] : []);
+  const whiteboard = new Button(id).outline().p_0().absolute()
+    .left((bounds.x + bounds.width / 2) * scale - width / 2).top(bounds.y * scale).w(width).h(height)
     .bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
   if (value) whiteboard.on_click((_event,cx) => view.inspectRoom(value.key,cx));
   return whiteboard;
@@ -53,14 +66,18 @@ function person(view,item,position,scale,approval = false) {
   const status = approval ? null : item.waiting === 'input' ? '?' : item.lane === 'failed' ? '!'
     : item.lane === 'completed' ? '✓' : item.kind === 'terminal' ? '>_' : null;
   const selected = view.panelOpen && view.selected?.kind === 'session' && view.selected.id === item.id;
+  const color = theme().colors[statusColor(item)];
   view.targets.set(id,item);
   return div().id(`${id}-position`).absolute().left((position.x - dimension / 2) * scale)
     .top((position.y - dimension) * scale).w(size).h(size)
     .child(ComposedButton.new(id,{size,label:`${item.title}, ${item.status}, ${item.project}`,
       tooltip:`${item.title} · ${item.status}`})
       .child(div().relative().w(size).h(size).h_flex().justify_center()
-        .children(selected ? [div().id('plaza-selection').absolute().bottom(0).left(size * 0.2).w(size * 0.6).h(12 * scale)
-          .rounded_full().border_1().border_color(approval ? theme().colors.warning : theme().colors.primary)] : [])
+        .child(div().id(`${id}-status`).absolute().bottom(0).left(size * 0.07).w(size * 0.86).h(14 * scale)
+          .rounded_full().border_2().border_color(color)
+          .child(div().absolute().inset(0).rounded_full().bg(color).opacity(0.22)))
+        .children(selected ? [div().id(`${id}-selection`).absolute().bottom(0).left(size * 0.03).w(size * 0.94).h(18 * scale)
+          .rounded_full().border_1().border_color(theme().colors.foreground)] : [])
         .child(sprite(id,index,size))
         .children(status ? [div().absolute().top(14 * scale).right(0)
           .child(new Tag().variant(variants[item.lane] ?? 'secondary').size('small').rounded_full().child(status))] : [])));

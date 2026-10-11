@@ -11,15 +11,45 @@ function catalog(count=4) {
 }
 const render=(data,floor)=>layout(data,new Map(),text,floor);
 
-test('seats remain stable across state changes and input ordering',()=>{
+test('peers keep their seats across input ordering',()=>{
   const data=catalog(),floor=new Floor(),first=render(data,floor);
   const seats=new Map(first.rooms[0].items.map(item=>[item.id,item.seat]));
-  data.sessions.reverse();data.sessions[1].activity.waiting='approval';data.session_lanes[data.sessions[1].id]='waiting';
+  data.sessions.reverse();
   const second=render(data,floor);
   for(const item of second.rooms[0].items)assert.equal(item.seat,seats.get(item.id));
-  assert.deepEqual(second.approvals.map(item=>item.id),[data.sessions[1].id]);
-  data.sessions[1].activity.waiting=null;data.session_lanes[data.sessions[1].id]='running';
-  assert.equal(render(data,floor).approvals.length,0);
+});
+
+test('running work moves ahead of waiting and finished sessions',()=>{
+  const data=catalog(14),floor=new Floor();
+  for(const session of data.sessions)data.session_lanes[session.id]='completed';
+  let room=render(data,floor).rooms[0];
+  assert.equal(room.items.find(item=>item.id==='s0').seat,13);
+  for(const id of ['s0','s1'])data.session_lanes[id]='running';
+  data.sessions[2].activity.waiting='approval';data.session_lanes.s2='waiting';
+  room=render(data,floor).rooms[0];
+  assert.deepEqual(room.items.slice(0,3).map(item=>item.id),['s1','s0','s2']);
+  assert.ok(room.visible.some(item=>item.id==='s0'));
+  assert.equal(room.pages,3);
+  const seats=new Map(room.items.map(item=>[item.id,item.seat]));
+  data.sessions.reverse();room=render(data,floor).rooms[0];
+  for(const item of room.items)assert.equal(item.seat,seats.get(item.id));
+  data.session_lanes.s0='completed';
+  assert.equal(render(data,floor).rooms[0].items.find(item=>item.id==='s0').seat,2);
+});
+
+test('running overflow fills consecutive pages without holes',()=>{
+  const data=catalog(14),floor=new Floor();
+  for(const session of data.sessions)data.session_lanes[session.id]='idle';
+  render(data,floor);
+  for(let index=0;index<8;index++)data.session_lanes[`s${index}`]='running';
+  let room=render(data,floor).rooms[0];
+  assert.ok(room.visible.every(item=>item.lane==='running'));
+  floor.turnRoom(room.key,1,room.pages);room=render(data,floor).rooms[0];
+  assert.deepEqual(room.visible.map(item=>item.lane),['running','running','idle','idle','idle','idle']);
+  floor.turnRoom(room.key,1,room.pages);room=render(data,floor).rooms[0];
+  assert.equal(room.visible.length,2);
+  data.sessions=data.sessions.slice(0,2);room=render(data,floor).rooms[0];
+  assert.equal(room.page,0);assert.equal(room.pages,1);
 });
 
 test('more than six sessions and eight projects remain reachable',()=>{
