@@ -97,6 +97,21 @@ for(const packageName of ['databases','ssh']) {
     const header=JSON.parse(setup.nodes.get(packageName==='ssh'?'ssh-header':'database-header').props.content);
     assert.equal(header.title,packageName==='ssh'?'ssh':'database');
     assert.equal(header.actions[0].id,`${prefix}-connections-menu`);
+    assert.deepEqual(header.actions[1],{id:`${prefix}-home`,label:'home',icon:'house',disabled:true});
+    const menu=setup.nodes.get(`${prefix}-connection-second`);
+    assert.equal(menu.type,'NativeContextMenu');
+    assert.deepEqual(plain(menu.props.items),['edit','remove'].map(action=>({id:`connection:${JSON.stringify({id:'second',revision:7,action})}`,label:action==='edit'?'connection_action_edit':'settings_delete',enabled:true})));
+  });
+
+  test(`${packageName} Home keeps resource tabs and shows saved connections`,async()=>{
+    const setup=await fixture(packageName),owner=view(packageName,profiles);
+    owner.home=true;owner.opened='first';owner.terminals=[{id:'terminal',ssh:'first'}];owner.terminal='terminal';
+    setup.functions.render(owner);
+    assert.ok(setup.nodes.has(`${prefix}_workspace_empty`));assert.ok(setup.nodes.has(`${prefix}-connection-first`));
+    assert.equal(setup.nodes.has(packageName==='ssh'?'ssh-terminal-terminal':'database-results'),false);
+    assert.equal(setup.nodes.has(packageName==='ssh'?'ssh-assistant-first':'database-assistant-first'),false);
+    const header=JSON.parse(setup.nodes.get(packageName==='ssh'?'ssh-header':'database-header').props.content);
+    assert.equal(header.tabs.selected,null);assert.equal(header.tabs.items[0].id,packageName==='ssh'?'terminal':'first');
   });
 
   test(`${packageName} picker uses searchable native Command rows and a separate dialog lifecycle`,async()=>{

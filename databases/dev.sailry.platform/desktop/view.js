@@ -27,11 +27,12 @@ function landing(view) {
   return EmptyState.new('db_workspace_empty',{icon:'hard-drive',label:text.db_workspace_empty})
     .child(div().w_full().max_w_96().child(IconButton.new('db-new',{icon:'plus',label:text.db_new,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:view.locked()})))
     .child(div().id('db-saved-connections').v_flex().w_full().max_w_96().max_h(320).overflow_y_scroll().gap_2()
-      .children(view.profiles.map(profile=>SelectableRow.new(`db-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
+      .children(view.profiles.map(profile=>NativeContextMenu.new(`db-connection-${profile.id}`,{items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
+        .child(SelectableRow.new(`db-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
         .child(div().h_flex().w_full().gap_3().child(new Icon('icons/hard-drive.svg').size_5())
           .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
             .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile,text))))
-          .child(new Icon('icons/chevron-right.svg').size_4())))));
+          .child(new Icon('icons/chevron-right.svg').size_4()))))));
 }
 function feedback(view,form=false) {
   const {pending,text}=view;
@@ -96,7 +97,7 @@ function editorPanel(view) {
     .child(div().flex_1().min_h_0().child(view.tab===0?log(view):sqlEditor(view)));
 }
 function content(view) {
-  if(!view.profile())return div().id('db-landing').v_flex().size_full().min_h_0().children(view.pending?[feedback(view)]:[]).child(landing(view));
+  if(view.home||!view.profile())return div().id('db-landing').v_flex().size_full().min_h_0().children(view.pending?[feedback(view)]:[]).child(landing(view));
   const panels=new Resizable('db-editor-results').axis('vertical')
     .child(new ResizablePanel().size_range(100,10000).child(results(view)))
     .child(new ResizablePanel().size(200).size_range(120,480).flex_none().child(editorPanel(view)));
@@ -104,7 +105,7 @@ function content(view) {
 }
 function navigation(view) {
   const {text,catalog}=view;
-  if(!view.profile())return div();
+  if(view.home||!view.profile())return div();
   return div().id('db-catalog').v_flex().size_full().min_h_0().min_w_0()
     .child(PanelHeader.new('database-catalog-header',{size:'row',draggable:false,bordered:true}).child(div().h_flex().w_full().items_center().justify_end()
       .child(IconButton.new('db-refresh-catalog',{icon:'rotate-cw',label:text.refresh,disabled:!!catalog.loading.size}))))
@@ -112,15 +113,16 @@ function navigation(view) {
 }
 
 export function render(view) {
-  const {text}=view,profile=view.profile(),opened=!!view.editor||!!view.confirmation;
+  const {text}=view,current=view.profile(),profile=view.home?null:current,opened=!!view.editor||!!view.confirmation;
   const form=view.editor?{form:true,title:text[view.editor.original.revision?'db_edit':'db_new'],width:560}:{};
   const editorBody=view.editor?div().v_flex().gap_4().child(editor(view))
     .children(view.pending?[feedback(view,true)]:[]):null;
   const connecting=!opened&&(!!view.pending&&!view.pending.request.unknown&&view.pending.request.command?.kind==='check_database'||profile&&view.catalog.loading.size&&!view.catalog.names.length);
   return div().size_full().min_h_0()
     .child(Header.new('database-header',{content:JSON.stringify({title:text.database,
-      tabs:profile?{id:'db-tabs',selected:profile.id,max_width:180,close_label:text.close,items:[{id:profile.id,label:profile.name,icon:'hard-drive',closable:true,close_disabled:!!view.pending}]}:undefined,
-      actions:[{id:'db-connections-menu',label:text.db_connections,icon:'icons/hard-drive.svg',disabled:view.locked()}]})}))
+      tabs:current?{id:'db-tabs',selected:view.home?null:current.id,max_width:180,close_label:text.close,items:[{id:current.id,label:current.name,icon:'hard-drive',closable:true,close_disabled:!!view.pending}]}:undefined,
+      actions:[{id:'db-connections-menu',label:text.db_connections,icon:'icons/hard-drive.svg',disabled:view.locked()},
+        {id:'db-home',label:text.home,icon:'house',disabled:view.locked()||!profile}]})}))
     .child(Workspace.new('database-workspace',{has_details:!!profile,details_label:text.connection_assistant,min_navigation_width:200,min_details_width:320,navigation:profile?'resource':'none'}).children([
       div().relative().size_full().min_h_0().child(content(view)).children(connecting?[Loading.new('db-connecting')]:[]),
       profile?div().id('db-assistant-panel').size_full().min_h_0().child(Conversation.new(`database-assistant-${view.opened}`,{assistant:'database',resource:{kind:'database',id:view.opened},heading:text.connection_assistant})):div(),

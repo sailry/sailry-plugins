@@ -16,11 +16,12 @@ function picker(view){const{text}=view,profile=view.profiles.find(profile=>profi
 function landing(view){const{text}=view;return EmptyState.new('ssh_workspace_empty',{icon:'square-terminal',label:text.ssh_workspace_empty})
   .child(div().w_full().max_w_96().child(IconButton.new('ssh-new',{icon:'plus',label:text.ssh_new,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:view.locked()})))
   .child(div().id('ssh-saved-connections').v_flex().w_full().max_w_96().max_h(320).overflow_y_scroll().gap_2()
-    .children(view.profiles.map(profile=>SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
+    .children(view.profiles.map(profile=>NativeContextMenu.new(`ssh-connection-${profile.id}`,{items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
+      .child(SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
       .child(div().h_flex().w_full().gap_3().child(new Icon('icons/network.svg').size_5())
         .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
           .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile))))
-        .child(new Icon('icons/chevron-right.svg').size_4())))));}
+        .child(new Icon('icons/chevron-right.svg').size_4()))))));}
 function feedback(view,form=false){const{text,outcome,pending}=view,content=div().v_flex().min_w_0();if(form)content.gap_3();else content.gap_2().px_3().py_2();return content
   .children(outcome?.kind==='completed'?[
     ...[outcome.stdout,outcome.stderr].flatMap((value,index)=>value?[new Field().label(text[index?'command_stderr':'command_stdout']).child(TextField.new(view.output[index],{readonly:true}))]:[]),
@@ -82,7 +83,7 @@ function dialog(view){const{text}=view;if(view.outcome?.kind==='host_key_require
     div().h_flex().justify_end().gap_2().child(new Button('ssh-command-close').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
       .child(new Button('ssh-run').primary().label(text.ssh_run).disabled(view.locked()).on_click((_,cx)=>view.runCommand(cx))));
   return {props:{},children:[]};}
-export function render(view){const{text}=view,active=view.terminals.find(info=>info.id===view.terminal),profile=view.activeProfile(),opened=!!view.editor||!!view.confirmation||!!view.fileEdit||!!view.transfer||view.commandOpen||view.outcome?.kind==='host_key_required';
+export function render(view){const{text}=view,active=view.home?null:view.terminals.find(info=>info.id===view.terminal),profile=view.home?null:view.activeProfile(),opened=!!view.editor||!!view.confirmation||!!view.fileEdit||!!view.transfer||view.commandOpen||view.outcome?.kind==='host_key_required';
   const modal=opened?dialog(view):{props:{},children:[]};
   const connecting=!opened&&!!view.pending&&!view.pending.request.unknown&&['check_ssh','open_ssh_terminal'].includes(view.pending.request.command?.kind);
   const body=div().id(active?'ssh-page':'ssh-landing').relative().v_flex().size_full().min_h_0().min_w_0()
@@ -90,8 +91,9 @@ export function render(view){const{text}=view,active=view.terminals.find(info=>i
     .child(active?div().flex_1().min_h_0().child(Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
     .children(connecting?[Loading.new('ssh-connecting')]:[]);
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})
-    .child(Header.new('ssh-header',{content:JSON.stringify({title:text.ssh,tabs:view.terminals.length?{id:'ssh-tabs',selected:view.terminal,close_label:text.close,max_width:180,items:view.terminals.map(info=>({id:info.id,label:view.profiles.find(profile=>profile.id===info.ssh)?.name??text.ssh,closable:true,icon:'terminal'}))}:undefined,
-      actions:[{id:'ssh-connections-menu',label:text.ssh_connections,icon:'icons/network.svg',disabled:view.locked()}]})}))
+    .child(Header.new('ssh-header',{content:JSON.stringify({title:text.ssh,tabs:view.terminals.length?{id:'ssh-tabs',selected:view.home?null:view.terminal,close_label:text.close,max_width:180,items:view.terminals.map(info=>({id:info.id,label:view.profiles.find(profile=>profile.id===info.ssh)?.name??text.ssh,closable:true,icon:'terminal'}))}:undefined,
+      actions:[{id:'ssh-connections-menu',label:text.ssh_connections,icon:'icons/network.svg',disabled:view.locked()},
+        {id:'ssh-home',label:text.home,icon:'house',disabled:view.locked()||!active}]})}))
     .child(Workspace.new('ssh-workspace',{has_details:!!profile,details_label:text.ssh_assistant,min_navigation_width:200,min_details_width:320,navigation:profile?'resource':'none'}).children([
       body,
       profile?div().id('ssh-assistant-panel').size_full().min_h_0().child(Conversation.new(`ssh-assistant-${profile.id}`,{assistant:'ssh',resource:{kind:'ssh',id:profile.id},heading:text.ssh_assistant})):div(),

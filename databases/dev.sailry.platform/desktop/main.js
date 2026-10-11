@@ -20,7 +20,7 @@ export const rowText=rows=>rows.map(row=>row.map(cell).map(value=>/[\t\n\r"]/.te
 export default class Databases extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale); this.profiles=[]; this.ssh=[]; this.projects=[]; this.connected=true;
-    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.tab=0;
+    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.tab=0;this.home=false;
     this.pending=null; this.error=null; this.status=null; this.editor=null; this.confirmation=null; this.picker=false; this.pickerProfile=null; this.pickerRevision=0; this.dialog=0;
     this.sql=createText('',{multiline:true,rows:[2,6],placeholder:this.text.db_sql});
     this.histories=new Map();
@@ -35,7 +35,7 @@ export default class Databases extends View {
     this.watch(nextTableEvent,(event,cx)=>this.run(cx=>this.rowAction(event,cx),cx),cx);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
     this.watch(nextContextMenuEvent,(event,cx)=>this.run(cx=>this.menu(event.id,cx),cx),cx);
-    this.watch(header_action,(id,cx)=>{if(id==='db-connections-menu')this.connections(cx);},cx);
+    this.watch(header_action,(id,cx)=>{if(id==='db-connections-menu')this.connections(cx);else if(id==='db-home')this.showHome(cx);},cx);
     this.watch(nextNavigationTabEvent,(event,cx)=>this.navigation(event,cx),cx);
     this.watch(nextPickerEvent,(event,cx)=>this.pick(event,cx),cx);
     this.watch(nextControlEvent,(event,cx)=>this.control(event,cx),cx);
@@ -71,8 +71,11 @@ export default class Databases extends View {
     }while(this.refreshAgain);
   }
   profile() { return this.profiles.find(profile=>profile.id===this.opened); }
+  showHome(cx) {if(this.locked())return;this.home=true;this.picker=false;cx.notify();}
   navigation(event,cx) {
-    if(event.bar!=='db-tabs'||event.kind!=='close'||event.id!==this.opened||!this.profile()||this.pending)return;
+    if(event.bar!=='db-tabs'||event.id!==this.opened||!this.profile()||this.pending)return;
+    if(event.kind==='select'){this.home=false;cx.notify();return;}
+    if(event.kind!=='close')return;
     this.opened=null;this.catalog=null;this.result=null;this.origin=null;this.status=null;this.epoch++;this.page=0;cx.notify();
   }
   control(event,cx) {
@@ -110,6 +113,7 @@ export default class Databases extends View {
   locked() {return !this.connected || !!this.pending;}
   async open(profile,cx) {
     if(this.locked())return;
+    this.home=false;
     if(this.opened!==profile.id) {
       this.opened=profile.id;this.logs=[];this.selectedLog=null;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
       this.catalog=new Catalog(profile,error=>this.report(error));
@@ -170,6 +174,7 @@ export default class Databases extends View {
     if(event.kind==='menu')await this.menu(event.action,cx);
   }
   async menu(id,cx) {
+    if(id?.startsWith('connection:')){if(this.locked())return;const target=JSON.parse(id.slice(11)),profile=this.profiles.find(profile=>profile.id===target.id&&profile.revision===target.revision);if(!profile)return;if(target.action==='edit')this.edit(profile,cx);else if(target.action==='remove')this.remove(profile,cx);return;}
     if(id?.startsWith('log:')){const target=JSON.parse(id.slice(4));if(target.profile!==this.opened)return;return this.logAction(target.id,target.edit,cx);}
     if(!id?.startsWith('table:'))return;
     const end=id.indexOf(':',6),action=id.slice(6,end),target=JSON.parse(id.slice(end+1));

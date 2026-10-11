@@ -16,16 +16,16 @@ export default class Ssh extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale);this.profiles=[];this.projects=[];this.worktrees=[];this.connected=true;
     this.selected=null;this.terminals=[];this.terminal=null;this.browsers=new Map();this.pending=null;this.outcome=null;this.error=null;this.target=null;this.resume=false;this.refreshRevision=0;this.refreshing=null;this.refreshAgain=false;
-    this.terminalSelection=0;this.terminalClose=null;
+    this.terminalSelection=0;this.terminalClose=null;this.home=false;
     this.editor=null;this.picker=false;this.pickerProfile=null;this.pickerRevision=0;this.confirmation=null;this.fileEdit=null;this.commandOpen=false;this.transfer=null;this.dialog=0;this.jobs=[];this.transfersObserved=false;this.installing=null;
     this.command=createText('',{multiline:true,rows:[2,6],placeholder:this.text.ssh_command_hint});this.output=[createText('',{multiline:true,rows:[2,12]}),createText('',{multiline:true,rows:[2,12]})];
     this.run(cx=>this.refresh(cx),cx);
     this.watch(nextChange,(change,cx)=>{this.connected=change.connected;if(change.connected)this.run(cx=>this.refresh(cx),cx);},cx,true);
     this.watch(nextTransfers,(value,cx)=>this.transfers(value,cx),cx,true);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
-    this.watch(nextContextMenuEvent,(event,cx)=>this.run(cx=>this.fileAction(event.id,cx),cx),cx);
+    this.watch(nextContextMenuEvent,(event,cx)=>this.run(cx=>event.id?.startsWith('connection:')?this.connectionMenu(event.id,cx):this.fileAction(event.id,cx),cx),cx);
     this.watch(nextNavigationTabEvent,(event,cx)=>{if(event.bar!=='ssh-tabs')return;if(event.kind==='close')this.run(cx=>this.closeTerminal(event.id,cx),cx);else this.selectTerminal(event.id,cx,true);},cx);
-    this.watch(header_action,(id,cx)=>{if(id==='ssh-connections-menu')this.connections(cx);},cx);
+    this.watch(header_action,(id,cx)=>{if(id==='ssh-connections-menu')this.connections(cx);else if(id==='ssh-home')this.showHome(cx);},cx);
     this.watch(nextPickerEvent,(event,cx)=>this.pick(event,cx),cx);
     this.watch(nextControlEvent,(event,cx)=>this.control(event,cx),cx);
     this.watch(nextTextEvent,(event,cx)=>{const files=this.files();if(files&&event.id===files.input&&event.kind==='enter')this.run(cx=>files.load(readText(files.input),cx),cx);},cx);
@@ -44,8 +44,10 @@ export default class Ssh extends View {
   locked(){return !this.connected||!!this.pending;}
   profile(){return this.profiles.find(profile=>profile.id===this.selected);}
   activeProfile(){const active=this.terminals.find(info=>info.id===this.terminal);return this.profiles.find(profile=>profile.id===active?.ssh);}
+  showHome(cx){if(this.locked())return;this.home=true;++this.terminalSelection;this.terminalClose=null;this.picker=false;cx.notify();}
+  connectionMenu(id,cx){if(this.locked()||!id?.startsWith('connection:'))return;const target=JSON.parse(id.slice(11)),profile=this.profiles.find(profile=>profile.id===target.id&&profile.revision===target.revision);if(!profile)return;if(target.action==='edit')this.edit(profile,cx);else if(target.action==='remove')this.remove(profile,cx);}
   control(event,cx){
-    if(event.id==='ssh-close-current'){const id=this.terminal;if(id&&!this.locked())this.run(cx=>this.closeTerminal(id,cx),cx);return;}
+    if(event.id==='ssh-close-current'){const id=this.terminal;if(id&&!this.home&&!this.locked())this.run(cx=>this.closeTerminal(id,cx),cx);return;}
     if(event.id==='ssh-new'){if(!this.locked())this.edit(null,cx);return;}
     if(event.id===`ssh-worktree-${this.dialog}`){const transfer=this.transfer;if(transfer&&!this.locked()&&this.worktrees.some(tree=>tree.project&&tree.id===event.value)){transfer.worktree=event.value;cx.notify();}return;}
     if(event.id?.startsWith('ssh-open-')){const profile=this.profiles.find(profile=>event.id===`ssh-open-${profile.id}`);if(profile&&!this.locked())this.run(cx=>this.open(profile,cx),cx);return;}
@@ -104,10 +106,10 @@ export default class Ssh extends View {
     if(existing){this.terminals=[...new Map([...this.terminals,...terminals].map(info=>[info.id,info])).values()];this.selectTerminal(existing.id,cx,true);this.picker=false;return;}
     await this.execute(command('open_ssh_terminal',{profile:profile.id,expected_revision:profile.revision}),cx,null,prepareSshTerminal(profile.id,profile.revision),profile);
   }
-  selectTerminal(id,cx,focus=false){const info=this.terminals.find(info=>info.id===id);if(!info)return;this.terminal=id;if(!this.commandOpen)this.selected=info.ssh;const profile=this.profiles.find(profile=>profile.id===info.ssh);if(profile){let files=this.browsers.get(profile.id);if(!files||JSON.stringify(files.profile)!==JSON.stringify(profile)){files?.close();files=new Files(profile,(error,key)=>this.report(error,key),this.text);this.browsers.set(profile.id,files);this.run(cx=>files.load('.',cx),cx);}}else{this.browsers.get(info.ssh)?.close();this.browsers.delete(info.ssh);}if(focus){++this.terminalSelection;this.terminalClose=null;focusTerminal(id);}cx.notify();}
+  selectTerminal(id,cx,focus=false){const info=this.terminals.find(info=>info.id===id);if(!info)return;if(focus)this.home=false;this.terminal=id;if(!this.commandOpen)this.selected=info.ssh;const profile=this.profiles.find(profile=>profile.id===info.ssh);if(profile){let files=this.browsers.get(profile.id);if(!files||JSON.stringify(files.profile)!==JSON.stringify(profile)){files?.close();files=new Files(profile,(error,key)=>this.report(error,key),this.text);this.browsers.set(profile.id,files);this.run(cx=>files.load('.',cx),cx);}}else{this.browsers.get(info.ssh)?.close();this.browsers.delete(info.ssh);}if(focus){++this.terminalSelection;this.terminalClose=null;focusTerminal(id);}cx.notify();}
   // A newer observation can supersede the command's refresh before it prunes the closed tab.
   focusSuccessor(cx){const close=this.terminalClose;if(!close)return;if(close.selection!==this.terminalSelection){this.terminalClose=null;return;}if(this.terminals.some(info=>info.id===close.id))return;this.terminalClose=null;if(this.terminal)this.selectTerminal(this.terminal,cx,true);}
-  async closeTerminal(id,cx){const active=this.terminal===id,selection=this.terminalSelection;const output=await this.execute(command('close_ssh_terminal',{terminal:id}),cx);if(output&&active&&selection===this.terminalSelection){this.terminalClose={id,selection};this.focusSuccessor(cx);}}
+  async closeTerminal(id,cx){const active=!this.home&&this.terminal===id,selection=this.terminalSelection;const output=await this.execute(command('close_ssh_terminal',{terminal:id}),cx);if(output&&active&&selection===this.terminalSelection){this.terminalClose={id,selection};this.focusSuccessor(cx);}}
   trust(cx){const target=this.target,key=this.outcome?.key;if(!target||!key||this.locked())return;this.run(cx=>this.execute(command('trust_ssh',{profile:target.id,expected_revision:target.revision,key}),cx,async()=>{this.outcome=null;await this.refresh(cx);const profile=this.profiles.find(profile=>profile.id===target.id);if(this.resume&&profile)await this.open(profile,cx);}),cx);}
   edit(profile,cx){if(this.locked())return;this.close(cx);const editor=draft(profile,newSshId());editor.inputs=editor.fields.map((value,index)=>createText(value,{label:this.text[['settings_name','ssh_host','ssh_port','ssh_username'][index]],placeholder:this.text[['form_name_hint','form_host_hint','form_port_hint','form_username_hint'][index]]}));
     editor.password=createSecret({label:this.text.ssh_password,placeholder:this.text.form_password_hint});editor.key=createSecret({label:this.text.ssh_private_key,placeholder:this.text.form_private_key_hint,multiline:true});editor.passphrase=createSecret({label:this.text.ssh_passphrase,placeholder:this.text.form_passphrase_hint});this.editor=editor;this.dialog++;cx.notify();}

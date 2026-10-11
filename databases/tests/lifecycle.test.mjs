@@ -5,6 +5,40 @@ import {readFile} from 'node:fs/promises';
 
 const settle=async()=>{for(let index=0;index<12;index++)await Promise.resolve();};
 
+for(const packageName of ['databases','ssh']) {
+  test(`${packageName} Home preserves open resources and drafts`,async()=>{
+    const setup=await fixture(packageName),owner=setup.owner;
+    const catalog={},result={},logs=[],terminals=[{id:'terminal',ssh:'profile'}],draft={value:'retained'};
+    Object.assign(owner,{connected:true,pending:null,home:false,picker:true,opened:'profile',catalog,result,logs,sql:draft,terminal:'terminal',terminals,terminalSelection:1});
+    owner.showHome(setup.live);assert.equal(owner.home,true);assert.equal(owner.picker,false);
+    assert.equal(owner.catalog,catalog);assert.equal(owner.result,result);assert.equal(owner.logs,logs);assert.equal(owner.sql,draft);assert.equal(owner.terminals,terminals);assert.equal(owner.terminal,'terminal');
+    owner.home=false;owner.pending={request:{}};owner.showHome(setup.live);assert.equal(owner.home,false);
+  });
+
+  test(`${packageName} native deletion confirms the captured connection`,async()=>{
+    const setup=await fixture(packageName,{format:(text,values)=>`${text}:${values.name}`}),owner=setup.owner,requests=[];
+    const profile={id:'profile',revision:7,name:'Named connection'};
+    Object.assign(owner,{connected:true,pending:null,profiles:[profile],dialog:0,home:true});
+    owner.execute=async value=>{requests.push(JSON.parse(JSON.stringify(value)));};
+    const menu=id=>packageName==='ssh'?owner.connectionMenu(id,setup.live):owner.menu(id,setup.live);
+    await menu(`connection:${JSON.stringify({id:profile.id,revision:6,action:'remove'})}`);assert.equal(owner.confirmation,undefined);
+    await menu(`connection:${JSON.stringify({id:profile.id,revision:7,action:'remove'})}`);
+    assert.equal(requests.length,0);assert.match(owner.confirmation.text,/Named connection/);
+    owner.confirm(setup.live);await Promise.all(setup.tasks);
+    assert.deepEqual(requests,[{kind:packageName==='ssh'?'remove_ssh':'remove_database',data:{profile:'profile',expected_revision:7}}]);
+  });
+
+  test(`${packageName} native editing rejects stale connection revisions`,async()=>{
+    const setup=await fixture(packageName),owner=setup.owner,edited=[];
+    const profile={id:'profile',revision:7};Object.assign(owner,{connected:true,pending:null,profiles:[profile]});
+    owner.edit=value=>edited.push(value);
+    const menu=id=>packageName==='ssh'?owner.connectionMenu(id,setup.live):owner.menu(id,setup.live);
+    await menu(`connection:${JSON.stringify({id:'profile',revision:6,action:'edit'})}`);assert.equal(edited.length,0);
+    await menu(`connection:${JSON.stringify({id:'profile',revision:7,action:'edit'})}`);assert.equal(edited[0],profile);
+    owner.pending={request:{}};await menu(`connection:${JSON.stringify({id:'profile',revision:7,action:'edit'})}`);assert.equal(edited.length,1);
+  });
+}
+
 test('database startup and cached entries coalesce refreshes within host capacity',async()=>{
   const calls=[],held=[];let active=0,maximum=0,revision=0;
   const read=async(kind)=>{

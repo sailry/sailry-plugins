@@ -1,4 +1,5 @@
 const en = {
+  "home": "Home",
   "ssh_workspace_empty": "Open an SSH connection",
   "connection_action_open": "Open",
   "connection_action_edit": "Edit",
@@ -129,6 +130,7 @@ const en = {
   "ssh_files_uploading": "Uploading %{count} items"
 };
 const zh = {
+  "home": "主页",
   "ssh_workspace_empty": "打开 SSH 连接",
   "connection_action_open": "打开",
   "connection_action_edit": "编辑",

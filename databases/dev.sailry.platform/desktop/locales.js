@@ -1,4 +1,5 @@
 const en = {
+  "home": "Home",
   "db_workspace_empty": "Open a database connection",
   "connection_action_open": "Open",
   "connection_action_edit": "Edit",
@@ -108,6 +109,7 @@ const en = {
   "workspace_native_menu_unavailable": "Native menus are unavailable"
 };
 const zh = {
+  "home": "主页",
   "db_workspace_empty": "打开数据库连接",
   "connection_action_open": "打开",
   "connection_action_edit": "编辑",
