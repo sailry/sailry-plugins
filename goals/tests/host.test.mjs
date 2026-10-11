@@ -5,6 +5,13 @@ import vm from 'node:vm';
 
 const plain=value=>JSON.parse(JSON.stringify(value));
 const value={id:'goal-id',description:'Finish the requested work',state:'active',after:null};
+
+test('continuation markers remain localized package declarations',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
+  assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
+  assert.equal(manifest.version,'0.1.0');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+});
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;
   const requests=[];

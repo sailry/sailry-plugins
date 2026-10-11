@@ -7759,6 +7759,20 @@
                   "handler": "command"
                 }
               ]
+            },
+            "continuation_marker": {
+              "label": "Continue goal",
+              "locales": {
+                "zh-CN": "继续执行目标",
+                "zh-TW": "繼續執行目標",
+                "ja": "目標を続行",
+                "ko": "목표 계속 실행",
+                "de": "Ziel fortsetzen",
+                "es": "Continuar objetivo",
+                "fr": "Poursuivre l’objectif",
+                "pt-BR": "Continuar objetivo",
+                "ru": "Продолжить цель"
+              }
             }
           }
         }

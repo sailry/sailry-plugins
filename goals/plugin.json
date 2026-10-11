@@ -5,18 +5,51 @@
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "storage": {"collections":[{
-        "scope":"conversation", "key":"goal",
-        "schema":{
-          "type":"object", "required":["id","description","state"],
-          "properties":{
-            "id":{"type":"string","pattern":"^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"},
-            "description":{"type":"string","minLength":1,"maxLength":8192},
-            "state":{"type":"string","enum":["active","paused","completed","blocked","failed"]},
-            "after":{"type":["string","null"],"default":null,"pattern":"^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"}
+      "storage": {
+        "collections": [
+          {
+            "scope": "conversation",
+            "key": "goal",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id",
+                "description",
+                "state"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8192
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "paused",
+                    "completed",
+                    "blocked",
+                    "failed"
+                  ]
+                },
+                "after": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null,
+                  "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                }
+              }
+            }
           }
-        }
-      }]},
+        ]
+      },
       "actions": [
         "storage.read",
         "storage.write",
@@ -36,7 +69,10 @@
           "id": "goal",
           "slot": "commands",
           "kind": "button",
-          "command": {"name": "goal", "kind": "message"},
+          "command": {
+            "name": "goal",
+            "kind": "message"
+          },
           "label": {
             "label": "Goal",
             "locales": {
@@ -205,6 +241,20 @@
             "handler": "command"
           }
         ]
+      },
+      "continuation_marker": {
+        "label": "Continue goal",
+        "locales": {
+          "zh-CN": "继续执行目标",
+          "zh-TW": "繼續執行目標",
+          "ja": "目標を続行",
+          "ko": "목표 계속 실행",
+          "de": "Ziel fortsetzen",
+          "es": "Continuar objetivo",
+          "fr": "Poursuivre l’objectif",
+          "pt-BR": "Continuar objetivo",
+          "ru": "Продолжить цель"
+        }
       }
     }
   }
