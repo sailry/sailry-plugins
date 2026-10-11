@@ -2,19 +2,18 @@ import {div} from 'gpui-kit';
 import {Icon} from 'gpui-component';
 import {Conversation,theme} from 'sailry';
 import {PanelHeader,IconButton,CardButton,ClampedText,EmptyState} from 'sailry/ui';
-import {plain,clock} from './state.js';
+import {plain,clock,statusColor} from './state.js';
 export const DETAIL_WIDTH = 360;
 
 function card(view,item) {
   const colors = theme().colors, id = `plaza-detail-${item.kind}-${item.id}`;
-  const tone = {running:'primary',waiting:'warning',completed:'success',failed:'destructive',idle:'muted_foreground'};
   view.targets.set(id,item);
   return CardButton.new(id,{label:`${item.title}, ${item.status}`,tooltip:item.title})
     .child(div().id(`${id}-body`).v_flex().w_full().min_w_0().items_start().gap_3().text_left()
       .child(div().id(`${id}-title`).w_full().min_w_0().whitespace_normal().text_sm().font_semibold().line_height('1.25rem').child(item.title))
       .children(item.preview ? [ClampedText.new(`${id}-preview`,{text:plain(item.preview),lines:3})] : [])
       .child(div().id(`${id}-state`).h_flex().w_full().min_w_0().items_center().gap_2().text_sm()
-        .child(div().size(8).flex_shrink(0).rounded_full().bg(colors[tone[item.lane] ?? 'muted_foreground']))
+        .child(div().size(8).flex_shrink(0).rounded_full().bg(colors[statusColor(item)]))
         .child(div().flex_1().min_w_0().whitespace_normal().child(item.status))
         .children(item.duration ? [div().flex_none().text_color(colors.muted_foreground).child(item.duration)] : []))
       .child(div().id(`${id}-metadata`).h_flex().w_full().min_w_0().items_center().gap_2().text_sm().text_color(colors.muted_foreground)

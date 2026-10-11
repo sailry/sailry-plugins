@@ -2,6 +2,8 @@
 import {sections} from './state.js';
 export const ROOM_COUNT = 8;
 export const SEAT_COUNT = 6;
+const priority = item => item.lane === 'running' ? 0 : item.lane === 'waiting' ? 1 : 2;
+const identity = item => `${item.kind}:${item.id}`;
 
 export function character(id) {
   let hash = 0;
@@ -23,20 +25,13 @@ export class Floor {
     }
     for (const room of rooms) {
       const positions = this.seats.get(room.key) ?? new Map();
-      const ids = new Set(room.items.map(item => `${item.kind}:${item.id}`));
-      for (const id of positions.keys()) if (!ids.has(id)) positions.delete(id);
-      const used = new Set(positions.values());
-      for (const item of room.items) {
-        const id = `${item.kind}:${item.id}`;
-        if (!positions.has(id)) {
-          let seat = 0;
-          while (used.has(seat)) seat += 1;
-          positions.set(id,seat);used.add(seat);
-        }
-        item.seat = positions.get(id);
-      }
-      this.seats.set(room.key,positions);
-      room.pages = Math.floor(Math.max(0,...positions.values()) / SEAT_COUNT) + 1;
+      // State changes may move active work forward; peers keep their prior order.
+      room.items.sort((left,right) => priority(left) - priority(right)
+        || (positions.get(identity(left)) ?? Number.MAX_SAFE_INTEGER) - (positions.get(identity(right)) ?? Number.MAX_SAFE_INTEGER));
+      const assigned = new Map();
+      room.items.forEach((item,seat) => {item.seat = seat;assigned.set(identity(item),seat);});
+      this.seats.set(room.key,assigned);
+      room.pages = Math.max(1,Math.ceil(room.items.length / SEAT_COUNT));
       room.page = Math.min(this.roomPages.get(room.key) ?? 0,room.pages - 1);
       this.roomPages.set(room.key,room.page);
       room.visible = room.items.filter(item => Math.floor(item.seat / SEAT_COUNT) === room.page);

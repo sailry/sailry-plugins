@@ -3,6 +3,11 @@ export const lanes = ['waiting','running','completed','idle'];
 export const labels = {waiting:'activity_board_waiting',running:'activity_board_running',
   completed:'activity_completed',idle:'activity_idle',failed:'activity_failed'};
 export const group = lane => lane === 'failed' ? 'completed' : lane;
+export const statusColors = {running:'primary',idle:'muted_foreground',approval:'warning',input:'chart_3',
+  completed:'success',failed:'destructive'};
+export function statusColor(item) {
+  return statusColors[item.lane === 'waiting' ? item.approval ? 'approval' : 'input' : item.lane] ?? statusColors.idle;
+}
 const defaultAppearance = {icon:'folder',color:'none'};
 
 export function sessionStatus(session,text) {

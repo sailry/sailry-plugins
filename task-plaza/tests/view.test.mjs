@@ -9,7 +9,7 @@ const sources=await Promise.all(['locales','state','floor','geometry','art','sce
 const plain=value=>JSON.parse(JSON.stringify(value));
 
 function fixture(count=0) {
-  const nodes=new Map(),opened=[];
+  const nodes=new Map(),opened=[],viewport={width:1440,height:1000};
   function element(kind='div',id=null,props={}) {
     const value={kind,selector:id,props,items:[],style:{}};
     const proxy=new Proxy(value,{get(target,key) {
@@ -29,13 +29,13 @@ function fixture(count=0) {
   const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
     Tag:function(){return element('Tag');},Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
-    theme:()=>({colors:{surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',group_box:'group'}}),
+    theme:()=>({colors:{surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
     PathBuilder:{stroke:width=>{
       const path={width,commands:[],build(){return this;}};
       for(const method of ['move_to','line_to','curve_to','dash_array'])path[method]=(...args)=>{path.commands.push([method,...args]);return path;};
       return path;
     }},Background:{solid:()=>element('Background')},
-    window:{viewport_size:()=>({width:1440,height:1000}),paint_path:path=>element('NativePath',null,{path})},openActivityTarget:(...args)=>opened.push(args),
+    window:{viewport_size:()=>viewport,rem_size:()=>16,paint_path:path=>element('NativePath',null,{path})},openActivityTarget:(...args)=>opened.push(args),
   });
   const sessions=Array.from({length:count},(_,index)=>({id:`session-${index}`,project:'project',worktree:'tree',archived:false,delegation:null,
     activity:{title:`Task ${index}`,queued:0,waiting:null,run:{turn:`turn-${index}`,status:'running'}}}));
@@ -47,7 +47,7 @@ function fixture(count=0) {
     inspectRoom(id){this.selected={kind:'room',id};this.panelOpen=true;},
     inspectApprovals(){this.selected={kind:'approvals'};this.panelOpen=true;},closeDetails(){this.panelOpen=false;},
   };
-  return {view,nodes,opened,...api,render(){nodes.clear();return api.render(view);},
+  return {view,nodes,opened,viewport,...api,render(){nodes.clear();return api.render(view);},
     click(id){if(['ComposedButton','CardButton'].includes(nodes.get(id).kind))view.inspect(view.targets.get(id));
       else if(nodes.get(id).kind==='IconButton') {
         if(id==='plaza-open-conversation')opened.push(['session',view.selected.id]);
@@ -61,7 +61,7 @@ test('eight rooms surround a plaza with six desks each',()=>{
   assert.equal([...setup.nodes.keys()].filter(id=>/^plaza-desk-/.test(id)).length,48);
   const plaza=setup.nodes.get('plaza-atrium');
   assert.equal(plaza.style.bg,undefined);assert.equal(plaza.style.border_1,undefined);
-  assert.equal(setup.nodes.get('plaza-world').style.w[0]/setup.nodes.get('plaza-world').style.h[0],setup.WORLD_WIDTH/setup.WORLD_HEIGHT);
+  assert.ok(Math.abs(setup.nodes.get('plaza-world').style.w[0]/setup.nodes.get('plaza-world').style.h[0]-setup.WORLD_WIDTH/setup.WORLD_HEIGHT)<1e-12);
   assert.ok([...setup.nodes.values()].filter(node=>node.kind==='Image').every(node=>node.props.fit==='fill'));
   for(let index=0;index<4;index++)assert.equal(setup.nodes.get(`plaza-session-${index}`).kind,'ComposedButton');
   assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Conversation').length,0);
@@ -146,6 +146,66 @@ test('only active work lights the computer screen',()=>{
   session.activity.run.status='running';session.activity.waiting='input';
   setup.view.board.catalog.session_lanes[session.id]='waiting';setup.render();assert.ok(Math.abs(monitor()-unlit)<1e-8);
   session.activity.waiting='approval';setup.render();assert.ok(Math.abs(monitor()-unlit)<1e-8);
+});
+
+test('every person keeps the matching legend color before selection',()=>{
+  const setup=fixture(1),session=setup.view.board.catalog.sessions[0];
+  for(const [lane,waiting,state] of [['running',null,'running'],['waiting','approval','approval'],['waiting','input','input'],
+    ['completed',null,'completed'],['idle',null,'idle'],['failed',null,'failed']]) {
+    setup.view.board.catalog.session_lanes[session.id]=lane;session.activity.waiting=waiting;
+    setup.render();
+    const ring=setup.nodes.get('plaza-session-0-status'),legend=setup.nodes.get(`plaza-legend-${state}`);
+    assert.equal(ring.style.border_color[0],legend.style.bg[0]);
+    assert.equal(ring.items[0].style.bg[0],legend.style.bg[0]);
+    assert.equal(ring.style.border_2.length,0);
+    assert.equal(setup.nodes.has('plaza-session-0-selection'),false);
+    setup.click('plaza-session-0');setup.render();
+    assert.equal(setup.nodes.get('plaza-session-0-status').style.border_color[0],legend.style.bg[0]);
+    assert.ok(setup.nodes.has('plaza-session-0-selection'));
+    setup.view.panelOpen=false;
+  }
+});
+
+test('whiteboards separate four totals into two rows',()=>{
+  const setup=fixture(12),catalog=setup.view.board.catalog;
+  for(const [index,session] of catalog.sessions.entries()) {
+    catalog.session_lanes[session.id]=['running','waiting','completed','idle','waiting','failed'][index%6];
+    session.activity.waiting=index%6===1?'approval':index%6===4?'input':null;
+  }
+  for(const locale of ['en','zh-CN']) {
+    setup.view.text=setup.messages(locale);setup.render();
+    const board=setup.nodes.get('plaza-room-project'),grid=setup.nodes.get('plaza-room-project-statistics');
+    assert.ok(board.style.h[0]>=68);
+    assert.equal(grid.items.length,2);assert.ok(grid.items.every(row=>row.items.length===2));
+    for(const state of ['running','approval','completed','idle']) {
+      const cell=setup.nodes.get(`plaza-room-project-${state}`);
+      assert.equal(cell.items[1].items[0],'2');
+      assert.ok(!cell.items[0].items[0].includes('·'));
+    }
+  }
+});
+
+test('taller whiteboards leave desks and page controls clear',()=>{
+  const setup=fixture(8);
+  const catalog=setup.view.board.catalog,original=[...catalog.sessions];
+  for(let index=1;index<8;index++) {
+    const project=`p${index}`,tree=`tree-${index}`;
+    catalog.projects.push({id:project,name:project});catalog.worktrees.push({id:tree,project,path:'/fixture'});
+    for(const session of original) {
+      const id=`${project}-${session.id}`;
+      catalog.sessions.push({...session,id,project,worktree:tree});catalog.session_lanes[id]='running';
+    }
+  }
+  for(const width of [900,1440])for(const sidebar of [false,true]) {
+    setup.viewport.width=width;setup.view.panelOpen=sidebar;setup.view.selected={kind:'room',id:'project'};setup.render();
+    const board=setup.nodes.get('plaza-room-project').style,desk=setup.nodes.get('plaza-desk-project-0').style;
+    assert.ok(board.top[0]+board.h[0]<=desk.top[0]);
+    const pager=setup.nodes.get('plaza-room-pages-project').style,next=setup.nodes.get('plaza-room-p3').style;
+    assert.ok(pager.top[0]+20<=next.top[0]);
+    const last=setup.nodes.get('plaza-room-pages-p7').style,world=setup.nodes.get('plaza-world').style;
+    assert.ok(setup.nodes.get('plaza-scene-frame').style.pb_8);
+    assert.ok(last.top[0]+20<=world.h[0]+32);
+  }
 });
 
 test('all furniture shares a uniform scale inside disjoint room boundaries',()=>{
