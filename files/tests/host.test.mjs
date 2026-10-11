@@ -110,13 +110,13 @@ test('search defaults keep original expressions and globs without interpreting t
 test('Office inspection retains section offsets and defaults', () => {
   assert.deepEqual(tool('read_office').handler.parameters,{
     $schema:'https://json-schema.org/draft/2020-12/schema',title:'Read',type:'object',
-    properties:{path:{type:'string'},offset:{
+    properties:{source:{type:'object',properties:{kind:{type:'string',enum:['path','attachment']},value:{type:'string',description:'Worktree-relative path or current-turn attachment ID'}},required:['kind','value'],additionalProperties:false},offset:{
       type:'integer',format:'uint',minimum:0,default:0,
       description:'Zero-based section offset. Long document parts continue in subsequent sections.',
-    }},required:['path'],additionalProperties:false,
+    }},required:['source'],additionalProperties:false,
   });
-  assert.deepEqual(plain(host.office({path:'报告.docx'})),{path:'报告.docx',offset:0});
-  assert.deepEqual(plain(host.office({path:'book.xlsx',offset:41})),{path:'book.xlsx',offset:41});
+  assert.deepEqual(plain(host.office({source:{kind:'path',value:'报告.docx'}})),{source:{kind:'path',value:'报告.docx'},offset:0});
+  assert.deepEqual(plain(host.office({source:{kind:'attachment',value:'attachment-id'},offset:41})),{source:{kind:'attachment',value:'attachment-id'},offset:41});
 });
 
 test('invalid argument shapes fail before requesting an operation', () => {
@@ -126,7 +126,7 @@ test('invalid argument shapes fail before requesting an operation', () => {
     remove:{path:'file.txt',expected_revision:'a'.repeat(64)},
     move:{path:'file.txt',destination:'new.txt',expected_revision:'a'.repeat(64)},
     mkdir:{path:'folder'},
-    find:{globs:['**/*.txt']},search:{query:'x'},office:{path:'book.xlsx'},
+    find:{globs:['**/*.txt']},search:{query:'x'},office:{source:{kind:'path',value:'book.xlsx'}},
   };
   for (const [name,valid] of Object.entries(examples)) {
     for (const args of [null,[],true,'path',42,...['worktree','session','node','turn','unexpected'].map(key => ({...valid,[key]:'foreign'}))]) {
@@ -146,7 +146,7 @@ test('invalid argument shapes fail before requesting an operation', () => {
     find:[{}, {globs:[]},{globs:['']},{globs:[4]}],
     write:[{path:'a'}, {path:'a',text:[]}, {path:'a',text:'x',expected_revision:4}],
     search:[{}, {query:4}, {query:'x',regex:null}, {query:'x',case_sensitive:1}, {query:'x',globs:'*'}, {query:'x',globs:[4]}],
-    office:[{}, {path:'a',offset:null}, {path:'a',offset:-1}, {path:'a',offset:1.5}, {path:'a',offset:Number.MAX_SAFE_INTEGER + 1}],
+    office:[{}, {source:{kind:'other',value:'a'}}, {source:{kind:'path',value:''}}, {source:{kind:'attachment',value:'a'},offset:null}, {source:{kind:'path',value:'a'},offset:-1}, {source:{kind:'path',value:'a'},offset:1.5}, {source:{kind:'path',value:'a'},offset:Number.MAX_SAFE_INTEGER + 1}],
   };
   for (const [name,examples] of Object.entries(invalid)) {
     for (const args of examples) assert.equal(host[name](args).error.code,'invalid_request',`${name}: ${JSON.stringify(args)}`);
@@ -155,9 +155,10 @@ test('invalid argument shapes fail before requesting an operation', () => {
 
 test('captured display selectors retain path and first-line query presentation', () => {
   assert.deepEqual(tool('search_files').display.input.summary,{path:'/query',code:true});
-  for (const name of ['read_file','write_file','read_office']) {
+  for (const name of ['read_file','write_file']) {
     assert.deepEqual(tool(name).display.input.summary,{path:'/path',code:true});
   }
+  assert.deepEqual(tool('read_office').display.input.summary,{path:'/source/value',code:true});
   assert.deepEqual(tool('write_file').display.input.target,{path:'/path'});
   assert.ok(extension.host.resources.includes('dev.sailry.platform/host/locales.js'));
   for (const key of ['approval_create_file','approval_replace_file']) {

@@ -100,10 +100,10 @@ export function search(args) {
 }
 
 export function office(args) {
-  if (!object(args,['path','offset'])) return invalid();
-  const {path,offset = 0} = args;
-  if (typeof path !== 'string' || !Number.isSafeInteger(offset) || offset < 0) return invalid();
-  return {path,offset};
+  if (!object(args,['source','offset'])) return invalid();
+  const {source,offset = 0} = args;
+  if (!object(source,['kind','value']) || !['path','attachment'].includes(source.kind) || typeof source.value !== 'string' || !source.value || !Number.isSafeInteger(offset) || offset < 0) return invalid();
+  return {source,offset};
 }
 
 

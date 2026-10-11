@@ -5,7 +5,7 @@ description: Run Python scripts with Sailry's bundled interpreter and a session-
 
 # Python
 
-Use the absolute `python` and `directory` returned by `load_skill`. Sailry bundles Python 3.12.13. Commands also receive `SAILRY_PYTHON`, `SAILRY_SESSION_DIR`, and a shared pip cache. Quote all paths. Loading a skill grants no command or network permission; use the existing command tool and its normal approval flow.
+Run the managed interpreter as `"$SAILRY_PYTHON"`; use the absolute `directory` returned by `load_skill` for resources. The most recently loaded skill in the current turn selects the command environment; reload the required skill if another environment was loaded later. Sailry bundles Python 3.12.13. Commands also receive `SAILRY_PYTHON`, `SAILRY_SESSION_DIR`, and a shared pip cache. Quote all paths. Loading a skill grants no command or network permission; use the existing command tool and its normal approval flow.
 
 If `load_skill` returns `python: null`, report that the bundled Python runtime is unavailable. Do not substitute system Python or claim that a Python task ran successfully.
 

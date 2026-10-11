@@ -5563,7 +5563,7 @@
               {
                 "name": "read_office",
                 "presentation": "summary",
-                "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes. Images and scanned PDF pages use OCR when an OCR model is installed on the Node. Returns the file revision for edits. Follow next offsets to read every section, including continuations of long parts.",
+                "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes from a worktree path or an attachment in the current turn. Use source.kind \"path\" with a worktree-relative path, or \"attachment\" with its attachment ID. Images and scanned PDF pages use OCR when an OCR model is installed on the Node. File sources return the revision for edits. Follow next offsets to read every section, including continuations of long parts.",
                 "handler": {
                   "name": "office",
                   "operation": "office.read",
@@ -5572,8 +5572,26 @@
                     "title": "Read",
                     "type": "object",
                     "properties": {
-                      "path": {
-                        "type": "string"
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "path",
+                              "attachment"
+                            ]
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "Worktree-relative path or current-turn attachment ID"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value"
+                        ],
+                        "additionalProperties": false
                       },
                       "offset": {
                         "type": "integer",
@@ -5584,7 +5602,7 @@
                       }
                     },
                     "required": [
-                      "path"
+                      "source"
                     ],
                     "additionalProperties": false
                   }
@@ -5599,7 +5617,7 @@
                   },
                   "input": {
                     "summary": {
-                      "path": "/path",
+                      "path": "/source/value",
                       "code": true
                     }
                   },
