@@ -9381,7 +9381,8 @@
                 "dev.sailry.platform/host/records.js",
                 "dev.sailry.platform/host/schedules.js",
                 "dev.sailry.platform/host/mutations.js",
-                "dev.sailry.platform/host/tools.js"
+                "dev.sailry.platform/host/tools.js",
+                "dev.sailry.platform/host/locales.js"
               ],
               "handlers": [
                 "list",

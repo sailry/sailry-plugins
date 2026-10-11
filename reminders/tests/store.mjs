@@ -12,12 +12,14 @@ export async function fixture() {
   const records = new Map(), requests = new Map(), receipts = new Map();
   const schedules = new Map(), handlers = new Map();
   const prepared = [], queries = [], catalogReads = [], scans = [];
+  const notifications = [];
   let state = null, catalog = {projects:[{id:project,name:"Current"},{id:foreign,name:"Other"}],worktrees:[]};
   const get = key => clone(records.get(key) ?? {key,present:false,value:null,revision:"0"});
   const seed = (value, revision = "1") => records.set(`reminder/${value.id}`,
     {key:`reminder/${value.id}`,present:true,value:clone(value),revision});
   function apply(operations) {
     const snapshots = [records,schedules,handlers].map(values => clone([...values])), outputs = [];
+    const notificationCount = notifications.length;
     try {
       for (const operation of operations) {
         const data = operation.data;
@@ -37,10 +39,14 @@ export async function fixture() {
           if (action.startsWith("remove")) target.delete(key);
           else target.set(key,{...clone(input),revision:(old?.revision ?? 0) + 1});
           outputs.push({kind:"plugin_dispatch",data:null});
-        } else outputs.push({kind:"notified",data:null});
+        } else {
+          notifications.push(clone(data));
+          outputs.push({kind:"notified",data:null});
+        }
       }
       return {kind:"plugin_transaction",data:outputs};
     } catch (error) {
+      notifications.length = notificationCount;
       for (const [index, target] of [records,schedules,handlers].entries()) {
         target.clear(); for (const [key,value] of snapshots[index]) target.set(key,value);
       }
@@ -98,6 +104,6 @@ export async function fixture() {
   await main.evaluate();
   const namespace = name => cache.get(new URL(name,new URL("../dev.sailry.platform/host/",import.meta.url)).href).namespace;
   return {main:main.namespace,records:namespace("records.js"),mutations:namespace("mutations.js"),
-    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,
+    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,notifications,
     get catalog() { return clone(catalog); },set catalog(value) {catalog=clone(value);},get state() {return clone(state);} };
 }

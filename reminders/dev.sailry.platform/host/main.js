@@ -1,5 +1,6 @@
 import { key, read, revision, commit, page, result } from "./records.js";
 import {saveOperations, removeOperations} from "./mutations.js";
+import {presentation} from "./locales.js";
 export {initialize, reminders} from "./tools.js";
 
 export async function list(input) { return result(() => page(input ?? {})); }
@@ -28,7 +29,7 @@ export async function notify(input) {
   try {
     await commit([
       {kind:"write",data:{key:key(input.id),value:item,expected_revision:expected}},
-      {kind:"notify",data:{title:item.title,message:item.message,kind:"info",session:null}},
+      {kind:"notify",data:{title:item.title,message:item.message,kind:"info",session:null,presentation}},
     ]);
   } catch (error) {
     if (error.code === "revision_conflict") return {skipped:true};

@@ -26,7 +26,7 @@
       "display": {"label": "Reminders", "locales": {"zh-CN": "待办提醒"}, "icon": "reicon:notifications/bell"},
       "host": {
         "entry": "dev.sailry.platform/host/main.js",
-        "resources": ["dev.sailry.platform/host/main.js", "dev.sailry.platform/host/records.js", "dev.sailry.platform/host/schedules.js", "dev.sailry.platform/host/mutations.js", "dev.sailry.platform/host/tools.js"],
+        "resources": ["dev.sailry.platform/host/main.js", "dev.sailry.platform/host/records.js", "dev.sailry.platform/host/schedules.js", "dev.sailry.platform/host/mutations.js", "dev.sailry.platform/host/tools.js", "dev.sailry.platform/host/locales.js"],
         "handlers": ["list", "save", "remove", "notify", "initialize", "reminders"],
         "turn": {"initialize":"initialize"}
       },

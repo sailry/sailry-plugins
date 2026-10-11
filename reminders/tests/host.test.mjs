@@ -6,6 +6,51 @@ const start = setup => setup.main.initialize({project,tools:["reminders"]});
 const call = (setup, args) => setup.main.reminders({arguments:args,step:0,state:null,outcome:null});
 const finish = (setup, transition, outcome) => setup.main.reminders({arguments:{},step:1,state:transition.state,outcome});
 
+test("due notices retain reminder content and persistent localized presentation", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{title:"Check build",message:"Inspect the result",due_ms:Date.now()-1000}));
+  assert.deepEqual(clone(await setup.main.notify({id:id(1),revision:"1"})),{delivered:true});
+  assert.deepEqual(setup.notifications,[{
+    title:"Check build",message:"Inspect the result",kind:"info",session:null,
+    presentation:{heading:"Reminder",locales:{"zh-CN":"提醒"},persistent:true},
+  }]);
+  assert.equal(setup.get(`reminder/${id(1)}`).revision,"2");
+  assert.ok(setup.get(`reminder/${id(1)}`).value.notified_ms > 0);
+  for (const revision of ["1","2"]) {
+    assert.deepEqual(clone(await setup.main.notify({id:id(1),revision})),{skipped:true});
+  }
+  assert.equal(setup.notifications.length,1);
+  assert.equal(setup.prepared.length,1);
+});
+
+test("stale and inactive schedules do not publish notices", async () => {
+  const setup = await fixture();
+  for (const [number,changes] of [
+    [1,{due_ms:Date.now()-1000,completed:true}],
+    [2,{due_ms:Date.now()+60000}],
+    [3,{due_ms:null}],
+    [4,{due_ms:Date.now()-1000,notified_ms:1}],
+    [5,{due_ms:Date.now()-1000}],
+  ]) setup.seed(item(number,changes));
+  for (const number of [1,2,3,4,5,6]) {
+    assert.deepEqual(clone(await setup.main.notify({id:id(number),revision:number===5 ? "2" : "1"})),{skipped:true});
+  }
+  assert.equal(setup.notifications.length,0);
+  assert.equal(setup.prepared.length,0);
+});
+
+test("concurrent due callbacks publish once through revision admission", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{due_ms:Date.now()-1000}));
+  const results = await Promise.all([
+    setup.main.notify({id:id(1),revision:"1"}),
+    setup.main.notify({id:id(1),revision:"1"}),
+  ]);
+  assert.deepEqual(results.map(clone),[{delivered:true},{skipped:true}]);
+  assert.equal(setup.notifications.length,1);
+  assert.equal(setup.get(`reminder/${id(1)}`).revision,"2");
+});
+
 test("requires explicit canonical project or null in drafts and stored records", async () => {
   const setup = await fixture();
   assert.equal(setup.records.draft(item(1,{project:null})).project,null);
