@@ -56,7 +56,7 @@ export async function request(input) {
         delete values.operatorId; values.unionId = operator; values.parentId = text(args.parent, 'parent file'); break;
       default: throw new Error('Unknown DingTalk action');
     }
-    return call(`https://api.dingtalk.com${path}?${query(values)}`, 'token');
+    return call(`https://api.dingtalk.com${path}?${query(values)}`, 'app_secret');
   }
   const reply = response(input.outcome);
   return {result:reply.error ?? {data:reply.value,next:reply.value.nextToken ?? null,

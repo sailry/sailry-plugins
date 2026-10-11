@@ -7,7 +7,7 @@ metadata:
 
 # Feishu workspace
 
-Configure an authorized tenant access token in plugin settings. The official remote sample uses X-Lark-MCP-TAT and a limited get-comments,fetch-doc tool allowlist. Tenant tokens expire; update the token through settings when necessary. This package does not create an application or silently refresh app credentials.
+Configure the internal application’s App ID and App Secret in this Node’s plugin settings. Node obtains and refreshes the tenant access token without exposing the app secret to tools. The official remote sample uses X-Lark-MCP-TAT and a limited get-comments,fetch-doc tool allowlist. Publish the app, enable the required document/comment read permissions and share the intended documents with its bot. Never request credentials in chat.
 
 Choose the tool alias and parameter schema shown in the current conversation. Resolve the actual account, workspace and resource identifier from the user's request or a read result. Do not infer a destination from a similar title. Search and read relevant content before proposing a change, and continue pagination when it affects the answer. If the server exposes only part of a resource, state that limitation.
 

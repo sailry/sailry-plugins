@@ -7,7 +7,7 @@ metadata:
 
 # DingTalk reads
 
-Connect a registered DingTalk application through this Node's plugin settings using its client ID and secret. Configure the intended operator's union ID for document reads. The application needs the corresponding knowledge-base or Drive read permission. Node refreshes the resulting user grant without exposing the application secret to the plugin. A manually configured token is not refreshed. Never paste credentials into chat.
+Configure the internal application’s AppKey and AppSecret in this Node’s plugin settings. Node obtains and refreshes the application access token without exposing the app secret to tools. Configure the intended operator’s union ID and enable the required knowledge-base or Drive read permissions. Never request credentials in chat.
 
 Workspaces returns the current operator's knowledge spaces. Use nodes to browse the returned root node and node for its current metadata. Files lists one Drive folder in a known space. Preserve nextToken and hasMore; these metadata operations do not return full document bodies or grant access to arbitrary workspace content.
 

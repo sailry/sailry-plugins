@@ -7,7 +7,7 @@ metadata:
 
 # Slack workspace
 
-Slack requires an internal or directory-published Slack app with MCP access and an allowed callback. Start OAuth using that registered app's client ID in MCP settings; Slack does not offer dynamic client registration. Connecting a server does not create an app or grant workspace access. Never assume a search covers private or inaccessible channels.
+Slack requires an internal or directory-published Slack app with MCP access and an allowed callback. Configure that registered app’s Client ID and Client Secret in this Node’s protected plugin settings, then use Login in MCP settings. Node retains the client secret for token exchange and refresh; it is never a tool argument or MCP header. Slack does not offer dynamic client registration. Connecting a server does not create an app or grant workspace access. Never assume a search covers private or inaccessible channels.
 
 Choose the tool alias and parameter schema shown in the current conversation. Resolve the actual account, workspace and resource identifier from the user's request or a read result. Do not infer a destination from a similar title. Search and read relevant content before proposing a change, and continue pagination when it affects the answer. If the server exposes only part of a resource, state that limitation.
 

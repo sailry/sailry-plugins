@@ -7,7 +7,7 @@ metadata:
 
 # Linear workspace
 
-The bundled connection uses Linear's official read-only route. Connect using OAuth or an authorized Linear API key in plugin settings. This package does not expose write tools through that route.
+The bundled connection uses Linear’s official read-only route. Connect using OAuth in this Node’s MCP settings. This package does not expose write tools through that route.
 
 Choose the tool alias and parameter schema shown in the current conversation. Resolve the actual account, workspace and resource identifier from the user's request or a read result. Do not infer a destination from a similar title. Search and read relevant content before proposing a change, and continue pagination when it affects the answer. If the server exposes only part of a resource, state that limitation.
 

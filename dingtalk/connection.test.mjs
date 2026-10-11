@@ -17,14 +17,38 @@ test('captures finite operations and origin-bound credentials',()=>{
  }
 });
 
+test('binds app credentials without user OAuth',()=>{
+ const schema=JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json',import.meta.url)));
+ assert.deepEqual(schema.properties.app_secret['x-sailry-secret'],{
+  origin:'https://api.dingtalk.com',header:'x-acs-dingtalk-access-token',
+  application:{provider:'dingtalk',client_id:'app_id'},
+ });
+ assert.equal(schema.properties.app_id.type,'string');
+ assert.equal(schema.properties.app_id['x-sailry-secret'],undefined);
+ assert.deepEqual(schema.required,['app_id','app_secret']);
+ assert.equal(schema.properties.token,undefined);
+ assert.equal(extension.oauth,undefined);
+ assert.equal(schema.description,schema['x-sailry-locales'].en.description);
+ for(const locale of Object.keys(extension.display.locales)){
+  const labels=schema['x-sailry-locales'][locale];
+  assert.ok(labels.app_id&&labels.app_secret&&labels.operator,locale);
+  assert.equal(labels.description.split('\n').length,4,locale);
+  assert.match(labels.description,/Wiki\.Workspace\.Read/);
+  assert.match(labels.description,/https:\/\/open\.dingtalk\.com\/document\/orgapp\/obtain-the-file-list/);
+ }
+});
+
 test('uses configured operator and preserves page tokens',async()=>{
  const request=adapter();
  const initial=await request({step:0,arguments:{action:'nodes',parent:'parent',cursor:'opaque+next',limit:7}});
+ assert.equal(initial.call.arguments.credential,'app_secret');
+ assert.deepEqual(plain(initial.call.arguments.headers),{Accept:'application/json'});
  const url=new URL(initial.call.arguments.url);
  assert.equal(url.origin,'https://api.dingtalk.com'); assert.equal(url.pathname,'/v2.0/wiki/nodes');
  assert.equal(url.searchParams.get('operatorId'),'operator-id'); assert.equal(url.searchParams.get('parentNodeId'),'parent');
  assert.equal(url.searchParams.get('nextToken'),'opaque+next'); assert.equal(url.searchParams.get('maxResults'),'7');
  const file=await request({step:0,arguments:{action:'files',space:'space',parent:'folder',operator:'explicit'}});
+ assert.equal(file.call.arguments.credential,'app_secret');
  const files=new URL(file.call.arguments.url); assert.equal(files.pathname,'/v1.0/drive/spaces/space/files');
  assert.equal(files.searchParams.get('unionId'),'explicit'); assert.equal(files.searchParams.get('parentId'),'folder');
  const page=plain(await request({step:1,outcome:outcome({nodes:[{id:'one'}],nextToken:'tail',hasMore:true})}));

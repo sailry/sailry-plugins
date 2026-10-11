@@ -16,12 +16,8 @@ test('declares the official remote connection', () => {
   assert.equal(new URL(server.url).username, '');
 });
 
-test('binds credentials outside package resources', () => {
-  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
-  const binding = schema.properties.token['x-sailry-secret'];
-  assert.equal(binding.server, "linear");
-  assert.equal(binding.header, "Authorization");
-  assert.equal(binding.prefix ?? '', "Bearer ");
-  assert.equal(mcp.mcpServers["linear"].headers["Authorization"], '');
-  assert.equal(schema.properties.token.default, undefined);
+test('uses OAuth without a manual token field', () => {
+  assert.equal(manifest.extensions['dev.sailry.platform'].settings_schema, undefined);
+  assert.deepEqual(mcp.mcpServers.linear.headers ?? {}, {});
+  assert.equal(manifest.extensions['dev.sailry.platform'].oauth, undefined);
 });
