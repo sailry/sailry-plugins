@@ -35,6 +35,9 @@ caption { padding: 10px; color: var(--document-muted-foreground); }
 form { margin: 20px 0; border: 1px solid var(--document-border); border-radius: var(--document-radius); padding: 16px; background: var(--document-muted); }
 fieldset { min-width: 0; padding: 0; border: 0; margin: 0 0 20px; } legend { font-weight: 600; margin-bottom: 8px; }
 label { display: block; margin: .4em 0; } input,textarea,select,button { font: inherit; color: inherit; }
+label.document-control { display: flex; align-items: center; gap: 8px; }
+label > input[type=radio],label > input[type=checkbox] { flex-shrink: 0; margin: 0; }
+label > input[type=text],label > select { flex: 1; min-width: 0; }
 input[type=text],textarea,select { width: 100%; padding: 8px 10px; background: var(--document-background); border: 1px solid var(--document-border); border-radius: var(--document-radius); }
 textarea { min-height: 80px; resize: vertical; } input[type=radio],input[type=checkbox] { accent-color: var(--document-primary); }
 button { border: 1px solid var(--document-border); border-radius: var(--document-radius); padding: 6px 12px; background: var(--document-primary); color: var(--document-primary-foreground); cursor: pointer; }

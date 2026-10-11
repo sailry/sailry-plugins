@@ -15,12 +15,18 @@
 
   function structure() {
     toc.replaceChildren();toc.setAttribute('aria-label',current.labels.contents);
+    const ids = new Set([...document.querySelectorAll('[id]')].map(element => element.id));
     for (const [index,section] of [...main.querySelectorAll('section[data-title]')].entries()) {
-      const title = section.dataset.title;section.id = `document-section-${index}`;
+      const title = section.dataset.title;
+      if (!section.id) {
+        let suffix = index;
+        while (ids.has(`document-section-${suffix}`)) suffix++;
+        section.id = `document-section-${suffix}`;ids.add(section.id);
+      }
       if (!section.querySelector('h1,h2,h3,h4')) {
         const heading = document.createElement('h2');heading.textContent = title;section.prepend(heading);
       }
-      const link = document.createElement('a');link.href = `#${section.id}`;link.textContent = title;toc.append(link);
+      const link = document.createElement('a');link.href = `#${encodeURIComponent(section.id)}`;link.textContent = title;toc.append(link);
     }
     for (const option of main.querySelectorAll('.compare > .option[data-title]')) {
       if (option.querySelector('h1,h2,h3,h4')) continue;
@@ -28,6 +34,9 @@
     }
     for (const table of main.querySelectorAll('table')) {
       const wrapper = document.createElement('div');wrapper.className = 'document-table';table.replaceWith(wrapper);wrapper.append(table);
+    }
+    for (const label of main.querySelectorAll('label')) {
+      label.classList.toggle('document-control',[...label.children].some(child => ['INPUT','SELECT'].includes(child.tagName)));
     }
     for (const form of main.querySelectorAll('form')) {
       for (const control of form.querySelectorAll('input,textarea,select')) {
@@ -46,6 +55,32 @@
     }
   }
 
+  function diagram(markup,palette) {
+    if (!palette.diagram_foreground || !palette.diagram_background) return markup;
+    const svg = new DOMParser().parseFromString(markup,'image/svg+xml').documentElement;
+    const foreground = palette.diagram_foreground;
+    const background = palette.diagram_background === 'transparent' ? 'none' : palette.diagram_background;
+    const paint = (selector,fill,stroke) => {
+      for (const element of svg.querySelectorAll(selector)) {
+        element.style.setProperty('fill',fill,'important');
+        element.style.setProperty('stroke',stroke,'important');
+      }
+    };
+    svg.style.setProperty('background',palette.diagram_background,'important');
+    svg.style.setProperty('color',foreground,'important');
+    for (const element of [svg,...svg.querySelectorAll('*')]) {
+      element.style.setProperty('filter','none','important');
+      element.style.setProperty('text-shadow','none','important');
+      element.style.setProperty('box-shadow','none','important');
+    }
+    paint('.node rect,.node circle,.node ellipse,.node polygon,.node path,.node line,.node polyline,.cluster rect',background,foreground);
+    paint('.flowchart-link,.edgePath path','none',foreground);
+    paint('marker path,marker circle,marker polygon',foreground,foreground);
+    paint('text,tspan',foreground,'none');
+    paint('.edgeLabel rect,.label rect,.labelBkg',background,'none');
+    return svg.outerHTML;
+  }
+
   async function render() {
     const token = ++generation;
     const palette = current.theme;
@@ -60,7 +95,7 @@
         let svg;
         if (element.dataset.kind === 'mermaid') {
           if (source.includes('%%{') || /^\s*---/.test(source) || new TextEncoder().encode(source).length > 65536) throw Error('Unsupported diagram configuration');
-          svg = (await window.mermaid.render(`document-diagram-${serial++}`,source)).svg;
+          svg = diagram((await window.mermaid.render(`document-diagram-${serial++}`,source)).svg,palette);
         } else if (['math','math-inline'].includes(element.dataset.kind)) {
           if (new TextEncoder().encode(source).length > 65536) throw Error('Formula exceeds the supported size');
           await window.MathJax.startup.promise;
@@ -101,7 +136,11 @@
 
   document.addEventListener('click',event => {
     const anchor = event.target.closest('a[href^="#"]');
-    if (anchor) {event.preventDefault();document.getElementById(anchor.getAttribute('href').slice(1))?.scrollIntoView();return;}
+    if (anchor) {
+      event.preventDefault();let id = anchor.getAttribute('href').slice(1);
+      try {id = decodeURIComponent(id);} catch (_) {}
+      [...main.querySelectorAll('[id]')].find(element => element.id === id)?.scrollIntoView();return;
+    }
     const diagram = event.target.closest('.document-diagram');
     if (!diagram || !diagram.querySelector('svg') || typeof dialog.showModal !== 'function') return;
     visual.replaceChildren(diagram.querySelector('svg').cloneNode(true));setZoom(1);dialog.showModal();
