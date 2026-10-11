@@ -1,5 +1,13 @@
 // Tool definitions and SQL presentation policy belong to the ordinary package.
 export const definitions = {
+  database_connections:{
+    description:"List saved database connections available to this session, including IDs, revisions, engines and whether credentials are required. No passwords are returned.",
+    handler:"connections",operation:"databases.connections",presentation:"details",
+  },
+  database_save_connection:{
+    description:"Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. New connections default to read_only=true. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
+    handler:"save",operation:"databases.save",presentation:"details",
+  },
   database_catalog:{
     description:"List databases, or tables in a selected database, using a saved connection. Credentials remain on the execution Node.",
     handler:"catalog",operation:"databases.catalog",presentation:"details",
@@ -25,10 +33,31 @@ export function label(profile) {
 }
 
 export function parameters(name,profiles) {
+  if (name === 'database_connections') return {type:'object',properties:{},required:[],additionalProperties:false};
+  if (name === 'database_save_connection') return saveParameters();
   const choices = profiles.map(profile=>[profile.id,label(profile)]);
-  const properties = {connection:{type:'string',enum:choices.map(([id])=>id),description:JSON.stringify(choices)},
+  const properties = {connection:{type:'string',pattern:uuid,description:JSON.stringify(choices)},
     database:{type:'string',description:'Database name; omit to use the saved default'}};
   const required = ['connection'];
   if (name !== 'database_catalog') { properties.sql={type:'string'};required.push('sql'); }
   return {type:'object',properties,required,additionalProperties:false};
+}
+
+const uuid = '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$';
+function saveParameters() {
+  return {type:'object',additionalProperties:false,required:[],properties:{
+    connection:{type:['string','null'],pattern:uuid,description:'Saved connection ID; omit with expected_revision to create'},
+    expected_revision:{type:['integer','null'],minimum:1,maximum:9007199254740991},
+    name:{type:'string',minLength:1},engine:{type:'string',enum:['sqlite','mysql','postgres']},
+    path:{type:'string',minLength:1,description:'SQLite file path on the execution Node'},
+    host:{type:'string',minLength:1},port:{type:'integer',minimum:1,maximum:65535},
+    username:{type:'string',minLength:1},database:{type:'string'},read_only:{type:'boolean'},
+  },allOf:[{
+    if:{required:['connection'],properties:{connection:{type:'string'}}},
+    then:{required:['expected_revision'],properties:{expected_revision:{type:'integer'}}},
+    else:{required:['name','engine'],properties:{expected_revision:{type:'null'}},allOf:[{
+      if:{properties:{engine:{const:'sqlite'}}},then:{required:['path']},
+      else:{required:['host','port','username','database']},
+    }]},
+  }]};
 }

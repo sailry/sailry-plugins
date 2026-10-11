@@ -2192,13 +2192,17 @@
               "resources": [
                 "dev.sailry.platform/host/main.js",
                 "dev.sailry.platform/host/tools.js",
-                "dev.sailry.platform/host/instructions.js"
+                "dev.sailry.platform/host/instructions.js",
+                "dev.sailry.platform/host/connections.js"
               ],
               "handlers": [
                 "initialize",
                 "catalog",
                 "query",
-                "execute"
+                "execute",
+                "connections",
+                "save",
+                "saved"
               ],
               "turn": {
                 "initialize": "initialize"
@@ -2221,7 +2225,7 @@
                     "properties": {
                       "connection": {
                         "type": "string",
-                        "enum": [],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
                         "description": "[]"
                       },
                       "database": {
@@ -2269,7 +2273,7 @@
                     "properties": {
                       "connection": {
                         "type": "string",
-                        "enum": [],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
                         "description": "[]"
                       },
                       "database": {
@@ -2342,7 +2346,7 @@
                     "properties": {
                       "connection": {
                         "type": "string",
-                        "enum": [],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
                         "description": "[]"
                       },
                       "database": {
@@ -2398,6 +2402,176 @@
                     }
                   }
                 }
+              },
+              {
+                "name": "database_connections",
+                "presentation": "details",
+                "description": "List saved database connections available to this session, including IDs, revisions, engines and whether credentials are required. No passwords are returned.",
+                "contexts": [
+                  "workspace",
+                  "database"
+                ],
+                "handler": {
+                  "name": "connections",
+                  "operation": "databases.connections",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "Database connections",
+                  "locales": {
+                    "zh-CN": "数据库连接"
+                  },
+                  "icon": "reicon:ui/database"
+                }
+              },
+              {
+                "name": "database_save_connection",
+                "presentation": "details",
+                "description": "Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. New connections default to read_only=true. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
+                "contexts": [
+                  "workspace",
+                  "database"
+                ],
+                "handler": {
+                  "name": "save",
+                  "operation": "databases.save",
+                  "result": "saved",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [],
+                    "properties": {
+                      "connection": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+                        "description": "Saved connection ID; omit with expected_revision to create"
+                      },
+                      "expected_revision": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "engine": {
+                        "type": "string",
+                        "enum": [
+                          "sqlite",
+                          "mysql",
+                          "postgres"
+                        ]
+                      },
+                      "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "SQLite file path on the execution Node"
+                      },
+                      "host": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535
+                      },
+                      "username": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "database": {
+                        "type": "string"
+                      },
+                      "read_only": {
+                        "type": "boolean"
+                      }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "required": [
+                            "connection"
+                          ],
+                          "properties": {
+                            "connection": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "then": {
+                          "required": [
+                            "expected_revision"
+                          ],
+                          "properties": {
+                            "expected_revision": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "else": {
+                          "required": [
+                            "name",
+                            "engine"
+                          ],
+                          "properties": {
+                            "expected_revision": {
+                              "type": "null"
+                            }
+                          },
+                          "allOf": [
+                            {
+                              "if": {
+                                "properties": {
+                                  "engine": {
+                                    "const": "sqlite"
+                                  }
+                                }
+                              },
+                              "then": {
+                                "required": [
+                                  "path"
+                                ]
+                              },
+                              "else": {
+                                "required": [
+                                  "host",
+                                  "port",
+                                  "username",
+                                  "database"
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "display": {
+                  "label": "Save database connection",
+                  "locales": {
+                    "zh-CN": "保存数据库连接"
+                  },
+                  "icon": "reicon:ui/database",
+                  "input": {
+                    "summary": {
+                      "path": "/name"
+                    }
+                  }
+                }
               }
             ],
             "desktop": {
@@ -2445,12 +2619,21 @@
                     {
                       "kind": "plugin",
                       "name": "database_execute"
+                    },
+                    {
+                      "kind": "plugin",
+                      "name": "database_connections"
+                    },
+                    {
+                      "kind": "plugin",
+                      "name": "database_save_connection"
                     }
                   ],
-                  "context": "You are the database workspace assistant. Work only with the saved connection exposed by your tools. Use referenced databases and tables as the user's context. Read the connection engine and quoting rules from the tool schema. Use MySQL backticks, and PostgreSQL or SQLite double quotes for identifiers. Use the database argument to select the database rather than assuming cross-database qualification. Inspect catalogs and schema before composing SQL; do not invent table or column names. Use database_query for read-only queries without asking permission. Prefer explicit columns and bounded results. Use database_execute for inserts, updates, deletes, and schema changes: the runtime reviews its exact SQL under the session permission policy. For updates or deletes, inspect matching rows first and use a precise predicate; clarify ambiguous targets with ask_user. Respect the saved connection's read-only setting. Never disable protections, request credentials, or work around a denied operation. Query results already appear in the data grid and SQL log: summarize useful findings instead of repeating large tables. Do not execute a query twice merely to display it. Report errors and uncertain outcomes honestly; never automatically replay a write. Reply in the user's language. Use compact only to manage conversation context."
+                  "context": "You are the database workspace assistant. Work only with the saved connection exposed by your tools. Use referenced databases and tables as the user's context. Read the connection engine and quoting rules from the tool schema. Use MySQL backticks, and PostgreSQL or SQLite double quotes for identifiers. Use the database argument to select the database rather than assuming cross-database qualification. Inspect catalogs and schema before composing SQL; do not invent table or column names. Use database_query for read-only queries without asking permission. Prefer explicit columns and bounded results. Use database_execute for inserts, updates, deletes, and schema changes: the runtime reviews its exact SQL under the session permission policy. For updates or deletes, inspect matching rows first and use a precise predicate; clarify ambiguous targets with ask_user. Respect the saved connection's read-only setting. Never disable protections, request credentials, or work around a denied operation. Query results already appear in the data grid and SQL log: summarize useful findings instead of repeating large tables. Do not execute a query twice merely to display it. Report errors and uncertain outcomes honestly; never automatically replay a write. Reply in the user's language. Use compact only to manage conversation context. Use database_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use database_save_connection; never request passwords. SQLite needs no credentials and its returned ID can be used for queries in this turn. If credentials_required is true, ask the user to fill the protected settings field."
                 }
               ]
-            }
+            },
+            "instructions": "Use database_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use database_save_connection; never request passwords. SQLite needs no credentials and its returned ID can be used for queries in this turn. If credentials_required is true, ask the user to fill the protected settings field."
           }
         }
       }
@@ -10357,12 +10540,16 @@
               "resources": [
                 "dev.sailry.platform/host/main.js",
                 "dev.sailry.platform/host/tools.js",
-                "dev.sailry.platform/host/instructions.js"
+                "dev.sailry.platform/host/instructions.js",
+                "dev.sailry.platform/host/connections.js"
               ],
               "handlers": [
                 "initialize",
                 "run",
-                "transfer"
+                "transfer",
+                "connections",
+                "save",
+                "saved"
               ],
               "turn": {
                 "initialize": "initialize"
@@ -10372,7 +10559,7 @@
               {
                 "name": "ssh_run",
                 "presentation": "details",
-                "description": "Run a command on an allowed saved SSH connection after runtime approval. The connection must already have a trusted host key. Do not request credentials or bypass host-key verification.",
+                "description": "Run a command on an allowed saved SSH connection after runtime approval. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
                 "contexts": [
                   "workspace",
                   "ssh"
@@ -10385,7 +10572,7 @@
                     "properties": {
                       "connection": {
                         "type": "string",
-                        "enum": [],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
                         "description": "[]"
                       },
                       "command": {
@@ -10438,7 +10625,7 @@
                     "properties": {
                       "connection": {
                         "type": "string",
-                        "enum": [],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
                         "description": "[]"
                       },
                       "path": {
@@ -10478,6 +10665,164 @@
                     "content": {
                       "path": "/command",
                       "code": true
+                    }
+                  }
+                }
+              },
+              {
+                "name": "ssh_connections",
+                "presentation": "details",
+                "description": "List saved SSH connections available to this session, including IDs and revisions. Passwords, private keys and passphrases are never returned.",
+                "contexts": [
+                  "workspace",
+                  "ssh"
+                ],
+                "handler": {
+                  "name": "connections",
+                  "operation": "ssh.connections",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
+                },
+                "display": {
+                  "label": "SSH connections",
+                  "locales": {
+                    "zh-CN": "SSH 连接"
+                  },
+                  "icon": "reicon:it/terminal-square"
+                }
+              },
+              {
+                "name": "ssh_save_connection",
+                "presentation": "details",
+                "description": "Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication (agent or key_path); key_path authentication requires the path to an existing key on the execution Node. Update requires connection and expected_revision from ssh_connections, preserving omitted fields and credentials. Never accept passwords, key contents, passphrases or host keys. Use the returned ID for SSH tools in this turn. A first connection requires the user to confirm the exact host fingerprint in the runtime approval; never trust it automatically. Do not automatically repeat a denied or uncertain save.",
+                "contexts": [
+                  "workspace",
+                  "ssh"
+                ],
+                "handler": {
+                  "name": "save",
+                  "operation": "ssh.save",
+                  "result": "saved",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [],
+                    "properties": {
+                      "connection": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$",
+                        "description": "Saved connection ID; omit with expected_revision to create"
+                      },
+                      "expected_revision": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "host": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "port": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535
+                      },
+                      "username": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "authentication": {
+                        "type": "string",
+                        "enum": [
+                          "agent",
+                          "key_path"
+                        ]
+                      },
+                      "key_path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path to an existing private key on the execution Node; never its contents"
+                      }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "required": [
+                            "connection"
+                          ],
+                          "properties": {
+                            "connection": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "then": {
+                          "required": [
+                            "expected_revision"
+                          ],
+                          "properties": {
+                            "expected_revision": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "else": {
+                          "required": [
+                            "name",
+                            "host",
+                            "port",
+                            "username",
+                            "authentication"
+                          ],
+                          "properties": {
+                            "expected_revision": {
+                              "type": "null"
+                            }
+                          },
+                          "allOf": [
+                            {
+                              "if": {
+                                "properties": {
+                                  "authentication": {
+                                    "const": "key_path"
+                                  }
+                                }
+                              },
+                              "then": {
+                                "required": [
+                                  "key_path"
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "display": {
+                  "label": "Save SSH connection",
+                  "locales": {
+                    "zh-CN": "保存 SSH 连接"
+                  },
+                  "icon": "reicon:it/terminal-square",
+                  "input": {
+                    "summary": {
+                      "path": "/name"
                     }
                   }
                 }
@@ -10522,12 +10867,21 @@
                     {
                       "kind": "plugin",
                       "name": "ssh_transfer"
+                    },
+                    {
+                      "kind": "plugin",
+                      "name": "ssh_connections"
+                    },
+                    {
+                      "kind": "plugin",
+                      "name": "ssh_save_connection"
                     }
                   ],
-                  "context": "You are the SSH workspace assistant. Work only on the saved SSH connection exposed by your tools. Help inspect the remote system, diagnose issues, run requested commands, and transfer files. Establish the remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never request passwords or private keys, bypass host-key verification, access another connection, or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context."
+                  "context": "You are the SSH workspace assistant. Work only on the saved SSH connection exposed by your tools. Help inspect the remote system, diagnose issues, run requested commands, and transfer files. Establish the remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never request passwords or private keys, bypass host-key verification, access another connection, or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context. Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with agent or a key path on the execution Node. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
                 }
               ]
-            }
+            },
+            "instructions": "Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with agent or a key path on the execution Node. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
           }
         }
       }

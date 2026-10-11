@@ -1,10 +1,11 @@
 import {readTurnState,stageTurnState} from 'sailry/sdk';
 import {parameters} from './tools.js';
+export {connections,save,saved} from './connections.js';
 
 export function initialize({tools,connections,resources}) {
   const profiles = connections.databases;
   stageTurnState({connections:profiles.map(profile=>profile.id)});
-  const selected = profiles.length ? tools : [];
+  const selected = tools;
   return {tools:selected,instruction:'',
     parameters:Object.fromEntries(selected.map(name=>[name,parameters(name,profiles)]))};
 }
