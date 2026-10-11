@@ -83,6 +83,7 @@ export async function completed(args) {
   if (value?.state!=='active') return {};
   const {run}=await readTurn(args.turn);
   const session=await readSession();
+  if (run.status==='continued') return {};
   if (run.status!=='completed' || session.config.mode==='plan') {
     await execute(setConversationValue(key,{...entry.value,state:'paused'},entry.revision));
     return {};
@@ -103,7 +104,7 @@ export async function control(args) {
     const session=await readSession();
     if (session.config.mode==='plan') throw new Error('Goal execution requires Code mode');
     operations.push(write(entry,{...entry.value,state:'active',after:await anchor()}));
-    operations.push({kind:'submit',data:{session:context().session,expected_revision:session.revision,message:{text:continuation,references:[],attachments:[]}}});
+    operations.push(next({...entry,revision:String(BigInt(entry.revision)+1n)}));
   } else throw new Error('Invalid goal action');
   await execute(prepareTransaction(operations));
   return read();

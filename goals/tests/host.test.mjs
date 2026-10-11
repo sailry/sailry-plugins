@@ -40,7 +40,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     modules.set(path,module);await module.link(load);return module;
   }
   const main=await load('./main.js');await main.evaluate();
-  return {api:main.namespace,requests,state:()=>state,current:()=>plain(current)};
+  return {api:main.namespace,requests,history,state:()=>state,current:()=>plain(current)};
 }
 
 test('restored active goals remain suspended without a write or continuation',async()=>{
@@ -71,14 +71,31 @@ test('only explicit resume writes a live state and submits work',async()=>{
   assert.equal(result.goal.state,'active');
   assert.equal(current().restored,false);
   assert.equal(requests.length,1);
-  assert.deepEqual(requests[0].map(operation=>operation.kind),['conversation_write','submit']);
+  assert.deepEqual(requests[0].map(operation=>operation.kind),['conversation_write','continue']);
   assert.equal(requests[0][0].data.key,'goal');
   assert.equal(requests[0][0].data.value.after,'last-turn');
   assert.equal(requests[0][1].data.session,'session-id');
+  assert.equal(requests[0][1].data.expected_revision,'6');
   await api.completed({turn:'last-turn'});
   assert.equal(requests[1][0].kind,'continue');
   assert.equal(requests[1][0].data.scope,'conversation');
   assert.equal(requests[1][0].data.expected_revision,'6');
+});
+
+test('guidance keeps a goal active and the next completed turn continues',async()=>{
+  const {api,requests,current,history}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  history.page.runs[0].status='continued';
+  await api.completed({turn:'last-turn'});
+  assert.equal(current().value.state,'active');assert.equal(requests.length,0);
+  history.page.runs[0]={turn:'guided-turn',sequence:2,status:'completed',origin:null};
+  await api.completed({turn:'guided-turn'});
+  assert.equal(requests[0][0].kind,'continue');assert.equal(requests[0][0].data.after,'guided-turn');
+});
+
+test('explicit interruption still pauses an active goal',async()=>{
+  const {api,history}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  history.page.runs[0].status='interrupted';
+  await api.completed({turn:'last-turn'});assert.equal((await api.read()).goal.state,'paused');
 });
 
 test('clear records absence in the captured conversation',async()=>{
