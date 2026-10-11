@@ -24,7 +24,7 @@ export class Review {
   accept(capture) {
     if (capture?.token === this.current?.token) return;
     this.clear();
-    if (capture) this.current = {...capture,note:createText('',{
+    if (capture) this.current = {...capture,title:this.view.selected()?.title ?? '',note:createText('',{
       multiline:true,rows:[2,5],placeholder:this.view.text.browser_annotation_note,
       label:this.view.text.browser_annotation_note
     })};
@@ -59,12 +59,16 @@ export function renderReview(view, cx) {
   const review = view.review, current = review.current, text = view.text, colors = theme().colors;
   return Modal.new('browser-annotation-dialog',{
     open:!!current,form:true,title:text.browser_annotation,width:560
-  }).children(current ? [div().v_flex().gap_3()
-    .child(div().text_sm().whitespace_normal().child(current.element.url))
-    .child(div().text_sm().font_family(cx.theme().typography.mono).whitespace_normal()
+  }).children(current ? [div().v_flex().w_full().min_w_0().gap_3()
+    .child(div().id('browser-annotation-preview').w_full().max_h(240).rounded_lg().overflow_hidden()
+      .child(BrowserAnnotationImage.new('browser-annotation-image',{token:current.token})))
+    .child(div().id('browser-annotation-selector').w_full().min_w_0().text_sm().truncate()
+      .font_family(cx.theme().typography.mono).text_color(colors.muted_foreground)
+      .tooltip([current.title,current.element.url].filter(Boolean).join('\n'))
       .child(current.element.selector))
-    .child(BrowserAnnotationImage.new('browser-annotation-image',{token:current.token}))
-    .child(div().id('browser-annotation-text').max_h(100).overflow_y_scroll().child(current.element.text))
+    .children(current.element.text.trim() && current.element.text.trim() !== current.title.trim() ? [
+      div().id('browser-annotation-text').max_h(100).overflow_y_scroll().child(current.element.text)
+    ] : [])
     .children(current.element.truncated ? [div().text_sm().text_color(colors.muted_foreground)
       .child(text.browser_annotation_truncated)] : [])
     .child(div().id('browser-annotation-note').max_h(100).overflow_y_scroll()

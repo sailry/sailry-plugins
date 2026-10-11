@@ -15,6 +15,12 @@ function prepare(action, args) {
   if (!args || typeof args !== 'object' || Array.isArray(args)) {
     return {isError:true,error:{code:'invalid_request',message:'browser arguments must be an object'}};
   }
+  if (action === 'open' || action === 'navigate') {
+    if (args.background !== undefined && typeof args.background !== 'boolean') {
+      return {isError:true,error:{code:'invalid_request',message:'browser background must be a boolean'}};
+    }
+    return {action,arguments:{...args,background:args.background ?? false}};
+  }
   if (action === 'wait') {
     const {condition, timeout_ms} = args;
     const query = condition?.kind === 'text' ? condition.text

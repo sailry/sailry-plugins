@@ -34,10 +34,37 @@ test('all eighteen tools retain approval groups and captured action dispatch', (
     assert.equal(tool.handler.name,action);
     assert.equal(tool.handler.operation,`browser.${read.has(action) ? 'read' : 'control'}`);
     assert.equal(tool.presentation,'summary');
-    assert.deepEqual(host[action](args),{action,arguments:original});
+    const prepared = ['open','navigate'].includes(action) ? {...original,background:false} : original;
+    assert.deepEqual(host[action](args),{action,arguments:prepared});
     assert.deepEqual(args,original);
   }
   assert.equal(extension.tools.find(tool => tool.name === 'browser_screenshot').handler.operation,'browser.control');
+});
+
+test('background navigation is explicit and preserves caller arguments', () => {
+  for (const action of ['open','navigate']) {
+    const tool = extension.tools.find(tool => tool.name === `browser_${action}`);
+    assert.deepEqual(tool.handler.parameters.properties.background, {
+      type:'boolean',default:false,
+      description:'Use true for background automation; false shows the browser sidebar'
+    });
+    for (const background of [undefined,false,true]) {
+      const args = {url:'https://example.com',...(background === undefined ? {} : {background})};
+      const original = structuredClone(args);
+      assert.deepEqual(host[action](args),{action,arguments:{...args,background:background ?? false}});
+      assert.deepEqual(args,original);
+    }
+    for (const background of [null,'true',0,1,[],{}]) {
+      assert.equal(host[action]({url:'https://example.com',background}).error.code,'invalid_request');
+    }
+    assert.match(tool.description,/background=true for automated reading and interaction/);
+    assert.match(tool.description,/defaults to false/);
+  }
+  for (const tool of extension.tools.filter(tool => !['browser_open','browser_navigate'].includes(tool.name))) {
+    assert.equal(tool.handler.parameters.properties.background,undefined);
+  }
+  assert.match(extension.instructions,/foreground.*user asks to open or view a page/);
+  assert.match(extension.instructions,/reads, clicks and screenshots keep that tab in the background/);
 });
 
 test('wait validation retains byte bounds and selector kinds', () => {

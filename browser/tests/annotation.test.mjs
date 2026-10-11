@@ -24,7 +24,10 @@ function fixture(submit = async () => {}) {
     readText:id => fields.get(id).value,
     releaseText:id => { released.push(id); fields.delete(id); },submitBrowserAnnotation:submit
   });
-  const view = {text:messages('en'),state:{annotation:null},
+  const view = {text:messages('en'),address:'address',state:{annotation:null,selected:1,
+    tabs:[{id:1,url:element.url,title:'Page',loaded:true,loading:false}],
+    history:[false,false],supported:true,annotating:false},
+    selected() { return this.state.tabs.find(tab => tab.id === this.state.selected); },
     report:(error,fallback) => notices.push(errorKey(error,fallback)),
     perform:(kind,args) => requests.push({kind,...args})};
   const cx = {notify() {},theme:() => ({typography:{mono:'theme-mono'}}),
@@ -116,10 +119,23 @@ test('review uses a Kit form with private preview and aligned actions', () => {
   assert.equal(modal.props.open,true);
   assert.equal(modal.props.form,true);
   assert.equal(modal.props.width,560);
-  assert.ok(nodes.some(node => node?.props?.font_family === 'theme-mono'));
+  const content = modal.items[0], card = content.items[0], selector = content.items[1];
+  assert.equal(card.props.id,'browser-annotation-preview');
+  assert.ok(Object.hasOwn(card.props,'w_full'));
+  assert.equal(card.props.max_h,240);
+  assert.ok(Object.hasOwn(card.props,'rounded_lg'));
+  assert.ok(Object.hasOwn(card.props,'overflow_hidden'));
   const preview = nodes.find(node=>node?.props?.id === 'browser-annotation-image');
+  assert.equal(card.items[0],preview);
   assert.deepEqual(preview.props,{id:'browser-annotation-image',token:'private-capture'});
-  assert.ok(nodes.some(node=>node?.props?.text_color === 'theme-muted'));
+  assert.equal(selector.props.id,'browser-annotation-selector');
+  assert.ok(Object.hasOwn(selector.props,'truncate'));
+  assert.equal(selector.props.font_family,'theme-mono');
+  assert.equal(selector.props.text_color,'theme-muted');
+  assert.equal(selector.props.tooltip,`Page\n${element.url}`);
+  assert.deepEqual(selector.items,[element.selector]);
+  assert.equal(content.items[2].props.id,'browser-annotation-text');
+  assert.equal(content.items.at(-1).props.id,'browser-annotation-note');
   const footer = modal.items[1];
   assert.ok(Object.hasOwn(footer.props,'justify_end'));
   assert.deepEqual(footer.items.map(node=>node.props.id),['browser-annotation-cancel','browser-annotation-add']);
@@ -129,6 +145,46 @@ test('review uses a Kit form with private preview and aligned actions', () => {
   assert.equal(busy.props.disabled,true); assert.equal(busy.props.loading,true);
   f.accept(null);
   assert.equal(f.renderReview(f.view,f.cx).items.length,0);
+});
+
+test('review captures page titles and omits duplicate text', () => {
+  const f = fixture();
+  f.view.state.tabs.push({id:2,url:element.url,title:'Selected heading'});
+  f.view.state.selected = 2;
+  f.accept('selected'); f.note('Keep this annotation');
+  const current = f.view.review.current, note = current.note;
+  assert.equal(current.title,'Selected heading');
+  f.view.state.tabs[1].title = 'Updated title'; f.accept('selected');
+  assert.equal(f.view.review.current,current);
+  assert.equal(current.title,'Selected heading');
+  assert.equal(f.fields.get(note).value,'Keep this annotation');
+  current.element = {...element,text:' Selected heading\n'};
+  const rendered = () => flatten(f.renderReview(f.view,f.cx));
+  let nodes = rendered();
+  assert.equal(nodes.find(node=>node?.props?.id === 'browser-annotation-selector').props.tooltip,
+    `Selected heading\n${element.url}`);
+  assert.ok(!nodes.some(node=>node?.props?.id === 'browser-annotation-text'));
+  assert.equal(JSON.parse(f.reference(current.element,'')).page_element.text,' Selected heading\n');
+  current.element = {...element,text:'Different selected content'};
+  nodes = rendered();
+  assert.deepEqual(nodes.find(node=>node?.props?.id === 'browser-annotation-text').items,
+    ['Different selected content']);
+  current.element = {...element,text:''};
+  assert.ok(!rendered().some(node=>node?.props?.id === 'browser-annotation-text'));
+});
+
+test('controls use bundled icons', () => {
+  const f = fixture();
+  const control = () => flatten(f.render(f.view,f.cx)).find(node=>node?.props?.id === 'browser-annotate');
+  assert.equal(control().props.icon,'reicon:map/pointer');
+  assert.equal(control().props.disabled,false);
+  f.view.state.annotating = true;
+  assert.equal(control().props.icon,'close');
+  assert.equal(control().props.label,f.view.text.browser_cancel_selection);
+  f.view.state.tabs[0].loading = true;
+  assert.equal(control().props.disabled,true);
+  f.view.state.annotating = false;
+  assert.equal(control().props.icon,'reicon:map/pointer');
 });
 
 test('review captions and attachment failures cover every locale', () => {
@@ -142,15 +198,24 @@ test('review captions and attachment failures cover every locale', () => {
   assert.equal(errorKey('Unexpected failure','browser_annotation_stale'),'browser_annotation_stale');
 });
 
-test('page covers its native surface only while reviewing', () => {
+test('page retains its surface and review draft', () => {
   const f = fixture();
   Object.assign(f.view,{address:'address',selected() { return this.state.tabs[0]; }});
   Object.assign(f.view.state,{selected:1,tabs:[{id:1,url:element.url,title:'Page',loaded:true,loading:false}],
     history:[false,false],supported:true,annotating:false});
-  const covered = () => flatten(f.render(f.view,f.cx)).find(node=>node?.props?.id === 'browser-surface').props.covered;
-  assert.equal(covered(),false);
+  const rendered = () => flatten(f.render(f.view,f.cx));
+  const surface = nodes => nodes.find(node=>node?.props?.id === 'browser-surface');
+  assert.deepEqual(surface(rendered()).props,{id:'browser-surface'});
   f.accept('selected');
-  assert.equal(covered(),true);
+  f.note('Keep this review');
+  const note = f.view.review.current.note, nodes = rendered();
+  assert.deepEqual(surface(nodes).props,{id:'browser-surface'});
+  assert.equal(nodes.find(node=>node?.props?.id === 'browser-annotation-dialog').props.open,true);
+  assert.equal(f.fields.get(note).value,'Keep this review');
+  assert.equal(f.view.review.current.token,'selected');
   f.view.review.close(f.cx);
-  assert.equal(covered(),false);
+  assert.deepEqual(surface(rendered()).props,{id:'browser-surface'});
+  assert.equal(f.view.review.current,null);
+  assert.deepEqual(f.released,[note]);
+  assert.deepEqual(f.requests,[{kind:'cancel_annotation',token:'selected'}]);
 });
