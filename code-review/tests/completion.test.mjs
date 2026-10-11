@@ -19,6 +19,18 @@ test('zero findings still require every file and group', async () => {
   assert.equal(result.reviewed_files,15);
   assert.equal(result.findings,0);
   assert.equal(result.remaining.counts.files,0);
+  assert.deepEqual(result.sailry_result,{version:1,diagnostics:[],status:{label:'15 files · No issues',locales:{'zh-CN':'15 个文件 · 无问题'}}});
+});
+
+test('summarizes findings without changing their records',async()=>{
+  const f=await fixture(),scope=await f.invoke('scope',{});
+  const reported=await f.invoke('finding',finding(scope));
+  const before=structuredClone([...f.values].filter(([key])=>key.includes('/finding/')));
+  const completed=await f.invoke('complete',receipt(scope));
+  assert.equal(completed.findings,1);
+  assert.deepEqual(completed.sailry_result.status,{label:'1 issue',locales:{'zh-CN':'1 个问题'}});
+  assert.ok(reported.finding.id);
+  assert.deepEqual([...f.values].filter(([key])=>key.includes('/finding/')),before);
 });
 
 test('invalid duplicate and partial receipts are rejected', async () => {
@@ -30,7 +42,9 @@ test('invalid duplicate and partial receipts are rejected', async () => {
     {reviewed_groups:[...complete.reviewed_groups,complete.reviewed_groups[0]]},
     {reviewed_groups:['group-unknown']},{reviewed_files:[{path:'outside.rs',revision:'anything'}]},
     {reviewed_files:complete.reviewed_files.map(file => ({...file,revision:'stale'}))}]) {
-    assert.equal((await fixtureData.invoke('complete',{...complete,...invalid})).isError,true);
+    const rejected=await fixtureData.invoke('complete',{...complete,...invalid});
+    assert.equal(rejected.isError,true);
+    assert.equal(rejected.sailry_result,undefined);
   }
   const head = fixtureData.values.get(`review/${scope.review_id}/head`).value;
   assert.equal(head.status,'open');

@@ -22,7 +22,10 @@ export function index(entries, project, settings) {
   const limit = Math.max(Math.floor(settings.context_bytes / 2), bytes(text) + 2);
   let first = true;
   for (const entry of selected) {
-    const encoded = JSON.stringify(entry);
+    const {body,...summary} = entry;
+    const preference = ["user","feedback"].includes(entry.kind) && typeof body === "string" && bytes(body) <= 300;
+    let encoded = JSON.stringify(preference ? {...summary,body} : summary);
+    if (bytes(text) + bytes(encoded) + 2 > limit && preference) encoded = JSON.stringify(summary);
     if (bytes(text) + bytes(encoded) + 2 > limit) continue;
     text += `${first ? "" : ","}${encoded}`;
     first = false;

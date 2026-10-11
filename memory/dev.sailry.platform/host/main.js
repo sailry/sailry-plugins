@@ -1,7 +1,7 @@
 import {readTurnState,stageTurnState,newId} from "sailry/sdk";
 import {bytes,index,retrieve,values,reads,requireRead,fail,argumentsFor} from "./policy.js";
 import {readMemorySettings} from './settings.js';
-import {listMemories,searchMemories,reviewMemories} from './retrieval.js';
+import {indexMemories,searchMemories,reviewMemories} from './retrieval.js';
 import {readMemory} from './storage.js';
 import {putOperations,removeOperations,mergeOperations,memoryOutput} from './mutations.js';
 
@@ -10,7 +10,7 @@ export async function initialize({tools,project,resources}) {
   const state = {settings,project,remaining:settings.context_bytes,reads:[]};
   let instruction = "";
   if (settings.enabled && resources) {
-    instruction = index(await listMemories(project), project, settings);
+    instruction = index(await indexMemories(project), project, settings);
     state.remaining = Math.max(0,state.remaining-bytes(instruction));
   }
   stageTurnState(state);

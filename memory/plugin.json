@@ -6,7 +6,7 @@
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "instructions": "Before project work that could depend on prior decisions or preferences, search relevant current-project and global memory with focused terms. Skip irrelevant retrieval for self-contained questions. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
+      "instructions": "Before writing code, tests or other output with style preferences, check the injected memory index and apply relevant current-project and global preferences. If a relevant title has no complete body, call search_memory with focused terms before using it. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
       "storage": {"collections":[
         {"scope":"node","key":"memory/settings","schema":{
           "type":"object","required":["v","settings"],"properties":{

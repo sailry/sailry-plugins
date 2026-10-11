@@ -68,7 +68,8 @@
           "dev.sailry.platform/host/matching.js",
           "dev.sailry.platform/host/scope.js",
           "dev.sailry.platform/host/findings.js",
-          "dev.sailry.platform/host/complete.js"
+          "dev.sailry.platform/host/complete.js",
+          "dev.sailry.platform/host/locales.js"
         ],
         "handlers": [
           "scope",
@@ -311,7 +312,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it rechecks frozen inventory and every eligible strong revision. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
           "handler": {
             "name": "complete",

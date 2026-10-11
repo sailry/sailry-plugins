@@ -105,6 +105,36 @@ test('scope, archive, exact IDs and literal search stay in the package',async()=
   await assert.rejects(f.mutations.removeOperations(id(3),1,project),error=>error.code==='permission_denied');
 });
 
+test('new turns receive only short active scoped preference bodies',async()=>{
+  const f=await fixture(),preference='Use unittest and four spaces for Python tests',boundary='中文'.repeat(50);
+  f.configure({enabled:true,auto_write:true,context_bytes:8192,review_after_days:90});
+  f.seed([entry(1,preference,{kind:'user',project:null,title:'Python tests'}),
+    entry(2,boundary,{kind:'feedback'}),entry(3,boundary+'!',{kind:'feedback'}),
+    entry(4,'Project body stays out of the index'),entry(5,'Foreign preference',{project:id(9000),kind:'user'}),
+    entry(6,'Archived preference',{archived:true,kind:'feedback'})]);
+  const initialized=await f.main.initialize({tools:['search_memory','save_memory'],project,resources:true});
+  const index=JSON.parse(initialized.instruction.split('Index:\n')[1]);
+  assert.equal(index.find(value=>value.id===id(1)).body,preference);
+  assert.equal(index.find(value=>value.id===id(2)).body,boundary);
+  for(const number of [3,4])assert.equal(index.find(value=>value.id===id(number)).body,undefined);
+  for(const number of [5,6])assert.equal(index.some(value=>value.id===id(number)),false);
+  assert.deepEqual(f.reads.filter(key=>key.startsWith('memory/body/')),['memory/body/0','memory/body/1']);
+  assert.equal(f.state.remaining,8192-Buffer.byteLength(initialized.instruction));
+  assert.deepEqual(f.state.reads,[],'injected preferences grant no mutation authority');
+  const denied=await f.main.save({id:id(2),expected_revision:1,kind:'feedback',title:'Replacement',body:'Changed'});
+  assert.equal(denied.error.code,'invalid_request');
+});
+
+test('preference indexing rejects concurrent metadata changes',async()=>{
+  const f=await fixture();
+  f.seed([entry(1,'Use unittest',{kind:'user'})]);
+  const changed=await f.storage.readMemory(id(1));changed.summary.title='Updated preference';
+  const prepared=await f.mutations.putOperations(changed,1);
+  f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(prepared.operations);}};
+  await assert.rejects(f.main.initialize({tools:['search_memory'],project,resources:true}),error=>error.code==='revision_conflict');
+  assert.equal(f.state,null);
+});
+
 test('scoped writes reuse the captured project without reading a management catalog',async()=>{
   const f=await fixture();
   f.apply((await f.mutations.putOperations(entry(1,'Captured project constraint'),0,project)).operations);

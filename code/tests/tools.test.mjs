@@ -4,7 +4,7 @@ import test from 'node:test';
 const manifest = JSON.parse(fs.readFileSync(new URL('../plugin.json', import.meta.url), 'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 test('contributes packaged language settings and enable control', () => {
-  assert.equal(manifest.version, '0.1.4');
+  assert.equal(manifest.version, '0.1.0');
   assert.equal(extension.settings_page.native, undefined);
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.equal(extension.settings_page.enabled_control, true);
@@ -35,4 +35,10 @@ test('explains cold-start consent and incomplete results', () => {
   assert.match(instructions, /only when removal is requested/);
   assert.match(instructions, /partial/);
   assert.match(instructions, /line numbers start at one/);
+});
+test('selects diagnostics and references before permitted source fallback',()=>{
+  assert.match(extension.instructions,/diagnostics, errors or type errors, call code_diagnostics first/);
+  assert.match(extension.instructions,/references or usage, call code_references first/);
+  assert.match(extension.instructions,/source search only when the query returns not_installed/);
+  assert.match(extension.instructions,/say that the required language service is not installed/);
 });

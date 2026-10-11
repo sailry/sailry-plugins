@@ -29,6 +29,22 @@ async function catalog(project) {
 export async function listMemories(project) {
   return (await catalog(project)).entries.map(entry=>entry.summary).sort(ordered);
 }
+export async function indexMemories(project) {
+  const captured = await catalog(project), pages = new Map(), entries = [];
+  for (const entry of captured.entries) {
+    const summary = entry.summary;
+    if (summary.archived) continue;
+    let value = summary;
+    if (["user","feedback"].includes(summary.kind)) {
+      if (!pages.has(entry.body_page)) pages.set(entry.body_page,page(entry.body_page));
+      const current = await body(entry,await pages.get(entry.body_page));
+      if (bytes(current.body) <= 300) value = {...summary,body:current.body};
+    }
+    entries.push(value);
+  }
+  if (captured.revision !== (await head()).record.revision) fail('memory catalog changed during indexing','revision_conflict');
+  return entries.sort(ordered);
+}
 export async function reviewMemories(settings,filter) {
   const captured = await catalog(filter.all_projects ? undefined : filter.project);
   const entries = new Map(captured.entries.map(entry=>[entry.summary.id,entry])), pages = new Map();

@@ -47,9 +47,11 @@ test('generated metadata preserves rule order and original hashes', async () => 
 test('mutating tools declare atomic storage flows', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.3.1');
+  assert.equal(manifest.version,'0.1.0');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','report_finding','review_complete']);
+  assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');
+  assert.equal(extension.tools.find(tool=>tool.name==='report_finding').presentation,'details');
   for (const tool of extension.tools) {
     assert.notEqual(tool.handler.read_only,true);
     assert.deepEqual(tool.handler.flow.operations,['storage.transaction']);

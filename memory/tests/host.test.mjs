@@ -17,7 +17,7 @@ async function load(sdk = {}) {
   const unexpected = name => sdk[name] ?? (()=>{throw new Error(`unexpected ${name}`);});
   const services = new Map([
     ['settings.js',synthetic({readMemorySettings:unexpected('readMemorySettings')})],
-    ['retrieval.js',synthetic({listMemories:unexpected('listMemories'),searchMemories:unexpected('searchMemories'),
+    ['retrieval.js',synthetic({indexMemories:sdk.indexMemories ?? unexpected('listMemories'),searchMemories:unexpected('searchMemories'),
       reviewMemories:async(settings,filter)=>review(await unexpected('listMemories')(),settings,filter,unexpected('readMemory'))})],
     ['storage.js',synthetic({readMemory:unexpected('readMemory')})],
     ['mutations.js',synthetic({putOperations:(entry,expected_revision)=>({entry,expected_revision}),
@@ -67,6 +67,22 @@ test('shares the exact serialized content budget with Unicode and escaped JSON',
   assert.ok(entry.body.startsWith(body.body));
   assert.ok(Buffer.byteLength(JSON.stringify(results[0])) + 128 + 600 <= 2048);
   assert.equal(policy.retrieve([entry],state).length,0);
+});
+
+test('keeps short preference bodies complete or falls back to titles',async()=>{
+  const {policy}=await load(),body='"'.repeat(300);
+  const empty=policy.index([],project,settings);
+  const bounded={...settings,context_bytes:2*(Buffer.byteLength(empty)+Buffer.byteLength(JSON.stringify(summary))+64)};
+  const instruction=policy.index([{...summary,body}],project,bounded);
+  const catalog=JSON.parse(instruction.split('Index:\n')[1]);
+  assert.deepEqual(catalog,[summary],'a body that exceeds the remaining budget leaves its searchable title');
+  assert.ok(Buffer.byteLength(instruction)<=bounded.context_bytes/2);
+  const unicode='中文'.repeat(50);
+  const entries=JSON.parse(policy.index([{...summary,body:unicode},{...summary,id:'long',body:unicode+'!'},
+    {...summary,id:'project',kind:'project',body:'Project details'}],project,settings).split('Index:\n')[1]);
+  assert.equal(entries.find(entry=>entry.id===id).body,unicode);
+  assert.equal(entries.find(entry=>entry.id==='long').body,undefined);
+  assert.equal(entries.find(entry=>entry.id==='project').body,undefined);
 });
 
 test('only complete currently visible search results authorize replacement',async () => {
@@ -154,8 +170,9 @@ test('package review shares the captured content budget and never grants replace
 test('guidance scopes retrieval and saves durable user corrections',async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const instruction = manifest.extensions['dev.sailry.platform'].instructions;
-  assert.match(instruction,/Before project work that could depend on prior decisions or preferences/);
-  assert.match(instruction,/Skip irrelevant retrieval for self-contained questions/);
+  assert.match(instruction,/Before writing code, tests or other output with style preferences/);
+  assert.match(instruction,/check the injected memory index and apply relevant current-project and global preferences/);
+  assert.match(instruction,/relevant title has no complete body, call search_memory/);
   assert.match(instruction,/When the user corrects you or states a stable preference/);
   assert.match(instruction,/Do not save facts directly derivable from the code/);
   assert.match(instruction,/current user instructions take precedence/);

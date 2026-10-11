@@ -2,6 +2,12 @@ import {callId} from 'sailry/sdk';
 import {change, inventory} from './git.js';
 import {fail, fields, identifier, limits, path, revision, size} from './policy.js';
 import {head, key, manifest, open, shards, transaction, write} from './records.js';
+import {completion} from './locales.js';
+
+export function display(value) {
+  return {...value,sailry_result:{version:1,diagnostics:[],
+    status:completion(value.reviewed_files,value.findings)}};
+}
 
 function remaining(scope, covered) {
   const files = scope.files.filter(file => !covered.has(file.group))

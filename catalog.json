@@ -1162,7 +1162,7 @@
               "enabled_control": true,
               "entry": "dev.sailry.platform/desktop/settings.js"
             },
-            "instructions": "Read-only code queries use language servers on the execution Node. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
+            "instructions": "For questions about diagnostics, errors or type errors, call code_diagnostics first. For references or usage, call code_references first. Fall back to source search only when the query returns not_installed, and say that the required language service is not installed. Read-only code queries use language servers on the execution Node. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
             "tools": [
               {
                 "name": "code_diagnostics",
@@ -1370,7 +1370,8 @@
                 "dev.sailry.platform/host/matching.js",
                 "dev.sailry.platform/host/scope.js",
                 "dev.sailry.platform/host/findings.js",
-                "dev.sailry.platform/host/complete.js"
+                "dev.sailry.platform/host/complete.js",
+                "dev.sailry.platform/host/locales.js"
               ],
               "handlers": [
                 "scope",
@@ -1613,7 +1614,7 @@
                 "contexts": [
                   "workspace"
                 ],
-                "presentation": "details",
+                "presentation": "summary",
                 "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it rechecks frozen inventory and every eligible strong revision. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
                 "handler": {
                   "name": "complete",
@@ -8294,7 +8295,7 @@
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "instructions": "Before project work that could depend on prior decisions or preferences, search relevant current-project and global memory with focused terms. Skip irrelevant retrieval for self-contained questions. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
+            "instructions": "Before writing code, tests or other output with style preferences, check the injected memory index and apply relevant current-project and global preferences. If a relevant title has no complete body, call search_memory with focused terms before using it. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
             "storage": {
               "collections": [
                 {
