@@ -12,7 +12,7 @@ function element(id = '',title) {
       contains(name) {return classes.has(name);}},
     append(child) {this.children.push(child);},replaceChildren(...children) {this.children = children;},
     replaceWith(replacement) {this.replacement = replacement;},
-    setAttribute() {},addEventListener() {},querySelector() {return {};},
+    setAttribute() {},removeAttribute() {},getBoundingClientRect() {return {top:100};},addEventListener() {},querySelector() {return {};},
     scrollIntoView() {this.scrolled = true;}};
 }
 
@@ -21,8 +21,7 @@ function visual(kind,text) {
 }
 
 function setup(sections,targets = [],labels = [],visuals = []) {
-  const chrome = ['brief','document-toc','document-visual','document-visual-content',
-    'document-zoom-in','document-zoom-out','document-visual-close'].map(id => element(id));
+  const chrome = ['brief','document-toc','document-title','document-contents'].map(id => element(id));
   const main = chrome[0],toc = chrome[1],listeners = {},events = [];
   main.querySelectorAll = selector => selector === 'section[data-title]' ? sections
     : selector === 'label' ? labels
@@ -47,7 +46,7 @@ function setup(sections,targets = [],labels = [],visuals = []) {
       preventDefault() {prevented = true;}});
     assert(prevented);
   };
-  return {toc,click,events,mermaid:window.mermaid,forms:window.sailryForms,
+  return {toc,click,events,scroll:() => listeners.scroll(),mermaid:window.mermaid,forms:window.sailryForms,
     submit:form => listeners.submit({target:form,preventDefault() {}}),
     retheme:(value = {}) => window.sailryDocument.retheme(value),
     mount:(identity = {}) => window.sailryDocument.mount({
@@ -62,6 +61,14 @@ test('authored section anchors survive mounting and encoded navigation',async ()
   assert.equal(section.id,'choices 中文');
   assert.equal(view.toc.children[0].href,'#choices%20%E4%B8%AD%E6%96%87');
   view.click(view.toc.children[0].href);assert(section.scrolled);
+});
+
+test('the directory highlights the section at the current scroll position',async () => {
+  const first = element('first','First'),second = element('second','Second'),view = setup([first,second]);
+  await view.mount();assert(view.toc.children[0].classList.contains('active'));
+  second.getBoundingClientRect = () => ({top:70});view.scroll();
+  assert(view.toc.children[1].classList.contains('active'));assert.equal(view.toc.children[0].classList.contains('active'),false);
+  assert.doesNotMatch(source,/document-zoom|showModal|setZoom/);
 });
 
 test('generated anchors avoid document and authored target collisions',async () => {

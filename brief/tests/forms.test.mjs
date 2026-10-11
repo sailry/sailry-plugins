@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const source = readFileSync(new URL('../dev.sailry.platform/document/forms.js',import.meta.url),'utf8'),window = {};
 const document = {createElement(tagName) {return {tagName,children:[],append(...values) {this.children.push(...values);}};}};
 vm.runInNewContext(source,{window,document,TextEncoder});
-const {collect,readonly} = window.sailryForms;
+const {collect,readonly,snapshot,restore} = window.sailryForms;
 const plain = value => JSON.parse(JSON.stringify(value));
 function control(name,type,value,label,checked = false) {
   return {tagName:type === 'textarea' ? 'TEXTAREA' : 'INPUT',name,type,value,checked,disabled:false,
@@ -61,4 +61,22 @@ test('readonly export contains static choice states and answers',() => {
   assert.equal(result.tagName,'section');assert.equal(result.children[1].children[0].textContent,'☑ Alpha');
   assert.equal(result.children[1].children[1].textContent,'☐ Beta');assert.equal(result.children[3].children[0].textContent,'Literal <answer>');
   assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|eval\(|new Function|innerHTML/);
+});
+
+test('drafts retain unsubmitted choices and exact free text across mounts',() => {
+  const choices = [control('choice','checkbox','a','Alpha',true),control('choice','checkbox','b','Beta')];
+  const note = control('note','textarea','  中文 🙂  ','');
+  const original = form([field('choice','Choice',choices),field('note','Context',[note])]);
+  const saved = plain(snapshot(original));
+  choices[0].checked = false;choices[1].checked = true;note.value = '';
+  assert.equal(restore(original,saved),true);assert.equal(choices[0].checked,true);assert.equal(choices[1].checked,false);assert.equal(note.value,'  中文 🙂  ');
+  assert.equal(restore(original,{...saved,form:'another'}),false);
+});
+
+test('drafts preserve empty required fields and reject oversized values',() => {
+  const choice = control('choice','radio','a','Alpha'),note = control('note','text','','');
+  const original = form([field('choice','Choice',[choice],true),field('note','Context',[note])]);
+  assert.deepEqual(plain(snapshot(original)),{form:'decisions',fields:[{name:'choice',values:[]},{name:'note',values:['']}]});
+  assert.equal(restore(original,{form:'decisions',fields:[{name:'note',values:['a'.repeat(4097)]}]}),false);
+  note.value = 'a'.repeat(4097);assert.throws(() => snapshot(original));
 });

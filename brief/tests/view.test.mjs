@@ -9,7 +9,7 @@ import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 const source = readFileSync(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 const {render} = vm.runInNewContext(`${source}\n({render})`,{
-  div:() => new Element(),PanelHeader:Element,SelectField:Element,Menu:Element,IconButton:Element,Loading:Element,ArtifactSurface:Element,
+  div:() => new Element(),Header:Element,Picker:Element,IconButton:Element,Loading:Element,ArtifactSurface:Element,
 });
 function setup() {
   const state = new Controller({}, {id:'artifact',session:'session'}, () => {}, () => {});
@@ -18,11 +18,11 @@ function setup() {
 }
 const find = (view,id) => flatten(render(view)).find(item => item instanceof Element && item.props.id === id);
 
-test('panel owns native version selection and an icon-free export menu',() => {
-  const view = setup(),picker = find(view,'brief-version'),menu = find(view,'brief-export');
-  assert.equal(picker.props.selected,'2');assert.equal(picker.props.label,'版本');assert.equal(menu.props.icon,'ellipsis-vertical');
+test('panel header owns version selection and the export action',() => {
+  const view = setup(),header = JSON.parse(find(view,'brief-header').props.content),menu = find(view,'brief-export-picker');
+  assert.equal(header.filters[0].selected,'2');assert.equal(header.filters[0].label,'版本');assert.equal(header.actions[0].icon,'ellipsis-vertical');
   assert.deepEqual(JSON.parse(JSON.stringify(menu.props.items)),[
-    {id:'brief-export-html',label:'HTML',value:{format:'html'}},{id:'brief-export-image',label:'图片',value:{format:'png'}},
+    {id:'brief-export-html',label:'HTML',disabled:false,value:{format:'html'}},{id:'brief-export-image',label:'图片',disabled:false,value:{format:'png'}},
   ]);
   const surface = find(view,'brief-preview-artifact');assert.equal(surface.props.artifact,'artifact');assert.equal(surface.props.revision,undefined);
   view.state.follow = false;assert.equal(find(view,'brief-preview-artifact').props.revision,2);
@@ -30,7 +30,7 @@ test('panel owns native version selection and an icon-free export menu',() => {
 });
 test('refresh keeps the preview and disables actions without loading text',() => {
   const view = setup();view.state.loading = true;
-  assert(find(view,'brief-preview-artifact'));assert.equal(find(view,'brief-export').props.disabled,true);
+  assert(find(view,'brief-preview-artifact'));assert.equal(JSON.parse(find(view,'brief-header').props.content).actions[0].disabled,true);
   view.state.artifact = null;const loader = find(view,'brief-loading');assert(loader);assert.equal(loader.props.label,undefined);
 });
 test('unavailable reads show a retry control without repeating error feedback',() => {

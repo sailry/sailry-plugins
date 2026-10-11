@@ -1,7 +1,7 @@
 import {View} from 'gpui-kit';
-import {context} from 'sailry';
+import {context,header_action} from 'sailry';
 import * as artifacts from 'sailry/artifacts';
-import {nextControlEvent,nextMenuEvent,toast} from 'sailry/ui';
+import {nextControlEvent,nextPickerEvent,toast} from 'sailry/ui';
 import {Controller} from './controller.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
@@ -9,6 +9,7 @@ import {render} from './view.js';
 export default class Brief extends View {
   init(_props,cx) {
     this.text = messages(JSON.parse(context()).locale);
+    this.exportOpen = false;
     this.state = new Controller(artifacts,artifacts.artifactResource(),() => {},key => this.report(key));
     cx.spawn(async cx => {this.state.changed = () => cx.notify();await this.state.refresh();});
     cx.spawn(async cx => {
@@ -30,8 +31,19 @@ export default class Brief extends View {
     });
     cx.spawn(async () => {
       try {while (true) {
-        const event = await nextMenuEvent();
-        if (event.menu === 'brief-export') await this.state.export(event.value?.format);
+        const raw = await header_action();
+        let event;try {event = JSON.parse(raw);} catch (_) {event = {id:raw};}
+        if (event.id === 'brief-version') await this.state.select(event.value);
+        else if (event.id === 'brief-more-versions') await this.state.more();
+        else if (event.id === 'brief-export' && !this.state.loading && !this.state.exporting && this.state.artifact) {this.exportOpen = true;cx.notify();}
+      }} catch (_) { /* Header actions retain the captured document. */ }
+    });
+    cx.spawn(async () => {
+      try {while (true) {
+        const event = await nextPickerEvent();
+        if (event.picker !== 'brief-export-picker') continue;
+        this.exportOpen = false;cx.notify();
+        if (event.kind === 'select') await this.state.export(event.value?.format);
       }} catch (_) { /* Closing a menu does not replay an export. */ }
     });
     cx.spawn(async () => {

@@ -63,6 +63,11 @@ is limited to 512 KiB after cleaning.
 
 ## Questions
 
+When a brief contains unresolved decisions or information the user must confirm,
+end it with a `brief-form` covering those items. Use radio choices for one answer,
+checkboxes for multiple answers, and a textarea for additional context. Include
+only decisions that remain open; preserve confirmed choices when revising.
+
 Use a bounded declaration rather than executable controls. Form and field names
 must start with a Latin letter and contain only letters, digits, `_`, `.` or `-`,
 up to 64 characters. Use unique form and field names. Each form has at most

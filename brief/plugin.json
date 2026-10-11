@@ -53,6 +53,27 @@
           "mermaid",
           "echarts",
           "mathjax"
+        ],
+        "allowed_classes": [
+          "lead",
+          "callout",
+          "info",
+          "warn",
+          "risk",
+          "ok",
+          "mermaid",
+          "math",
+          "math-inline",
+          "chart",
+          "steps",
+          "files",
+          "badge",
+          "new",
+          "changed",
+          "removed",
+          "compare",
+          "option",
+          "brief-form"
         ]
       },
       "tools": [

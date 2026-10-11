@@ -63,5 +63,44 @@
     }
     return output;
   }
-  window.sailryForms = {collect,readonly};
+  function snapshot(form) {
+    if (!name(form.dataset.name)) throw Error('Invalid form name');
+    const fields = [...form.querySelectorAll('fieldset')].map(fieldset => {
+      const id = fieldset.dataset.name,controls = [...fieldset.querySelectorAll('input,textarea,select')];
+      if (!name(id) || !controls.length || controls.length > 64 || controls.some(control => control.name !== id)) throw Error('Invalid form controls');
+      const values = controls.flatMap(control => {
+        if (control.tagName === 'INPUT' && ['radio','checkbox'].includes(control.type)) return control.checked ? [control.value] : [];
+        if (control.tagName === 'SELECT') return [...control.selectedOptions].map(option => option.value);
+        if (control.tagName === 'TEXTAREA' || control.tagName === 'INPUT' && control.type === 'text') return [control.value];
+        throw Error('Unsupported form control');
+      });
+      if (values.length > 64 || values.some(value => !text(value,4096))) throw Error('Form draft exceeds the supported size');
+      return {name:id,values};
+    });
+    const result = {form:form.dataset.name,fields};
+    if (!fields.length || fields.length > 32 || new Set(fields.map(field => field.name)).size !== fields.length || bytes(JSON.stringify(result)) > 16384) throw Error('Invalid form draft');
+    return result;
+  }
+  function restore(form,draft) {
+    if (draft?.form !== form.dataset.name || !Array.isArray(draft.fields) || draft.fields.length > 32 || bytes(JSON.stringify(draft)) > 16384) return false;
+    if (draft.fields.some(field => !name(field.name) || !Array.isArray(field.values) || field.values.length > 64 || field.values.some(value => !text(value,4096)))) return false;
+    const fields = new Map(draft.fields.map(field => [field.name,field.values]));
+    if (fields.size !== draft.fields.length) return false;
+    let restored = false;
+    for (const fieldset of form.querySelectorAll('fieldset')) {
+      const values = fields.get(fieldset.dataset.name);
+      if (!values) continue;
+      let index = 0;
+      for (const control of fieldset.querySelectorAll('input,textarea,select')) {
+        if (control.name !== fieldset.dataset.name) continue;
+        if (control.tagName === 'INPUT' && ['radio','checkbox'].includes(control.type)) control.checked = values.includes(control.value);
+        else if (control.tagName === 'SELECT') for (const option of control.options) option.selected = values.includes(option.value);
+        else if (control.tagName === 'TEXTAREA' || control.tagName === 'INPUT' && control.type === 'text') control.value = values[index++] ?? '';
+        else continue;
+        restored = true;
+      }
+    }
+    return restored;
+  }
+  window.sailryForms = {collect,readonly,snapshot,restore};
 })();

@@ -1,9 +1,8 @@
 (() => {
   window.MathJax?.loader?.preLoaded('[mathjax-tex]/svg');
-  let current = null,generation = 0,serial = 0,zoom = 1,edited = false;
+  let current = null,generation = 0,serial = 0,edited = false,sections = [];
   const sources = new Map(),pending = new Set(),completed = new Set(),notified = new Set();
   const main = document.getElementById('brief'),toc = document.getElementById('document-toc');
-  const dialog = document.getElementById('document-visual'),visual = document.getElementById('document-visual-content');
   const post = event => window.sailryDocumentPost?.(event);
 
   function theme(value) {
@@ -15,6 +14,9 @@
 
   function structure() {
     toc.replaceChildren();toc.setAttribute('aria-label',current.labels.contents);
+    document.getElementById('document-title').textContent = current.identity.title;
+    document.getElementById('document-contents').textContent = current.labels.contents;
+    sections = [];
     const ids = new Set([...document.querySelectorAll('[id]')].map(element => element.id));
     for (const [index,section] of [...main.querySelectorAll('section[data-title]')].entries()) {
       const title = section.dataset.title;
@@ -27,6 +29,7 @@
         const heading = document.createElement('h2');heading.textContent = title;section.prepend(heading);
       }
       const link = document.createElement('a');link.href = `#${encodeURIComponent(section.id)}`;link.textContent = title;toc.append(link);
+      sections.push({section,link});
     }
     for (const option of main.querySelectorAll('.compare > .option[data-title]')) {
       if (option.querySelector('h1,h2,h3,h4')) continue;
@@ -45,7 +48,18 @@
       for (const button of form.querySelectorAll('button')) {button.type = 'submit';button.textContent = current.labels.submit;}
     }
     writable(current.writable);
+    activeSection();
   }
+
+  function activeSection() {
+    const selected = sections.findLast(item => item.section.getBoundingClientRect().top <= 80) ?? sections[0];
+    for (const item of sections) {
+      item.link.classList.toggle('active',item === selected);
+      if (item === selected) item.link.setAttribute('aria-current','location');
+      else item.link.removeAttribute('aria-current');
+    }
+  }
+  document.addEventListener('scroll',activeSection,{passive:true});
 
   function writable(value) {
     if (current) current.writable = value === true;
@@ -118,6 +132,10 @@
   async function mount(value) {
     generation++;current = value;edited = false;sources.clear();pending.clear();completed.clear();
     document.title = value.identity.title;theme(value.theme);main.innerHTML = value.html;structure();
+    for (const draft of value.drafts ?? []) {
+      const form = [...main.querySelectorAll('form')].find(form => form.dataset.name === draft.form);
+      if (form && window.sailryForms.restore(form,draft)) edited = true;
+    }
     for (const source of main.querySelectorAll('pre.mermaid,pre.chart,pre.math,span.math-inline')) {
       const kind = ['mermaid','chart','math','math-inline'].find(kind => source.classList.contains(kind));
       const element = document.createElement(kind === 'math-inline' ? 'span' : 'div');
@@ -125,16 +143,7 @@
       element.dataset.kind = kind;
       sources.set(element,source.textContent);source.replaceWith(element);
     }
-    document.getElementById('document-zoom-in').setAttribute('aria-label',value.labels.zoom_in);
-    document.getElementById('document-zoom-out').setAttribute('aria-label',value.labels.zoom_out);
-    document.getElementById('document-visual-close').setAttribute('aria-label',value.labels.close);
     await render();
-  }
-
-  function setZoom(value) {
-    zoom = Math.max(.25,Math.min(4,value));
-    const svg = visual.querySelector('svg');
-    if (svg) svg.style.transform = `scale(${zoom})`;
   }
 
   document.addEventListener('click',event => {
@@ -144,18 +153,18 @@
       try {id = decodeURIComponent(id);} catch (_) {}
       [...main.querySelectorAll('[id]')].find(element => element.id === id)?.scrollIntoView();return;
     }
-    const diagram = event.target.closest('.document-diagram');
-    if (!diagram || !diagram.querySelector('svg') || typeof dialog.showModal !== 'function') return;
-    visual.replaceChildren(diagram.querySelector('svg').cloneNode(true));setZoom(1);dialog.showModal();
   });
-  document.getElementById('document-zoom-in').addEventListener('click',() => setZoom(zoom * 1.25));
-  document.getElementById('document-zoom-out').addEventListener('click',() => setZoom(zoom / 1.25));
-  document.getElementById('document-visual-close').addEventListener('click',() => dialog.close());
   function markEdited() {
     if (edited || !current?.writable) return;
     edited = true;post({kind:'edited',...current.identity});
   }
-  const edit = event => {if (event.target.closest('form')) markEdited();};
+  const edit = event => {
+    const form = event.target.closest('form');
+    if (!form || !current?.writable || pending.has(form.dataset.name) || completed.has(form.dataset.name)) return;
+    markEdited();
+    try {post({kind:'draft',...current.identity,...window.sailryForms.snapshot(form)});}
+    catch (_) {post({kind:'invalid_form',...current.identity});}
+  };
   document.addEventListener('input',edit);document.addEventListener('change',edit);
   document.addEventListener('submit',event => {
     event.preventDefault();
