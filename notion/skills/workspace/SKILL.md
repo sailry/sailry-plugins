@@ -7,7 +7,7 @@ metadata:
 
 # Notion workspace
 
-Connect the official Notion MCP service using its OAuth login in this Node's MCP settings. Share the intended pages with the authorized account. Do not substitute a REST integration token for this OAuth connection.
+When Notion is not connected, use this package's connection tool to show its login card. Login is an explicit user action; do not start it from a tool or automatically retry the blocked operation. The card connects the official Notion MCP service on this execution Node. Share the intended pages with the authorized account. Do not substitute a REST integration token for this OAuth connection.
 
 Choose the tool alias and parameter schema shown in the current conversation. Resolve the actual account, workspace and resource identifier from the user's request or a read result. Do not infer a destination from a similar title. Search and read relevant content before proposing a change, and continue pagination when it affects the answer. If the server exposes only part of a resource, state that limitation.
 
