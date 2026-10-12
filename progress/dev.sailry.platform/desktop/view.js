@@ -1,8 +1,8 @@
 // Accepted four-lane workbench layout; Kit owns controls, focus and scrolling.
 import {div} from 'gpui-kit';
-import {Icon,Tag,Skeleton} from 'gpui-component';
+import {Icon,Tag} from 'gpui-component';
 import {theme} from 'sailry';
-import {EmptyState,Appearance,CardButton,ClampedText,ThinkingIcon,ScrollRegion,pageInsets,Collapse,CollapseSlot,SkeletonList} from 'sailry/ui';
+import {EmptyState,Appearance,CardButton,ClampedText,ThinkingIcon,ScrollRegion,pageInsets,Collapse,CollapseSlot,Loading} from 'sailry/ui';
 import {lanes,labels,sections,clock,plain} from './state.js';
 const glyphs = {waiting:'progress-4-line',running:'progress-2-line',completed:'progress-6-line',
   failed:'close-circle-line',idle:'checkbox-blank-circle-line'};
@@ -70,9 +70,9 @@ export function render(view,cx) {
             .child(new Icon(`icons/remix/${glyphs[lane]}.svg`).size('small').color(tone(lane,colors)))
             .child(div().flex_1().font_semibold().text_sm().child(text[key]))
             .child(div().text_xs().px_2().rounded_md().bg(colors.muted).text_color(colors.muted_foreground)
-              .child(board.catalog ? String(count) : new Skeleton().h_4().w_4())))
-          .child(div().id(`${key}-items`).v_flex().flex_1().min_h_0().min_w_0().gap_3().overflow_y_scrollbar()
-            .children(!board.catalog ? [SkeletonList.new(`${key}-loading`,{rows:2})] : [])
+              .child(board.catalog ? String(count) : '')))
+          .child(div().id(`${key}-items`).relative().v_flex().flex_1().min_h_0().min_w_0().gap_3().overflow_y_scrollbar()
+            .children(!board.catalog ? [Loading.new(`${key}-loading`)] : [])
             .children(board.catalog && count === 0 ? [EmptyState.new(`${key}-empty`,{variant:'list',fill_height:true,vertical_align:'start',icon:'inbox',label:text.activity_board_empty})] : [])
             .children(groups.map(section => project(view,lane,section))));
       })));

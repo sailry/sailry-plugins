@@ -26,7 +26,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['Header','EmptyState','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','SkeletonList']
+  const adapters=Object.fromEntries(['Header','EmptyState','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const constructors=Object.fromEntries(['Icon','Progress','Tab','TabBar','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
@@ -42,8 +42,7 @@ test('initial reads use shared rows without fabricated usage',()=>{
   const setup=fixture();
   for(const error of [null,'usage_read_failed']) {
     setup.view.error=error;setup.render();
-    assert.equal(setup.nodes.get('usage-initial-loading').kind,'SkeletonList');
-    assert.deepEqual(plain(setup.nodes.get('usage-initial-loading').props),{rows:3});
+    assert.equal(setup.nodes.get('usage-initial-loading').kind,'Loading');
     assert.equal(setup.nodes.has('usage-summary'),false);
     assert.equal(setup.nodes.has('usage-ranking-empty'),false);
     assert.equal(setup.nodes.has('usage-requests'),false);

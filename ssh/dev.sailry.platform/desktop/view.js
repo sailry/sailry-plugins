@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,VForm,Field,Progress,Icon} from 'gpui-component';
 import {Conversation,Terminal,Header,theme} from 'sailry';
-import {Workspace,PanelHeader,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope,SkeletonList} from 'sailry/ui';
+import {Workspace,PanelHeader,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope} from 'sailry/ui';
 import {TextField} from 'sailry/forms';
 import {format} from './locales.js';
 import {editor,editorFooter} from './editor-view.js';
@@ -88,7 +88,7 @@ export function render(view){const{text}=view,active=view.home?null:view.termina
   const connecting=!opened&&!!view.pending&&!view.pending.request.unknown&&['check_ssh','open_ssh_terminal'].includes(view.pending.request.command?.kind);
   const body=div().id(!view.loaded?'ssh-loading':active?'ssh-page':'ssh-landing').relative().v_flex().size_full().min_h_0().min_w_0()
     .children(!opened&&!connecting&&view.pending?[feedback(view)]:[])
-    .child(!view.loaded?div().v_flex().w_full().max_w(800).mx_auto().p_6().child(SkeletonList.new('ssh-loading-rows',{rows:3}))
+    .child(!view.loaded?Loading.new('ssh-loading-rows')
       :active?div().flex_1().min_h_0().child(Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
     .children(connecting?[Loading.new('ssh-connecting')]:[]);
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})

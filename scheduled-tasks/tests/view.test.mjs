@@ -26,9 +26,9 @@ function fixture() {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar", "Skeleton"]
+  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar"]
     .map(kind => [kind, function(id) { return element(kind, id); }]));
-  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SettingsPage", "SkeletonList", "Toggle", "Tooltip"]
+  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SettingsPage", "Loading", "Toggle", "Tooltip"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
     div:() => element(), ...constructors, ...adapters,
@@ -46,9 +46,9 @@ function fixture() {
   return {view, nodes, calls, cx, render() {
     nodes.clear();const body=render(view);
     for(const list of [...nodes.values()].filter(node=>node.kind==='CardList'&&!node.items.length)) {
-      const {loaded,skeleton_rows,empty_icon,empty_label}=list.props;
+      const {loaded,empty_icon,empty_label}=list.props;
       list.child(loaded===false
-        ? element('SkeletonList',`${list.selector}-loading`,{rows:skeleton_rows})
+        ? element('Loading',`${list.selector}-loading`,{})
         : element('EmptyState',`empty-${list.selector}-empty`,{variant:'list',icon:empty_icon,label:empty_label}));
     }
     return body;
@@ -68,7 +68,7 @@ test("page matches settings layout and separates empty Tasks and Runs tabs", () 
   assert.equal(nodes.has("tasks-refresh"), false);
   assert.equal(nodes.get("tasks-items").kind, "CardList");
   assert.equal(nodes.get("empty-tasks-items-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("tasks-items").props), {loaded:true,skeleton_rows:1,empty_icon:"calendar",empty_label:"No tasks"});
+  assert.deepEqual(plain(nodes.get("tasks-items").props), {loaded:true,empty_icon:"calendar",empty_label:"No tasks"});
   assert.equal(nodes.has("tasks-runs"), false);
   nodes.get("tasks-tabs").on_change(1, setup.cx);
   setup.render();
@@ -77,7 +77,7 @@ test("page matches settings layout and separates empty Tasks and Runs tabs", () 
   assert.equal(nodes.has("tasks-items"), false);
   assert.equal(nodes.get("tasks-runs").kind, "CardList");
   assert.equal(nodes.get("empty-tasks-runs-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("tasks-runs").props), {loaded:true,skeleton_rows:1,empty_icon:"calendar",empty_label:"No records"});
+  assert.deepEqual(plain(nodes.get("tasks-runs").props), {loaded:true,empty_icon:"calendar",empty_label:"No records"});
 });
 
 test("unconfirmed reads reserve card rows in both tabs", () => {
@@ -87,8 +87,7 @@ test("unconfirmed reads reserve card rows in both tabs", () => {
     assert.equal(setup.nodes.has("empty-tasks-items-empty"),false);
     assert.equal(setup.nodes.has("empty-tasks-runs-empty"),false);
     const id=tab?'tasks-runs-loading':'tasks-items-loading',row=setup.nodes.get(id);
-    assert.equal(row.kind,'SkeletonList');
-    assert.deepEqual(plain(row.props),{rows:1});
+    assert.equal(row.kind,'Loading');
     assert.equal(setup.nodes.get('tasks-controls').items.length,2);
   }
   setup.view.error='loadFailed';setup.render();

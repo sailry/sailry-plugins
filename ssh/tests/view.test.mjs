@@ -23,7 +23,7 @@ function fixture() {
     return proxy;
   }
   const adapters=Object.fromEntries(['Workspace','EmptyState','Loading','Picker','SelectableRow','IconButton',
-    'NativeContextMenu','Modal','ActionScope','SkeletonList','Header','Terminal']
+    'NativeContextMenu','Modal','ActionScope','Loading','Header','Terminal']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),...adapters,Icon:function(path){return element('Icon',null,{path});},
@@ -40,8 +40,7 @@ test('initial reads reserve the workspace instead of showing landing',()=>{
   for(const error of [null,'unavailable']) {
     setup.view.error=error;setup.render();
     const placeholder=setup.nodes.get('ssh-loading-rows');
-    assert.equal(placeholder.kind,'SkeletonList');
-    assert.deepEqual(plain(placeholder.props),{rows:3});
+    assert.equal(placeholder.kind,'Loading');
     assert.deepEqual(plain(setup.nodes.get('ssh-loading').style.size_full),[]);
     assert.equal(setup.nodes.has('ssh_workspace_empty'),false);
     assert.ok(setup.nodes.has('ssh-header'));assert.ok(setup.nodes.has('ssh-workspace'));

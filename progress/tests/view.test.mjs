@@ -24,11 +24,10 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot','SkeletonList']
+  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Icon:function(id){return element('Icon',id);},Tag:function(){return element('Tag');},
-    Skeleton:function(id){return element('Skeleton',id);},
     ...adapters,lanes,labels,sections,clock,plain:readable,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{muted_foreground:'muted',border:'border'}}),window:{rem_size:()=>16,viewport_size:()=>({width:1440})},
   });
@@ -64,13 +63,12 @@ test('initial reads preserve lane headings without claiming empty',()=>{
       assert.ok(setup.nodes.has(`${key}-heading`));
       assert.equal(setup.nodes.has(`${key}-empty`),false);
       const placeholder=setup.nodes.get(`${key}-loading`);
-      assert.equal(placeholder.kind,'SkeletonList');
-      assert.deepEqual(plain(placeholder.props),{rows:2});
+      assert.equal(placeholder.kind,'Loading');
     }
     assert.equal([...setup.nodes.values()].filter(node=>node.kind==='EmptyState').length,0);
   }
   setup.view.board.catalog=catalog;setup.render();
-  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='SkeletonList').length,0);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Loading').length,0);
   assert.equal([...setup.nodes.values()].filter(node=>node.kind==='EmptyState').length,4);
 });
 
@@ -84,7 +82,7 @@ test('refresh failures retain the loaded lane cards',()=>{
   assert.ok(setup.nodes.has('activity-retained'));
   assert.equal(setup.nodes.get('activity-retained').kind,card.kind);
   assert.equal(setup.nodes.has(`${labels.idle}-empty`),false);
-  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='SkeletonList').length,0);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Loading').length,0);
 });
 
 test('populated lanes retain their cards and host disclosures without empty content',()=>{

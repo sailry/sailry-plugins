@@ -1,9 +1,9 @@
 // Existing memory settings rows, catalog toolbar and modal fields use Kit controls.
 import {div} from 'gpui-kit';
-import {Button,Switch,Tab,TabBar,DropdownMenu,Field,Skeleton} from 'gpui-component';
+import {Button,Switch,Tab,TabBar,DropdownMenu,Field} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,SkeletonList} from 'sailry/ui';
+import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,Loading} from 'sailry/ui';
 
 function row(view,key,control,description) {
   return div().id(`settings-row-${key}`).h_flex().items_center().w_full().py_3().gap_4().text_sm().flex_wrap()
@@ -14,10 +14,7 @@ function row(view,key,control,description) {
 function configuration(view) {
   const {text,draft,configuration:state} = view;
   if (!draft) return SettingsGroup.new('memory_configuration',{title:text.memory_configuration})
-    .child(row(view,'memory_enabled',new Skeleton().w_9().h_5().rounded_md()))
-    .child(row(view,'memory_auto_write',new Skeleton().w_9().h_5().rounded_md(),'memory_auto_write_description'))
-    .child(row(view,'memory_context_budget',new Skeleton().w_full().h_8().rounded_md(),'memory_budget_description'))
-    .child(row(view,'memory_review_age',new Skeleton().w_full().h_8().rounded_md()));
+    .child(div().relative().w_full().h_24().child(Loading.new('memory-configuration-loading')));
   const disabled = !view.connected || state.pending || !!state.request || !!state.error;
   const budget = SelectField.new('memory-budget',{label:text.memory_context_budget,placeholder:text.memory_context_budget,
     selected:String(draft.context_bytes/1024),disabled,items:[2,4,8,16,32,64].map(amount=>({id:String(amount),label:`${amount} KiB`}))});
@@ -64,7 +61,7 @@ function catalog(view) {
     .children(rows)
     .children(!view.saved ? [view.error && !view.loading
       ? new Button('memory-search-retry').label(text.memory_retry).disabled(!view.connected).on_click((_,cx)=>view.refresh(cx))
-      : SkeletonList.new('memory-loading',{rows:3})]
+      : div().relative().w_full().h_24().child(Loading.new('memory-loading'))]
       : !rows.length ? [EmptyState.new('memory-empty',{variant:'list',icon:'inbox',label:text.memory_empty})] : []);
 }
 function editor(view) {

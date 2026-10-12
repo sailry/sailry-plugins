@@ -27,9 +27,9 @@ function fixture(items = []) {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar", "Skeleton"]
+  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar"]
     .map(kind => [kind, function(id, label) { return element(kind, id, {label}); }]));
-  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SelectField", "SettingsPage", "SkeletonList", "Toggle"]
+  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SelectField", "SettingsPage", "Loading", "Toggle"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
     div:() => element(), ...constructors, ...adapters,
@@ -47,9 +47,9 @@ function fixture(items = []) {
   return {view, nodes, calls, cx, render() {
     nodes.clear();const body=render(view);
     for(const list of [...nodes.values()].filter(node=>node.kind==='CardList'&&!node.items.length)) {
-      const {loaded,skeleton_rows,empty_icon,empty_label}=list.props;
+      const {loaded,empty_icon,empty_label}=list.props;
       list.child(loaded===false
-        ? element('SkeletonList',`${list.selector}-loading`,{rows:skeleton_rows})
+        ? element('Loading',`${list.selector}-loading`,{})
         : element('EmptyState',`empty-${list.selector}-empty`,{variant:'list',icon:empty_icon,label:empty_label}));
     }
     return body;
@@ -78,7 +78,7 @@ test("page uses the centered settings layout and native toolbar controls", () =>
   assert.equal(nodes.has("reminders-refresh"), false);
   assert.equal(nodes.has("reminders-reload"), false);
   assert.equal(nodes.get("empty-reminders-items-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("reminders-items").props), {loaded:true,skeleton_rows:1,empty_icon:"bell",empty_label:"No reminders"});
+  assert.deepEqual(plain(nodes.get("reminders-items").props), {loaded:true,empty_icon:"bell",empty_label:"No reminders"});
   nodes.get("reminder-create").on_click({}, setup.cx);
   assert.deepEqual(setup.calls, [["edit", null]]);
 });
@@ -109,8 +109,7 @@ test("unconfirmed reads reserve the reminder card row", () => {
     setup.view.loading=loading;setup.render();
     assert.equal(setup.nodes.has("empty-reminders-items-empty"),false);
     const row=setup.nodes.get('reminders-items-loading');
-    assert.equal(row.kind,'SkeletonList');
-    assert.deepEqual(plain(row.props),{rows:1});
+    assert.equal(row.kind,'Loading');
     assert.equal(setup.nodes.get('reminders-toolbar').items.length,2);
   }
   setup.view.error='loadFailed';setup.render();

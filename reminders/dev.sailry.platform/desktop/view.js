@@ -57,7 +57,7 @@ export function render(view) {
     .children(!view.editing && !view.deleting && !view.busy && view.pending ? [new Button("reminder-retry").label(text.retry)
       .disabled(view.busy).on_click((_, cx) => view.perform(null, null, cx)),
       new Button("reminder-dismiss").label(text.cancel).disabled(view.busy).on_click((_, cx) => view.close(cx))] : [])
-    .child(CardList.new("reminders-items",{loaded:view.loaded,skeleton_rows:1,empty_icon:"bell",empty_label:text.empty})
+    .child(CardList.new("reminders-items",{loaded:view.loaded,empty_icon:"bell",empty_label:text.empty})
       .children(items.map(item => card(view, item))));
   return div().id("reminders-page").size_full().v_flex().min_h_0().min_w_0()
     .text_color(colors.foreground).child(body)

@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Icon,Progress,Tab,TabBar,Pagination} from 'gpui-component';
 import {theme,Header} from 'sailry';
-import {EmptyState,SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,SkeletonList} from 'sailry/ui';
+import {EmptyState,SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading} from 'sailry/ui';
 import {compact,total,integer,amount,speed,ranking} from './format.js';
 import {heatmap,trend} from './charts.js';
 import {formatRows} from './requests.js';
@@ -62,7 +62,7 @@ export function render(view) {
   const {state,text}=view,data=state.data(),t=key=>text[key];
   const refreshing=state.view?.refreshing;
   const body=column().id('usage-content').relative().w_full().max_w(800).mx_auto().p_6().gap_4()
-    .children(!data ? [SkeletonList.new('usage-initial-loading',{rows:3})] : [])
+    .children(!data ? [div().relative().w_full().h_64().child(Loading.new('usage-initial-loading'))] : [])
     .children(data&&!view.error&&(state.previous||refreshing)?[div().absolute().top_0().left_6().right_6()
       .child(new Progress('usage-loading').loading(true).size('xsmall').accessibility_label(text.usage_loading))]:[]);
   if(data)body.child(summary(view,data.totals))

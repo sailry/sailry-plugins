@@ -26,7 +26,7 @@ const {history} = vm.runInNewContext(`${source}\n({history})`, {
   SelectableRow:{new:(id,props) => element('row',{id,...props})},
   Icon:class { constructor(path) { return element('icon',{path}); } },
   Button:class { constructor() { throw Error('history rows must use the selectable Kit adapter'); } },
-  SkeletonList:{new:(id,props)=>element('skeleton',{id,...props})},
+  Loading:{new:(id)=>element('loading',{id})},
 });
 function descendants(element) {
   return typeof element === 'object' && element !== null ? [element,...element.items.flatMap(descendants)] : [];
@@ -42,20 +42,20 @@ test('unconfirmed changes and history reserve rows without false empty',()=>{
   const {empty}=vm.runInNewContext(`${source}\n({empty})`,{
     div:()=>element('div'),theme:()=>({colors:{}}),
     EmptyState:{new:(id,props)=>element('empty',{id,...props})},
-    SkeletonList:{new:(id,props)=>element('skeleton',{id,...props})},
+    Loading:{new:(id)=>element('loading',{id})},
   });
   const view={repo:{status:null,history:null},text:{git_history_empty:'No commits'}};
   for(const failed of [false,true]) {
     view.repo.failed=failed;
     for(const body of [empty(view),empty(view,true),history(view)]) {
-      const nodes=descendants(body),placeholder=nodes.find(node=>node.kind==='skeleton');
-      assert.ok(placeholder);assert.equal(placeholder.props.rows,3);
+      const nodes=descendants(body),placeholder=nodes.find(node=>node.kind==='loading');
+      assert.ok(placeholder);
       assert.equal(nodes.some(node=>node.kind==='empty'),false);
       assert.deepEqual(body.style.flex_1,[]);
     }
   }
   view.repo.history={entries:[]};
-  assert.equal(descendants(history(view)).some(node=>node.kind==='skeleton'),false);
+  assert.equal(descendants(history(view)).some(node=>node.kind==='loading'),false);
   assert.ok(descendants(history(view)).some(node=>node.kind==='empty'));
 });
 
@@ -66,7 +66,7 @@ test('history refreshes preserve known commits and metadata',()=>{
     view.repo.failed=failed;
     const nodes=descendants(history(view));
     assert.ok(nodes.some(node=>node.kind==='row'&&node.props.id==='git-commit-commit'));
-    assert.equal(nodes.some(node=>node.kind==='empty'||node.kind==='skeleton'),false);
+    assert.equal(nodes.some(node=>node.kind==='empty'||node.kind==='loading'),false);
   }
 });
 

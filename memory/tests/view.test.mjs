@@ -26,7 +26,6 @@ function fixture() {
     div:()=>element(),theme:()=>({colors:{muted_foreground:'muted'}}),
     Button:function(id){return element('Button',id);},
     Switch:function(id){return element('Switch',id);},
-    Skeleton:function(){return element('Skeleton');},
     Field:function(){return element('Field');},
     DropdownMenu:function(id){return element('DropdownMenu',id);},
     SelectField:{new:(id,props)=>element('SelectField',id,props)},
@@ -34,7 +33,7 @@ function fixture() {
     TextField:{new:(id,props)=>element('TextField',id,props)},
     SettingsGroup:{new:(id,props)=>element('SettingsGroup',id,props)},
     EmptyState:{new:(id,props)=>element('EmptyState',id,props)},
-    SkeletonList:{new:(id,props)=>element('SkeletonList',id,props)},
+    Loading:{new:(id,props)=>element('Loading',id,props)},
     window:{viewport_size:()=>({width:1280,height:820})},
   });
   const view = {text:{settings_memory:'Memories',memory_empty:'No memories',settings_edit:'Edit',settings_delete:'Delete'},
@@ -82,12 +81,9 @@ test('initial reads reserve configuration and list space',()=>{
   setup.functions.configuration(setup.view);
   const fields=setup.nodes.get('memory_configuration');
   assert.equal(fields.kind,'SettingsGroup');
-  assert.equal(fields.items.length,4);
-  for(const key of ['memory_enabled','memory_auto_write','memory_context_budget','memory_review_age']) {
-    assert.ok(setup.nodes.has(`settings-row-${key}`));
-  }
+  assert.equal(setup.nodes.get('memory-configuration-loading').kind,'Loading');
   setup.render();
-  assert.deepEqual(plain(setup.nodes.get('memory-loading').props),{rows:3});
+  assert.equal(setup.nodes.get('memory-loading').kind,'Loading');
   assert.equal(setup.nodes.has('memory-empty'),false);
   setup.view.loading=false;setup.view.error='memory_failed';setup.view.connected=true;
   setup.render();

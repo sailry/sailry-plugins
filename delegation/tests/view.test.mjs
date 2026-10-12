@@ -23,7 +23,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField','SkeletonList']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},
@@ -51,7 +51,7 @@ test('empty roles reuse their settings card and retain the add action',()=>{
 test('initial reads hide empty roles and retain retry',()=>{
   const setup=fixture();setup.view.ready=false;setup.view.loading=true;setup.render();
   assert.equal(setup.nodes.has('role-empty'),false);
-  assert.deepEqual(plain(setup.nodes.get('role-loading').props),{rows:3});
+  assert.equal(setup.nodes.get('role-loading').kind,'Loading');
   assert.deepEqual(plain(setup.nodes.get('role-add').items[0].style.disabled),[true]);
   setup.view.loading=false;setup.view.error='role_failed';setup.render();
   assert.equal(setup.nodes.has('role-empty'),false);

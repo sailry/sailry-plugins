@@ -60,11 +60,11 @@ function confirmation(view) {
 export function render(view) {
   const {text} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
   const content = view.tab === 1
-    ? CardList.new("tasks-runs",{loaded:view.loaded,skeleton_rows:1,empty_icon:"calendar",empty_label:text.noRuns})
+    ? CardList.new("tasks-runs",{loaded:view.loaded,empty_icon:"calendar",empty_label:text.noRuns})
       .children(view.history.map(item => execution(view,item)))
       .children(view.more ? [new Button("tasks-more").label(text.more).disabled(view.loading)
         .on_click((_,cx) => { view.pages++; view.refresh(cx); })] : [])
-    : CardList.new("tasks-items",{loaded:view.loaded,skeleton_rows:1,empty_icon:"calendar",empty_label:text.empty})
+    : CardList.new("tasks-items",{loaded:view.loaded,empty_icon:"calendar",empty_label:text.empty})
       .children(view.items.map(item => card(view,item)));
   const body = SettingsPage.new("tasks", {title:text.title, description:text.description})
     .child(div().id("tasks-toolbar").w_full()
