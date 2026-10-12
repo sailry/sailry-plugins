@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
-const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export /gm,'');
+const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export \{[^\n]+\} from [^\n]+;\n/gm,'').replace(/^export /gm,'');
 const host = vm.runInNewContext(`${source}\n({list,read,write,edit,remove,move,mkdir,find,search,office,notebook_read,notebook_edit})`);
 const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
 const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
@@ -29,9 +29,10 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     ['edit_notebook','notebook_edit','notebook.edit','details'],
   ];
   assert.equal(manifest.name,'files');
-  assert.deepEqual(extension.tools.map(tool => tool.name),expected.map(([name]) => name));
-  assert.deepEqual(extension.actions,['files.read','files.write']);
-  assert.deepEqual(extension.host.handlers,expected.map(([,handler]) => handler));
+  const models = ['list_ocr_models','install_ocr_model','uninstall_ocr_model'];
+  assert.deepEqual(extension.tools.map(tool => tool.name),[...models,...expected.map(([name]) => name)]);
+  assert.deepEqual(extension.actions,['files.read','files.write','models.read','models.install']);
+  assert.deepEqual(extension.host.handlers,['ocr_models','ocr_install','ocr_remove',...expected.map(([,handler]) => handler)]);
   for (const [name,handler,operation,presentation] of expected) {
     const declaration = tool(name);
     assert.equal(declaration.handler.name,handler);
@@ -110,7 +111,7 @@ test('search defaults keep original expressions and globs without interpreting t
 test('Office inspection retains section offsets and defaults', () => {
   assert.deepEqual(tool('read_office').handler.parameters,{
     $schema:'https://json-schema.org/draft/2020-12/schema',title:'Read',type:'object',
-    properties:{source:{type:'object',properties:{kind:{type:'string',enum:['path','attachment']},value:{type:'string',description:'Worktree-relative path or current-turn attachment ID'}},required:['kind','value'],additionalProperties:false},offset:{
+    properties:{source:{type:'object',properties:{kind:{type:'string',enum:['path','attachment']},value:{type:'string',description:'Worktree-relative path or visible conversation attachment ID'}},required:['kind','value'],additionalProperties:false},offset:{
       type:'integer',format:'uint',minimum:0,default:0,
       description:'Zero-based section offset. Long document parts continue in subsequent sections.',
     }},required:['source'],additionalProperties:false,

@@ -26,7 +26,7 @@ test('syntax parsing never executes package initialization', () => {
 
 test('declared imports and SDK modules remain installable', t => {
   const {directory, manifest} = fixture(t, {desktop: {entry: 'main.js', resources: ['helper.js']}});
-  writeFileSync(path.join(directory, 'main.js'), "import './helper.js'; import {value} from 'sailry/sdk';");
+  writeFileSync(path.join(directory, 'main.js'), "import './helper.js'; import {value} from 'sailry/sdk'; import * as models from 'sailry/models';");
   writeFileSync(path.join(directory, 'helper.js'), 'export const value = 1;');
   assert.equal(checkPackage(manifest), 2);
 });

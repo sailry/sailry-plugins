@@ -11,7 +11,7 @@ const preview = '(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)';
 const version = new RegExp(`^${number}\\.${number}\\.${number}(?:-${preview}(?:\\.${preview})*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$`);
 const modules = new Set([
   'gpui-base', 'gpui-component', 'gpui-kit', 'sailry', 'sailry/ui',
-  'sailry/search', 'sailry/forms', 'sailry/sdk', 'sailry/connections', 'sailry/credentials',
+  'sailry/search', 'sailry/forms', 'sailry/sdk', 'sailry/connections', 'sailry/credentials', 'sailry/models',
   'sailry/documents', 'sailry/file-transfers', 'sailry/ssh-transfers', 'sailry/artifacts',
 ]);
 

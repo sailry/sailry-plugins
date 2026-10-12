@@ -4960,7 +4960,9 @@
             "api_version": "v1",
             "actions": [
               "files.read",
-              "files.write"
+              "files.write",
+              "models.read",
+              "models.install"
             ],
             "display": {
               "label": "Files",
@@ -4976,6 +4978,113 @@
               }
             },
             "tools": [
+              {
+                "name": "list_ocr_models",
+                "presentation": "details",
+                "contexts": [
+                  "plugin",
+                  "workspace"
+                ],
+                "description": "List available OCR definitions and installation state on this execution Node. Set installed_only to list installed models. This does not install, remove, enable or select a model.",
+                "handler": {
+                  "name": "ocr_models",
+                  "read_only": true,
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [],
+                    "properties": {
+                      "installed_only": {
+                        "type": "boolean",
+                        "default": false
+                      }
+                    }
+                  }
+                },
+                "display": {
+                  "label": "OCR models",
+                  "locales": {
+                    "zh-CN": "OCR 模型"
+                  },
+                  "icon": "reicon:ui/magnifier"
+                }
+              },
+              {
+                "name": "install_ocr_model",
+                "presentation": "details",
+                "contexts": [
+                  "plugin",
+                  "workspace"
+                ],
+                "description": "Install the exact OCR model ID from list_ocr_models only when the user requests installation. This uses the shared Node installer and permission policy. Keep the immutable definition; do not silently select a model or repeat a denied or uncertain installation.",
+                "handler": {
+                  "name": "ocr_install",
+                  "operation": "models.install",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      }
+                    }
+                  }
+                },
+                "display": {
+                  "label": "Install OCR model",
+                  "locales": {
+                    "zh-CN": "安装 OCR 模型"
+                  },
+                  "icon": "reicon:ui/magnifier",
+                  "input": {
+                    "summary": {
+                      "path": "/id"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "uninstall_ocr_model",
+                "presentation": "details",
+                "contexts": [
+                  "plugin",
+                  "workspace"
+                ],
+                "description": "Uninstall the exact OCR model ID only when the user requests removal. This removes installed assets, not the model definition, settings or attachments. Do not automatically repeat a denied or uncertain removal.",
+                "handler": {
+                  "name": "ocr_remove",
+                  "operation": "models.remove",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      }
+                    }
+                  }
+                },
+                "display": {
+                  "label": "Uninstall OCR model",
+                  "locales": {
+                    "zh-CN": "卸载 OCR 模型"
+                  },
+                  "icon": "reicon:ui/magnifier",
+                  "input": {
+                    "summary": {
+                      "path": "/id"
+                    }
+                  }
+                }
+              },
               {
                 "name": "list_directory",
                 "presentation": "summary",
@@ -6105,7 +6214,7 @@
               {
                 "name": "read_office",
                 "presentation": "summary",
-                "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes from a worktree path or an attachment in the current turn. Use source.kind \"path\" with a worktree-relative path, or \"attachment\" with its attachment ID. Images and scanned PDF pages use OCR when an OCR model is installed on the Node. File sources return the revision for edits. Follow next offsets to read every section, including continuations of long parts.",
+                "description": "Read DOCX/PDF text, XLSX cell values and formulas, or PPTX slide text and notes from a worktree path or an attachment visible in this conversation. Use source.kind \"path\" with a worktree-relative path, or \"attachment\" with its attachment ID. Earlier attachments must belong to completed, failed or cancelled turns still visible in this conversation; queued or running future inputs are unavailable. Images and scanned PDF pages use OCR when an OCR model is installed on the Node. File sources return the revision for edits. Follow next offsets to read every section, including continuations of long parts.",
                 "handler": {
                   "name": "office",
                   "operation": "office.read",
@@ -6126,7 +6235,7 @@
                           },
                           "value": {
                             "type": "string",
-                            "description": "Worktree-relative path or current-turn attachment ID"
+                            "description": "Worktree-relative path or visible conversation attachment ID"
                           }
                         },
                         "required": [
@@ -6363,9 +6472,13 @@
               "entry": "dev.sailry.platform/host/main.js",
               "resources": [
                 "dev.sailry.platform/host/main.js",
+                "dev.sailry.platform/host/models.js",
                 "dev.sailry.platform/host/locales.js"
               ],
               "handlers": [
+                "ocr_models",
+                "ocr_install",
+                "ocr_remove",
                 "list",
                 "read",
                 "write",
