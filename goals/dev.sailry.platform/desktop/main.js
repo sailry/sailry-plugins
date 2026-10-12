@@ -9,7 +9,7 @@ export default class Goals extends View {
   init(_props,cx) {
     this.scope=JSON.parse(context()); this.text=messages(this.scope.locale);
     this.state=readComposer(); this.goal=null; this.open=false;
-    this.busy=false; this.loading=false; this.pending=null; this.readFailed=false;
+    this.busy=false; this.loading=false; this.pending=null; this.readFailed=false; this.readError=null;
     this.publish(); this.refresh(cx);
     cx.spawn(async cx=>{
       try {while(true) {
@@ -60,11 +60,15 @@ export default class Goals extends View {
         let result;
         try {result=await completeRequest(id);}
         finally {forgetRequest(id);}
-        if (result.Err) throw new Error(result.Err.message);
+        if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
         this.goal=result.Ok.data.goal;
         this.readFailed=false;
+        this.readError=null;
       } while(this.dirty);}
-      catch (_) {if (!this.readFailed) this.fail('readFailed');this.readFailed=true;}
+      catch (error) {
+        this.readError={code:error.code ?? faultCode(error.message ?? String(error)),message:error.message ?? String(error)};
+        if (!this.readFailed) this.fail('readFailed');this.readFailed=true;
+      }
       finally {this.loading=false;this.publish();cx.notify();}
     });
   }

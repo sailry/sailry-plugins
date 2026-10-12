@@ -194,11 +194,14 @@ test('failed reads release capacity and preserve current goal',async()=>{
     await setup.jobs.at(-1);
     assert.deepEqual(plain(setup.view.goal),previous);
     assert.equal(setup.prepared.length,setup.forgotten.length);
+    assert.equal(setup.view.readError.code,index%2 ? 'Read disconnected' : 'busy');
+    assert.equal(setup.view.readError.message,index%2 ? 'Read disconnected' : 'Read failed');
   }
   assert.equal(setup.notices.length,1);
   setup.host.readFailure=null;
   setup.view.refresh(setup.cx);await setup.jobs.at(-1);
   assert.equal(setup.view.readFailed,false);
+  assert.equal(setup.view.readError,null);
   assert.equal(setup.prepared.length,22);
   assert.equal(setup.prepared.length,setup.forgotten.length);
   await setup.perform('pause');
