@@ -44,7 +44,7 @@ function dialog(view) {
       : text[owner?.kind==='uninstall' ? 'code_uninstall' : 'code_install'],width:600,dismissable:!view.pending && !view.request && view.clean()});
   if (!owner) return modal;
   const item=view.rows().find(item=>item.server===owner.row.server) ?? owner.row;
-  const install=owner.row.candidate?.package?.install,receipt=owner.row.installation?.receipt;
+  const receipt=owner.row.installation?.receipt;
   const footer=div().h_flex().w_full().justify_end().gap_2()
     .child(button(owner.kind==='edit'?'code-editor-close':'code-details-close',text[owner.kind==='edit'?'close':'settings_cancel'],(_,cx)=>view.close(cx),view.pending));
   if (owner.kind==='edit') {
@@ -55,31 +55,31 @@ function dialog(view) {
         .child(TextField.new(field,{readonly:view.pending}))))))).child(footer);
   }
   if (owner.kind==='details') {
-    const pkg=item.candidate?.package,received=item.installation?.receipt;
-    const details=[['server',item.server],['command',item.candidate?.command],['package',pkg?.name ?? received?.package],
-      ['version',received?.version ?? pkg?.version],['licenses',pkg?.licenses?.join(', ')],['source',pkg?.homepage ?? received?.purl]];
+    const pkg=item.candidate?.package,install=pkg?.install,received=item.installation?.receipt;
+    const version=received?.version && install?.version && received.version !== install.version
+      ? `${received.version} → ${install.version}` : install?.version ?? received?.version ?? pkg?.version;
+    const details=[['server',item.server],['command',item.candidate?.command],
+      ['package',install?.package ?? pkg?.name ?? received?.package],['version',version],
+      ['source',install?.purl ?? received?.purl ?? pkg?.homepage],['downloads',install?.urls?.join('\n')],
+      ['licenses',(install?.licenses ?? pkg?.licenses)?.join(', ')]];
     if (installing(item)) footer.child(button('code-details-cancel-install',text.code_cancel_install,
       (_,cx)=>view.cancel(item.installation.package,cx)));
     else if (installed(item)) {
-      footer.child(button('code-details-update',text.code_update,(_,cx)=>view.confirm('install',item,cx),
+      footer.child(button('code-details-update',text.code_update,(_,cx)=>view.install(item,cx),
         view.busy() || !pkg?.install || received?.version===pkg.install.version));
       if (received) footer.child(button('code-details-uninstall',text.code_uninstall,
         (_,cx)=>view.confirm('uninstall',item,cx),view.busy()));
     } else footer.child(button('code-details-install',text.code_install,
-      (_,cx)=>view.confirm('install',item,cx),view.busy() || !pkg?.install));
+      (_,cx)=>view.install(item,cx),view.busy() || !pkg?.install));
     return modal.child(div().id('code-server-details').v_flex().gap_4()
       .children(item.languages.length ? [div().id('code-server-description').text_sm()
         .text_color(theme().colors.muted_foreground).child(text.code_server_description.replace('%{languages}',item.languages.join(', ')))] : [])
       .child(SettingsGroup.new('code_information',{heading:false}).children(details.filter(([,value])=>value)
         .map(([key,value])=>row(`code-detail-${key}`,text[`code_${key}`],value))))).child(footer);
   }
-  const details=owner.kind==='install' ? [['package',install.package],['version',install.version],['source',install.purl],
-    ['downloads',install.urls.join('\n')],['licenses',install.licenses.join(', ')],
-    ['install_command',install.command ? JSON.stringify(install.command) : text.code_direct_download]]
-    : [['package',receipt.package],['version',receipt.version]];
-  footer.child(button('code-consent-submit',text[owner.kind==='install'?'code_install':'code_uninstall'],(_,cx)=>{
-    const command=owner.kind==='install' ? {kind:'install_code_server',data:{install}}
-      : {kind:'uninstall_code_server',data:{package:receipt.package,version:receipt.version}};
+  const details=[['package',receipt.package],['version',receipt.version]];
+  footer.child(button('code-consent-submit',text.code_uninstall,(_,cx)=>{
+    const command={kind:'uninstall_code_server',data:{package:receipt.package,version:receipt.version}};
     view.close(cx); view.submit(command,cx);
   },view.busy()));
   return modal.child(div().id('code-consent-details').v_flex().gap_3().children(details.map(([key,value])=>

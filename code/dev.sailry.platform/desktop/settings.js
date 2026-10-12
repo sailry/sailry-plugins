@@ -5,7 +5,7 @@ import {prepareRequest,completeRequest,forgetRequest,nextChange,nextCodeInstalla
 import {createText,readText,releaseText,nextTextEvent} from 'sailry/forms';
 import {nextControlEvent,modal_closed,toast} from 'sailry/ui';
 import {messages} from './locales.js';
-import {rows,override,failure} from './model.js';
+import {rows,override,failure,installing} from './model.js';
 import {render} from './view.js';
 
 const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -42,13 +42,6 @@ export default class Settings extends View {
       while (true) {
         try {
           const installations = await nextCodeInstallations();
-          for (const item of installations) {
-            const previous = this.installations.find(value => value.package === item.package);
-            if (previous && previous.status !== item.status && this.request?.command?.data?.install?.package !== item.package) {
-              const key = {ready:'code_installed',failed:'code_failed',cancelled:'code_cancelled'}[item.status];
-              if (key) toast({id:'code-operation',kind:item.status === 'failed' ? 'error' : 'info',message:this.text[key]});
-            }
-          }
           const changed = JSON.stringify(installations.map(item => [item.package,item.receipt]))
             !== JSON.stringify(this.installations.map(item => [item.package,item.receipt]));
           this.installations = installations;
@@ -201,6 +194,16 @@ export default class Settings extends View {
   confirm(kind,row,cx) {
     this.close(cx); this.open(kind,row,cx);
   }
+  install(row,cx) {
+    const owner = this.dialog, install = row.candidate?.package?.install;
+    if (owner?.kind !== 'details' || owner.row.server !== row.server || this.busy()
+        || installing(row) || !install || row.installation?.receipt?.version === install.version) return;
+    const command = {kind:'install_code_server',data:{install:clone(install)}};
+    try { this.request = {id:prepareRequest(command),command}; }
+    catch (error) { this.fail(faultCode(String(error.message)),error.message,command.kind); return; }
+    // The captured request outlives Details; closing it cannot cancel admission.
+    this.close(cx); this.retry(cx);
+  }
   cancel(packageName,cx) {
     cx.spawn(async cx => {
       let request;
@@ -218,7 +221,7 @@ export default class Settings extends View {
     for (const row of this.rows()) {
       if (event.id === `code-details-${row.server}`) this.open('details',row,cx);
       if (event.id === `code-edit-${row.server}`) this.open('edit',row,cx);
-      if (event.id === `code-install-${row.server}` && row.candidate?.package?.install) this.open('install',row,cx);
+      if (event.id === `code-install-${row.server}` && row.candidate?.package?.install) this.open('details',row,cx);
       if (event.id === `code-cancel-${row.server}`) this.cancel(row.installation.package,cx);
     }
   }

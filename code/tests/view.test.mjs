@@ -71,3 +71,26 @@ test('details localizes Cancel and removes availability button',()=>{
   assert(find(tree,'code-detail-package'));
   assert.equal(find(tree,'code-details-update').items[0].style.disabled[0],true);
 });
+test('details installs directly with exact source metadata',()=>{
+  const install={package:'analyzer',version:'2',purl:'pkg:npm/analyzer@2',urls:[],licenses:[],command:{program:'npm',arguments:['install']}};
+  const item=candidate('ada',install),view=fixture([item]);
+  view.dialog={id:'details',kind:'details',row:item};
+  const calls=[];view.install=(row,cx)=>calls.push({row,cx});
+  const tree=render(view),button=find(tree,'code-details-install').items[0],cx={};
+  button.style.on_click[0]({},cx);
+  assert.equal(calls.length,1);assert.equal(calls[0].row,item);assert.equal(calls[0].cx,cx);
+  assert(find(tree,'code-detail-source'));assert(find(tree,'code-detail-version'));
+  assert.equal(find(tree,'code-detail-downloads'),undefined);
+  assert.equal(find(tree,'code-detail-licenses'),undefined);
+  assert.equal(find(tree,'code-consent-details'),undefined);
+  assert.equal(find(tree,'code-consent-code_install_command'),undefined);
+});
+test('update shows current and target versions',()=>{
+  const item=candidate('ada',{package:'analyzer',version:'2',purl:'pkg:npm/analyzer@2'});
+  item.installation={package:'analyzer',status:'ready',receipt:{package:'analyzer',version:'1'}};
+  const view=fixture([item],'installed');view.dialog={id:'details',kind:'details',row:item};
+  const tree=render(view),version=find(tree,'code-detail-version');
+  assert.equal(version.items[1].items[0],'1 → 2');
+  assert.equal(find(tree,'code-details-update').items[0].style.disabled[0],false);
+  assert(find(tree,'code-details-uninstall'));
+});

@@ -1167,7 +1167,7 @@
               "enabled_control": true,
               "entry": "dev.sailry.platform/desktop/settings.js"
             },
-            "instructions": "For questions about diagnostics, errors or type errors, call code_diagnostics first. For references or usage, call code_references first. Fall back to source search only when the query returns not_installed, and say that the required language service is not installed. Read-only code queries use language servers on the execution Node. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
+            "instructions": "For questions about diagnostics, errors or type errors, call code_diagnostics first. For references or usage, call code_references first. Fall back to source search only when the query returns not_installed, and say that the required language service is not installed. Read-only code queries use language servers on the execution Node. Use code_catalog for registered installable packages and installed executable availability, code_packages with installed=true for managed receipts and actual versions, and code_servers for actual instances in the current worktree. Installed or installable does not mean running. Use code_start or code_stop only for the exact returned Startup descriptor and current worktree; never fabricate an executable, root or revision. These explicit lifecycle calls follow conversation authorization and do not change enable settings. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node and returns busy while the package is being installed or used. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
             "tools": [
               {
                 "name": "code_diagnostics",
@@ -1260,6 +1260,66 @@
                 }
               },
               {
+                "name": "code_catalog",
+                "operation": "code.catalog",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "List the Node language registry, available package install descriptors and installed executable availability. Installed is not Running; use code_packages for managed actual versions and code_servers for running instances.",
+                "display": {
+                  "label": "Language catalog",
+                  "locales": {
+                    "zh-CN": "语言服务目录"
+                  }
+                }
+              },
+              {
+                "name": "code_servers",
+                "operation": "code.servers",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "List actual language server instances owned by the current worktree. Copy the exact Startup descriptor for start or stop; catalog package availability does not prove a server is running.",
+                "display": {
+                  "label": "Running language services",
+                  "locales": {
+                    "zh-CN": "运行中的语言服务"
+                  }
+                }
+              },
+              {
+                "name": "code_start",
+                "operation": "code.start",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Start an installed language server for this worktree using all fields of its returned Startup descriptor. Follow conversation approval; do not fabricate an executable, root, worktree or revision, or toggle service settings.",
+                "display": {
+                  "label": "Start language service",
+                  "locales": {
+                    "zh-CN": "启动语言服务"
+                  }
+                }
+              },
+              {
+                "name": "code_stop",
+                "operation": "code.stop",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Stop the exact language server instance returned for this worktree. Follow conversation approval and copy its full Startup descriptor. This does not uninstall its package or change enable settings.",
+                "display": {
+                  "label": "Stop language service",
+                  "locales": {
+                    "zh-CN": "停止语言服务"
+                  }
+                }
+              },
+              {
                 "name": "code_install",
                 "operation": "code.install",
                 "contexts": [
@@ -1281,7 +1341,7 @@
                   "workspace"
                 ],
                 "presentation": "details",
-                "description": "Remove the exact managed package and version returned by code_packages with installed=true. This stops that package across all projects on the Node. Use only when removal is requested.",
+                "description": "Remove the exact managed package and version returned by code_packages with installed=true. This affects all projects on the Node, stops only idle owned instances and returns busy while the package is being installed or used. Use only when removal is requested.",
                 "display": {
                   "label": "Uninstall language service",
                   "locales": {

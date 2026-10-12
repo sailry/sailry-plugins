@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {rows,installed,available,failure,override} from '../dev.sailry.platform/desktop/model.js';
+import {rows,installed,installing,available,failure,override} from '../dev.sailry.platform/desktop/model.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace('export default class','class');
@@ -12,9 +12,10 @@ async function fixture(locale='en') {
   let saved={revision:0,enabled:true,after_edit:true,servers:{},languages:{}};
   const commands=[],calls=[],forgotten=[],notices=[],fields=new Map(),releases=[];
   let serial=0,fail=null,hold=false,held=null;
+  const inventory=[],observers=[];
   const requests=new Map(),row={server:'analyzer',languages:['Rust'],candidate:{server:'analyzer',package:{install:{package:'analyzer',version:'1',revision:'exact',urls:['https://example.com/pinned']}}}};
   const Type=vm.runInNewContext(source+'\nSettings',{
-    View:class{},context:()=>JSON.stringify({locale}),messages,rows,override,failure,
+    View:class{},context:()=>JSON.stringify({locale}),messages,rows,override,failure,installing,
     prepareRequest(command){const id='request-'+(++serial);requests.set(id,plain(command));commands.push(plain(command));return id;},
     async completeRequest(id){calls.push(id);const request=requests.get(id);
       if(fail && (!fail.kind || fail.kind===request.kind)){
@@ -36,7 +37,9 @@ async function fixture(locale='en') {
     },forgetRequest:id=>forgotten.push(id),faultCode:()=> 'failed',toast:value=>{assert(['info','error'].includes(value.kind));assert.equal(typeof value.message,'string');notices.push(value);},
     createText:value=>{const id='field-'+(++serial);fields.set(id,value);return id;},readText:id=>fields.get(id),
     releaseText:id=>releases.push(id),
-    nextChange:()=>new Promise(()=>{}),nextCodeInstallations:()=>new Promise(()=>{}),
+    nextChange:()=>new Promise(()=>{}),nextCodeInstallations:()=>new Promise(resolve=>{
+      if(inventory.length)resolve(inventory.shift());else observers.push(resolve);
+    }),
     nextControlEvent:()=>new Promise(()=>{}),nextTextEvent:()=>new Promise(()=>{}),modal_closed:()=>new Promise(()=>{})
   });
   const cx={notify(){},sleep:async()=>{},spawn:task=>task(cx)};
@@ -45,7 +48,8 @@ async function fixture(locale='en') {
   await settle();
   return {view,cx,row,fields,calls,commands,forgotten,notices,releases,settle,
     saved:()=>saved,fail:(code,message,kind)=>{fail={code,message,kind};},external:()=>{saved={...saved,revision:saved.revision+1,after_edit:false};},
-    hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;}};
+    hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;},
+    inventory:values=>{const observer=observers.shift();if(observer)observer(plain(values));else inventory.push(plain(values));}};
 }
 
 test('unions installed packages and language descriptions',()=>{
@@ -118,6 +122,54 @@ test('installation faults show translated package errors',async()=>{
   f.view.submit({kind:'install_code_server',data:{install:f.row.candidate.package.install}},f.cx);
   await f.settle();assert.equal(f.notices.at(-1).message,messages('zh-CN').code_registry_missing);
 });
+test('opening details does not install',async()=>{
+  const f=await fixture(),before=f.commands.length;
+  f.view.open('details',f.row,f.cx);
+  assert.equal(f.view.dialog.kind,'details');
+  assert.equal(f.commands.length,before);
+  f.view.close(f.cx);
+  assert.equal(f.view.dialog,null);
+});
+test('inventory refresh does not repeat operation feedback',async()=>{
+  const f=await fixture();
+  for(const status of ['downloading','failed','cancelled','ready']) {
+    f.inventory([{package:'analyzer',status,receipt:null}]);await f.settle();
+  }
+  assert.deepEqual(f.notices,[]);
+  f.view.submit({kind:'install_code_server',data:{install:f.row.candidate.package.install}},f.cx);
+  await f.settle();
+  assert.equal(f.notices.length,1);
+  assert.equal(f.notices[0].message,messages('en').code_installed);
+  f.inventory([{package:'analyzer',status:'ready',receipt:{package:'analyzer'}}]);await f.settle();
+  assert.equal(f.notices.length,1);
+});
+test('direct install retains capture after details closes',async()=>{
+  const f=await fixture();f.view.open('details',f.row,f.cx);
+  const descriptor=plain(f.row.candidate.package.install);
+  f.fail('outcome_unknown');f.view.install(f.row,f.cx);
+  assert.equal(f.view.dialog,null);assert(f.view.pending);
+  const id=f.view.request.id;
+  f.row.candidate.package.install.version='changed';
+  f.view.install(f.row,f.cx);
+  assert.deepEqual(plain(f.view.request.command),{kind:'install_code_server',data:{install:descriptor}});
+  await f.settle();
+  assert.equal(f.view.request.id,id);assert(!f.forgotten.includes(id));
+  assert.equal(f.commands.filter(command=>command.kind==='install_code_server').length,1);
+  assert.equal(f.calls.filter(value=>value===id).length,1);
+  f.view.retry(f.cx);await f.settle();
+  assert.equal(f.calls.filter(value=>value===id).length,2);
+  assert.equal(f.view.request,null);assert.equal(f.view.dialog,null);
+});
+test('direct install guards stale and disconnected details',async()=>{
+  const f=await fixture();f.view.open('details',f.row,f.cx);
+  const before=f.commands.length,owner=f.view.dialog;
+  f.view.install({...f.row,server:'other'},f.cx);
+  f.view.connected=false;f.view.install(f.row,f.cx);
+  assert.equal(f.commands.length,before);assert.equal(f.view.dialog,owner);
+  f.view.connected=true;
+  f.view.install({...f.row,installation:{status:'downloading'}},f.cx);
+  assert.equal(f.commands.length,before);assert.equal(f.view.dialog,owner);
+});
 test('read and update rule faults show translated errors',async()=>{
   const f=await fixture('zh-CN');
   f.fail('invalid_request','invalid response','read_code_rules');f.view.load(f.cx);
@@ -150,7 +202,7 @@ test('uncertain saves retry the same request',async()=>{
 });
 test('disconnected controls do not dispatch',async()=>{
   const f=await fixture();f.view.connected=false;const count=f.commands.length;
-  f.view.toggle('analyzer',false,f.cx);f.view.open('install',f.row,f.cx);
+  f.view.toggle('analyzer',false,f.cx);f.view.open('details',f.row,f.cx);
   assert.equal(f.commands.length,count);assert.equal(f.view.dialog,null);
 });
 test('refresh locks mutations and preserves editor drafts',async()=>{

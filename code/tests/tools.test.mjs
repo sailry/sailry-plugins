@@ -19,11 +19,11 @@ test('contributes packaged language settings and enable control', () => {
 test('binds native queries and lifecycle tools', () => {
   assert.equal(extension.api_version, 'v1');
   assert.deepEqual(extension.actions, ['code.read', 'code.manage', 'code.settings.read', 'code.settings.write']);
-  assert.deepEqual(extension.tools.map(tool => tool.operation), ['code.diagnostics','code.definition','code.references','code.hover','code.symbols','code.packages','code.install','code.uninstall']);
+  assert.deepEqual(extension.tools.map(tool => tool.operation), ['code.diagnostics','code.definition','code.references','code.hover','code.symbols','code.packages','code.catalog','code.servers','code.start','code.stop','code.install','code.uninstall']);
   for (const tool of extension.tools) {
     assert.deepEqual(tool.contexts, ['workspace']);
     assert.equal(tool.handler, undefined);
-    assert.match(tool.description, /(?:file|symbol|symbols|package|installation|managed)/i);
+    assert.match(tool.description, /(?:file|symbol|symbols|package|installation|managed|server)/i);
     assert.ok(tool.display.label && tool.display.locales['zh-CN']);
   }
 });
@@ -35,6 +35,14 @@ test('explains cold-start consent and incomplete results', () => {
   assert.match(instructions, /only when removal is requested/);
   assert.match(instructions, /partial/);
   assert.match(instructions, /line numbers start at one/);
+});
+test('distinguishes installation from scoped server lifecycle', () => {
+  assert.match(extension.instructions, /Installed or installable does not mean running/);
+  assert.match(extension.instructions, /exact returned Startup descriptor and current worktree/);
+  assert.match(extension.instructions, /returns busy while the package is being installed or used/);
+  assert.match(extension.tools.find(tool => tool.name === 'code_catalog').description, /managed actual versions/);
+  assert.match(extension.tools.find(tool => tool.name === 'code_servers').description, /current worktree/);
+  assert.match(extension.tools.find(tool => tool.name === 'code_stop').description, /does not uninstall/);
 });
 test('selects diagnostics and references before permitted source fallback',()=>{
   assert.match(extension.instructions,/diagnostics, errors or type errors, call code_diagnostics first/);
