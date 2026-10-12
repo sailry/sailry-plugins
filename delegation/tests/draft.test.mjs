@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {catalog,create,source,selectModel,profile,efforts,errorKey,research,RESEARCH_INSTRUCTIONS} from '../dev.sailry.platform/desktop/draft.js';
+import {catalog,create,source,selectModel,profile,efforts,errorKey,applyResearch,RESEARCH_INSTRUCTIONS} from '../dev.sailry.platform/desktop/draft.js';
 
 const models = [
   {kind:'provider',id:'provider-a/plain',provider:'First',model:'plain',default:false,reasoning:false,efforts:[],default_effort:'default'},
@@ -56,17 +56,21 @@ test('new roles inherit the parent write capability until explicitly restricted'
 });
 
 test('research drafts inherit the model and bound read-only work',() => {
-  const preset = research('new-research','Research','Investigate public sources');
-  const state = create(preset,'unused',[]);
-  const result = profile(state,{key:preset.key,name:preset.name,turns:'8',instructions:preset.instructions});
+  const state = create(null,'new-research',catalog({models}));
+  source(state,true);
+  const values = applyResearch(state,'Research','Investigate public sources');
+  const result = profile(state,values);
   assert.equal(result.id,'new-research');
   assert.equal(result.revision,0);
   assert.equal(result.read_only,true);
   assert.equal(result.model,null);
+  assert.equal(state.fixed,false);
   assert.equal(result.max_turns,8);
   assert.deepEqual(result.skills,['web-search:research']);
   assert.equal(result.instructions,RESEARCH_INSTRUCTIONS);
   assert.match(result.instructions,/inherited permissions/);
+  assert.equal(applyResearch(create(original,'unused',[]),'Research','Description'),null);
+  assert.deepEqual(original.skills,['retained-skill']);
 });
 
 test('validates exact keys, UTF-8 and u32 turn limits before command preparation',() => {

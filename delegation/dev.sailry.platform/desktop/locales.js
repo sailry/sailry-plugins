@@ -1,7 +1,7 @@
 // Existing role settings copy and prompt presets from Sailry ef5e82ea.
 import {RESEARCH_INSTRUCTIONS} from './draft.js';
 const en = {
-  roles_profiles:'Subagents',role_editor:'Edit subagent',role_id:'Identifier',settings_name:'Name',settings_empty:'No items',
+  roles_profiles:'Subagents',role_create:'Add subagent',role_editor:'Edit subagent',role_id:'Identifier',settings_name:'Name',settings_empty:'No items',
   role_model_source:'Model source',role_fixed:'Fixed model',role_inherit:'Inherit session model',
   provider_models:'Models',provider_default_effort:'Default reasoning effort',role_max_turns:'Default maximum turns',
   role_instructions:'Instructions',role_read_only:'Read only',role_appearance:'Icon and color',role_presets:'Presets',
@@ -22,7 +22,7 @@ const en = {
   effort_dynamic:'dynamic',effort_budget:'%{tokens} Token'
 };
 const zh = {
-  roles_profiles:'子代理',role_editor:'编辑子代理',role_id:'标识',settings_name:'名称',settings_empty:'暂无内容',
+  roles_profiles:'子代理',role_create:'添加子代理',role_editor:'编辑子代理',role_id:'标识',settings_name:'名称',settings_empty:'暂无内容',
   role_model_source:'模型来源',role_fixed:'固定模型',role_inherit:'继承会话模型',
   provider_models:'模型',provider_default_effort:'默认推理强度',role_max_turns:'默认最大轮数',
   role_instructions:'提示词',role_read_only:'只读',role_appearance:'图标和颜色',role_presets:'预设',
@@ -54,6 +54,16 @@ const research = {
   ru:{role_preset_research:'Исследование',role_add_research:'Добавить исследование',role_research_description:'Изучать открытые источники'},
   'zh-TW':{role_preset_research:'研究',role_add_research:'新增研究代理',role_research_description:'研究公開資料'}
 };
+const titles = {
+  de:{role_create:'Subagent hinzufügen',role_editor:'Subagent bearbeiten'},
+  es:{role_create:'Añadir subagente',role_editor:'Editar subagente'},
+  fr:{role_create:'Ajouter un sous-agent',role_editor:'Modifier le sous-agent'},
+  ja:{role_create:'サブエージェントを追加',role_editor:'サブエージェントを編集'},
+  ko:{role_create:'하위 에이전트 추가',role_editor:'하위 에이전트 편집'},
+  'pt-BR':{role_create:'Adicionar subagente',role_editor:'Editar subagente'},
+  ru:{role_create:'Добавить субагента',role_editor:'Изменить субагента'},
+  'zh-TW':{role_create:'新增子代理',role_editor:'編輯子代理'}
+};
 export function messages(locale) {
-  return {...en,...(locale === 'zh-CN' ? zh : {}),...(readOnly[locale] ? {role_read_only:readOnly[locale]} : {}),...(research[locale] ?? {})};
+  return {...en,...(locale === 'zh-CN' ? zh : {}),...(readOnly[locale] ? {role_read_only:readOnly[locale]} : {}),...(research[locale] ?? {}),...(titles[locale] ?? {})};
 }

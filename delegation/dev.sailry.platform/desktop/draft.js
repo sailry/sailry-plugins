@@ -8,6 +8,15 @@ export function research(id,name,description) {
     model:null,max_turns:8,skills:['web-search:research'],instructions:RESEARCH_INSTRUCTIONS};
 }
 
+export function applyResearch(draft,name,description) {
+  if (!draft.creating) return null;
+  const value = research(draft.original.id,name,description);
+  draft.original = {...value,revision:draft.original.revision};
+  draft.appearance = {icon:'ai',color:'none'};
+  draft.readOnly = value.read_only; draft.fixed = false; draft.model = null; draft.error = null;
+  return {key:value.key,name:value.name,turns:String(value.max_turns),instructions:value.instructions};
+}
+
 function bytes(value) {
   let length = 0;
   for (const character of value) {
@@ -71,7 +80,7 @@ export function profile(draft,fields) {
 export function create(profile,id,models) {
   const original = profile ? clone(profile) : {id,revision:0,key:'',name:'',appearance:null,
     description:'',read_only:false,model:null,max_turns:null,skills:[],instructions:''};
-  return {original,models:clone(models),appearance:clone(original.appearance ?? {icon:'ai',color:'none'}),
+  return {original,creating:!profile,models:clone(models),appearance:clone(original.appearance ?? {icon:'ai',color:'none'}),
     readOnly:original.read_only,fixed:original.model !== null,model:clone(original.model),request:null,pending:false,error:null,closed:false};
 }
 

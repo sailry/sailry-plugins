@@ -55,7 +55,7 @@ function editor(view,owner) {
     .child(new Form().child(new Field().label_indent(false)
       .child(div().id('role-instructions').child(TextField.new(owner.fields.instructions,props)))));
   return div().id('role-editor').v_flex().w(Math.min(600,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(text.role_editor))
+    .child(div().text_lg().font_semibold().child(text[owner.creating ? 'role_create' : 'role_editor']))
     .child(div().id('role-editor-scroll').v_flex().min_h_0().max_h(Math.max(160,window.viewport_size().height-230))
       .overflow_y_scroll().p_1().gap_4().child(form).child(instructions))
     .child(div().h_flex().justify_end().gap_2()
@@ -89,8 +89,6 @@ export function render(view) {
   return div().id('role-settings').v_flex().gap_6()
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
       .child(div().h_flex().gap_2().flex_wrap()
-        .child(button('role-add-research',text.role_add_research,(_,cx) => view.research(cx),
-          disabled || view.roles.some(role => role.key === 'research')))
         .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))
       .children(rows.length ? rows : view.ready ? [empty(view)] : [view.error && !view.loading
         ? button('role-reload',text.role_retry,(_,cx)=>view.load(cx),!view.connected)

@@ -118,10 +118,12 @@ test('presets replace only instructions and removal retries the captured role re
   assert.deepEqual(f.calls,['request-1','request-1']); assert.equal(f.view.dialog,null);
 });
 
-test('research opens an explicit draft without changing existing profiles',async () => {
+test('research preset fills a new unsaved draft',async () => {
   const f = await settings();
   const existing = plain(f.view.roles);
-  f.view.research(f.cx);
+  f.view.edit(null,f.cx);
+  assert.equal(f.view.dialog.creating,true);
+  await f.act(() => f.choose('role-presets','research'));
   const owner = f.view.dialog;
   assert.equal(f.prepared.length,0);
   assert.deepEqual(plain(f.view.roles),existing);
@@ -139,15 +141,21 @@ test('research opens an explicit draft without changing existing profiles',async
   assert.deepEqual(plain(f.view.roles),existing);
 });
 
-test('an existing research role is never replaced by the add action',async () => {
-  const f = await settings();
+test('duplicate research identifiers preserve the new draft',async () => {
+  const f = await settings({complete:async () => ({Err:{code:'conflict'}})});
   const retained = {...role,key:'research',instructions:'User instructions',read_only:false};
   f.catalog([retained]);
   await f.act(() => f.changes.send({cursor:'1',connected:true}));
   await f.act(() => f.changes.send({cursor:'2',connected:true}));
-  f.view.research(f.cx);
-  assert.equal(f.view.dialog,null);
-  assert.equal(f.prepared.length,0);
+  f.view.edit(null,f.cx);
+  await f.act(() => f.choose('role-presets','research'));
+  await f.act(() => f.view.save(f.cx));
+  assert.equal(f.view.dialog.error,'role_duplicate');
+  assert.equal(f.view.dialog.creating,true);
+  assert.equal(f.prepared.length,1);
+  assert.equal(f.prepared[0].role.id,'created');
+  assert.equal(f.prepared[0].revision,0);
+  assert.equal(f.fields.get(f.view.dialog.fields.key),'research');
   assert.deepEqual(plain(f.view.roles),[retained]);
 });
 

@@ -105,3 +105,12 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
 });
+
+test('wait summaries explicitly request canonical session titles',async()=>{
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools = manifest.extensions['dev.sailry.platform'].tools;
+  assert.deepEqual(tools.find(tool => tool.name === 'wait_agent').display.input.summary,
+    {path:'/session',format:'session'});
+  assert.deepEqual(tools.find(tool => tool.name === 'guide_agent').display.input.summary,{path:'/session'});
+  assert.deepEqual(tools.find(tool => tool.name === 'spawn_agent').display.input.summary,{path:'/title'});
+});

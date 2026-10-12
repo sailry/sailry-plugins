@@ -122,7 +122,8 @@
             "icon": "reicon:users/users2",
             "input": {
               "summary": {
-                "path": "/session"
+                "path": "/session",
+                "format": "session"
               }
             }
           }

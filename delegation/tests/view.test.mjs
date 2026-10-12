@@ -33,7 +33,7 @@ function fixture() {
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:{settings_empty:'No roles',settings_add:'Add',settings_edit:'Edit',settings_delete:'Delete',roles_profiles:'Roles'},
-    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role]),research:()=>calls.push(['research']),
+    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role]),
     load:()=>calls.push(['load'])};
   return {view,nodes,calls,render(){nodes.clear();return render(view);}};
 }
@@ -63,26 +63,38 @@ test('initial reads hide empty roles and retain retry',()=>{
   assert.equal(setup.nodes.has('role-loading'),false);
 });
 
-test('research has an explicit action and preserves existing role edits',()=>{
+test('one add action preserves existing role edits',()=>{
   const setup=fixture();setup.view.text=messages('en');setup.render();
-  const action=setup.nodes.get('role-add-research').items[0];
-  assert.deepEqual(plain(action.style.label),['Add research']);
+  assert.equal(setup.nodes.has('role-add-research'),false);
+  const action=setup.nodes.get('role-add').items[0];
+  assert.deepEqual(plain(action.style.label),['Add']);
   assert.deepEqual(plain(action.style.disabled),[false]);
   action.on_click({},{});
-  assert.deepEqual(setup.calls,[['research']]);
+  assert.deepEqual(setup.calls,[['edit',null]]);
   setup.view.roles=[{id:'existing',key:'research',name:'Custom researcher'}];setup.render();
-  assert.deepEqual(plain(setup.nodes.get('role-add-research').items[0].style.disabled),[true]);
+  assert.deepEqual(plain(setup.nodes.get('role-add').items[0].style.disabled),[false]);
   assert.ok(setup.nodes.has('role-edit-existing'));
 });
 
-test('research labels are translated while instructions stay English',()=>{
+test('create titles are translated while instructions stay English',()=>{
   for(const locale of ['en','de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']) {
     const text=messages(locale);
-    assert.ok(text.role_add_research.length>0);
+    assert.ok(text.role_create.length>0);
+    assert.ok(text.role_editor.length>0);
     assert.ok(text.role_research_description.length>0);
     assert.equal(text.role_prompt_research,messages('en').role_prompt_research);
-    if(locale!=='en')assert.notEqual(text.role_add_research,messages('en').role_add_research);
+    assert.notEqual(text.role_create,text.role_editor);
+    if(locale!=='en')assert.notEqual(text.role_create,messages('en').role_create);
   }
+});
+
+test('draft mode chooses the modal title',()=>{
+  const setup=fixture(),owner={kind:'edit',token:'dialog',creating:true,readOnly:false,request:null,
+    fields:{key:'key',name:'name',turns:'turns',instructions:'instructions'},models:[],fixed:false,model:null};
+  setup.view.text=messages('en');setup.view.dialog=owner;setup.render();
+  assert.equal(setup.nodes.get('role-editor').items[0].items[0],'Add subagent');
+  owner.creating=false;setup.render();
+  assert.equal(setup.nodes.get('role-editor').items[0].items[0],'Edit subagent');
 });
 
 test('readonly editing reuses Checkbox and locks uncertain drafts',()=>{

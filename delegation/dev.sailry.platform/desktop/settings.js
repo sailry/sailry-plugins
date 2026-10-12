@@ -81,11 +81,6 @@ export default class Settings extends View {
     this.dialog = owner; cx.notify();
   }
 
-  research(cx) {
-    if (this.roles.some(role => role.key === 'research')) return;
-    this.edit(draft.research(newRoleId(),this.text.role_preset_research,this.text.role_research_description),cx);
-  }
-
   remove(profile,cx) {
     if (!this.connected || !this.ready) return;
     this.close(cx);
@@ -129,7 +124,12 @@ export default class Settings extends View {
       const effort = draft.efforts(owner).find(effort => JSON.stringify(effort) === value);
       if (effort !== undefined) { owner.model.effort = effort; owner.error = null; }
     } else if (event.menu === 'role-presets' && ['review','research','implement'].includes(value)) {
-      setText(owner.fields.instructions,this.text[`role_prompt_${value}`]); owner.error = null;
+      const fields = value === 'research' && owner.creating
+        ? draft.applyResearch(owner,this.text.role_preset_research,this.text.role_research_description) : null;
+      if (fields) {
+        for (const [key,text] of Object.entries(fields)) setText(owner.fields[key],text);
+      } else setText(owner.fields.instructions,this.text[`role_prompt_${value}`]);
+      owner.error = null;
     }
     cx.notify();
   }
