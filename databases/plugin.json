@@ -317,7 +317,7 @@
                 "path": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "SQLite file path on the execution Node"
+                  "description": "SQLite file path on the execution Node; relative paths use the captured worktree. Saving does not create the file"
                 },
                 "host": {
                   "type": "string",

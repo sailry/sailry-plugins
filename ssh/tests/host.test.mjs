@@ -51,7 +51,7 @@ test('prepares only explicit upload or download while preserving both path domai
   assert.deepEqual(plain(api.initialize({tools,resources:true,connections:{...connections,ssh:[]}}).tools),tools);
 });
 
-test('connection tools expose no secret or trust inputs',async()=>{
+test('saves accept typed credentials without exposing read or trust inputs',async()=>{
   const api=await fixture();
   const all=[...tools,...management];
   const initialized=api.initialize({tools:all,connections:{ssh:[],databases:[]}});
@@ -60,7 +60,9 @@ test('connection tools expose no secret or trust inputs',async()=>{
   for(const args of [null,[],{host:'example.com'},{password:'hidden'}]) assert.equal(api.connections(args).isError,true);
   const schema=initialized.parameters.ssh_save_connection;
   assert.equal(schema.additionalProperties,false);
-  assert.deepEqual(plain(schema.properties.authentication.enum),['agent','key_path']);
+  assert.deepEqual(plain(schema.properties.authentication.enum),['password','private_key','key_path','agent']);
+  assert.deepEqual(plain(schema.properties.credential.oneOf).map(value=>value.properties.kind.const),['password','private_key','key_path','agent']);
+  for(const value of schema.properties.credential.oneOf) assert.equal(value.additionalProperties,false);
   for(const key of ['password','key','passphrase','host_key','sharing']) assert.equal(schema.properties[key],undefined);
   assert.deepEqual(plain(schema.allOf[0].then.required),['expected_revision']);
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
@@ -75,19 +77,34 @@ test('connection tools expose no secret or trust inputs',async()=>{
   assert.match(extension.instructions,/user must confirm the exact first host fingerprint/);
 });
 
-test('save supports agent and key paths without altering update credentials',async()=>{
+test('save preserves omission and explicit native credential replacements',async()=>{
   const api=await fixture();api.initialize({tools:management,connections:{ssh:[{id:created,name:'Work host'}],databases:[]}});
   const agent={name:'Work host',host:'ssh.example',port:22,username:'user',authentication:'agent'};
   assert.deepEqual(plain(api.save(agent)),agent);
   assert.deepEqual(plain(api.save({...agent,connection:null,expected_revision:null})),agent);
   const key={...agent,authentication:'key_path',key_path:'/keys/id_ed25519'};
   assert.deepEqual(plain(api.save(key)),key);
+  for(const credential of [{kind:'password',password:'supplied-password'},
+    {kind:'private_key',key:'supplied-key',passphrase:'supplied-passphrase'},
+    {kind:'private_key',key:'replacement-key'}, {kind:'key_path',path:'/keys/id_ed25519',passphrase:null},
+    {kind:'agent'}]) {
+    const input={...agent,authentication:credential.kind,credential};
+    assert.deepEqual(plain(api.save(input)),input);
+    assert.deepEqual(plain(api.save({connection:created,expected_revision:3,credential})),
+      {connection:created,expected_revision:3,credential});
+  }
   const update={connection:created,expected_revision:3,name:'Renamed'};
   assert.deepEqual(plain(api.save(update)),update);
   assert.deepEqual(plain(api.save({...update,authentication:'key_path'})),{...update,authentication:'key_path'});
   for(const args of [null,[],{}, {...agent,port:0}, {...agent,port:65536}, {...agent,port:1.5},
     {...agent,username:null}, {...agent,authentication:'password'}, {...agent,key_path:'/keys/key'},
     {...key,key_path:null}, {...key,key_path:''}, {connection:created}, {expected_revision:1},
+    {...agent,credential:null}, {...agent,credential:{kind:'password',password:'supplied'}},
+    {...key,credential:{kind:'key_path',path:'/keys/key'}},
+    {...agent,authentication:'password',credential:{kind:'password',password:7}},
+    {...agent,authentication:'private_key',credential:{kind:'private_key',key:'supplied',passphrase:7}},
+    {...agent,credential:{kind:'agent',password:'hidden'}},
+    ...['constructor','__proto__','toString'].map(kind=>({...agent,credential:{kind}})),
     {connection:created,expected_revision:null}, {connection:other,expected_revision:1},
     {connection:created,expected_revision:0}, {...update,name:null},
     ...['password','key','passphrase','host_key','sharing'].map(key=>({...agent,[key]:'hidden'}))]) {

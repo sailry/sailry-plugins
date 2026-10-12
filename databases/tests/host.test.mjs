@@ -99,6 +99,13 @@ test('save validates create fields and preserves omitted update fields',async()=
   const api=await fixture();api.initialize({tools:management,connections:{databases:[{...profiles[0],id:created}],ssh:[]}});
   const sqlite={name:'Local data',engine:'sqlite',path:'/tmp/资料.sqlite'};
   assert.deepEqual(plain(api.save(sqlite)),{...sqlite,read_only:true});
+  for(const path of ['sales.db','./sales.db','data/sales.db']) {
+    assert.deepEqual(plain(api.save({...sqlite,path})),{...sqlite,path,read_only:true});
+  }
+  const schema=api.initialize({tools:management,connections:{databases:[],ssh:[]}}).parameters.database_save_connection;
+  assert.match(schema.properties.path.description,/relative paths use the captured worktree/);
+  assert.match(schema.properties.path.description,/Saving does not create the file/);
+  api.initialize({tools:management,connections:{databases:[{...profiles[0],id:created}],ssh:[]}});
   assert.deepEqual(plain(api.save({...sqlite,connection:null,expected_revision:null})),{...sqlite,read_only:true});
   const network={name:'Analytics',engine:'postgres',host:'db.example',port:5432,username:'analyst',database:'analytics',read_only:false};
   assert.deepEqual(plain(api.save(network)),network);

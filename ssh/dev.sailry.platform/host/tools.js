@@ -5,7 +5,7 @@ export const definitions = {
     handler:'connections',operation:'ssh.connections',presentation:'details',
   },
   ssh_save_connection:{
-    description:"Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication (agent or key_path); key_path authentication requires the path to an existing key on the execution Node. Update requires connection and expected_revision from ssh_connections, preserving omitted fields and credentials. Never accept passwords, key contents, passphrases or host keys. Use the returned ID for SSH tools in this turn. A first connection requires the user to confirm the exact host fingerprint in the runtime approval; never trust it automatically. Do not automatically repeat a denied or uncertain save.",
+    description:"Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication: password, private_key, key_path or agent. Supply credentials only for the requested save; key paths must be absolute on the execution Node. Update requires connection and expected_revision from ssh_connections. Omitted credentials remain unchanged; a supplied credential replaces them, and an omitted passphrase clears the replacement's passphrase. Do not echo credentials or supply host keys. Use the returned ID for SSH tools in this turn. First use requires runtime host-fingerprint approval. Do not automatically repeat a denied or uncertain save.",
     handler:'save',operation:'ssh.save',presentation:'details',
   },
   ssh_run:{
@@ -42,13 +42,21 @@ function saveParameters() {
     expected_revision:{type:['integer','null'],minimum:1,maximum:9007199254740991},
     name:{type:'string',minLength:1},host:{type:'string',minLength:1},
     port:{type:'integer',minimum:1,maximum:65535},username:{type:'string',minLength:1},
-    authentication:{type:'string',enum:['agent','key_path']},
+    authentication:{type:'string',enum:['password','private_key','key_path','agent']},
+    credential:{oneOf:[
+      {type:'object',properties:{kind:{const:'password'},password:{type:'string'}},required:['kind','password'],additionalProperties:false},
+      {type:'object',properties:{kind:{const:'private_key'},key:{type:'string'},passphrase:{type:['string','null']}},required:['kind','key'],additionalProperties:false},
+      {type:'object',properties:{kind:{const:'key_path'},path:{type:'string'},passphrase:{type:['string','null']}},required:['kind','path'],additionalProperties:false},
+      {type:'object',properties:{kind:{const:'agent'}},required:['kind'],additionalProperties:false},
+    ]},
     key_path:{type:'string',minLength:1,description:'Path to an existing private key on the execution Node; never its contents'},
   },allOf:[{
     if:{required:['connection'],properties:{connection:{type:'string'}}},
     then:{required:['expected_revision'],properties:{expected_revision:{type:'integer'}}},
     else:{required:['name','host','port','username','authentication'],properties:{expected_revision:{type:'null'}},allOf:[{
-      if:{properties:{authentication:{const:'key_path'}}},then:{required:['key_path']},
+      if:{properties:{authentication:{enum:['password','private_key']}}},then:{required:['credential']},
+    },{
+      if:{properties:{authentication:{const:'key_path'}}},then:{anyOf:[{required:['credential']},{required:['key_path']}]},
     }]},
   }]};
 }

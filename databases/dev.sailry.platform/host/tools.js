@@ -49,7 +49,7 @@ function saveParameters() {
     connection:{type:['string','null'],pattern:uuid,description:'Saved connection ID; omit with expected_revision to create'},
     expected_revision:{type:['integer','null'],minimum:1,maximum:9007199254740991},
     name:{type:'string',minLength:1},engine:{type:'string',enum:['sqlite','mysql','postgres']},
-    path:{type:'string',minLength:1,description:'SQLite file path on the execution Node'},
+    path:{type:'string',minLength:1,description:'SQLite file path on the execution Node; relative paths use the captured worktree. Saving does not create the file'},
     host:{type:'string',minLength:1},port:{type:'integer',minimum:1,maximum:65535},
     username:{type:'string',minLength:1},database:{type:'string'},read_only:{type:'boolean'},
   },allOf:[{

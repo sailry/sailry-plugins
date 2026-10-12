@@ -189,7 +189,7 @@
         {
           "name": "ssh_save_connection",
           "presentation": "details",
-          "description": "Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication (agent or key_path); key_path authentication requires the path to an existing key on the execution Node. Update requires connection and expected_revision from ssh_connections, preserving omitted fields and credentials. Never accept passwords, key contents, passphrases or host keys. Use the returned ID for SSH tools in this turn. A first connection requires the user to confirm the exact host fingerprint in the runtime approval; never trust it automatically. Do not automatically repeat a denied or uncertain save.",
+          "description": "Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication: password, private_key, key_path or agent. Supply credentials only for the requested save; key paths must be absolute on the execution Node. Update requires connection and expected_revision from ssh_connections. Omitted credentials remain unchanged; a supplied credential replaces them, and an omitted passphrase clears the replacement's passphrase. Do not echo credentials or supply host keys. Use the returned ID for SSH tools in this turn. First use requires runtime host-fingerprint approval. Do not automatically repeat a denied or uncertain save.",
           "contexts": [
             "workspace",
             "ssh"
@@ -239,8 +239,18 @@
                 "authentication": {
                   "type": "string",
                   "enum": [
-                    "agent",
-                    "key_path"
+                    "password",
+                    "private_key",
+                    "key_path",
+                    "agent"
+                  ]
+                },
+                "credential": {
+                  "oneOf": [
+                    {"type":"object","properties":{"kind":{"const":"password"},"password":{"type":"string"}},"required":["kind","password"],"additionalProperties":false},
+                    {"type":"object","properties":{"kind":{"const":"private_key"},"key":{"type":"string"},"passphrase":{"type":["string","null"]}},"required":["kind","key"],"additionalProperties":false},
+                    {"type":"object","properties":{"kind":{"const":"key_path"},"path":{"type":"string"},"passphrase":{"type":["string","null"]}},"required":["kind","path"],"additionalProperties":false},
+                    {"type":"object","properties":{"kind":{"const":"agent"}},"required":["kind"],"additionalProperties":false}
                   ]
                 },
                 "key_path": {
@@ -286,6 +296,10 @@
                     },
                     "allOf": [
                       {
+                        "if": {"properties":{"authentication":{"enum":["password","private_key"]}}},
+                        "then": {"required":["credential"]}
+                      },
+                      {
                         "if": {
                           "properties": {
                             "authentication": {
@@ -294,8 +308,9 @@
                           }
                         },
                         "then": {
-                          "required": [
-                            "key_path"
+                          "anyOf": [
+                            {"required":["credential"]},
+                            {"required":["key_path"]}
                           ]
                         }
                       }
@@ -365,11 +380,11 @@
                 "name": "ssh_save_connection"
               }
             ],
-            "context": "You are the SSH workspace assistant. Work only on the saved SSH connection exposed by your tools. Help inspect the remote system, diagnose issues, run requested commands, and transfer files. Establish the remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never request passwords or private keys, bypass host-key verification, access another connection, or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context. Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with agent or a key path on the execution Node. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
+            "context": "You are the SSH workspace assistant. Work only on the saved SSH connection exposed by your tools. Help inspect the remote system, diagnose issues, run requested commands, and transfer files. Establish the remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never bypass host-key verification, access another connection, or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context. Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
           }
         ]
       },
-      "instructions": "Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with agent or a key path on the execution Node. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
+      "instructions": "Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
     }
   }
 }
