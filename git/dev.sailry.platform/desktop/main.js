@@ -1,10 +1,12 @@
 import {View, div} from 'gpui-kit';
+import {DiffState, EditorState} from 'gpui-component';
+import {Surfaces} from './surfaces.js';
 import {context} from 'sailry';
 import * as sdk from 'sailry/sdk';
 import {createText, readText, setText, nextTextEvent} from 'sailry/forms';
 import {Workspace, workspaceMode, ActionScope, registerShortcuts, closePanel, toast, nextControlEvent, nextMenuEvent,
   nextNavigationTabEvent, nextTreeEvent, nextContextMenuEvent, nextPickerEvent, modal_closed,
-  canInvokeContribution, readResourceTarget, nextResourceTarget, nextWindowActivation, focusSurface, collapseOpen} from 'sailry/ui';
+  canInvokeContribution, readResourceTarget, nextResourceTarget, nextWindowActivation, collapseOpen} from 'sailry/ui';
 import {Repository} from './repository.js';
 import {Actions} from './actions.js';
 import {Menus} from './menus.js';
@@ -29,7 +31,8 @@ export default class Git extends View {
     ]);
     this.mode = workspaceMode(); this.worktrees = false; this.worktreesPending = false;
     this.message = createText('',{multiline:true,label:this.text.git_commit_message,placeholder:this.text.git_commit_message});
-    this.repo = new Repository(sdk,() => this.notify(),key => this.report(key));
+    this.surfaces = new Surfaces(patch => DiffState(patch),text => EditorState(text));
+    this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },key => this.report(key));
     this.actions = new Actions(this); this.menus = new Menus(this);
     this.expanded = new Map(); this.nodes = new Map(); this.current = null;
     this.watch(nextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
@@ -107,15 +110,15 @@ export default class Git extends View {
     const document = this.repo.documents.get(this.repo.selected);
     if (!document) return;
     const request = document.request;
-    if (request.kind === 'output') focusSurface(`git-output-${document.id}`);
+    if (request.kind === 'output') this.surfaces.focus(`git-output-${document.id}`);
     else if (['file','stash'].includes(request.kind)) {
-      if (document.files?.[0] && !document.files[0].binary) focusSurface(`git-diff-${document.id}`);
+      if (document.files?.[0] && !document.files[0].binary) this.surfaces.focus(`git-diff-${document.id}`);
       else this.contentFocus.focus();
     }
     else {
       const file = document.files?.find(file => !file.binary && file.text
         && (collapseOpen(`diff-file-${document.id}/${file.path}`) ?? views.defaultOpen));
-      if (file) focusSurface(`git-diff-${document.id}/${file.path}`);
+      if (file) this.surfaces.focus(`git-diff-${document.id}/${file.path}`);
       else this.contentFocus.focus();
     }
   }
@@ -160,8 +163,8 @@ export default class Git extends View {
     }
     cx.notify();
   }
-  release() { this.repo.stop(); }
-  render() {
+  release() { this.repo.stop(); this.surfaces.clear(); }
+  render(cx) {
     return ActionScope.new('git-actions-scope',{close:'git-close-current'}).child(
       ['git-commit-action','git-amend-action','git-fetch-action','git-pull-action','git-pull-rebase-action','git-push-action']
         .reduce((scope,id) => scope.on_action(id,(_event,cx) => this.control(id,cx)),div().v_flex().size_full().min_w_0().min_h_0().key_context(this.shortcutContext))
@@ -171,7 +174,7 @@ export default class Git extends View {
           .child(div().flex_1().min_h_0().min_w_0().child(Workspace.new('git-workspace',{navigation:'none',default_details_width:320,min_details_width:260})
             .children([this.mode === 'embedded'
               ? div().v_flex().size_full().min_h_0().min_w_0().child(views.header(this))
-                .child(div().flex_1().min_h_0().min_w_0().child(views.content(this)))
-              : views.content(this),views.details(this)])))),views.dialogs(this)]));
+                .child(div().flex_1().min_h_0().min_w_0().child(views.content(this,cx)))
+              : views.content(this,cx),views.details(this)])))),views.dialogs(this)]));
   }
 }

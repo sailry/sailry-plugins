@@ -1,9 +1,10 @@
+import {Diff, Editor} from 'gpui-component';
 // Accepted Git layout composed with Kit controls and retained native diff leaves.
 import {div} from 'gpui-kit';
 import {Button, Icon, StatusBar, Pagination, Spinner} from 'gpui-component';
 import {Header,theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, DiffSurface, SourceSurface, Modal, Picker, SegmentedTabs, EmptyState, Collapse, CollapseSlot} from 'sailry/ui';
+import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, Modal, Picker, SegmentedTabs, EmptyState, Collapse, CollapseSlot} from 'sailry/ui';
 import {rows, checkbox, selectedId} from './changes.js';
 export const defaultOpen = true;
 const fileName = path => path.split('/').at(-1);
@@ -39,13 +40,22 @@ function stats(additions,deletions,colors) {
   return [...(additions ? [div().text_xs().flex_shrink(0).text_color(colors.success).child(`+${additions}`)] : []),
     ...(deletions ? [div().text_xs().flex_shrink(0).text_color(colors.destructive).child(`−${deletions}`)] : [])];
 }
-function surface(view,file,id,maxRows) {
+function surface(view,file,id,maxRows,cx) {
   if (file.binary) return div().id(`${id}-binary`).px_3().py_2().text_sm()
     .text_color(theme().colors.muted_foreground).child(view.text.git_diff_binary);
-  const element = DiffSurface.new(id,{path:file.path,text:file.text,...(maxRows ? {max_rows:maxRows} : {})});
-  return maxRows ? element : div().w_full().min_h_0().min_w_0().flex_1().child(element);
+  const state = view.surfaces.get(id);
+  if (!state) return div();
+  const element = new Diff(state).header_visible(false).border_0().size_full();
+  const frame = div().id(id).w_full().min_h_0().min_w_0().child(element);
+  // Component Root maps md to rem; Diff uses mono/16 rems at 1.6 lines.
+  if (maxRows) {
+    const typography = cx.theme().typography;
+    const rowHeight = typography.md.size * (typography.mono_md.size / 16) * 1.6;
+    return frame.h(Math.min(Math.max(file.text.split('\n').length,1),maxRows) * rowHeight);
+  }
+  return div().w_full().min_h_0().min_w_0().flex_1().child(frame.size_full());
 }
-function combined(view,document) {
+function combined(view,document,cx) {
   const colors = theme().colors, working = document.request.kind === 'changes';
   return div().id('git-combined-diff').v_flex().size_full().p_2().gap_2().overflow_y_scroll()
     .children(!document.files.length ? [empty(view,true)] : document.files.map(file => {
@@ -61,11 +71,11 @@ function combined(view,document) {
           .child(IconButton.new(`git-diff-undo-${file.path}`,{icon:'undo',label:view.text.turn_changes_undo,disabled:!view.repo.writable()}))] : [])
         .child(CollapseSlot.new(`git-diff-body-${file.path}`,{variant:'content'})
           .child(div().v_flex()
-            .children(file.binary || file.text ? [surface(view,file,`git-diff-${id}`,24)] : [])
+            .children(file.binary || file.text ? [surface(view,file,`git-diff-${id}`,24,cx)] : [])
             .children(file.truncated && !file.binary ? [div().px_3().py_2().text_sm().text_color(colors.muted_foreground).child(view.text.git_diff_partial)] : [])));
     }));
 }
-export function content(view) {
+export function content(view,cx) {
   const document = view.repo.documents.get(view.repo.selected), colors = theme().colors;
   const request = document?.request, files = document?.files ?? [];
   const additions = files.reduce((sum,file) => sum + file.additions,0), deletions = files.reduce((sum,file) => sum + file.deletions,0);
@@ -73,8 +83,8 @@ export function content(view) {
   const menu = request?.kind === 'file' ? [{id:'open',label:view.text.workspace_open_file,enabled:true,value:{kind:'system',path:request.path}},{id:'copy',label:view.text.workspace_copy_path,enabled:true,value:{kind:'copy',text:request.path}}] : [];
   return div().id('git-diff').v_flex().size_full().min_h_0().min_w_0().track_focus(view.contentFocus)
     .child(div().id('document-editor').v_flex().flex_1().min_h_0().min_w_0()
-      .child(!document ? empty(view) : request.kind === 'output' ? SourceSurface.new(`git-output-${document.id}`,{text:document.text ?? '',label:view.text.git_output})
-        : request.kind === 'file' || request.kind === 'stash' ? (files[0] ? surface(view,files[0],`git-diff-${document.id}`) : empty(view)) : combined(view,document)))
+      .child(!document ? empty(view) : request.kind === 'output' ? div().id(`git-output-${document.id}`).size_full().child(new Editor(view.surfaces.get(`git-output-${document.id}`)).readonly(true).appearance(false).bordered(false).size_full().aria_label(view.text.git_output))
+        : request.kind === 'file' || request.kind === 'stash' ? (files[0] ? surface(view,files[0],`git-diff-${document.id}`) : empty(view)) : combined(view,document,cx)))
     .children(document && request.kind !== 'output' ? [div().id('document-path').min_w_0().flex_shrink(0).child(new StatusBar().h_8().border_t_0().bg('#00000000')
       .child(NativeContextMenu.new('git-document-path',{items:menu.map(nativeItem)})
         .child(div().flex_1().min_w_0().truncate().child(path)))

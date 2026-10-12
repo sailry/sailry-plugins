@@ -1472,6 +1472,7 @@
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/context.js",
           "dev.sailry.platform/desktop/view.js",
+          "dev.sailry.platform/desktop/surfaces.js",
           "dev.sailry.platform/desktop/menus.js",
           "dev.sailry.platform/desktop/actions.js",
           "dev.sailry.platform/desktop/changes.js",

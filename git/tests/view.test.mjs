@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {checkbox} from '../dev.sailry.platform/desktop/changes.js';
+import {Surfaces} from '../dev.sailry.platform/desktop/surfaces.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -29,6 +30,12 @@ const {history} = vm.runInNewContext(`${source}\n({history})`, {
 });
 function descendants(element) {
   return typeof element === 'object' && element !== null ? [element,...element.items.flatMap(descendants)] : [];
+}
+
+function retained(documents) {
+  const states = new Surfaces(text=>({text}),text=>({text}));
+  states.sync(new Map(documents.map(document=>[document.id,document])));
+  return states;
 }
 
 test('main workspace starts its changes panel at 320 pixels', async () => {
@@ -303,11 +310,11 @@ test('output documents omit diff status and path actions', () => {
   const {content} = vm.runInNewContext(`${source}\n({content})`,{
     div:() => element('div'),theme:() => ({colors:{}}),
     StatusBar:class {constructor(){return element('status');}},
-    SourceSurface:{new:(id,props) => element('source',{id,...props})},
+    Editor:class {constructor(state){return element('source',state);}},
     NativeContextMenu:{new:(id,props) => element('menu',{id,...props})},
   });
   const document={id:'output:',request:{kind:'output'},text:'Git output'};
-  const nodes=descendants(content({text:{git_output:'Output'},repo:{documents:new Map([[document.id,document]]),selected:document.id}}));
+  const nodes=descendants(content({surfaces:retained([document]),text:{git_output:'Output'},repo:{documents:new Map([[document.id,document]]),selected:document.id}}));
   assert.ok(nodes.some(node=>node.kind==='source'&&node.props.text===document.text));
   assert.equal(nodes.some(node=>node.kind==='status'),false);
   assert.equal(nodes.some(node=>node.style.id?.[0]==='document-path'),false);
@@ -318,12 +325,12 @@ test('single diffs grow inside the document flex viewport', () => {
   const {content} = vm.runInNewContext(`${source}\n({content})`,{
     div:() => element('div'),theme:() => ({colors:{success:'success',destructive:'destructive'}}),
     StatusBar:class {constructor(){return element('status');}},
-    DiffSurface:{new:(id,props) => element('diff',{id,...props})},
+    Diff:class {constructor(state){return element('diff',{state});}},
     NativeContextMenu:{new:(id,props) => element('menu',{id,...props})},
   });
   const document={id:'notes.txt',request:{kind:'file',path:'notes.txt'},
     files:[{path:'notes.txt',text:'@@ -1 +1 @@\n-before\n+after',additions:1,deletions:1}]};
-  const tree=content({text:{},repo:{documents:new Map([[document.id,document]]),selected:document.id}});
+  const tree=content({surfaces:retained([document]),text:{},repo:{documents:new Map([[document.id,document]]),selected:document.id}});
   const bar=descendants(tree).find(node=>node.kind==='status');
   assert.ok(bar);assert.deepEqual(bar.style.h_8,[]);
   const added=descendants(bar).find(node=>node.items.includes('+1'));
@@ -336,15 +343,16 @@ test('single diffs grow inside the document flex viewport', () => {
   assert.deepEqual(editor.style.flex_1,[]);
   assert.deepEqual(editor.items[0].style.flex_1,[]);
   const diff=descendants(editor).find(node=>node.kind==='diff');
-  assert.equal(diff.props.id,'git-diff-notes.txt');
-  assert.equal(diff.props.text,document.files[0].text);
+  assert.equal(editor.items[0].items[0].style.id[0],'git-diff-notes.txt');
+  assert.equal(diff.props.state.text.endsWith(document.files[0].text),true);
+  assert.deepEqual(diff.style.header_visible,[false]);
 });
 
 function diffViews() {
   return vm.runInNewContext(`${source}\n({content,combined})`,{
     div:() => element('div'),theme:() => ({colors:{muted_foreground:'muted'}}),
     StatusBar:class {constructor(){return element('status');}},
-    DiffSurface:{new:(id,props)=>element('diff',{id,...props})},
+    Diff:class {constructor(state){return element('diff',{state});}},
     Collapse:{new:(id,props)=>element('collapse',{id,...props})},
     CollapseSlot:{new:(id,props)=>element('slot',{id,...props})},
     IconButton:{new:(id,props)=>element('button',{id,...props})},
@@ -370,9 +378,9 @@ test('combined diffs preserve binary entries and text through explicit host slot
   const files=[{path:'image.png',text:'Binary files a/image.png and b/image.png differ',binary:true,truncated:true,additions:0,deletions:0},
     {path:'large.txt',text:'@@ -1 +1 @@\n-before\n+after',binary:false,truncated:true,additions:1,deletions:1}];
   const document={id:'changes:',request:{kind:'changes'},files};
-  const view={text:{git_diff_binary:'Cannot display binary diff',git_diff_partial:'Partial diff',turn_changes_undo:'Undo'},
+  const view={surfaces:retained([document]),text:{git_diff_binary:'Cannot display binary diff',git_diff_partial:'Partial diff',turn_changes_undo:'Undo'},
     repo:{status:{entries:files.map(file=>({path:file.path,conflicted:false}))},writable:()=>true}};
-  const nodes=descendants(combined(view,document)),panels=nodes.filter(node=>node.kind==='collapse');
+  const nodes=descendants(combined(view,document,{theme:()=>({typography:{md:{size:16},mono_md:{size:14}}})})),panels=nodes.filter(node=>node.kind==='collapse');
   assert.equal(panels.length,2);
   for(let index=0;index<panels.length;index++) {
     assert.equal(panels[index].props.id,`diff-file-changes:/${files[index].path}`);
@@ -380,10 +388,31 @@ test('combined diffs preserve binary entries and text through explicit host slot
     assert.deepEqual(panels[index].items.map(slot=>slot.props.variant),['header','actions','content']);
   }
   const surfaces=nodes.filter(node=>node.kind==='diff');assert.equal(surfaces.length,1);
-  assert.equal(surfaces[0].props.path,'large.txt');assert.equal(surfaces[0].props.text,files[1].text);
+  assert.equal(surfaces[0].props.state.text.includes('b/large.txt'),true);assert.equal(surfaces[0].props.state.text.endsWith(files[1].text.replace(/\n$/,'')),true);
+  assert.deepEqual(surfaces[0].style.header_visible,[false]);
   assert.equal(nodes.filter(node=>node.items.includes(view.text.git_diff_binary)).length,1);
   assert.equal(nodes.filter(node=>node.items.includes(view.text.git_diff_partial)).length,1);
   assert.deepEqual(nodes.filter(node=>node.kind==='button').map(node=>node.props.id),['git-diff-undo-image.png','git-diff-undo-large.txt']);
+});
+
+test('combined diffs scale the code row budget', () => {
+  const {combined}=diffViews();
+  const files=[{path:'short.txt',text:'@@ -1 +1 @@\n-before\n+after',additions:1,deletions:1},
+    {path:'long.txt',text:['@@ -1,20 +1,20 @@',...Array(20).fill('-before'),...Array(20).fill('+after')].join('\n'),additions:20,deletions:20}];
+  const document={id:'changes:',request:{kind:'changes'},files};
+  const view={surfaces:retained([document]),text:{},repo:{status:{entries:[]},writable:()=>true}};
+  for(const [size,mono,heights] of [[16,10,[48,384]],[20,10,[60,480]],[12,20,[72,576]]]) {
+    const cx={theme:()=>({typography:{md:{size},mono_md:{size:mono}}})};
+    const nodes=descendants(combined(view,document,cx));
+    for(const [index,file] of files.entries()) {
+      const frame=nodes.find(node=>node.style.id?.[0]===`git-diff-changes:/${file.path}`);
+      assert.ok(frame);assert.deepEqual(frame.style.h,[heights[index]]);
+      assert.deepEqual(frame.style.w_full,[]);assert.deepEqual(frame.style.min_h_0,[]);
+      assert.deepEqual(frame.style.min_w_0,[]);
+      const diff=frame.items[0];assert.equal(diff.kind,'diff');
+      assert.deepEqual(diff.style.size_full,[]);assert.deepEqual(diff.style.header_visible,[false]);
+    }
+  }
 });
 
 test('branch selectors reuse native icon, label, and dropdown slots', () => {

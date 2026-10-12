@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {Repository} from '../dev.sailry.platform/desktop/repository.js';
 import {Menus} from '../dev.sailry.platform/desktop/menus.js';
+import {Surfaces} from '../dev.sailry.platform/desktop/surfaces.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/main.js', import.meta.url), 'utf8'))
   .replace(/^import[\s\S]*?;\n/gm, '').replace('export default class', 'class');
@@ -15,7 +16,7 @@ const settle = async () => { for (let index=0;index<12;index++) await Promise.re
 function fixture(discovery) {
   const changes = [deferred(),deferred(),deferred()]; let reads=0, queries=0, cursor=0;
   const shortcuts=[];
-  const globals = {View:class {}, EditorState:text=>({text}), context:()=>'{"locale":"en"}',
+  const globals = {View:class {}, Surfaces, DiffState:()=>({}), EditorState:text=>({text}), context:()=>'{"locale":"en"}',
     messages:()=>({}), workspaceMode:()=> 'main', createText:()=> 'message', Repository,
     Actions:class {}, Menus:class {}, readResourceTarget:()=>null,
     nextWindowActivation:()=>new Promise(()=>{}),registerShortcuts:bindings=>{shortcuts.push(bindings);return 'FixtureGitKeys';},
@@ -47,7 +48,7 @@ test('renderer owns scoped shortcuts including native text input submission',()=
 function contributions() {
   const change=deferred(),event=deferred(),reads=[],branches=[],choices=[],published=[];let changes=0,events=0;
   const never=()=>new Promise(()=>{});
-  const globals={View:class {},EditorState:text=>({text}),context:()=>'{"locale":"en"}',
+  const globals={View:class {},Surfaces,DiffState:()=>({}),EditorState:text=>({text}),context:()=>'{"locale":"en"}',
     messages:()=>({}),workspaceMode:()=> 'main',createText:()=> 'message',Repository,Menus,
     Actions:class {choose(title,items){choices.push({title,items});}},registerShortcuts:()=> 'FixtureGitKeys',
     readScope:()=>({worktree:'captured'}),readLocation:()=>({surface:'project',worktree:'captured',branch:'main',main:true,git:true,can_move:true}),
@@ -277,9 +278,10 @@ test('native branch controls open the existing captured chooser only when loaded
 
 test('closing the selected document focuses the actual successor surface',()=>{
   const surfaces=[],fallback=[],choices=new Map();
-  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusSurface:id=>surfaces.push(id),
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},
     collapseOpen:id=>choices.get(id) ?? null,views:{defaultOpen:true}});
   const owner=new Git();
+  owner.surfaces={focus:id=>surfaces.push(id)};
   owner.repo=new Repository({},()=>{});owner.contentFocus={focus:()=>fallback.push(true)};
   const documents=[
     {id:'first',request:{kind:'file'},files:[{path:'first.txt',text:'diff'}]},
@@ -301,9 +303,9 @@ test('closing the selected document focuses the actual successor surface',()=>{
 
 test('binary successors keep the content keyboard scope without requesting a diff surface',()=>{
   const surfaces=[],fallback=[];
-  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusSurface:id=>surfaces.push(id),
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},
     collapseOpen:()=>null,views:{defaultOpen:true}});
-  const owner=new Git();owner.contentFocus={focus:()=>fallback.push(true)};
+  const owner=new Git();owner.surfaces={focus:id=>surfaces.push(id)};owner.contentFocus={focus:()=>fallback.push(true)};
   owner.repo={selected:'binary',documents:new Map([
     ['binary',{id:'binary',request:{kind:'file'},files:[{path:'image.png',text:'raw metadata',binary:true}]}],
     ['combined',{id:'combined',request:{kind:'changes'},files:[{path:'image.png',text:'raw metadata',binary:true}]}],
@@ -313,9 +315,20 @@ test('binary successors keep the content keyboard scope without requesting a dif
 });
 
 test('closing a background document does not change content focus',()=>{
-  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusSurface:()=>assert.fail('background close must not focus')});
-  const owner=new Git();owner.repo=new Repository({},()=>{});
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {}});
+  const owner=new Git();owner.surfaces={focus:()=>assert.fail('background close must not focus')};owner.repo=new Repository({},()=>{});
   owner.repo.tabs=['first','second'];owner.repo.documents=new Map(owner.repo.tabs.map(id=>[id,{id,request:{kind:'file'}}]));
   owner.repo.selected='second';owner.current='dir/tracked/src';
   owner.closeDocument('first');assert.equal(owner.repo.selected,'second');assert.equal(owner.current,'dir/tracked/src');
+});
+
+test('released controllers cannot recreate surfaces after late notifications',()=>{
+  const state=fixture(deferred());
+  state.owner.repo.documents.set('captured',{id:'captured',request:{kind:'file'},files:[{path:'a.txt',text:'@@ -1 +1 @@\n-old\n+new\n'}]});
+  state.owner.repo.notify();
+  assert.equal(state.owner.surfaces.states.size,1);
+  state.owner.release();
+  assert.equal(state.owner.surfaces.states.size,0);
+  state.owner.repo.notify();
+  assert.equal(state.owner.surfaces.states.size,0);
 });
