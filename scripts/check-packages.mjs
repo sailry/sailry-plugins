@@ -12,7 +12,7 @@ const version = new RegExp(`^${number}\\.${number}\\.${number}(?:-${preview}(?:\
 const modules = new Set([
   'gpui-base', 'gpui-component', 'gpui-kit', 'sailry', 'sailry/ui',
   'sailry/search', 'sailry/forms', 'sailry/sdk', 'sailry/connections', 'sailry/credentials', 'sailry/models',
-  'sailry/card', 'sailry/cards',
+  'sailry/card', 'sailry/cards', 'sailry/registration',
   'sailry/documents', 'sailry/file-transfers', 'sailry/ssh-transfers', 'sailry/artifacts',
 ]);
 

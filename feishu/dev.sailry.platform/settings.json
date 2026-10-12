@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "description": "1. Create an internal app in the [Feishu developer console](https://open.feishu.cn/app)\n2. Enable the bot and document/comment read permissions listed for [fetch-doc and get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Publish the app and share the required documents with its bot\n4. Copy App ID and App Secret from the app’s credentials",
+  "description": "Publish the app with [document and comment read permissions](https://open.feishu.cn/document/mcp_open_tools/supported-tools), then add the app to required documents\nUse the [developer console](https://open.feishu.cn/app) for manual setup",
   "properties": {
     "app_id": {
       "type": "string",
@@ -33,52 +33,52 @@
     "en": {
       "app_id": "App ID",
       "app_secret": "App Secret",
-      "description": "1. Create an internal app in the [Feishu developer console](https://open.feishu.cn/app)\n2. Enable the bot and document/comment read permissions listed for [fetch-doc and get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Publish the app and share the required documents with its bot\n4. Copy App ID and App Secret from the app’s credentials"
+      "description": "Publish the app with [document and comment read permissions](https://open.feishu.cn/document/mcp_open_tools/supported-tools), then add the app to required documents\nUse the [developer console](https://open.feishu.cn/app) for manual setup"
     },
     "zh-CN": {
       "app_id": "App ID",
       "app_secret": "App Secret",
-      "description": "1. 在[飞书开放平台](https://open.feishu.cn/app)创建企业自建应用\n2. 启用机器人，并开通 [fetch-doc 和 get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools) 所需的文档、评论读取权限\n3. 发布应用，将需要读取的文档分享给机器人\n4. 复制应用凭证中的 App ID 和 App Secret"
+      "description": "发布应用并开通[文档、评论读取权限](https://open.feishu.cn/document/mcp_open_tools/supported-tools)，再为所需文档添加应用\n手动配置可使用[开发者控制台](https://open.feishu.cn/app)"
     },
     "zh-TW": {
       "app_id": "App ID",
       "app_secret": "App Secret",
-      "description": "1. 在[飛書開放平台](https://open.feishu.cn/app)建立企業自建應用\n2. 啟用機器人，並開通 [fetch-doc 和 get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools) 所需的文件、留言讀取權限\n3. 發佈應用，將需要讀取的文件分享給機器人\n4. 複製應用憑證中的 App ID 和 App Secret"
+      "description": "發佈應用並開通[文件、留言讀取權限](https://open.feishu.cn/document/mcp_open_tools/supported-tools)，再為所需文件新增應用程式\n手動設定可使用[開發者控制台](https://open.feishu.cn/app)"
     },
     "de": {
       "app_id": "App-ID",
       "app_secret": "App-Geheimnis",
-      "description": "1. Erstelle eine interne App in der [Feishu-Entwicklerkonsole](https://open.feishu.cn/app)\n2. Aktiviere den Bot und die Dokument-/Kommentar-Leserechte für [fetch-doc und get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Veröffentliche die App und teile die benötigten Dokumente mit ihrem Bot\n4. Kopiere App-ID und App-Geheimnis aus den Zugangsdaten der App"
+      "description": "Veröffentliche die App mit [Dokument- und Kommentar-Leserechten](https://open.feishu.cn/document/mcp_open_tools/supported-tools) und füge sie den benötigten Dokumenten hinzu\nNutze die [Entwicklerkonsole](https://open.feishu.cn/app) für die manuelle Einrichtung"
     },
     "es": {
       "app_id": "ID de la aplicación",
       "app_secret": "Secreto de la aplicación",
-      "description": "1. Crea una aplicación interna en la [consola de Feishu](https://open.feishu.cn/app)\n2. Activa el bot y los permisos de lectura de documentos y comentarios de [fetch-doc y get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Publica la aplicación y comparte los documentos necesarios con su bot\n4. Copia el ID y el secreto de las credenciales de la aplicación"
+      "description": "Publica la aplicación con [permisos de lectura de documentos y comentarios](https://open.feishu.cn/document/mcp_open_tools/supported-tools) y añádela a los documentos necesarios\nUsa la [consola de desarrollo](https://open.feishu.cn/app) para la configuración manual"
     },
     "fr": {
       "app_id": "ID de l’application",
       "app_secret": "Secret de l’application",
-      "description": "1. Créez une application interne dans la [console Feishu](https://open.feishu.cn/app)\n2. Activez le bot et les droits de lecture des documents et commentaires pour [fetch-doc et get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Publiez l’application et partagez les documents nécessaires avec son bot\n4. Copiez l’ID et le secret dans les identifiants de l’application"
+      "description": "Publiez l’application avec les [droits de lecture des documents et commentaires](https://open.feishu.cn/document/mcp_open_tools/supported-tools) et ajoutez-la aux documents nécessaires\nUtilisez la [console de développement](https://open.feishu.cn/app) pour la configuration manuelle"
     },
     "ja": {
       "app_id": "App ID",
       "app_secret": "App Secret",
-      "description": "1. [Feishu 開発者コンソール](https://open.feishu.cn/app)で社内アプリを作成\n2. ボットと [fetch-doc、get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools) に必要な文書・コメントの読み取り権限を有効化\n3. アプリを公開し、必要な文書をボットと共有\n4. アプリの認証情報から App ID と App Secret をコピー"
+      "description": "[文書・コメントの読み取り権限](https://open.feishu.cn/document/mcp_open_tools/supported-tools)を設定してアプリを公開し、必要な文書にアプリを追加\n手動設定には[開発者コンソール](https://open.feishu.cn/app)を使用"
     },
     "ko": {
       "app_id": "App ID",
       "app_secret": "App Secret",
-      "description": "1. [Feishu 개발자 콘솔](https://open.feishu.cn/app)에서 내부 앱 생성\n2. 봇과 [fetch-doc 및 get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)에 필요한 문서·댓글 읽기 권한 활성화\n3. 앱을 게시하고 필요한 문서를 봇과 공유\n4. 앱 자격 증명에서 App ID와 App Secret 복사"
+      "description": "[문서·댓글 읽기 권한](https://open.feishu.cn/document/mcp_open_tools/supported-tools)을 설정해 앱을 게시하고 필요한 문서에 앱 추가\n수동 설정은 [개발자 콘솔](https://open.feishu.cn/app) 사용"
     },
     "pt-BR": {
       "app_id": "ID do aplicativo",
       "app_secret": "Segredo do aplicativo",
-      "description": "1. Crie um aplicativo interno no [console do Feishu](https://open.feishu.cn/app)\n2. Ative o bot e as permissões de leitura de documentos e comentários para [fetch-doc e get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Publique o aplicativo e compartilhe os documentos necessários com o bot\n4. Copie o ID e o segredo nas credenciais do aplicativo"
+      "description": "Publique o aplicativo com [permissões de leitura de documentos e comentários](https://open.feishu.cn/document/mcp_open_tools/supported-tools) e adicione-o aos documentos necessários\nUse o [console de desenvolvimento](https://open.feishu.cn/app) para a configuração manual"
     },
     "ru": {
       "app_id": "ID приложения",
       "app_secret": "Секрет приложения",
-      "description": "1. Создайте внутреннее приложение в [консоли Feishu](https://open.feishu.cn/app)\n2. Включите бота и права чтения документов и комментариев для [fetch-doc и get-comments](https://open.feishu.cn/document/mcp_open_tools/supported-tools)\n3. Опубликуйте приложение и поделитесь нужными документами с его ботом\n4. Скопируйте ID и секрет из учётных данных приложения"
+      "description": "Опубликуйте приложение с [правами чтения документов и комментариев](https://open.feishu.cn/document/mcp_open_tools/supported-tools) и добавьте его в нужные документы\nДля ручной настройки используйте [консоль разработчика](https://open.feishu.cn/app)"
     }
   }
 }
