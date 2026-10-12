@@ -100,3 +100,15 @@ test('results preserve native values and authoritative uncertain faults', () => 
   const failure = {isError:true,error:{code:'outcome_unknown',message:'The provider outcome is uncertain'}};
   assert.equal(host.result({output:failure}),failure);
 });
+
+test('image display reads the original prompt and published path', () => {
+  const display = extension.tools.find(tool => tool.name === 'generate_image').display;
+  assert.deepEqual(display.output, {body:{
+    text:{source:'arguments',path:'/prompt'},path:{source:'result',path:'/path'}
+  }});
+  assert.equal(display.input,undefined);
+  const host = adapter(),prompt = '  A forest\n"Keep this text" 🙂\n';
+  assert.equal(host.image({prompt}).prompt,prompt);
+  const data = {path:'assets/generated/image.png',job:null,usage:{total_tokens:12}};
+  assert.equal(host.result({output:{kind:'media',data}}),data);
+});
