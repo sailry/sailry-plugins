@@ -1,14 +1,10 @@
 const en = {
-  review_clean: files => `${files} ${files === 1 ? 'file' : 'files'} · No issues`,
-  review_issues: findings => `${findings} ${findings === 1 ? 'issue' : 'issues'}`,
+  review_files: files => `${files} ${files === 1 ? 'file' : 'files'}`,
 };
 const zh = {
-  review_clean: files => `${files} 个文件 · 无问题`,
-  review_issues: findings => `${findings} 个问题`,
+  review_files: files => `${files} 个文件`,
 };
 
-export function completion(files, findings) {
-  const key = findings === 0 ? 'review_clean' : 'review_issues';
-  const count = findings === 0 ? files : findings;
-  return {label:en[key](count),locales:{'zh-CN':zh[key](count)}};
+export function completion(files) {
+  return {label:en.review_files(files),locales:{'zh-CN':zh.review_files(files)}};
 }

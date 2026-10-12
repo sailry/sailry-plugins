@@ -6,7 +6,7 @@ import {completion} from './locales.js';
 
 export function display(value) {
   return {...value,sailry_result:{version:1,diagnostics:[],
-    status:completion(value.reviewed_files,value.findings)}};
+    status:completion(value.reviewed_files)}};
 }
 
 function remaining(scope, covered) {

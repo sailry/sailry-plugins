@@ -19,16 +19,16 @@ test('zero findings still require every file and group', async () => {
   assert.equal(result.reviewed_files,15);
   assert.equal(result.findings,0);
   assert.equal(result.remaining.counts.files,0);
-  assert.deepEqual(result.sailry_result,{version:1,diagnostics:[],status:{label:'15 files · No issues',locales:{'zh-CN':'15 个文件 · 无问题'}}});
+  assert.deepEqual(result.sailry_result,{version:1,diagnostics:[],status:{label:'15 files',locales:{'zh-CN':'15 个文件'}}});
 });
 
-test('summarizes findings without changing their records',async()=>{
+test('summarizes files without changing findings',async()=>{
   const f=await fixture(),scope=await f.invoke('scope',{});
   const reported=await f.invoke('finding',finding(scope));
   const before=structuredClone([...f.values].filter(([key])=>key.includes('/finding/')));
   const completed=await f.invoke('complete',receipt(scope));
   assert.equal(completed.findings,1);
-  assert.deepEqual(completed.sailry_result.status,{label:'1 issue',locales:{'zh-CN':'1 个问题'}});
+  assert.deepEqual(completed.sailry_result.status,{label:'1 file',locales:{'zh-CN':'1 个文件'}});
   assert.ok(reported.finding.id);
   assert.deepEqual([...f.values].filter(([key])=>key.includes('/finding/')),before);
 });
