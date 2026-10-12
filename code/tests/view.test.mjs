@@ -66,6 +66,9 @@ test('details localizes Cancel and removes availability button',()=>{
   view.dialog={id:'details',kind:'details',row:item};
   const tree=render(view),modal=find(tree,'details');
   assert.equal(modal.props.width,600);
+  assert.equal(find(tree,'code_information').props.variant,'outline');
+  assert.equal(find(tree,'code_settings').props.variant,undefined);
+  assert.equal(find(tree,'code_languages').props.variant,undefined);
   assert.equal(find(tree,'code-details-close').items[0].style.label[0],'取消');
   assert.equal(find(tree,'code-detail-availability-info'),undefined);
   assert(find(tree,'code-detail-package'));

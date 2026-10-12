@@ -74,7 +74,7 @@ function dialog(view) {
     return modal.child(div().id('code-server-details').v_flex().gap_4()
       .children(item.languages.length ? [div().id('code-server-description').text_sm()
         .text_color(theme().colors.muted_foreground).child(text.code_server_description.replace('%{languages}',item.languages.join(', ')))] : [])
-      .child(SettingsGroup.new('code_information',{heading:false}).children(details.filter(([,value])=>value)
+      .child(SettingsGroup.new('code_information',{heading:false,variant:'outline'}).children(details.filter(([,value])=>value)
         .map(([key,value])=>row(`code-detail-${key}`,text[`code_${key}`],value))))).child(footer);
   }
   const details=[['package',receipt.package],['version',receipt.version]];
