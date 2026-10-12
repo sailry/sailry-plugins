@@ -122,3 +122,32 @@ test("filtered paging advances through foreign records without skipping owned ta
   const second=(await setup.plan({action:"list",after:first.after})).result;
   assert.deepEqual(plain(second.items).map(item=>item.id),[id(44)]);assert.equal(second.after,null);
 });
+
+test("weekly tasks preserve scope through create edit and delete",async()=>{
+  const setup=await fixture(), timing={kind:"weekly",data:{timezone:"Asia/Shanghai",weekdays:[5,4,3,2,1],hour:9,minute:0}};
+  const reply=await setup.plan({action:"create",name:"Weekday review",prompt:"Review yesterday",timing});
+  const created=(await setup.commit(reply)).result;
+  assert.deepEqual(plain(created.timing),{kind:"weekly",data:{...timing.data,weekdays:[1,2,3,4,5]}});
+  assert.deepEqual(plain(created.config),setup.config);assert.equal(created.project,setup.project);assert.equal(created.worktree,setup.worktree);
+  const update=await setup.plan({action:"update",id:created.id,revision:"1",name:"Renamed"});
+  const edited=(await setup.commit(update)).result;
+  assert.deepEqual(plain(edited.timing),plain(created.timing));assert.deepEqual(plain(edited.config),setup.config);
+  const listed=(await setup.plan({action:"list"})).result.items;
+  assert.deepEqual(plain(listed[0].timing),plain(created.timing));
+  const removal=await setup.plan({action:"delete",id:created.id,revision:"2"});
+  assert.equal((await setup.commit(removal)).result.removed,true);
+  assert.equal(setup.schedules.size,0);assert.equal(setup.handlers.size,0);
+});
+
+test("invalid weekly fields fail before mutation preparation",async()=>{
+  const setup=await fixture(), data={timezone:"UTC",weekdays:[1,2,3,4,5],hour:9,minute:0};
+  for(const invalid of [
+    {...data,timezone:undefined},{...data,timezone:""},{...data,timezone:" UTC "},
+    {...data,weekdays:[]},{...data,weekdays:[1,1]},{...data,weekdays:[0]},{...data,weekdays:[8]},
+    {...data,hour:24},{...data,minute:60},{...data,at_ms:Date.now()+3_600_000},
+  ]) {
+    const reply=await setup.plan({action:"create",name:"Review",prompt:"Read",timing:{kind:"weekly",data:invalid}});
+    assert.equal(reply.result.error.code,"invalid_request");assert.equal(reply.call,undefined);
+  }
+  assert.equal(setup.values.size,0);assert.equal(setup.schedules.size,0);assert.equal(setup.handlers.size,0);
+});

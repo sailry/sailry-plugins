@@ -1,12 +1,12 @@
 import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {read, fault} from "./records.js";
+import {read, fault, timing} from "./records.js";
 import {listing, saveOperations, removeOperations, transactionResult} from "./mutations.js";
 
 export function initialize({project, tools, config}) {
   if (!config || config.assistant || config.resource) return {instruction:"",tools:[]};
   stageTurnState({project,worktree:project === null ? null : context().worktree,config});
   const now = Date.now();
-  return {instruction:`Scheduled tasks use UTC timestamps in milliseconds. Current UTC: ${new Date(now).toISOString()} (${now} ms). Ask for the schedule and timezone if missing. Repeating intervals are fixed durations, not local calendar rules.`,tools};
+  return {instruction:`Current UTC: ${new Date(now).toISOString()} (${now} ms). Ask for the schedule and timezone if missing. Once/every use UTC milliseconds; every is a fixed elapsed interval. Weekly uses an explicit IANA timezone, ISO weekdays (Monday=1 through Sunday=7), hour and minute. It runs once at the earlier instant of a repeated local time and skips a missing local time.`,tools};
 }
 function argumentsFor(value) {
   const fields = {list:["after"],create:["name","prompt","timing","enabled"],
@@ -25,16 +25,12 @@ function argumentsFor(value) {
     throw fault("invalid_request", "Task update requires a change");
   }
   if (Object.hasOwn(value,"timing")) {
-    const timing=value.timing, once=timing?.kind === "once", every=timing?.kind === "every";
-    const fields=once ? ["at_ms"] : ["anchor_ms","interval_ms"];
-    if (!timing || typeof timing !== "object" || Array.isArray(timing) || (!once && !every)
-        || Object.keys(timing).some(key => !["kind","data"].includes(key))
-        || !timing.data || typeof timing.data !== "object" || Array.isArray(timing.data)
-        || Object.keys(timing.data).some(key => !fields.includes(key))) {
-      throw fault("invalid_request", "Invalid task timing");
+    const schedule = timing(value.timing, true);
+    if (schedule.kind !== "weekly") {
+      const first = schedule.kind === "once" ? schedule.data.at_ms : schedule.data.anchor_ms;
+      if (first <= Date.now()) throw fault("invalid_request", "Task start time must be in the future");
     }
-    const first=once ? timing.data.at_ms : timing.data.anchor_ms;
-    if (!Number.isSafeInteger(first) || first <= Date.now()) throw fault("invalid_request", "Task start time must be in the future");
+    return {...value,timing:schedule};
   }
   return value;
 }

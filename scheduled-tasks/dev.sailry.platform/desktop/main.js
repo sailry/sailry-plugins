@@ -4,7 +4,7 @@ import {prepareRequest, completeRequest, forgetRequest, nextChange, readProjectC
 import {modal_closed,nextControlEvent,toast} from "sailry/ui";
 import {list, history, states} from "../host/management.js";
 import {messages} from "./locales.js";
-import {editor, release, value, effortKey} from "./editor.js";
+import {editor, release, value, effortKey, setTiming} from "./editor.js";
 import {render} from "./view.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
@@ -79,7 +79,13 @@ export default class ScheduledTasks extends View {
     }
     const editing = this.editing;
     if (!editing || this.busy || this.pending) return;
-    if (event.id === "task-timing" && ["once","every"].includes(event.value)) editing.repeat = event.value === "every";
+    if (event.id === "task-timing" && ["once","every","weekly"].includes(event.value)) setTiming(editing,event.value,this.text);
+    else if (/^task-weekday-[1-7]$/.test(event.id) && typeof event.value === "boolean" && editing.kind === "weekly") {
+      const day = Number(event.id.slice(-1));
+      editing.weekdays = editing.weekdays.filter(value => value !== day);
+      if (event.value) editing.weekdays.push(day);
+      editing.weekdays.sort((left,right) => left-right);
+    }
     else if (event.id === "task-project") {
       const project = event.value === "none" ? null : this.catalog.projects.find(project => project.id === event.value)?.id;
       if (project === undefined) return;
@@ -132,7 +138,7 @@ export default class ScheduledTasks extends View {
     if (this.pending) return this.perform(null, null, cx);
     if (this.editing?.modelLoading) return;
     try { this.perform("save", value(this.editing), cx); }
-    catch (error) { this.report(["required", "modelRequired", "invalidTime", "invalidInterval"].includes(error.message) ? error.message : "failed"); cx.notify(); }
+    catch (error) { this.report(["required", "modelRequired", "invalidTime", "invalidInterval", "invalidClock", "timezoneRequired", "weekdaysRequired"].includes(error.message) ? error.message : "failed"); cx.notify(); }
   }
   perform(handler, input, cx) {
     if (this.busy) return;

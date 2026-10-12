@@ -21,6 +21,35 @@ function bytes(text) {
   }
   return length;
 }
+export function timing(input, strict = false) {
+  const fields = {once:["at_ms"],every:["anchor_ms","interval_ms"],weekly:["timezone","weekdays","hour","minute"]};
+  if (!input || typeof input !== "object" || Array.isArray(input) || !Object.hasOwn(fields,input.kind)
+      || !input.data || typeof input.data !== "object" || Array.isArray(input.data)) {
+    throw fault("invalid_request", "Invalid task timing");
+  }
+  if ((strict || input.kind === "weekly") && (Object.keys(input).some(key => !["kind","data"].includes(key))
+      || Object.keys(input.data).some(key => !fields[input.kind].includes(key)))) {
+    throw fault("invalid_request", "Invalid task timing");
+  }
+  if (input.kind === "weekly") {
+    const {timezone,weekdays,hour,minute} = input.data;
+    if (typeof timezone !== "string" || !timezone || timezone !== timezone.trim()
+        || !Array.isArray(weekdays) || !weekdays.length
+        || weekdays.some(day => !Number.isInteger(day) || day < 1 || day > 7)
+        || new Set(weekdays).size !== weekdays.length
+        || !Number.isInteger(hour) || hour < 0 || hour > 23
+        || !Number.isInteger(minute) || minute < 0 || minute > 59) {
+      throw fault("invalid_request", "Invalid task timing");
+    }
+    return {kind:"weekly",data:{timezone,weekdays:[...weekdays].sort((left,right) => left-right),hour,minute}};
+  }
+  const first = input.kind === "once" ? input.data.at_ms : input.data.anchor_ms;
+  if (!Number.isSafeInteger(first) || first < 0 || (input.kind === "every"
+      && (!Number.isSafeInteger(input.data.interval_ms) || input.data.interval_ms < 1000 || input.data.interval_ms > 31536000000))) {
+    throw fault("invalid_request", "Invalid task timing");
+  }
+  return input;
+}
 export function draft(input) {
   const id = input.id ?? context().invocation;
   key(id);
@@ -37,14 +66,9 @@ export function draft(input) {
   if (input.config?.assistant || input.config?.resource) {
     throw fault("invalid_request", "Task requires a project or unassigned scope");
   }
-  const timing = input.timing;
-  const first = timing?.kind === "once" ? timing.data?.at_ms : timing?.kind === "every" ? timing.data?.anchor_ms : null;
-  if (!Number.isSafeInteger(first) || first < 0 || (timing.kind === "every"
-      && (!Number.isSafeInteger(timing.data.interval_ms) || timing.data.interval_ms < 1000 || timing.data.interval_ms > 31536000000))) {
-    throw fault("invalid_request", "Invalid task timing");
-  }
+  const schedule = timing(input.timing);
   return {id, name:input.name.trim(), prompt:input.prompt, project, worktree,
-    config:input.config, timing, enabled:input.enabled, queue:input.queue};
+    config:input.config, timing:schedule, enabled:input.enabled, queue:input.queue};
 }
 export function requireConfig(config) {
   if (!config) throw fault("not_configured", "Task requires an explicit model");

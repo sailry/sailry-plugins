@@ -23,15 +23,15 @@ function fixture(resolve=async()=>config) {
     }});
     if(id)nodes.set(id,proxy);return proxy;
   }
-  const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey})`,{
+  const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey,setTiming})`,{
     div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
-    ...Object.fromEntries(["TextField","DateTimeField","SelectField","ModelPopup","SegmentedTabs"]
+    ...Object.fromEntries(["TextField","DateTimeField","SelectField","ModelPopup","SegmentedTabs","Toggle"]
       .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}])),
     createText:(value,props)=>{const id=`text-${texts.size}`;texts.set(id,value);created.push(props);return id;},
     readText:id=>texts.get(id),releaseText:id=>released.push(id),createDateTime:value=>value,readDateTime:value=>value,
     releaseDateTime:value=>released.push(value),
   });
-  const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,
+  const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,
     resolveSessionModel:resolve,toast:value=>notices.push(value)});
   const view=new Controller();Object.assign(view,{text:messages("en"),items:[],busy:false,pending:null,loading:false,modelsError:false,
     catalog:{projects:[{id:"project",name:"Project"},{id:"other",name:"Other"}],worktrees:[{id:"tree",project:"project",path:"Branch"},{id:"foreign",project:"other",path:"Other"}]},
@@ -49,7 +49,7 @@ test("new forms use vertical fields, full-width schedules and explicit model str
   assert.deepEqual(setup.created.map(field=>field.placeholder),["Name this task","What should run?","Seconds"]);
   assert.equal(view.editing.model,null);assert.equal(view.editing.draft.config,null);assert.equal(view.editing.draft.queue,"default");
   assert.equal(setup.nodes.get("task-timing").kind,"SegmentedTabs");
-  assert.deepEqual(plain(setup.nodes.get("task-timing").props.items),[{id:"once",label:"Once"},{id:"every",label:"Repeat"}]);
+  assert.deepEqual(plain(setup.nodes.get("task-timing").props.items),[{id:"once",label:"Once"},{id:"every",label:"Repeat"},{id:"weekly",label:"Weekly"}]);
   assert.equal(setup.nodes.get("task-project").kind,"SelectField");
   assert.equal(setup.nodes.get("task-model").kind,"ModelPopup");assert.equal(setup.nodes.get("task-model").props.selected,null);
   assert.equal(setup.nodes.get("task-strength").kind,"SelectField");assert.equal(setup.nodes.get("task-strength").props.disabled,true);
@@ -57,6 +57,45 @@ test("new forms use vertical fields, full-width schedules and explicit model str
   setup.texts.set(view.editing.name,"Review");setup.texts.set(view.editing.prompt,"Read the project");
   assert.throws(()=>setup.api.value(view.editing),/modelRequired/);
   setup.api.release(view.editing);assert.deepEqual(setup.released.slice(0,3),["text-0","text-1","text-2"]);assert.equal(setup.released.length,4);
+});
+test("weekly drafts preserve timezone days and time on rename",()=>{
+  const setup=fixture(),{api,view}=setup;
+  api.release(view.editing);
+  const timing={kind:"weekly",data:{timezone:"Asia/Shanghai",weekdays:[1,2,3,4,5],hour:9,minute:0}};
+  const item={id:"saved",revision:"2",name:"Review",prompt:"Keep this task",queue:"default",project:"project",worktree:"tree",enabled:true,config:{...config},timing};
+  view.editing=api.editor(item,view.text);setup.render();
+  assert.equal(view.editing.time,null);assert.equal(view.editing.interval,null);
+  assert.equal(setup.nodes.get("task-timing").props.selected,"weekly");
+  for(const day of [1,2,3,4,5,6,7]) {
+    const props=setup.nodes.get(`task-weekday-${day}`).props;
+    assert.equal(props.checked,day<=5);assert.equal(props.variant,"button");assert.equal(props.label,view.text[`weekday${day}`]);
+  }
+  setup.texts.set(view.editing.name,"Renamed");
+  assert.deepEqual(plain(api.value(view.editing)),{...item,name:"Renamed"});
+  assert.deepEqual(item.timing,timing);assert.notEqual(view.editing.weekdays,timing.data.weekdays);
+});
+test("timing switches retain drafts and require an explicit timezone",()=>{
+  const setup=fixture(),{view,api}=setup;
+  setup.texts.set(view.editing.name,"Review");setup.texts.set(view.editing.prompt,"Read the project");
+  view.editing.draft.config={...config};view.editing.model="provider/explicit";
+  const start=view.editing.time;
+  view.control({id:"task-timing",value:"weekly"},setup.cx);setup.render();
+  assert.equal(view.editing.time,null);assert.equal(view.editing.interval,null);
+  assert.equal(setup.texts.get(view.editing.timezone),"");
+  assert.throws(()=>api.value(view.editing),/timezoneRequired/);
+  setup.texts.set(view.editing.timezone,"Asia/Shanghai");setup.texts.set(view.editing.wallTime,"8:15");
+  view.control({id:"task-weekday-2",value:false},setup.cx);
+  view.control({id:"task-weekday-6",value:true},setup.cx);
+  const weekly={kind:"weekly",data:{timezone:"Asia/Shanghai",weekdays:[1,3,4,5,6],hour:8,minute:15}};
+  assert.deepEqual(plain(api.value(view.editing).timing),weekly);
+  view.control({id:"task-timing",value:"every"},setup.cx);
+  assert.equal(view.editing.time,start);assert.equal(view.editing.timezone,null);
+  assert.equal(api.value(view.editing).timing.kind,"every");
+  view.control({id:"task-timing",value:"weekly"},setup.cx);
+  assert.deepEqual(plain(api.value(view.editing).timing),weekly);
+  setup.texts.set(view.editing.wallTime,"24:00");assert.throws(()=>api.value(view.editing),/invalidClock/);
+  setup.texts.set(view.editing.wallTime,"09:00");view.editing.weekdays=[];
+  assert.throws(()=>api.value(view.editing),/weekdaysRequired/);
 });
 test("model changes preserve queues and policies; strength choices update only configuration",async()=>{
   const calls=[],setup=fixture(async(model,effort,base)=>{calls.push({model,effort,base});return {...config,effort:effort??"high"};});
