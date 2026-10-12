@@ -9,6 +9,19 @@ import {Controller} from './controller.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
 
+// Dynamic names must obey the SDK's Navigation label contract. Keep the
+// declared Worktree label when a raw project or branch name cannot represent it.
+function navigationLabel(value) {
+  if (typeof value !== 'string' || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
+    || !value.replace(/[\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/gu,'')) return undefined;
+  let bytes=0;
+  for (const character of value) {
+    const code=character.codePointAt(0);
+    bytes += code<=0x7f ? 1 : code<=0x7ff ? 2 : code<=0xffff ? 3 : 4;
+  }
+  return bytes<=128 ? {label:value} : undefined;
+}
+
 export default class Worktrees extends View {
   init(_props,cx) {
     cx.spawn(async cx => { this.notify = () => cx.notify(); });
@@ -63,7 +76,7 @@ export default class Worktrees extends View {
     const reply = id => event?.id === id ? {reply_to:event.sequence} : {};
     const label = !state.project ? this.text('composer_no_project') : state.main ? state.project_name : state.branch;
     publishContributions([
-      {id:'location',enabled:state.can_move && !(state.session && !state.project),label:{label},icon:state.main ? 'folder' : 'network',dropdown:true,...reply('location')},
+      {id:'location',enabled:state.can_move && !(state.session && !state.project),label:navigationLabel(label),icon:state.main ? 'folder' : 'network',dropdown:true,...reply('location')},
       {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},
