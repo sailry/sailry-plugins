@@ -112,7 +112,10 @@ export default class Files extends View {
     if (kind === 'open') {
       if (id.endsWith('\0more')) return this.explorer.load(id.slice(0,-5),true,cx);
       if (id.includes('\0')) return;
-      if (this.explorer.entry(id)?.kind === 'directory') return;
+      if (this.explorer.entry(id)?.kind === 'directory') {
+        if (this.explorer.pages.get(id)?.error) return this.explorer.load(id,false,cx);
+        return;
+      }
       return this.open(id,undefined,cx);
     }
     if (kind === 'drop') {

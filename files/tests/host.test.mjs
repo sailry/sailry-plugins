@@ -244,6 +244,41 @@ test('batch edits preserve atomic arguments and enforce exclusive forms', () => 
   assert.match(tool('edit_file').description,/fail without writing any change/);
 });
 
+test('edit diagnostics identify fields without echoing content', () => {
+  const privateValue = 'private-edit-fixture-content';
+  const valid = {path:privateValue,old_text:privateValue,new_text:privateValue,expected_revision:'a'.repeat(64)};
+  const change = {old_text:privateValue,new_text:privateValue};
+  const batch = {path:privateValue,expected_revision:'a'.repeat(64)};
+  const cases = [
+    [null,'Expected edit arguments with supported fields'],
+    [{...valid,[privateValue]:privateValue},'Expected edit arguments with supported fields'],
+    [{...valid,path:42},'path must be a string'],
+    [{...valid,expected_revision:privateValue},'expected_revision must be the 64-character revision from read_file'],
+    [{...valid,expected_revision:null},'expected_revision must be the 64-character revision from read_file'],
+    [{path:privateValue,old_text:privateValue,new_text:privateValue},'expected_revision must be the 64-character revision from read_file'],
+    [{...valid,old_text:''},'old_text must be a nonempty string'],
+    [{...valid,old_text:42},'old_text must be a nonempty string'],
+    [{...valid,new_text:42},'new_text must be a string'],
+    [{...valid,replace_all:privateValue},'replace_all must be a boolean'],
+    [{...valid,edits:[change]},'Use either edits or old_text and new_text'],
+    [{...batch,edits:[change],replace_all:true},'Set replace_all on each edits entry'],
+    [{...batch,edits:null},'edits must contain 1 to 128 entries'],
+    [{...batch,edits:[]},'edits must contain 1 to 128 entries'],
+    [{...batch,edits:Array(129).fill(change)},'edits must contain 1 to 128 entries'],
+    [{...batch,edits:[change,{...change,[privateValue]:privateValue}]},'edits[1] must contain supported edit fields'],
+    [{...batch,edits:[change,{...change,old_text:''}]},'edits[1].old_text must be a nonempty string'],
+    [{...batch,edits:[change,{...change,new_text:42}]},'edits[1].new_text must be a string'],
+    [{...batch,edits:[change,{...change,replace_all:privateValue}]},'edits[1].replace_all must be a boolean'],
+  ];
+  for (const [args,message] of cases) {
+    const result = host.edit(args);
+    assert.deepEqual(plain(result),{isError:true,error:{code:'invalid_request',message}});
+    assert.ok(!JSON.stringify(result).includes(privateValue));
+  }
+  assert.deepEqual(plain(host.edit({...batch,edits:[change],replace_all:false})),{...batch,edits:[change]});
+  assert.equal(host.read({path:42}).error.message,'Invalid file tool arguments');
+});
+
 test('file mutations retain revisions and explicit destinations', () => {
   const expected_revision = 'b'.repeat(64);
   assert.deepEqual(plain(host.remove({path:'note.txt',expected_revision})),{path:'note.txt',expected_revision});

@@ -6,8 +6,8 @@ function object(value, keys) {
     Object.keys(value).every(key => keys.includes(key));
 }
 
-function invalid() {
-  return {isError:true,error:{code:'invalid_request',message:'Invalid file tool arguments'}};
+function invalid(message = 'Invalid file tool arguments') {
+  return {isError:true,error:{code:'invalid_request',message}};
 }
 
 function revision(value) {
@@ -39,19 +39,30 @@ export function write(args) {
 }
 
 export function edit(args) {
-  if (!object(args,['path','old_text','new_text','replace_all','edits','expected_revision']) ||
-      typeof args.path !== 'string' || !current(args.expected_revision)) return invalid();
+  if (!object(args,['path','old_text','new_text','replace_all','edits','expected_revision'])) {
+    return invalid('Expected edit arguments with supported fields');
+  }
+  if (typeof args.path !== 'string') return invalid('path must be a string');
+  if (!current(args.expected_revision)) return invalid('expected_revision must be the 64-character revision from read_file');
   if (args.edits !== undefined) {
-    if (args.old_text !== undefined || args.new_text !== undefined ||
-        (args.replace_all !== undefined && args.replace_all !== false) ||
-        !Array.isArray(args.edits) || args.edits.length < 1 || args.edits.length > 128 ||
-        args.edits.some(change => !object(change,['old_text','new_text','replace_all']) ||
-          typeof change.old_text !== 'string' || !change.old_text || typeof change.new_text !== 'string' ||
-          (change.replace_all !== undefined && typeof change.replace_all !== 'boolean'))) return invalid();
+    if (args.old_text !== undefined || args.new_text !== undefined) return invalid('Use either edits or old_text and new_text');
+    if (args.replace_all !== undefined && args.replace_all !== false) return invalid('Set replace_all on each edits entry');
+    if (!Array.isArray(args.edits) || args.edits.length < 1 || args.edits.length > 128) return invalid('edits must contain 1 to 128 entries');
+    let error;
+    args.edits.some((change,index) => {
+      const field = `edits[${index}]`;
+      if (!object(change,['old_text','new_text','replace_all'])) error = `${field} must contain supported edit fields`;
+      else if (typeof change.old_text !== 'string' || !change.old_text) error = `${field}.old_text must be a nonempty string`;
+      else if (typeof change.new_text !== 'string') error = `${field}.new_text must be a string`;
+      else if (change.replace_all !== undefined && typeof change.replace_all !== 'boolean') error = `${field}.replace_all must be a boolean`;
+      return error !== undefined;
+    });
+    if (error) return invalid(error);
     return {path:args.path,edits:args.edits,expected_revision:args.expected_revision};
   }
-  if (typeof args.old_text !== 'string' || !args.old_text || typeof args.new_text !== 'string' ||
-      (args.replace_all !== undefined && typeof args.replace_all !== 'boolean')) return invalid();
+  if (typeof args.old_text !== 'string' || !args.old_text) return invalid('old_text must be a nonempty string');
+  if (typeof args.new_text !== 'string') return invalid('new_text must be a string');
+  if (args.replace_all !== undefined && typeof args.replace_all !== 'boolean') return invalid('replace_all must be a boolean');
   return {path:args.path,old_text:args.old_text,new_text:args.new_text,
     ...(args.replace_all !== undefined ? {replace_all:args.replace_all} : {}),expected_revision:args.expected_revision};
 }

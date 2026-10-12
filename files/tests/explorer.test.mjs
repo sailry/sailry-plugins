@@ -76,6 +76,45 @@ test('directory placeholders and continuation rows cannot become selected file p
   assert.deepEqual(plain(explorer.paths()),[]);
 });
 
+test('empty folders retain icons without synthetic children',async()=>{
+  const {explorer} = fixture(path => path ? page(path,[]) : page(path,[entry('empty','directory')]));
+  const text = {files_directory_empty:'Empty folder'};
+  await explorer.load('',false,cx);
+  assert.equal(explorer.items(text,() => [])[0].icon,'folder');
+  await explorer.expand('empty',cx);
+  let item = explorer.items(text,() => [])[0];
+  assert.equal(item.icon,'folder-open');
+  assert.equal(item.expanded,true);
+  assert.deepEqual(plain(item.children),[]);
+  assert.deepEqual(plain(explorer.visible()),['empty']);
+  explorer.collapse('empty',cx);
+  item = explorer.items(text,() => [])[0];
+  assert.equal(item.icon,'folder');
+  assert.deepEqual(plain(item.children),[]);
+});
+
+test('denied directories stop loading without pretending to be empty',async()=>{
+  let denied = true;
+  const {explorer,errors} = fixture(path => {
+    if (!path) return page(path,[entry('worktrees','directory')]);
+    if (denied) throw new Error(JSON.stringify({code:'permission_denied',message:'Outside this worktree'}));
+    return page(path,[entry('visible.txt')]);
+  });
+  await explorer.load('',false,cx);
+  await explorer.expand('worktrees',cx);
+  const failed = explorer.pages.get('worktrees');
+  assert.equal(failed.loaded,false);
+  assert.equal(failed.loading,false);
+  assert.equal(failed.error,'files_directory_failed');
+  assert.deepEqual(errors,['files_directory_failed']);
+  assert.deepEqual(plain(explorer.items({},() => [])[0].children),[]);
+  denied = false;
+  await explorer.load('worktrees',false,cx);
+  assert.equal(failed.error,null);
+  assert.equal(failed.loaded,true);
+  assert.deepEqual(plain(explorer.visible()),['worktrees','worktrees/visible.txt']);
+});
+
 test('watch refresh retains loaded pages and selection using only fresh revision cursors',async () => {
   let revision = 'first';
   const {explorer,calls} = fixture((path,after) => {

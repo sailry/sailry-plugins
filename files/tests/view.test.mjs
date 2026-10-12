@@ -44,6 +44,23 @@ test('main workspace starts its explorer at 320 pixels', async () => {
   assert.equal(workspace.props.navigation,'none');
 });
 
+test('failed directory activation retries the real directory',async()=>{
+  const main = (await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
+    .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
+  const Files = vm.runInNewContext(`${main}\nFiles`,{View:class {}});
+  const view = new Files(), calls = [], eventCx = {};
+  Object.assign(view,{explorer:{
+    entry:path => ({kind:path === 'file.txt' ? 'file' : 'directory'}),
+    pages:new Map([['worktrees',{error:'files_directory_failed'}],['empty',{loaded:true}]]),
+    load:async (...args) => calls.push(args),
+  },open:async (...args) => calls.push(['file',...args])});
+  await view.tree({tree:'files-tree',id:'worktrees',kind:'open'},eventCx);
+  await view.tree({tree:'files-tree',id:'empty',kind:'open'},eventCx);
+  await view.tree({tree:'files-tree',id:'file.txt',kind:'open'},eventCx);
+  await view.tree({tree:'another-tree',id:'worktrees',kind:'open'},eventCx);
+  assert.deepEqual(calls,[['worktrees',false,eventCx],['file','file.txt',undefined,eventCx]]);
+});
+
 test('search results eagerly register native button actions with captured line targets', async () => {
   const search = vm.runInNewContext(`${source}\nsearch`,{
     div:() => element('div'),theme:() => ({colors:{}}),

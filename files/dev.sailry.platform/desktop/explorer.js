@@ -141,12 +141,12 @@ export class Explorer {
       const page = this.pages.get(directory);
       const rows = (page?.entries ?? []).map(entry => {
         const path = join(directory,entry.name), folder = entry.kind === 'directory';
-        return {id:path,label:entry.name,icon:folder ? 'folder' : 'file',
+        return {id:path,label:entry.name,icon:folder ? this.expanded.has(path) ? 'folder-open' : 'folder' : 'file',
           expanded:folder && this.expanded.has(path),menu:menu(path),
           ...(folder ? {children:children(path)} : {})};
       });
-      if (!rows.length && directory !== '') rows.push({id:`${directory}\0empty`,
-        label:page?.loaded ? text.files_directory_empty : '',...(page?.loaded ? {} : {icon:'loader-circle'}),disabled:true});
+      if (!rows.length && directory !== '' && !page?.loaded && !page?.error) rows.push({id:`${directory}\0loading`,
+        label:'',icon:'loader-circle',disabled:true});
       if (page?.next) rows.push({id:`${directory}\0more`,icon:'ellipsis',
         label:text.files_load_more,disabled:page.loading});
       return rows;
