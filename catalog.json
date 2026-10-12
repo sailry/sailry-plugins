@@ -5420,7 +5420,7 @@
               {
                 "name": "find_files",
                 "presentation": "summary",
-                "description": "Find regular file paths by worktree-relative globs within path (default root), respecting .gitignore and never following symlinks. Results are newest first, with a stable path order for equal modification times. limit defaults to 500 (maximum 500); request next_offset for another page. Partial scans have no continuation: narrow path before retrying. No shell approval is needed.",
+                "description": "Find regular file paths by worktree-relative globs within path (default root), respecting .gitignore and never following symlinks. * does not cross /; **/* includes root and nested files. For the N most recently modified files, use globs=[\"**/*\"] and limit=N. Results are newest first, with a stable path order for equal modification times. limit defaults to 500 (maximum 500); request next_offset for another page. Partial scans have no continuation: narrow path before retrying. No shell approval is needed.",
                 "handler": {
                   "name": "find",
                   "operation": "files.find",
@@ -5543,7 +5543,7 @@
               {
                 "name": "search_files",
                 "presentation": "summary",
-                "description": "Search UTF-8 files with embedded ripgrep matching within path (a file or directory, default worktree root), respecting .gitignore and never following symlinks. mode selects content rows (default), matching file paths, or matching line counts. context adds up to 5 lines before and after each match; type uses ripgrep language names such as rust, js, and python. multiline permits matches across newlines. limit defaults to 200 (maximum 200); content limits include context rows. Use next_offset for another complete-scan page. Scans have a 20-second deadline and a 64 MiB per-file bound; diagnostics identify skipped large files or incomplete scans. Incomplete scans have no continuation: narrow path before retrying. Lines longer than 16 KiB are explicitly marked truncated. No shell approval is needed.",
+                "description": "Search UTF-8 files with embedded ripgrep matching within path (a file or directory, default worktree root), respecting .gitignore and never following symlinks. mode selects content rows (default), matching file paths, or matching line counts. In content rows, matched=true identifies matching lines; matched=false identifies neighboring context lines. context adds up to 5 lines before and after each match; type uses ripgrep language names such as rust, js, and python. multiline permits matches across newlines. limit defaults to 200 (maximum 200); content limits include context rows. Use next_offset for another complete-scan page. Scans have a 20-second deadline and a 64 MiB per-file bound; diagnostics identify skipped large files or incomplete scans. Incomplete scans have no continuation: narrow path before retrying. Lines longer than 16 KiB are explicitly marked truncated. No shell approval is needed.",
                 "handler": {
                   "name": "search",
                   "operation": "files.search",
