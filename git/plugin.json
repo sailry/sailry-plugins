@@ -1490,10 +1490,7 @@
           "pinned": true,
           "order": 500,
           "target": "worktree",
-          "details": true,
-          "retention": {
-            "mode": "always"
-          }
+          "details": true
         },
         "panel": {
           "label": "Git",

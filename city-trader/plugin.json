@@ -156,12 +156,7 @@
           "dev.sailry.platform/desktop/portfolio.js",
           "dev.sailry.platform/desktop/result.js",
           "dev.sailry.platform/desktop/view.js"
-        ],
-        "navigation_options": {
-          "retention": {
-            "mode": "always"
-          }
-        }
+        ]
       },
       "settings_schema": "dev.sailry.platform/settings.json",
       "display": {

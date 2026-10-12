@@ -41,10 +41,7 @@
         "navigation_options": {
           "pinned": true,
           "order": 100,
-          "target": "node",
-          "retention": {
-            "mode": "always"
-          }
+          "target": "node"
         }
       },
       "host": {

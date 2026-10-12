@@ -40,12 +40,7 @@
           "dev.sailry.platform/desktop/assets/character-01.png",
           "dev.sailry.platform/desktop/assets/character-02.png",
           "dev.sailry.platform/desktop/assets/character-03.png"
-        ],
-        "navigation_options": {
-          "retention": {
-            "mode": "always"
-          }
-        }
+        ]
       },
       "settings_schema": "dev.sailry.platform/settings.json",
       "display": {

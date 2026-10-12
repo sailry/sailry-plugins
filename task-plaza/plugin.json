@@ -50,10 +50,7 @@
           "pinned": true,
           "details": true,
           "order": 110,
-          "target": "node",
-          "retention": {
-            "mode": "always"
-          }
+          "target": "node"
         }
       }
     }

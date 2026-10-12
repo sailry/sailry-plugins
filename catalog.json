@@ -1094,12 +1094,7 @@
                 "dev.sailry.platform/desktop/portfolio.js",
                 "dev.sailry.platform/desktop/result.js",
                 "dev.sailry.platform/desktop/view.js"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -2599,10 +2594,7 @@
                 "pinned": true,
                 "order": 800,
                 "target": "node",
-                "details": true,
-                "retention": {
-                  "mode": "always"
-                }
+                "details": true
               },
               "conversations": [
                 {
@@ -3010,12 +3002,7 @@
                 "dev.sailry.platform/desktop/history.js",
                 "dev.sailry.platform/desktop/hand.js",
                 "dev.sailry.platform/desktop/selection.js"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -6071,10 +6058,7 @@
                 "pinned": true,
                 "order": 400,
                 "target": "worktree",
-                "details": true,
-                "retention": {
-                  "mode": "always"
-                }
+                "details": true
               },
               "panel": {
                 "label": "Files",
@@ -7597,10 +7581,7 @@
                 "pinned": true,
                 "order": 500,
                 "target": "worktree",
-                "details": true,
-                "retention": {
-                  "mode": "always"
-                }
+                "details": true
               },
               "panel": {
                 "label": "Git",
@@ -8009,12 +7990,7 @@
                 "dev.sailry.platform/desktop/assets/town-pattern.png",
                 "dev.sailry.platform/desktop/assets/character-01.png",
                 "dev.sailry.platform/desktop/assets/character-02.png"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -8227,12 +8203,7 @@
                 "dev.sailry.platform/desktop/assets/character-01.png",
                 "dev.sailry.platform/desktop/assets/character-02.png",
                 "dev.sailry.platform/desktop/assets/character-03.png"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -9306,12 +9277,7 @@
                 "dev.sailry.platform/desktop/assets/town-pattern.png",
                 "dev.sailry.platform/desktop/assets/character-01.png",
                 "dev.sailry.platform/desktop/assets/character-02.png"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -9370,10 +9336,7 @@
               "navigation_options": {
                 "pinned": true,
                 "order": 100,
-                "target": "node",
-                "retention": {
-                  "mode": "always"
-                }
+                "target": "node"
               }
             },
             "host": {
@@ -9901,12 +9864,7 @@
                 "dev.sailry.platform/desktop/assets/town-pattern.png",
                 "dev.sailry.platform/desktop/assets/character-01.png",
                 "dev.sailry.platform/desktop/assets/character-02.png"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {
@@ -10941,10 +10899,7 @@
                 "pinned": true,
                 "order": 700,
                 "target": "node",
-                "details": true,
-                "retention": {
-                  "mode": "always"
-                }
+                "details": true
               },
               "conversations": [
                 {
@@ -11168,10 +11123,7 @@
                 "pinned": true,
                 "details": true,
                 "order": 110,
-                "target": "node",
-                "retention": {
-                  "mode": "always"
-                }
+                "target": "node"
               }
             }
           }
@@ -11784,12 +11736,7 @@
                 "dev.sailry.platform/desktop/assets/town-pattern.png",
                 "dev.sailry.platform/desktop/assets/character-01.png",
                 "dev.sailry.platform/desktop/assets/character-02.png"
-              ],
-              "navigation_options": {
-                "retention": {
-                  "mode": "always"
-                }
-              }
+              ]
             },
             "settings_schema": "dev.sailry.platform/settings.json",
             "display": {

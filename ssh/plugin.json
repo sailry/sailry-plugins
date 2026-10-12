@@ -341,10 +341,7 @@
           "pinned": true,
           "order": 700,
           "target": "node",
-          "details": true,
-          "retention": {
-            "mode": "always"
-          }
+          "details": true
         },
         "conversations": [
           {

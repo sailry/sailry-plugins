@@ -44,12 +44,7 @@
           "dev.sailry.platform/desktop/history.js",
           "dev.sailry.platform/desktop/hand.js",
           "dev.sailry.platform/desktop/selection.js"
-        ],
-        "navigation_options": {
-          "retention": {
-            "mode": "always"
-          }
-        }
+        ]
       },
       "settings_schema": "dev.sailry.platform/settings.json",
       "display": {
