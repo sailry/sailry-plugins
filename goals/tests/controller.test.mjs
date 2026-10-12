@@ -4,8 +4,8 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
 const plain=value=>JSON.parse(JSON.stringify(value));
-function element(id) {
-  return {id,items:[],children(items){this.items.push(...items);return this;},
+function element(id,props) {
+  return {id,props,items:[],children(items){this.items.push(...items);return this;},
     size(){return this;},label(){return this;},ghost(){return this;},
     disabled(value){this.disabledValue=value;return this;},on_click(action){this.action=action;return this;}};
 }
@@ -99,6 +99,35 @@ test('successful controls use supported notifications',async()=>{
     assert.equal(setup.completed.filter(value=>value===id).length,1);
     assert.equal(setup.forgotten.filter(value=>value===id).length,1);
   }
+});
+
+test('description remains literal prose with fixed controls',async()=>{
+  const setup=await fixture();
+  const description='## Requested **work** 中文 🙂\n\nKeep this paragraph and e\u0301 unchanged';
+  setup.view.goal={...setup.view.goal,description};
+  const panel=setup.view.render();
+  assert.equal(panel.props.body,description);
+  assert.deepEqual(plain(panel.props.items),[]);
+  assert.deepEqual(panel.items.map(item=>item.id),['goal-stop','goal-clear']);
+});
+
+test('completed status stays inspectable without activity',async()=>{
+  const setup=await fixture();
+  setup.host.goal={...setup.host.goal,state:'completed'};
+  setup.view.refresh(setup.cx);await setup.jobs.at(-1);
+  const status=()=>setup.contributions.at(-1).find(item=>item.id==='status');
+  assert.equal(status().visible,false);
+  assert.equal(setup.view.goal.state,'completed');
+  setup.view.open=true;setup.view.publish();
+  assert.equal(status().visible,true);
+  assert.deepEqual(setup.view.render().items.map(item=>item.id),['goal-clear']);
+  setup.view.open=false;
+  setup.view.accept({...setup.view.state,cursor:'2',command:{name:'goal',package:{name:'goals'},arguments:''}});
+  setup.view.publish();
+  assert.equal(status().visible,true);
+  assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
+  await setup.perform('clear');
+  assert.equal(setup.host.goal,null);
 });
 
 test('held refresh blocks stale controls until current revision',async()=>{

@@ -6,9 +6,7 @@ export function render(view) {
   const disabled = view.busy || view.loading || !view.state.connected || view.state.readonly;
   const resumable = goal && ['paused','blocked','failed'].includes(goal.state);
   const description=goal?.description ?? view.draft() ?? '';
-  const state=goal?.state==='active' ? 'in_progress' : goal?.state ?? 'pending';
-  const items=description.split(/\r?\n/).filter(line=>line.trim()).map((line,index)=>({id:`goal-item-${index}`,text:line,state,details:true}));
-  return StatusList.new('goal-description',{items,empty:text.empty})
+  return StatusList.new('goal-description',{items:[],empty:text.empty,...(description ? {body:description} : {})})
       .children(view.pending ? [new Button('goal-retry').size('small').label(text.retry).disabled(view.busy || view.loading)
         .on_click((_,cx) => view.execute(cx))] : [])
       .children(goal?.state === 'active' ? [new Button('goal-stop').size('small').label(text.stop).disabled(disabled || !!view.pending)

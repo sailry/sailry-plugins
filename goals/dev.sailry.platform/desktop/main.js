@@ -42,7 +42,7 @@ export default class Goals extends View {
     const tone=this.goal?.state==='completed' ? 'success' : this.goal?.state==='failed' ? 'danger' : ['paused','blocked'].includes(this.goal?.state) ? 'warning' : 'muted';
     publishContributions([
       {id:'goal',enabled:this.enabled(),...(event?.id==='goal'?{reply_to:event.sequence}:{})},
-      {id:'status',enabled:this.state.connected,visible:!!this.goal || this.open || this.draft()!==null,value:this.open,label:{label:this.text.goal},
+      {id:'status',enabled:this.state.connected,visible:!!this.goal && this.goal.state!=='completed' || this.open || this.draft()!==null,value:this.open,label:{label:this.text.goal},
         segments:[{label:{label:this.text.goal},tone:'muted'},...(this.goal ? [{label:{label},tone}] : [])],
         ...(event?.id==='status'?{reply_to:event.sequence}:{})},
     ]);
