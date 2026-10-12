@@ -1,4 +1,4 @@
-import {compact,total,integer,cost,cache,speed,context,severity} from './format.js';
+import {compact,total,integer,cost,cache,speed,duration,context,severity} from './format.js';
 
 function sum(left,right) {
   return left == null && right == null ? null : integer(left ?? 0n) + integer(right ?? 0n);
@@ -25,7 +25,8 @@ export function metrics(state,text) {
       row('composer_this_session',number(ownTokens)),
       row('composer_subagents',number(childTokens ?? (childResponses === 0n ? 0n : null)))]],
     ['composer_speed',rate == null ? null : rate+'/s',[
-      row('composer_timed_responses',number(generation?.responses)),row('composer_timed_output',number(generation?.output_tokens))]],
+      row('composer_timed_responses',number(generation?.responses)),row('composer_timed_output',number(generation?.output_tokens)),
+      row('composer_first_token',duration(statistics?.first_token_us,text))]],
     ['composer_cost',combined ?? '0.00',[
       row('composer_this_session',charge(cost(statistics))),
       row('composer_subagents',charge(cost(delegated) ?? (childResponses === 0n ? '0.00' : null)))]],

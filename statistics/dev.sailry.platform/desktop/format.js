@@ -22,6 +22,11 @@ export function speed(generation) {
   return generation && integer(generation.elapsed_us) > 0n
     ? (Number(generation.output_tokens) * 1000000 / Number(generation.elapsed_us)).toFixed(1) : null;
 }
+export function duration(value,text) {
+  return value == null ? text.composer_metric_unknown : Number(value) < 1000000
+    ? text.usage_duration_ms.replace('%{value}',(Number(value)/1000).toFixed(1))
+    : text.usage_duration_value.replace('%{value}',(Number(value)/1000000).toFixed(2));
+}
 export function cost(statistics) {
   if (!statistics?.cost) return null;
   return amount(statistics.cost.usd_micros) + (integer(statistics.cost.responses) < integer(statistics.responses) ? '+' : '');

@@ -1,4 +1,4 @@
-import {compact,amount,integer} from './format.js';
+import {compact,amount,integer,duration} from './format.js';
 const pad=(value,width=2)=>String(value).padStart(width,'0');
 function timestamp(value) {
   const date=new Date(Number(value));
@@ -9,15 +9,13 @@ function timestamp(value) {
 }
 export function formatRows(items,text) {
   const unknown=text.composer_metric_unknown;
-  const duration=value=>value==null?unknown:Number(value)<1000000?text.usage_duration_ms.replace('%{value}',(Number(value)/1000).toFixed(1))
-    :text.usage_duration_value.replace('%{value}',(Number(value)/1000000).toFixed(2));
   const exact=value=>value==null?unknown:String(value);
   const line=(value,icon,tone)=>({text:value,...icon?{icon,tone}: {}});
   const pair=(primary,secondary)=>({primary,secondary});
   const rows=[],cells=[],details=[],row_ids=[];
   for(const request of items) {
     const time=timestamp(request.position.timestamp_ms)??[unknown,unknown],tokens=['input','output','cached_input','reasoning'].map(key=>request.tokens?.[key]);
-    const common=[duration(request.first_token_us),duration(request.elapsed_us),amount(request.usd_micros)??unknown];
+    const common=[duration(request.first_token_us,text),duration(request.elapsed_us,text),amount(request.usd_micros)??unknown];
     const scope=request.scope_name||text.usage_unassigned;
     const tokenValues=tokens.map(value=>compact(value)??unknown),tokenDetails=tokens.map(exact);
     const timing=[request.first_token_us,request.elapsed_us].map(value=>value==null?unknown:text.usage_duration_us.replace('%{value}',value));

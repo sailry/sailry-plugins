@@ -6,6 +6,20 @@ import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
+test('speed details use latest own first text latency',()=>{
+  for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
+    const text=messages(locale);
+    for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
+      const statistics={first_token_us:first,generation:{output_tokens:'20',elapsed_us:'1000000',responses:'1'},
+        delegated:{first_token_us:'1',generation:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};
+      const before=structuredClone(statistics),speed=metrics({has_messages:true,statistics},text).find(value=>value.id==='composer_speed');
+      assert.equal(speed.value,'20.0/s');
+      assert.deepEqual(speed.details[2],{label:{label:text.composer_first_token},value});
+      assert.deepEqual(statistics,before);
+      assert.ok(text.composer_first_token);
+    }
+  }
+});
 test('normalizes public endpoint bytes into an opaque stable selection',()=>{
   assert.equal(nodeId(Array(32).fill(15)),'0f'.repeat(32));
   assert.equal(new State(Array(32).fill(255)).node,'ff'.repeat(32));
@@ -113,7 +127,7 @@ test('composer combines child totals and preserves own metrics',()=>{
       {label:{label:text.composer_this_session},value:'$0.01'},
       {label:{label:text.composer_subagents},value:'$0.01'}]);
     assert.equal(metric('composer_speed').value,'21.5/s');
-    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43']);
+    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43',text.composer_metric_unknown]);
     assert.equal(metric('composer_cache').value,'25%');
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
     assert.equal(metric('composer_turns').value,'7');

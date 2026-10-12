@@ -73,6 +73,7 @@ const locales = {
     "composer_turns": "Turns",
     "composer_cost": "Cost",
     "composer_speed": "Speed",
+    "composer_first_token": "First token time",
     "composer_cache": "Cache",
     "composer_cache_hit": "Cache hit rate",
     "composer_cost_input": "Input cost",
@@ -166,6 +167,7 @@ const locales = {
     "composer_turns": "轮次",
     "composer_cost": "估算费用",
     "composer_speed": "速度",
+    "composer_first_token": "首字时间",
     "composer_cache": "缓存率",
     "composer_cache_hit": "命中率",
     "composer_cost_input": "输入",
@@ -184,6 +186,14 @@ const locales = {
     "chat_compacting": "正在压缩上下文",
     "usage_previous": "上一页",
     "usage_next": "下一页"
-  }
+  },
+  "de": {"composer_first_token": "Zeit bis zum ersten Token"},
+  "es": {"composer_first_token": "Tiempo hasta el primer token"},
+  "fr": {"composer_first_token": "Délai du premier token"},
+  "ja": {"composer_first_token": "最初のトークンまでの時間"},
+  "ko": {"composer_first_token": "첫 토큰 시간"},
+  "pt-BR": {"composer_first_token": "Tempo até o primeiro token"},
+  "ru": {"composer_first_token": "Время до первого токена"},
+  "zh-TW": {"composer_first_token": "首字時間"}
 };
 export function messages(locale) { return {...locales.en,...locales[locale]}; }

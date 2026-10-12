@@ -4,13 +4,19 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {State,query,choices} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
-import {compact,ranking} from '../dev.sailry.platform/desktop/format.js';
+import {compact,ranking,duration} from '../dev.sailry.platform/desktop/format.js';
 import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/settings.js', import.meta.url), 'utf8'))
   .replace(/^import .*;\n/gm, '').replace('export default class Usage', 'class Usage');
 const plain = value => JSON.parse(JSON.stringify(value));
 const node = '01'.repeat(32), remote = '02'.repeat(32);
+test('shared timing format preserves request display units',()=>{
+  const text=messages('en');
+  assert.equal(duration(null,text),text.composer_metric_unknown);
+  assert.equal(duration('1250',text),'1.3 ms');
+  assert.equal(duration('1000000',text),'1.00 s');
+});
 
 function fixture() {
   const tasks = [], events = [], calls = [], notices=[],cx = {spawn:task => tasks.push(task), notify() {}};
