@@ -33,7 +33,7 @@ async function fixture(packageName) {
     .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
   const names=['Button','Icon','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
   const constructors=Object.fromEntries(names.map(name=>[name,function(id){return element(name,id);}]))
-  const globals=Object.fromEntries(['Workspace','PanelHeader','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
+  const globals=Object.fromEntries(['Workspace','PanelHeader','Header','EmptyState','Loading','SkeletonList','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
   const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,editorPanel':''}})`,{
     div:()=>element(),...constructors,...globals,
     theme:()=>({colors:{muted_foreground:'muted',foreground:'foreground',border:'border'}}),
@@ -48,7 +48,7 @@ async function fixture(packageName) {
 }
 
 function view(packageName,profiles=[]) {
-  const owner={text:new Proxy({},{get:(_,key)=>key}),profiles,locked:()=>false,dialog:0,
+  const owner={text:new Proxy({},{get:(_,key)=>key}),profiles,loaded:true,locked:()=>false,dialog:0,
     picker:false,pickerProfile:null,pickerRevision:0,pending:null,error:null,status:null,editor:null,confirmation:null,
     terminals:[],terminal:null,files:()=>null,commandOpen:false,transfer:null,fileEdit:null,outcome:null,
     opened:null,catalog:{loading:new Set(),names:[],failed:new Set(),items:()=>[],database:null,current:null},
