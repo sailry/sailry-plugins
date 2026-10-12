@@ -26,6 +26,7 @@ function fixture() {
     div:()=>element(),theme:()=>({colors:{muted_foreground:'muted'}}),
     Button:function(id){return element('Button',id);},
     Switch:function(id){return element('Switch',id);},
+    Skeleton:function(){return element('Skeleton');},
     Field:function(){return element('Field');},
     DropdownMenu:function(id){return element('DropdownMenu',id);},
     SelectField:{new:(id,props)=>element('SelectField',id,props)},
@@ -33,10 +34,11 @@ function fixture() {
     TextField:{new:(id,props)=>element('TextField',id,props)},
     SettingsGroup:{new:(id,props)=>element('SettingsGroup',id,props)},
     EmptyState:{new:(id,props)=>element('EmptyState',id,props)},
+    SkeletonList:{new:(id,props)=>element('SkeletonList',id,props)},
     window:{viewport_size:()=>({width:1280,height:820})},
   });
   const view = {text:{settings_memory:'Memories',memory_empty:'No memories',settings_edit:'Edit',settings_delete:'Delete'},
-    results:[],reviews:[],loading:false,busy:()=>false,kindLabel:()=> 'Feedback',projectLabel:()=> 'Global',
+    saved:{},results:[],reviews:[],loading:false,busy:()=>false,kindLabel:()=> 'Feedback',projectLabel:()=> 'Global',
     edit:entry=>calls.push(['edit',entry]),remove:entry=>calls.push(['remove',entry])};
   return {view,nodes,calls,functions,render(){nodes.clear();return functions.catalog(view);}};
 }
@@ -62,15 +64,36 @@ test('settings choices use real selects and editor tabs fill their form control'
   assert.equal(setup.nodes.get('memory-review-age').props.disabled,true);
 });
 
-test('empty catalogs reuse their existing settings card and loading hides the placeholder',()=>{
+test('settled empty catalogs keep their card during refresh',()=>{
   const setup=fixture(),group=setup.render();
   assert.equal(group.kind,'SettingsGroup');
-  assert.deepEqual(plain(group.props),{heading:false,loading:false});
+  assert.deepEqual(plain(group.props),{heading:false});
   const empty=setup.nodes.get('memory-empty');
   assert.deepEqual(plain(empty.props),{variant:'list',icon:'inbox',label:'No memories'});
   assert.equal(group.items[0],empty);
   setup.view.loading=true;setup.render();
+  assert.equal(setup.nodes.has('memory-empty'),true);
+  assert.equal(setup.nodes.has('memory-loading'),false);
+});
+
+test('initial reads reserve configuration and list space',()=>{
+  const setup=fixture();
+  setup.view.saved=null;setup.view.draft=null;setup.view.loading=true;
+  setup.functions.configuration(setup.view);
+  const fields=setup.nodes.get('memory_configuration');
+  assert.equal(fields.kind,'SettingsGroup');
+  assert.equal(fields.items.length,4);
+  for(const key of ['memory_enabled','memory_auto_write','memory_context_budget','memory_review_age']) {
+    assert.ok(setup.nodes.has(`settings-row-${key}`));
+  }
+  setup.render();
+  assert.deepEqual(plain(setup.nodes.get('memory-loading').props),{rows:3});
   assert.equal(setup.nodes.has('memory-empty'),false);
+  setup.view.loading=false;setup.view.error='memory_failed';setup.view.connected=true;
+  setup.render();
+  assert.equal(setup.nodes.has('memory-loading'),false);
+  assert.equal(setup.nodes.has('memory-empty'),false);
+  assert.ok(setup.nodes.has('memory-search-retry'));
 });
 
 test('populated catalogs preserve captured edit and remove actions without empty content',()=>{
@@ -81,6 +104,10 @@ test('populated catalogs preserve captured edit and remove actions without empty
   setup.nodes.get('memory-edit-retained').on_click({},{});
   setup.nodes.get('memory-delete-retained').on_click({},{});
   assert.deepEqual(setup.calls,[['edit',entry],['remove',entry]]);
+  setup.view.loading=true;const group=setup.render();
+  assert.equal(setup.nodes.has('memory-loading'),false);
+  assert.ok(setup.nodes.has('memory-retained'));
+  assert.deepEqual(plain(group.props),{heading:false});
 });
 
 test('catalog failures keep existing memories without a retry bar',()=>{

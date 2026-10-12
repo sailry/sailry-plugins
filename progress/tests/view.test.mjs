@@ -24,10 +24,11 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot']
+  const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot','SkeletonList']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Icon:function(id){return element('Icon',id);},Tag:function(){return element('Tag');},
+    Skeleton:function(id){return element('Skeleton',id);},
     ...adapters,lanes,labels,sections,clock,plain:readable,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{muted_foreground:'muted',border:'border'}}),window:{rem_size:()=>16,viewport_size:()=>({width:1440})},
   });
@@ -51,6 +52,39 @@ test('empty lanes fill their viewport without cards',()=>{
     assert.equal(heading.style.rounded_full,undefined);
   }
   assert.equal([...setup.nodes.values()].filter(node=>node.kind==='EmptyState').length,4);
+});
+
+test('initial reads preserve lane headings without claiming empty',()=>{
+  const setup=fixture(),catalog=setup.view.board.catalog;
+  setup.view.board.catalog=null;
+  for(const error of [false,true]) {
+    setup.view.board.error=error;setup.render();
+    for(const lane of lanes) {
+      const key=labels[lane];
+      assert.ok(setup.nodes.has(`${key}-heading`));
+      assert.equal(setup.nodes.has(`${key}-empty`),false);
+      const placeholder=setup.nodes.get(`${key}-loading`);
+      assert.equal(placeholder.kind,'SkeletonList');
+      assert.deepEqual(plain(placeholder.props),{rows:2});
+    }
+    assert.equal([...setup.nodes.values()].filter(node=>node.kind==='EmptyState').length,0);
+  }
+  setup.view.board.catalog=catalog;setup.render();
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='SkeletonList').length,0);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='EmptyState').length,4);
+});
+
+test('refresh failures retain the loaded lane cards',()=>{
+  const setup=fixture(),catalog=setup.view.board.catalog;
+  catalog.sessions=[{id:'retained',project:'project',worktree:'tree',archived:false,delegation:null,
+    activity:{title:'Retained task',queued:0,waiting:null,run:null}}];
+  catalog.session_lanes.retained='idle';setup.render();
+  const card=setup.nodes.get('activity-retained');
+  setup.view.board.connected=false;setup.view.board.error=true;setup.render();
+  assert.ok(setup.nodes.has('activity-retained'));
+  assert.equal(setup.nodes.get('activity-retained').kind,card.kind);
+  assert.equal(setup.nodes.has(`${labels.idle}-empty`),false);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='SkeletonList').length,0);
 });
 
 test('populated lanes retain their cards and host disclosures without empty content',()=>{

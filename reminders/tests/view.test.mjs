@@ -27,16 +27,16 @@ function fixture(items = []) {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar", "Spinner"]
+  const constructors = Object.fromEntries(["Button", "Checkbox", "Tab", "TabBar", "Skeleton"]
     .map(kind => [kind, function(id, label) { return element(kind, id, {label}); }]));
-  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SelectField", "SettingsPage", "Toggle"]
+  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SelectField", "SettingsPage", "SkeletonList", "Toggle"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
     div:() => element(), ...constructors, ...adapters,
     theme:() => ({colors:{foreground:"foreground", muted_foreground:"muted", destructive:"danger"}}),
     editor:() => [element("editor"),element("footer")], window:{viewport_size:() => ({width:1200})},
   });
-  const view = {text:messages("en"), items, completed:null, loading:false,
+  const view = {text:messages("en"), items, completed:null, loading:false, loaded:true,
     projectFilter:"all", catalog:{projects:[{id:"project", name:"Current"}],worktrees:[]},
     busy:false, pending:null, error:null, editing:null, deleting:null, dialogId:0,
     refresh:() => calls.push(["refresh"]), edit:item => calls.push(["edit", item]),
@@ -44,7 +44,16 @@ function fixture(items = []) {
     projectName(id) { return id === null ? this.text.noProject : this.catalog.projects.find(project => project.id === id)?.name ?? this.text.unavailableProject; },
     control,
   };
-  return {view, nodes, calls, cx, render() { nodes.clear(); return render(view); }};
+  return {view, nodes, calls, cx, render() {
+    nodes.clear();const body=render(view);
+    for(const list of [...nodes.values()].filter(node=>node.kind==='CardList'&&!node.items.length)) {
+      const {loaded,skeleton_rows,empty_icon,empty_label}=list.props;
+      list.child(loaded===false
+        ? element('SkeletonList',`${list.selector}-loading`,{rows:skeleton_rows})
+        : element('EmptyState',`empty-${list.selector}-empty`,{variant:'list',icon:empty_icon,label:empty_label}));
+    }
+    return body;
+  }};
 }
 
 test("page uses the centered settings layout and native toolbar controls", () => {
@@ -68,8 +77,8 @@ test("page uses the centered settings layout and native toolbar controls", () =>
   assert.equal(toolbar.items[1].selector, "reminder-create");
   assert.equal(nodes.has("reminders-refresh"), false);
   assert.equal(nodes.has("reminders-reload"), false);
-  assert.equal(nodes.get("reminders-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("reminders-empty").props), {variant:"card", icon:"bell", label:"No reminders"});
+  assert.equal(nodes.get("empty-reminders-items-empty").kind, "EmptyState");
+  assert.deepEqual(plain(nodes.get("reminders-items").props), {loaded:true,skeleton_rows:1,empty_icon:"bell",empty_label:"No reminders"});
   nodes.get("reminder-create").on_click({}, setup.cx);
   assert.deepEqual(setup.calls, [["edit", null]]);
 });
@@ -94,17 +103,38 @@ test("forms delegate heading, close guard, body and footer to shared modals", ()
   assert.equal(setup.nodes.get("reminder-dialog-0").props.dismissable,true);
 });
 
-test("loading uses a spinner without an empty reminder card", () => {
-  const setup=fixture();setup.view.loading=true;setup.render();
-  assert.equal(setup.nodes.has("reminders-empty"),false);
-  assert.equal(setup.nodes.get('reminders-loading').items[0].kind,'Spinner');
-  assert.ok(!setup.nodes.get("reminders-items").items.some(item=>item.items.includes(setup.view.text.loading)));
+test("unconfirmed reads reserve the reminder card row", () => {
+  const setup=fixture();setup.view.loaded=false;
+  for(const loading of [false,true]) {
+    setup.view.loading=loading;setup.render();
+    assert.equal(setup.nodes.has("empty-reminders-items-empty"),false);
+    const row=setup.nodes.get('reminders-items-loading');
+    assert.equal(row.kind,'SkeletonList');
+    assert.deepEqual(plain(row.props),{rows:1});
+    assert.equal(setup.nodes.get('reminders-toolbar').items.length,2);
+  }
+  setup.view.error='loadFailed';setup.render();
+  assert.equal(setup.nodes.has('empty-reminders-items-empty'),false);
+  assert.ok(setup.nodes.has('reminders-items-loading'));
 });
 
 test("background refresh preserves the loaded empty card", () => {
   const setup=fixture();setup.view.loaded=true;setup.view.loading=true;setup.render();
-  assert.ok(setup.nodes.has("reminders-empty"));
+  assert.ok(setup.nodes.has("empty-reminders-items-empty"));
+  assert.equal(setup.nodes.has('reminders-items-loading'),false);
   assert.ok(!setup.nodes.get("reminders-items").items.some(item=>item.items.includes(setup.view.text.loading)));
+});
+
+test("refresh keeps existing cards and the open editor", () => {
+  const item={id:'saved',title:'Reminder',project:null,due_ms:null,notified_ms:null,completed:false},setup=fixture([item]);
+  setup.view.editing={draft:{title:'Retained draft'}};
+  for(const error of [null,'loadFailed']) {
+    setup.view.loading=error===null;setup.view.error=error;setup.render();
+    assert.ok(setup.nodes.has('reminder-card-saved'));
+    assert.equal(setup.nodes.has('reminders-items-loading'),false);
+    assert.equal(setup.nodes.has('empty-reminders-items-empty'),false);
+    assert.deepEqual(setup.nodes.get('reminder-dialog-0').items.map(item=>item.kind),['editor','footer']);
+  }
 });
 
 test("admitted actions do not insert recovery rows while still pending", () => {

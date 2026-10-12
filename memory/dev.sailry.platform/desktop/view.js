@@ -1,9 +1,9 @@
 // Existing memory settings rows, catalog toolbar and modal fields use Kit controls.
 import {div} from 'gpui-kit';
-import {Button,Switch,Tab,TabBar,DropdownMenu,Field} from 'gpui-component';
+import {Button,Switch,Tab,TabBar,DropdownMenu,Field,Skeleton} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs} from 'sailry/ui';
+import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,SkeletonList} from 'sailry/ui';
 
 function row(view,key,control,description) {
   return div().id(`settings-row-${key}`).h_flex().items_center().w_full().py_3().gap_4().text_sm().flex_wrap()
@@ -13,7 +13,11 @@ function row(view,key,control,description) {
 }
 function configuration(view) {
   const {text,draft,configuration:state} = view;
-  if (!draft) return div();
+  if (!draft) return SettingsGroup.new('memory_configuration',{title:text.memory_configuration})
+    .child(row(view,'memory_enabled',new Skeleton().w_9().h_5().rounded_md()))
+    .child(row(view,'memory_auto_write',new Skeleton().w_9().h_5().rounded_md(),'memory_auto_write_description'))
+    .child(row(view,'memory_context_budget',new Skeleton().w_full().h_8().rounded_md(),'memory_budget_description'))
+    .child(row(view,'memory_review_age',new Skeleton().w_full().h_8().rounded_md()));
   const disabled = !view.connected || state.pending || !!state.request || !!state.error;
   const budget = SelectField.new('memory-budget',{label:text.memory_context_budget,placeholder:text.memory_context_budget,
     selected:String(draft.context_bytes/1024),disabled,items:[2,4,8,16,32,64].map(amount=>({id:String(amount),label:`${amount} KiB`}))});
@@ -56,9 +60,12 @@ function catalog(view) {
       .child(new Button(`memory-edit-${entry.id}`).ghost().label(text.settings_edit).disabled(view.busy()).on_click((_,cx)=>view.edit(entry,cx)))
       .child(new Button(`memory-delete-${entry.id}`).ghost().label(text.settings_delete).disabled(view.busy()).on_click((_,cx)=>view.remove(entry,cx)));
   });
-  return SettingsGroup.new('settings_memory',{heading:false,loading:view.loading})
+  return SettingsGroup.new('settings_memory',{heading:false})
     .children(rows)
-    .children(!view.loading && !rows.length ? [EmptyState.new('memory-empty',{variant:'list',icon:'inbox',label:text.memory_empty})] : []);
+    .children(!view.saved ? [view.error && !view.loading
+      ? new Button('memory-search-retry').label(text.memory_retry).disabled(!view.connected).on_click((_,cx)=>view.refresh(cx))
+      : SkeletonList.new('memory-loading',{rows:3})]
+      : !rows.length ? [EmptyState.new('memory-empty',{variant:'list',icon:'inbox',label:text.memory_empty})] : []);
 }
 function editor(view) {
   const {editing:owner,text} = view, summary = owner.entry.summary;

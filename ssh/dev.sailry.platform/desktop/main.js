@@ -14,7 +14,7 @@ import {render} from './view.js';
 export const command=(kind,data)=>({kind,data});
 export default class Ssh extends View {
   init(_props,cx) {
-    this.text=messages(JSON.parse(context()).locale);this.profiles=[];this.projects=[];this.worktrees=[];this.connected=true;
+    this.text=messages(JSON.parse(context()).locale);this.profiles=[];this.projects=[];this.worktrees=[];this.connected=true;this.loaded=false;
     this.selected=null;this.terminals=[];this.terminal=null;this.browsers=new Map();this.pending=null;this.outcome=null;this.error=null;this.target=null;this.resume=false;this.refreshRevision=0;this.refreshing=null;this.refreshAgain=false;
     this.terminalSelection=0;this.terminalClose=null;this.home=false;
     this.editor=null;this.picker=false;this.pickerProfile=null;this.pickerRevision=0;this.confirmation=null;this.fileEdit=null;this.commandOpen=false;this.transfer=null;this.dialog=0;this.jobs=[];this.transfersObserved=false;this.installing=null;
@@ -82,7 +82,7 @@ export default class Ssh extends View {
     const catalog=await readProjectCatalog();
     if(revision!==this.refreshRevision)return;this.projects=catalog.projects;this.worktrees=catalog.worktrees;
     if(this.transfer?.worktree&&!this.worktrees.some(tree=>tree.project&&tree.id===this.transfer.worktree))this.transfer.worktree=null;
-    this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
+    this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];this.loaded=true;if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
   }
   async readTerminal(previous){const id=prepareRequest(command('inspect_terminal',{terminal:previous.id}));try{const result=await completeRequest(id);if(result.Ok?.kind==='terminal_snapshot')return result.Ok.data.info;if(result.Err?.code==='not_found')return null;return previous;}catch(error){return faultCode(error.message??String(error))==='not_found'?null:previous;}finally{forgetRequest(id);}}
   async execute(value,cx,after=null,id=null,target=this.profile()){

@@ -11,11 +11,12 @@ async function fixture() {
   const host={profiles:[profile],terminals:[terminal],catalog:{projects:[],worktrees:[]},catalogReads:0,inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
   host.listProfiles=async()=>host.profiles;
   host.listTerminals=async id=>host.terminals.filter(value=>value.ssh===id);
+  host.readCatalog=async()=>host.catalog;
   const requests=new Map(),reads=[],forgotten=[],started=[],texts=[];
   const exports={
     'gpui-kit':{View:class{}},
     sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id)},
-    'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return Promise.resolve(host.catalog);},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
+    'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return host.readCatalog();},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
     'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);}},
     'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),nextTextEvent(){}},
     'sailry/credentials':{createSecret(){},releaseSecret(){},describeSecret(){},chooseSecretFile(){}},
@@ -38,13 +39,45 @@ async function fixture() {
   await module.link(resolve);await module.evaluate();
   const view=new module.namespace.default();const pending=[];
   view.run=(action,cx)=>pending.push(Promise.resolve().then(()=>action(cx)));
-  Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,selected:null,browsers:new Map(),pending:null,connected:true,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
+  Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,selected:null,browsers:new Map(),pending:null,connected:true,loaded:false,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
   return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,cx:{notify(){}},settle:()=>Promise.all(pending)};
 }
 
 async function browsing() {const setup=await fixture();await setup.view.refresh(setup.cx);await setup.settle();return setup;}
 const plain=value=>JSON.parse(JSON.stringify(value));
 function deferred(){let resolve,reject;const promise=new Promise((accept,fail)=>{resolve=accept;reject=fail;});return {promise,resolve,reject};}
+
+test('initial inventory stays unconfirmed until all reads finish',async()=>{
+  const setup=await fixture(),profiles=deferred(),catalog=deferred();
+  setup.host.listProfiles=()=>profiles.promise;setup.host.readCatalog=()=>catalog.promise;
+  setup.view.watch=()=>{};setup.view.init({},setup.cx);
+  assert.equal(setup.view.loaded,false);assert.equal(setup.view.terminals.length,0);
+  await Promise.resolve();profiles.resolve([setup.profile]);
+  for(let step=0;step<20&&!setup.host.catalogReads;step++)await Promise.resolve();
+  assert.equal(setup.host.catalogReads,1);assert.equal(setup.view.loaded,false);
+  assert.equal(setup.view.terminals.length,0);
+  catalog.resolve(setup.host.catalog);await setup.settle();
+  assert.equal(setup.view.loaded,true);assert.equal(setup.view.terminal,setup.terminal.id);
+  assert.equal(setup.view.profiles[0],setup.profile);
+});
+
+test('initial failures stay unconfirmed and later reads recover',async()=>{
+  const {view,cx,host}=await fixture();
+  host.listProfiles=async()=>{throw Error('inventory unavailable');};
+  await assert.rejects(view.refresh(cx),/inventory unavailable/);
+  assert.equal(view.loaded,false);assert.equal(view.profiles.length,0);
+  host.listProfiles=async()=>[];await view.refresh(cx);
+  assert.equal(view.loaded,true);assert.equal(view.terminals.length,0);
+});
+
+test('refresh failures retain confirmed terminals and open drafts',async()=>{
+  const {view,cx,host,terminal}=await fixture();await view.refresh(cx);
+  const profiles=view.profiles,terminals=view.terminals,editor={inputs:['Retained draft']};
+  view.editor=editor;host.listProfiles=async()=>{throw Error('inventory unavailable');};
+  await assert.rejects(view.refresh(cx),/inventory unavailable/);
+  assert.equal(view.loaded,true);assert.equal(view.terminal,terminal.id);
+  assert.equal(view.profiles,profiles);assert.equal(view.terminals,terminals);assert.equal(view.editor,editor);
+});
 
 test('coalesces overlapping refreshes and awaits the latest inventory',async()=>{
   const {view,cx,host}=await fixture(),first=deferred(),latest=deferred();let reads=0;

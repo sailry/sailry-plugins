@@ -91,6 +91,7 @@ test('page title is published only through the shared Header', async () => {
   const {render} = vm.runInNewContext(`${viewSource}\n({render})`, {
     div:() => element(), Progress:function(id) {return element('Progress',id);},
     Header:{new:(id,props) => element('Header',id,props)},
+    SkeletonList:{new:(id,props) => element('SkeletonList',id,props)},
     theme:() => ({colors:{muted_foreground:'muted'}}),
   });
   const {view} = fixture();
@@ -100,6 +101,7 @@ test('page title is published only through the shared Header', async () => {
   assert.equal(nodes.has('settings-header'), false);
   assert.equal(nodes.has('settings-heading'), false);
   assert.ok(nodes.has('usage-content'));
+  assert.equal(nodes.get('usage-initial-loading').kind,'SkeletonList');
 });
 
 test('empty model rankings reuse their card and populated rankings retain native bars',async()=>{

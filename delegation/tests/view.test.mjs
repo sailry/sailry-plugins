@@ -23,7 +23,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField','SkeletonList']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},
@@ -33,7 +33,8 @@ function fixture() {
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:{settings_empty:'No roles',settings_add:'Add',settings_edit:'Edit',settings_delete:'Delete',roles_profiles:'Roles'},
-    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role]),research:()=>calls.push(['research'])};
+    roles:[],ready:true,connected:true,error:null,dialog:null,edit:role=>calls.push(['edit',role]),research:()=>calls.push(['research']),
+    load:()=>calls.push(['load'])};
   return {view,nodes,calls,render(){nodes.clear();return render(view);}};
 }
 
@@ -45,6 +46,21 @@ test('empty roles reuse their settings card and retain the add action',()=>{
   assert.equal(group.items[1],empty);
   setup.nodes.get('role-add').items[0].on_click({},{});
   assert.deepEqual(setup.calls,[['edit',null]]);
+});
+
+test('initial reads hide empty roles and retain retry',()=>{
+  const setup=fixture();setup.view.ready=false;setup.view.loading=true;setup.render();
+  assert.equal(setup.nodes.has('role-empty'),false);
+  assert.deepEqual(plain(setup.nodes.get('role-loading').props),{rows:3});
+  assert.deepEqual(plain(setup.nodes.get('role-add').items[0].style.disabled),[true]);
+  setup.view.loading=false;setup.view.error='role_failed';setup.render();
+  assert.equal(setup.nodes.has('role-empty'),false);
+  assert.equal(setup.nodes.has('role-loading'),false);
+  setup.nodes.get('role-reload').items[0].on_click({},{});
+  assert.deepEqual(setup.calls,[['load']]);
+  setup.view.ready=true;setup.view.error=null;setup.render();
+  assert.ok(setup.nodes.has('role-empty'));
+  assert.equal(setup.nodes.has('role-loading'),false);
 });
 
 test('research has an explicit action and preserves existing role edits',()=>{
@@ -99,6 +115,9 @@ test('populated roles retain native appearance and action targets without an emp
   assert.deepEqual(plain(setup.nodes.get('role-icon-retained').props),{value:appearance});
   assert.deepEqual(plain(setup.nodes.get('role-edit-retained').props),{icon:'settings-2',label:'Edit',disabled:false});
   assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'circle-x',label:'Delete',disabled:false});
+  setup.view.loading=true;setup.render();
+  assert.ok(setup.nodes.has('role-edit-retained'));
+  assert.equal(setup.nodes.has('role-loading'),false);
 });
 
 test('catalog failures keep the role list without a retry bar',()=>{

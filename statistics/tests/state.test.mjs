@@ -51,6 +51,23 @@ test('filter changes reset dependent fields and preserve frozen deleted model ch
   state.select('project','next');assert.deepEqual(state.query.providers,[]);assert.deepEqual(state.query.models,[]);
   assert.equal(query(7,Date.UTC(2026,8,30,23)).end_ms,Date.UTC(2026,9,1));
 });
+test('filter reads retain prior reports until current data arrives',()=>{
+  for(const field of ['range','project','provider','model']) {
+    const state=new State('a'),generation=state.start();
+    state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},generation);
+    assert(state.select(field,field==='range'?'30':'selected'));
+    const next=state.start(),replacement={requests:{items:[],has_more:false}};
+    assert.equal(state.data(),report);assert(!state.ready());
+    assert(!state.accept({cursor:'2',all:false,view:{report:replacement,connected:true,refreshing:false}},generation));
+    assert.equal(state.data(),report);
+    assert(state.accept({cursor:'1',all:false,view:{report:replacement,connected:true,refreshing:true}},next));
+    assert.equal(state.data(),report);assert(!state.ready());
+    assert(state.accept({cursor:'2',all:false,view:{report:null,connected:true,refreshing:false,error:{code:'unavailable'}}},next));
+    assert.equal(state.data(),report);assert(!state.ready());
+    assert(state.accept({cursor:'3',all:false,view:{report:replacement,connected:true,refreshing:false,error:null}},next));
+    assert.equal(state.data(),replacement);assert(state.ready());
+  }
+});
 test('composer distinguishes unknown usage from known zero and exposes context thresholds',()=>{
   const unknown=metrics({has_messages:true},text);assert.equal(unknown[0].value,'—');assert.equal(unknown[2].value,'0.00');
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100'},context_limit:100,compacting:true},text);

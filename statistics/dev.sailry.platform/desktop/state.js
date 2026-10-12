@@ -15,12 +15,13 @@ export class State {
   ready() {return !this.previous && !!this.data() && this.view.connected && !this.view.refreshing && !this.view.error;}
   reset() {this.page=1;this.cursors=[null];this.query.before=null;this.previous=null;}
   select(field,value) {
+    const previous=this.data();
     if (field === 'range') {this.days=Number(value);Object.assign(this.query,query(this.days),{projects:this.query.projects,providers:this.query.providers,models:this.query.models});}
     else if(field === 'project') {this.query.projects=value ? [value] : [];this.query.worktrees=[];this.query.providers=[];this.query.models=[];}
     else if(field === 'provider') {this.query.providers=value ? [value] : [];this.query.models=[];}
     else if(field === 'model') this.query.models=value ? [value] : [];
     else return false;
-    this.reset();this.view=null;return true;
+    this.reset();this.previous=previous;this.view=null;return true;
   }
   turn(page) {
     if(!this.ready() || page<1 || page===this.page || page>this.cursors.length+1)return false;

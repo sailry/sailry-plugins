@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {EmptyState,SettingsGroup,IconButton,Appearance,AppearancePicker,Menu,Modal} from 'sailry/ui';
+import {EmptyState,SettingsGroup,IconButton,Appearance,AppearancePicker,Menu,Modal,SkeletonList} from 'sailry/ui';
 import {efforts} from './draft.js';
 
 function button(id,label,action,disabled = false,primary = false) {
@@ -92,6 +92,8 @@ export function render(view) {
         .child(button('role-add-research',text.role_add_research,(_,cx) => view.research(cx),
           disabled || view.roles.some(role => role.key === 'research')))
         .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))
-      .children(rows.length ? rows : [empty(view)]))
+      .children(rows.length ? rows : view.ready ? [empty(view)] : [view.error && !view.loading
+        ? button('role-reload',text.role_retry,(_,cx)=>view.load(cx),!view.connected)
+        : SkeletonList.new('role-loading',{rows:3})]))
     .child(modal);
 }

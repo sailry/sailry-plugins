@@ -1,7 +1,7 @@
 import { div } from "gpui-kit";
-import { Button, Tab, TabBar, Spinner } from "gpui-component";
+import { Button, Tab, TabBar } from "gpui-component";
 import { theme } from "sailry";
-import { CardColumn, CardList, CardRow, CardSummary, EmptyState, IconButton, Modal, SelectField, SettingsPage, Toggle } from "sailry/ui";
+import { CardColumn, CardList, CardRow, CardSummary, IconButton, Modal, SelectField, SettingsPage, Toggle } from "sailry/ui";
 import { render as editor } from "./editor.js";
 
 function card(view, item) {
@@ -57,9 +57,7 @@ export function render(view) {
     .children(!view.editing && !view.deleting && !view.busy && view.pending ? [new Button("reminder-retry").label(text.retry)
       .disabled(view.busy).on_click((_, cx) => view.perform(null, null, cx)),
       new Button("reminder-dismiss").label(text.cancel).disabled(view.busy).on_click((_, cx) => view.close(cx))] : [])
-    .child(CardList.new("reminders-items")
-      .children(view.loading && !view.loaded && !view.items.length ? [div().id('reminders-loading').h_flex().justify_center().child(new Spinner())] : [])
-      .children((view.loaded || !view.loading) && !items.length ? [EmptyState.new("reminders-empty", {variant:"card",icon:"bell",label:text.empty})] : [])
+    .child(CardList.new("reminders-items",{loaded:view.loaded,skeleton_rows:1,empty_icon:"bell",empty_label:text.empty})
       .children(items.map(item => card(view, item))));
   return div().id("reminders-page").size_full().v_flex().min_h_0().min_w_0()
     .text_color(colors.foreground).child(body)

@@ -26,9 +26,9 @@ function fixture() {
     if (id) nodes.set(id, proxy);
     return proxy;
   }
-  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar", "Spinner"]
+  const constructors = Object.fromEntries(["Button", "Switch", "Tab", "TabBar", "Skeleton"]
     .map(kind => [kind, function(id) { return element(kind, id); }]));
-  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SettingsPage", "Toggle", "Tooltip"]
+  const adapters = Object.fromEntries(["CardColumn", "CardList", "CardRow", "CardSummary", "EmptyState", "IconButton", "Modal", "SettingsPage", "SkeletonList", "Toggle", "Tooltip"]
     .map(kind => [kind, {new:(id, props) => element(kind, id, props)}]));
   const {render} = vm.runInNewContext(`${source}\n({render})`, {
     div:() => element(), ...constructors, ...adapters,
@@ -36,14 +36,23 @@ function fixture() {
     openSession:session => calls.push(["open", session]),
     editor:() => [element("editor"),element("footer")], window:{viewport_size:() => ({width:1200})},
   });
-  const view = {text:messages("en"), tab:0, items:[], history:[], pages:1, more:false, loading:false,
+  const view = {text:messages("en"), tab:0, items:[], history:[], pages:1, more:false, loading:false, loaded:true,
     busy:false, pending:null, error:null, editing:null, deleting:null, dialogId:0,
     projectName:() => "Project", refresh:() => calls.push(["refresh"]),
     edit:item => calls.push(["edit", item]), perform:(handler, input) => calls.push([handler, input]),
     close:() => calls.push(["close"]),
     control,
   };
-  return {view, nodes, calls, cx, render() { nodes.clear(); return render(view); }};
+  return {view, nodes, calls, cx, render() {
+    nodes.clear();const body=render(view);
+    for(const list of [...nodes.values()].filter(node=>node.kind==='CardList'&&!node.items.length)) {
+      const {loaded,skeleton_rows,empty_icon,empty_label}=list.props;
+      list.child(loaded===false
+        ? element('SkeletonList',`${list.selector}-loading`,{rows:skeleton_rows})
+        : element('EmptyState',`empty-${list.selector}-empty`,{variant:'list',icon:empty_icon,label:empty_label}));
+    }
+    return body;
+  }};
 }
 
 test("page matches settings layout and separates empty Tasks and Runs tabs", () => {
@@ -58,8 +67,8 @@ test("page matches settings layout and separates empty Tasks and Runs tabs", () 
   assert.equal(toolbar.items[1].selector, "task-create");
   assert.equal(nodes.has("tasks-refresh"), false);
   assert.equal(nodes.get("tasks-items").kind, "CardList");
-  assert.equal(nodes.get("tasks-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("tasks-empty").props), {variant:"card", icon:"calendar", label:"No tasks"});
+  assert.equal(nodes.get("empty-tasks-items-empty").kind, "EmptyState");
+  assert.deepEqual(plain(nodes.get("tasks-items").props), {loaded:true,skeleton_rows:1,empty_icon:"calendar",empty_label:"No tasks"});
   assert.equal(nodes.has("tasks-runs"), false);
   nodes.get("tasks-tabs").on_change(1, setup.cx);
   setup.render();
@@ -67,20 +76,24 @@ test("page matches settings layout and separates empty Tasks and Runs tabs", () 
   assert.deepEqual(plain(nodes.get("tasks-tabs").style.selected_index), [1]);
   assert.equal(nodes.has("tasks-items"), false);
   assert.equal(nodes.get("tasks-runs").kind, "CardList");
-  assert.equal(nodes.get("tasks-runs-empty").kind, "EmptyState");
-  assert.deepEqual(plain(nodes.get("tasks-runs-empty").props), {variant:"card", icon:"calendar", label:"No records"});
+  assert.equal(nodes.get("empty-tasks-runs-empty").kind, "EmptyState");
+  assert.deepEqual(plain(nodes.get("tasks-runs").props), {loaded:true,skeleton_rows:1,empty_icon:"calendar",empty_label:"No records"});
 });
 
-test("loading uses spinners in both tabs", () => {
-  const setup=fixture();setup.view.loading=true;
-  for(const tab of [0,1]) {
-    setup.view.tab=tab;setup.render();
-    assert.equal(setup.nodes.has("tasks-empty"),false);
-    assert.equal(setup.nodes.has("tasks-runs-empty"),false);
-    const list=setup.nodes.get(tab?"tasks-runs":"tasks-items");
-    assert.equal(setup.nodes.get(tab?'tasks-runs-loading':'tasks-items-loading').items[0].kind,'Spinner');
-    assert.ok(!list.items.some(item=>item.items.includes(setup.view.text.loading)));
+test("unconfirmed reads reserve card rows in both tabs", () => {
+  const setup=fixture();setup.view.loaded=false;
+  for(const loading of [false,true]) for(const tab of [0,1]) {
+    setup.view.loading=loading;setup.view.tab=tab;setup.render();
+    assert.equal(setup.nodes.has("empty-tasks-items-empty"),false);
+    assert.equal(setup.nodes.has("empty-tasks-runs-empty"),false);
+    const id=tab?'tasks-runs-loading':'tasks-items-loading',row=setup.nodes.get(id);
+    assert.equal(row.kind,'SkeletonList');
+    assert.deepEqual(plain(row.props),{rows:1});
+    assert.equal(setup.nodes.get('tasks-controls').items.length,2);
   }
+  setup.view.error='loadFailed';setup.render();
+  assert.equal(setup.nodes.has('empty-tasks-runs-empty'),false);
+  assert.ok(setup.nodes.has('tasks-runs-loading'));
 });
 
 test("failed reads preserve both tabs without retry bars; pending actions remain recoverable", () => {
@@ -102,7 +115,8 @@ test("background refresh retains empty cards and pending writes retain toolbar i
   const setup=fixture();setup.view.loaded=true;setup.view.loading=true;
   for(const tab of [0,1]) {
     setup.view.tab=tab;setup.render();
-    assert.ok(setup.nodes.has(tab ? "tasks-runs-empty" : "tasks-empty"));
+    assert.ok(setup.nodes.has(tab ? "empty-tasks-runs-empty" : "empty-tasks-items-empty"));
+    assert.equal(setup.nodes.has(tab ? "tasks-runs-loading" : "tasks-items-loading"),false);
     const list=setup.nodes.get(tab ? "tasks-runs" : "tasks-items");
     assert.ok(!list.items.some(item=>item.items.includes(setup.view.text.loading)));
   }
@@ -110,6 +124,18 @@ test("background refresh retains empty cards and pending writes retain toolbar i
   assert.ok(setup.nodes.has("tasks-controls"));
   assert.equal(setup.nodes.has("task-retry"),false);
   assert.equal(setup.nodes.has("task-dismiss"),false);
+});
+
+test("refresh keeps existing cards and the open editor", () => {
+  const setup=fixture(),item={id:'saved',name:'Review',project:null,enabled:false,next_ms:null};
+  setup.view.items=[item];setup.view.editing={draft:{name:'Retained draft'}};
+  for(const error of [null,'loadFailed']) {
+    setup.view.loading=error===null;setup.view.error=error;setup.render();
+    assert.ok(setup.nodes.has('task-card-saved'));
+    assert.equal(setup.nodes.has('tasks-items-loading'),false);
+    assert.equal(setup.nodes.has('empty-tasks-items-empty'),false);
+    assert.deepEqual(setup.nodes.get('task-dialog-0').items.map(item=>item.kind),['editor','footer']);
+  }
 });
 
 test("Tasks retains per-task actions while Records retains session and stop routes", () => {
