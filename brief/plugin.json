@@ -10,35 +10,35 @@
         "artifacts.write"
       ],
       "display": {
-        "label": "Briefs",
+        "label": "HTML",
         "locales": {
-          "zh-CN": "方案",
-          "zh-TW": "方案",
-          "ja": "提案",
-          "ko": "제안",
-          "de": "Entwürfe",
-          "es": "Propuestas",
-          "fr": "Propositions",
-          "pt-BR": "Propostas",
-          "ru": "Предложения"
+          "zh-CN": "HTML",
+          "zh-TW": "HTML",
+          "ja": "HTML",
+          "ko": "HTML",
+          "de": "HTML",
+          "es": "HTML",
+          "fr": "HTML",
+          "pt-BR": "HTML",
+          "ru": "HTML"
         },
         "icon": "reicon:files/file-text"
       },
       "description": {
-        "label": "Create visual HTML briefs",
+        "label": "Create HTML documents and previews",
         "locales": {
-          "zh-CN": "生成可视化 HTML 方案",
-          "zh-TW": "產生視覺化 HTML 方案",
-          "ja": "HTML で提案を可視化",
-          "ko": "HTML 제안 시각화",
-          "de": "Visuelle HTML-Entwürfe erstellen",
-          "es": "Crear propuestas visuales en HTML",
-          "fr": "Créer des propositions HTML visuelles",
-          "pt-BR": "Criar propostas visuais em HTML",
-          "ru": "Создавать наглядные HTML-предложения"
+          "zh-CN": "生成 HTML 文档和交互预览",
+          "zh-TW": "產生 HTML 文件和互動預覽",
+          "ja": "HTML ドキュメントとプレビューを作成",
+          "ko": "HTML 문서와 미리보기 만들기",
+          "de": "HTML-Dokumente und Vorschauen erstellen",
+          "es": "Crear documentos HTML y vistas interactivas",
+          "fr": "Créer des documents HTML et des aperçus",
+          "pt-BR": "Criar documentos HTML e pré-visualizações",
+          "ru": "Создавать HTML-документы и макеты"
         }
       },
-      "instructions": "Reply with the complete ordinary conversation plan first. When a visual document would make a complex design, PRD, review or incident report easier to understand, offer an optional HTML brief with one concise question. Do not generate it until the user chooses it. If the user explicitly asks for HTML, generate it directly. Load this package's brief skill before writing. write_brief stores only a session-owned HTML fragment on the execution Node, including in Plan mode; it never authorizes project changes or starts plan execution. Only the main session can write. Read an existing brief before revising it and pass its exact id and latest revision as expected_revision. Keep the card summary short; do not return the full HTML in the final answer. Brief form answers arrive as ordinary user messages, including queued messages while a turn is active. Treat them as answers to the named brief and revision, not permission to execute a plan.",
+      "instructions": "Create session-owned HTML documents, reports, diagrams, demos and interactive previews when the user requests or accepts HTML. An explicit HTML or HTML-preview request authorizes generation directly. Otherwise offer HTML only when it improves understanding and wait for the user's choice. For a plan request, keep the full ordinary plan in the conversation; HTML does not authorize execution or project writes. Load this package's brief skill before writing. write_brief uses kind=document by default for a sanitized main-body fragment and kind=preview for self-contained HTML with inline CSS and local JavaScript in an isolated sandbox. Preview has no Node, tool, credential, filesystem or network bridge; do not rely on CDNs, imports or external images. Only the main session can write. Read existing HTML before revising, preserve its kind, and pass the exact id and latest revision as expected_revision. Keep the card summary short; do not repeat the full HTML in the final answer. Forms are optional and only supported in document mode. Their answers arrive as ordinary user messages for that document and revision, not permission to execute. Use ask_user for missing choices or information when needed.",
       "artifact_view": {
         "template": "dev.sailry.platform/document/template.html",
         "styles": [
@@ -81,19 +81,19 @@
           "name": "write_brief",
           "operation": "artifacts.write",
           "presentation": "content",
-          "description": "Create or revise a visual HTML brief only after the user accepts the optional HTML offer, or explicitly asks for HTML. Load the brief skill for supported markup. Supply title, optional short summary, and a sanitized main-body HTML fragment. Omit id and expected_revision to create; to revise, read the latest brief and pass its exact id and revision. The session-owned document does not modify project files or approve execution. Returns a versioned preview card and small metadata, never the HTML.",
+          "description": "Create or revise session-owned HTML requested or accepted by the user. Load the brief skill. Supply title, optional short summary, html, and kind=document for a sanitized main-body fragment or kind=preview for a self-contained interactive HTML document with inline CSS and JavaScript. Preview runs offline without a host or tool bridge. Omit id and expected_revision to create; to revise, read the latest artifact and pass its exact id and revision. This does not modify project files or authorize execution. Returns a versioned artifact card and metadata.",
           "display": {
-            "label": "Write brief",
+            "label": "Write HTML",
             "locales": {
-              "zh-CN": "生成方案",
-              "zh-TW": "產生方案",
-              "ja": "提案を作成",
-              "ko": "제안 작성",
-              "de": "Entwurf erstellen",
-              "es": "Crear propuesta",
-              "fr": "Créer une proposition",
-              "pt-BR": "Criar proposta",
-              "ru": "Создать предложение"
+              "zh-CN": "生成 HTML",
+              "zh-TW": "產生 HTML",
+              "ja": "HTML を作成",
+              "ko": "HTML 작성",
+              "de": "HTML erstellen",
+              "es": "Crear HTML",
+              "fr": "Créer du HTML",
+              "pt-BR": "Criar HTML",
+              "ru": "Создать HTML"
             },
             "input": {
               "summary": {
@@ -106,19 +106,19 @@
           "name": "read_brief",
           "operation": "artifacts.read",
           "presentation": "summary",
-          "description": "Read the HTML body and metadata of a brief belonging to this main session. Supply id and optional revision; omitted revision reads the latest. Use the latest revision as expected_revision when revising. Historic reads do not establish the current revision.",
+          "description": "Read the HTML source, kind and metadata of an artifact in this main session. Supply id and optional revision; omitted revision reads the latest. Preserve its kind and use the latest revision as expected_revision when revising. Historic reads do not establish the current revision.",
           "display": {
-            "label": "Read brief",
+            "label": "Read HTML",
             "locales": {
-              "zh-CN": "读取方案",
-              "zh-TW": "讀取方案",
-              "ja": "提案を読む",
-              "ko": "제안 읽기",
-              "de": "Entwurf lesen",
-              "es": "Leer propuesta",
-              "fr": "Lire la proposition",
-              "pt-BR": "Ler proposta",
-              "ru": "Прочитать предложение"
+              "zh-CN": "读取 HTML",
+              "zh-TW": "讀取 HTML",
+              "ja": "HTML を読む",
+              "ko": "HTML 읽기",
+              "de": "HTML lesen",
+              "es": "Leer HTML",
+              "fr": "Lire le HTML",
+              "pt-BR": "Ler HTML",
+              "ru": "Прочитать HTML"
             }
           }
         },
@@ -126,19 +126,19 @@
           "name": "list_briefs",
           "operation": "artifacts.list",
           "presentation": "summary",
-          "description": "List briefs in this session without reading their HTML. To request another bounded page, pass the returned next_after cursor as after. Omit after for the first page.",
+          "description": "List HTML artifacts in this session without reading their source. To request another bounded page, pass the returned next_after cursor as after. Omit after for the first page.",
           "display": {
-            "label": "List briefs",
+            "label": "List HTML",
             "locales": {
-              "zh-CN": "方案列表",
-              "zh-TW": "方案清單",
-              "ja": "提案一覧",
-              "ko": "제안 목록",
-              "de": "Entwürfe auflisten",
-              "es": "Listar propuestas",
-              "fr": "Lister les propositions",
-              "pt-BR": "Listar propostas",
-              "ru": "Список предложений"
+              "zh-CN": "HTML 列表",
+              "zh-TW": "HTML 清單",
+              "ja": "HTML 一覧",
+              "ko": "HTML 목록",
+              "de": "HTML auflisten",
+              "es": "Listar HTML",
+              "fr": "Lister le HTML",
+              "pt-BR": "Listar HTML",
+              "ru": "Список HTML"
             }
           }
         }

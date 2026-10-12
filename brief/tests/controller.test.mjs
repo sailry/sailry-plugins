@@ -74,6 +74,18 @@ test('release ignores late reads',async () => {
   const pending = state.refresh();state.stop();resolve({artifact:{id:'artifact',revision:2}});await pending;
   assert.equal(state.artifact,null);assert.equal(state.closed,true);
 });
+test('preview export rejects PNG without launching',async () => {
+  const {state,calls,errors} = fixture(1);await state.refresh();
+  state.artifact.kind = 'preview';
+  await state.export('png');
+  assert.deepEqual(errors,['brief_export_unsupported']);
+  assert(!calls.some(call => call[0] === 'export'));
+  assert.equal(state.exporting,false);
+  await state.export('html');
+  assert.deepEqual(calls.filter(call => call[0] === 'export'),[
+    ['export',{artifact:'artifact',revision:1,format:'html'}],
+  ]);
+});
 test('form edits pin the mounted version before a newer refresh',async () => {
   const {state,calls} = fixture();await state.refresh();await state.freeze(2);await state.refresh();
   assert.equal(state.follow,false);assert.equal(state.revision,2);

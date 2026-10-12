@@ -1,30 +1,65 @@
 ---
 name: brief
-description: Write an optional visual HTML brief for a complex design, PRD, technical review or incident report after the user requests or accepts HTML. The session document does not authorize executing a plan.
+description: Create session-owned HTML documents, reports, diagrams, demos and interactive previews requested or accepted by the user. HTML does not authorize executing a plan.
 ---
 
-# HTML briefs
+# HTML artifacts
 
-Keep the full ordinary plan in the conversation. Offer HTML only when diagrams,
-tables or structured decisions improve understanding, and wait for the user's
-choice. An explicit HTML request authorizes generation directly. Use `write_brief`
+For a plan request, keep the full ordinary plan in the conversation. Otherwise
+choose content and interactions for the user's actual request, not a prescribed
+plan or form. Offer HTML only when it improves understanding and wait for the
+user's choice. An explicit HTML or HTML-preview request authorizes generation
+directly. Use `write_brief`
 in the main session; delegated agents can contribute analysis to their parent,
 but cannot create or revise a brief. Plan mode permits this session-owned
 document, without permitting project writes or execution.
 
-One template serves all document types. Write only the HTML fragment inside
+Choose `kind=document` (the default) for structured documents, reports, diagrams
+and optional forms. One template serves these document types. Write only the HTML fragment inside
 `<main>`, without `<html>`, `<head>`, `<body>`, scripts, styles, event handlers,
 external links or external images. The host supplies semantic theme colors,
 fonts, local diagram libraries and interaction code. Do not generate JavaScript
-or override the theme. Use a short title and card summary. After writing, report
+or override the theme in document mode. Use a short title and card summary. After writing, report
 the resulting document briefly; do not repeat its full HTML.
 
 Before revising, call `read_brief` without a revision to inspect the current HTML,
-then pass its exact `id` and latest `revision` as `expected_revision`. A conflict
+then preserve its `kind` and pass its exact `id` and latest `revision` as `expected_revision`. A conflict
 requires another read; do not overwrite or retry with a guessed revision. Preserve
 the user's previous decisions and content unless the requested change replaces them.
 
-## Components
+## Interactive previews
+
+Use `kind=preview` when the request needs custom HTML/CSS/JavaScript, such as a
+demo, dashboard, filterable checklist, local counters or clickable navigation.
+Supply a complete self-contained HTML document. Inline CSS, scripts, event
+handlers, DOM updates and in-memory state are supported in this mode; document
+mode removes them. Keep the source within 512 KiB, without NUL characters.
+
+Preview runs in an opaque-origin sandbox, with no Node, tool, credential,
+filesystem or application form bridge. The wrapper restricts resource loading
+and navigation with CSP, and denies popups and downloads. This is not an OS-level
+zero-egress guarantee. Do not depend on CDNs, package imports,
+external images, fetch, WebSockets or persistent browser storage. Use inline
+assets, bounded data images and local JavaScript only. No dependency installation
+or permission change is part of generating a preview. A form is optional; local
+demo controls do not send conversation messages or approve execution. Use
+`ask_user` separately for actual user decisions or missing information.
+
+For a copy button, copy selected text synchronously inside the user's click
+handler with the browser's `document.execCommand('copy')` fallback. Do not read
+the clipboard or copy automatically. The Async Clipboard API may be unavailable
+in the opaque frame. Check the operation's result; on failure, keep the text
+selectable for manual copying instead of showing a false success. Never route
+authored scripts through a Node or privileged application bridge to copy text.
+This browser fallback is platform-dependent; do not claim it has been tested
+on the user's platform unless it actually has.
+
+Preview exports retain the same sandbox and network restrictions in an
+interactive HTML wrapper. They preserve the original source rather than capture
+transient DOM edits or browser state. PNG export is not available for previews.
+Structured documents retain their existing HTML and PNG export behavior.
+
+## Document components
 
 - Sections and contents: `<section data-title="Overview">...</section>`; use
   `h1` through `h4` for headings. Missing section headings are supplied from
@@ -63,8 +98,9 @@ is limited to 512 KiB after cleaning.
 
 ## Questions
 
-When a brief contains unresolved decisions or information the user must confirm,
-end it with a `brief-form` covering those items. Use radio choices for one answer,
+Forms are optional. When the requested structured document benefits from collecting
+unresolved decisions or information, it may include a `brief-form`. Do not append
+one to every document. Use radio choices for one answer,
 checkboxes for multiple answers, and a textarea for additional context. Include
 only decisions that remain open; preserve confirmed choices when revising.
 

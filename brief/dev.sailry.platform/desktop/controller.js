@@ -70,6 +70,7 @@ export class Controller {
   }
   async export(format) {
     if (this.closed || this.loading || this.exporting || !this.connected || !this.artifact || !['html','png'].includes(format)) return;
+    if (this.artifact.kind === 'preview' && format !== 'html') {this.report('brief_export_unsupported');return;}
     this.exporting = true;this.changed();
     try {await this.api.exportArtifact({artifact:this.artifact.id,revision:this.artifact.revision,format});}
     catch (_) {if (!this.closed) this.report('brief_export_failed');}

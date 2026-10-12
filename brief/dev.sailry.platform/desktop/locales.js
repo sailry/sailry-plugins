@@ -4,8 +4,9 @@ export const locales = {
     "brief_export": "Export",
     "brief_html": "HTML",
     "brief_image": "Image",
-    "brief_load_failed": "Could not load brief",
-    "brief_export_failed": "Could not export brief",
+    "brief_load_failed": "Could not load HTML",
+    "brief_export_failed": "Could not export HTML",
+    "brief_export_unsupported": "Interactive previews export as HTML",
     "brief_retry": "Retry",
     "brief_more_versions": "More versions",
     "brief_contents": "Contents",
@@ -18,15 +19,16 @@ export const locales = {
     "brief_render_failed": "Could not render visual",
     "brief_answer_failed": "Could not send answers",
     "brief_loading": "Loading",
-    "brief_unavailable": "Brief unavailable"
+    "brief_unavailable": "HTML unavailable"
   },
   "zh-CN": {
     "brief_version": "版本",
     "brief_export": "导出",
     "brief_html": "HTML",
     "brief_image": "图片",
-    "brief_load_failed": "无法加载方案",
-    "brief_export_failed": "无法导出方案",
+    "brief_load_failed": "无法加载 HTML",
+    "brief_export_failed": "无法导出 HTML",
+    "brief_export_unsupported": "交互预览支持导出为 HTML",
     "brief_retry": "重试",
     "brief_more_versions": "更多版本",
     "brief_contents": "目录",
@@ -39,15 +41,16 @@ export const locales = {
     "brief_render_failed": "无法渲染图表",
     "brief_answer_failed": "无法发送回答",
     "brief_loading": "加载中",
-    "brief_unavailable": "方案不可用"
+    "brief_unavailable": "HTML 不可用"
   },
   "zh-TW": {
     "brief_version": "版本",
     "brief_export": "匯出",
     "brief_html": "HTML",
     "brief_image": "圖片",
-    "brief_load_failed": "無法載入方案",
-    "brief_export_failed": "無法匯出方案",
+    "brief_load_failed": "無法載入 HTML",
+    "brief_export_failed": "無法匯出 HTML",
+    "brief_export_unsupported": "互動預覽支援匯出為 HTML",
     "brief_retry": "重試",
     "brief_more_versions": "更多版本",
     "brief_contents": "目錄",
@@ -60,15 +63,16 @@ export const locales = {
     "brief_render_failed": "無法呈現圖表",
     "brief_answer_failed": "無法傳送回答",
     "brief_loading": "載入中",
-    "brief_unavailable": "方案無法使用"
+    "brief_unavailable": "HTML 無法使用"
   },
   "ja": {
     "brief_version": "バージョン",
     "brief_export": "エクスポート",
     "brief_html": "HTML",
     "brief_image": "画像",
-    "brief_load_failed": "提案を読み込めません",
-    "brief_export_failed": "提案をエクスポートできません",
+    "brief_load_failed": "HTML を読み込めません",
+    "brief_export_failed": "HTML をエクスポートできません",
+    "brief_export_unsupported": "対話型プレビューは HTML でエクスポートできます",
     "brief_retry": "再試行",
     "brief_more_versions": "他のバージョン",
     "brief_contents": "目次",
@@ -81,15 +85,16 @@ export const locales = {
     "brief_render_failed": "図を表示できません",
     "brief_answer_failed": "回答を送信できません",
     "brief_loading": "読み込み中",
-    "brief_unavailable": "提案を利用できません"
+    "brief_unavailable": "HTML を利用できません"
   },
   "ko": {
     "brief_version": "버전",
     "brief_export": "내보내기",
     "brief_html": "HTML",
     "brief_image": "이미지",
-    "brief_load_failed": "제안을 불러올 수 없습니다",
-    "brief_export_failed": "제안을 내보낼 수 없습니다",
+    "brief_load_failed": "HTML을 불러올 수 없습니다",
+    "brief_export_failed": "HTML을 내보낼 수 없습니다",
+    "brief_export_unsupported": "대화형 미리보기는 HTML로 내보낼 수 있습니다",
     "brief_retry": "다시 시도",
     "brief_more_versions": "다른 버전",
     "brief_contents": "목차",
@@ -102,15 +107,16 @@ export const locales = {
     "brief_render_failed": "시각 자료를 표시할 수 없습니다",
     "brief_answer_failed": "답변을 보낼 수 없습니다",
     "brief_loading": "불러오는 중",
-    "brief_unavailable": "제안을 사용할 수 없습니다"
+    "brief_unavailable": "HTML을 사용할 수 없습니다"
   },
   "de": {
     "brief_version": "Version",
     "brief_export": "Exportieren",
     "brief_html": "HTML",
     "brief_image": "Bild",
-    "brief_load_failed": "Entwurf konnte nicht geladen werden",
-    "brief_export_failed": "Entwurf konnte nicht exportiert werden",
+    "brief_load_failed": "HTML konnte nicht geladen werden",
+    "brief_export_failed": "HTML konnte nicht exportiert werden",
+    "brief_export_unsupported": "Interaktive Vorschauen lassen sich als HTML exportieren",
     "brief_retry": "Erneut versuchen",
     "brief_more_versions": "Weitere Versionen",
     "brief_contents": "Inhalt",
@@ -123,15 +129,16 @@ export const locales = {
     "brief_render_failed": "Grafik konnte nicht dargestellt werden",
     "brief_answer_failed": "Antworten konnten nicht gesendet werden",
     "brief_loading": "Lädt",
-    "brief_unavailable": "Entwurf nicht verfügbar"
+    "brief_unavailable": "HTML nicht verfügbar"
   },
   "es": {
     "brief_version": "Versión",
     "brief_export": "Exportar",
     "brief_html": "HTML",
     "brief_image": "Imagen",
-    "brief_load_failed": "No se pudo cargar la propuesta",
-    "brief_export_failed": "No se pudo exportar la propuesta",
+    "brief_load_failed": "No se pudo cargar el HTML",
+    "brief_export_failed": "No se pudo exportar el HTML",
+    "brief_export_unsupported": "Las vistas interactivas se exportan como HTML",
     "brief_retry": "Reintentar",
     "brief_more_versions": "Más versiones",
     "brief_contents": "Contenido",
@@ -144,15 +151,16 @@ export const locales = {
     "brief_render_failed": "No se pudo mostrar el gráfico",
     "brief_answer_failed": "No se pudieron enviar las respuestas",
     "brief_loading": "Cargando",
-    "brief_unavailable": "Propuesta no disponible"
+    "brief_unavailable": "HTML no disponible"
   },
   "fr": {
     "brief_version": "Version",
     "brief_export": "Exporter",
     "brief_html": "HTML",
     "brief_image": "Image",
-    "brief_load_failed": "Impossible de charger la proposition",
-    "brief_export_failed": "Impossible d’exporter la proposition",
+    "brief_load_failed": "Impossible de charger le HTML",
+    "brief_export_failed": "Impossible d’exporter le HTML",
+    "brief_export_unsupported": "Les aperçus interactifs s’exportent en HTML",
     "brief_retry": "Réessayer",
     "brief_more_versions": "Autres versions",
     "brief_contents": "Sommaire",
@@ -165,15 +173,16 @@ export const locales = {
     "brief_render_failed": "Impossible d’afficher le graphique",
     "brief_answer_failed": "Impossible d’envoyer les réponses",
     "brief_loading": "Chargement",
-    "brief_unavailable": "Proposition indisponible"
+    "brief_unavailable": "HTML indisponible"
   },
   "pt-BR": {
     "brief_version": "Versão",
     "brief_export": "Exportar",
     "brief_html": "HTML",
     "brief_image": "Imagem",
-    "brief_load_failed": "Não foi possível carregar a proposta",
-    "brief_export_failed": "Não foi possível exportar a proposta",
+    "brief_load_failed": "Não foi possível carregar o HTML",
+    "brief_export_failed": "Não foi possível exportar o HTML",
+    "brief_export_unsupported": "Pré-visualizações interativas são exportadas como HTML",
     "brief_retry": "Tentar novamente",
     "brief_more_versions": "Mais versões",
     "brief_contents": "Conteúdo",
@@ -186,15 +195,16 @@ export const locales = {
     "brief_render_failed": "Não foi possível exibir o gráfico",
     "brief_answer_failed": "Não foi possível enviar as respostas",
     "brief_loading": "Carregando",
-    "brief_unavailable": "Proposta indisponível"
+    "brief_unavailable": "HTML indisponível"
   },
   "ru": {
     "brief_version": "Версия",
     "brief_export": "Экспорт",
     "brief_html": "HTML",
     "brief_image": "Изображение",
-    "brief_load_failed": "Не удалось загрузить предложение",
-    "brief_export_failed": "Не удалось экспортировать предложение",
+    "brief_load_failed": "Не удалось загрузить HTML",
+    "brief_export_failed": "Не удалось экспортировать HTML",
+    "brief_export_unsupported": "Интерактивные макеты экспортируются в HTML",
     "brief_retry": "Повторить",
     "brief_more_versions": "Другие версии",
     "brief_contents": "Содержание",
@@ -207,7 +217,7 @@ export const locales = {
     "brief_render_failed": "Не удалось отобразить график",
     "brief_answer_failed": "Не удалось отправить ответы",
     "brief_loading": "Загрузка",
-    "brief_unavailable": "Предложение недоступно"
+    "brief_unavailable": "HTML недоступно"
   }
 };
 

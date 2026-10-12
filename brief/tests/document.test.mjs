@@ -5,6 +5,58 @@ import vm from 'node:vm';
 
 const source = readFileSync(new URL('../dev.sailry.platform/document/brief.js',import.meta.url),'utf8');
 
+test('keeps HTML general with optional questions',() => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
+  assert.equal(manifest.name,'brief');
+  assert.equal(manifest.version,'0.1.0');
+  assert.equal(extension.api_version,'v1');
+  assert.equal(extension.display.label,'HTML');
+  assert(Object.values(extension.display.locales).every(label => label === 'HTML'));
+  assert.match(extension.instructions,/explicit HTML or HTML-preview request authorizes generation directly/);
+  assert.match(extension.instructions,/Forms are optional/);
+  assert.match(skill,/kind=document.*default/);
+  assert.match(skill,/kind=preview/);
+  assert.match(skill,/Forms are optional/);
+  assert.doesNotMatch(skill,/Always end.*form|Finish with a form/);
+  assert.deepEqual(extension.tools.slice(0,3).map(tool => tool.name),[
+    'write_brief','read_brief','list_briefs',
+  ]);
+});
+
+test('neutral styling retains the host semantic palette',() => {
+  const css = readFileSync(new URL('../dev.sailry.platform/document/brief.css',import.meta.url),'utf8');
+  const supplied = new Set(['background','foreground','primary','primary-foreground','secondary',
+    'secondary-foreground','muted','muted-foreground','accent','border','success','warning','danger',
+    'font-family','font-size','mono-font-family','radius'].map(name => `--document-${name}`));
+  const derived = new Set([...css.matchAll(/(--document-[a-z-]+)\s*:/g)].map(match => match[1]));
+  for (const name of derived) assert(!supplied.has(name),`Host token was overridden: ${name}`);
+  for (const [,name] of css.matchAll(/var\((--document-[a-z-]+)\)/g)) {
+    assert(supplied.has(name) || derived.has(name),`Unknown theme token: ${name}`);
+  }
+  assert.doesNotMatch(css,/:\s*(?:#[0-9a-f]{3,8}\b|(?:oklch|rgba?|hsla?)\(|(?:white|black)\b)/i);
+  assert.doesNotMatch(css,/@import|url\(/);
+  assert.match(css,/a:focus-visible[^{}]*summary:focus-visible\s*\{[^}]*outline:/);
+  assert.match(css,/--document-radius-(?:sm|lg):\s*calc\(var\(--document-radius\)/);
+});
+
+test('chrome retains responsive and scroll regions',() => {
+  const css = readFileSync(new URL('../dev.sailry.platform/document/brief.css',import.meta.url),'utf8');
+  const template = readFileSync(new URL('../dev.sailry.platform/document/template.html',import.meta.url),'utf8');
+  const ids = [...template.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(ids,['document-sidebar','document-brand','document-title','document-navigation',
+    'document-contents','document-toc','brief']);
+  assert.match(template,/<details id="document-navigation" open>/);
+  assert.doesNotMatch(template,/<(?:script|style)|\son\w+=/);
+  for (const selector of ['pre','.document-table','.document-diagram,.document-chart','.document-math']) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    assert.match(css,new RegExp(`(?:^|\\n)${escaped}\\s*\\{[^}]*overflow-x: auto;`));
+  }
+  assert.match(css,/@media\(max-width:720px\)[^]*#document-sidebar[^]*position: static;/);
+  assert.match(css,/@media print[^]*details > \* \{ display: block; \}/);
+});
+
 function element(id = '',title) {
   const classes = new Set();
   return {id,dataset:{title},children:[],scrolled:false,style:{setProperty() {}},

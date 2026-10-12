@@ -36,6 +36,15 @@ test('header actions use complete bundled icon paths',() => {
     {id:'brief-export',icon:'icons/ellipsis-vertical.svg'},
   ]);
 });
+test('interactive previews offer only HTML export',() => {
+  const view = setup();view.state.artifact.kind = 'preview';
+  const menu = find(view,'brief-export-picker');
+  assert.deepEqual(JSON.parse(JSON.stringify(menu.props.items)),[
+    {id:'brief-export-html',label:'HTML',disabled:false,value:{format:'html'}},
+  ]);
+  assert(find(view,'brief-preview-artifact'));
+  assert.equal(JSON.parse(find(view,'brief-header').props.content).filters[0].selected,'2');
+});
 test('refresh keeps the preview and disables actions without loading text',() => {
   const view = setup();view.state.loading = true;
   assert(find(view,'brief-preview-artifact'));assert.equal(JSON.parse(find(view,'brief-header').props.content).actions[0].disabled,true);

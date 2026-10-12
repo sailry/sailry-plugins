@@ -23,5 +23,5 @@ export function render(view) {
     .child(div().flex_1().min_w_0().min_h_0().child(content))
     .child(Picker.new('brief-export-picker',{mode:'command',open:view.exportOpen === true,title:text.brief_export,
       items:[{id:'brief-export-html',label:text.brief_html,disabled,value:{format:'html'}},
-        {id:'brief-export-image',label:text.brief_image,disabled,value:{format:'png'}}]}));
+        ...(state.artifact?.kind === 'preview' ? [] : [{id:'brief-export-image',label:text.brief_image,disabled,value:{format:'png'}}])]}));
 }
