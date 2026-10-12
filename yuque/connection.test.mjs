@@ -37,3 +37,13 @@ test('preserves failures without replaying uncertain effects',async()=>{
   assert.equal(JSON.stringify(result).includes('private error body'),false);
  }
 });
+
+
+test('provides localized official credential guidance', () => {
+  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
+  assert.ok(schema.description.includes("https://www.yuque.com/settings/tokens"));
+  assert.equal(Object.keys(schema['x-sailry-locales']).length, 10);
+  for (const locale of Object.values(schema['x-sailry-locales']))
+    assert.ok(locale.description.includes("https://www.yuque.com/settings/tokens"));
+  assert.equal(schema.properties.token.default, undefined);
+});

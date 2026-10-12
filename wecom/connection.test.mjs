@@ -54,3 +54,13 @@ test('does not replay uncertain or asynchronous operations',()=>{
   assert.equal(JSON.stringify(result).includes('private error marker'),false);
  }
 });
+
+
+test('provides localized official credential guidance', () => {
+  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
+  assert.ok(schema.description.includes("https://github.com/wecomteam/wecom-cli"));
+  assert.equal(Object.keys(schema['x-sailry-locales']).length, 10);
+  for (const locale of Object.values(schema['x-sailry-locales']))
+    assert.ok(locale.description.includes("https://github.com/wecomteam/wecom-cli"));
+  assert.equal(schema.properties.token.default, undefined);
+});

@@ -25,3 +25,13 @@ test('binds credentials outside package resources', () => {
   assert.equal(mcp.mcpServers["tencent-docs"].headers["Authorization"], '');
   assert.equal(schema.properties.token.default, undefined);
 });
+
+
+test('provides localized official credential guidance', () => {
+  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
+  assert.ok(schema.description.includes("https://docs.qq.com/open/auth/mcp.html"));
+  assert.equal(Object.keys(schema['x-sailry-locales']).length, 10);
+  for (const locale of Object.values(schema['x-sailry-locales']))
+    assert.ok(locale.description.includes("https://docs.qq.com/open/auth/mcp.html"));
+  assert.equal(schema.properties.token.default, undefined);
+});

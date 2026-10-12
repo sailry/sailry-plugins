@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Create a [Yuque API token](https://www.yuque.com/settings/tokens). This connection uses the public www.yuque.com API, not private enterprise hosts.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -17,34 +18,44 @@
   "required": [],
   "x-sailry-locales": {
     "en": {
-      "token": "Token"
+      "token": "Token",
+      "description": "Create a [Yuque API token](https://www.yuque.com/settings/tokens). This connection uses the public www.yuque.com API, not private enterprise hosts."
     },
     "zh-CN": {
-      "token": "令牌"
+      "token": "令牌",
+      "description": "创建[语雀 API 令牌](https://www.yuque.com/settings/tokens)。此连接使用公开的 www.yuque.com API，不支持企业私有站点。"
     },
     "zh-TW": {
-      "token": "權杖"
+      "token": "權杖",
+      "description": "建立[語雀 API 權杖](https://www.yuque.com/settings/tokens)。此連線使用公開的 www.yuque.com API，不支援企業私有站點。"
     },
     "de": {
-      "token": "Token"
+      "token": "Token",
+      "description": "Erstelle ein [Yuque-API-Token](https://www.yuque.com/settings/tokens). Diese Verbindung nutzt die öffentliche www.yuque.com-API, keine privaten Unternehmensserver."
     },
     "es": {
-      "token": "Token"
+      "token": "Token",
+      "description": "Crea un [token de API de Yuque](https://www.yuque.com/settings/tokens). Esta conexión usa la API pública de www.yuque.com, no servidores empresariales privados."
     },
     "fr": {
-      "token": "Jeton"
+      "token": "Jeton",
+      "description": "Créez un [jeton API Yuque](https://www.yuque.com/settings/tokens). Cette connexion utilise l’API publique www.yuque.com, pas les serveurs privés d’entreprise."
     },
     "ja": {
-      "token": "トークン"
+      "token": "トークン",
+      "description": "[Yuque API トークン](https://www.yuque.com/settings/tokens)を作成。公開の www.yuque.com API を使用し、企業の非公開ホストには対応しません。"
     },
     "ko": {
-      "token": "토큰"
+      "token": "토큰",
+      "description": "[Yuque API 토큰](https://www.yuque.com/settings/tokens)을 만드세요. 공개 www.yuque.com API를 사용하며 기업 비공개 호스트는 지원하지 않습니다."
     },
     "pt-BR": {
-      "token": "Token"
+      "token": "Token",
+      "description": "Crie um [token de API do Yuque](https://www.yuque.com/settings/tokens). Esta conexão usa a API pública www.yuque.com, não servidores empresariais privados."
     },
     "ru": {
-      "token": "Токен"
+      "token": "Токен",
+      "description": "Создайте [токен API Yuque](https://www.yuque.com/settings/tokens). Подключение использует публичный API www.yuque.com, а не частные корпоративные серверы."
     }
   }
 }

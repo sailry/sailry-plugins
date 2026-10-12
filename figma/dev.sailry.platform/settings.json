@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Create a [personal access token](https://developers.figma.com/docs/rest-api/personal-access-tokens/) in Figma Settings → Security with file_content:read. Reads file and node JSON, not Figma MCP design context.",
+  "properties": {
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "minLength": 1,
+      "maxLength": 4096,
+      "x-sailry-secret": {
+        "origin": "https://api.figma.com",
+        "header": "X-Figma-Token"
+      }
+    }
+  },
+  "required": [
+    "token"
+  ],
+  "x-sailry-locales": {
+    "en": {
+      "token": "Token",
+      "description": "Create a [personal access token](https://developers.figma.com/docs/rest-api/personal-access-tokens/) in Figma Settings → Security with file_content:read. Reads file and node JSON, not Figma MCP design context."
+    },
+    "zh-CN": {
+      "token": "令牌",
+      "description": "在 Figma 设置 → 安全中创建具有 file_content:read 权限的[个人访问令牌](https://developers.figma.com/docs/rest-api/personal-access-tokens/)。读取文件与节点 JSON，不提供 Figma MCP 设计上下文。"
+    },
+    "zh-TW": {
+      "token": "權杖",
+      "description": "在 Figma 設定 → 安全中建立具有 file_content:read 權限的[個人存取權杖](https://developers.figma.com/docs/rest-api/personal-access-tokens/)。讀取檔案與節點 JSON，不提供 Figma MCP 設計內容。"
+    },
+    "de": {
+      "token": "Token",
+      "description": "Erstelle unter Figma Einstellungen → Sicherheit ein [persönliches Zugriffstoken](https://developers.figma.com/docs/rest-api/personal-access-tokens/) mit file_content:read. Liest Datei- und Knoten-JSON, keinen Figma-MCP-Designkontext."
+    },
+    "es": {
+      "token": "Token",
+      "description": "Crea un [token de acceso personal](https://developers.figma.com/docs/rest-api/personal-access-tokens/) en Ajustes → Seguridad de Figma con file_content:read. Lee JSON de archivos y nodos, no el contexto de diseño de Figma MCP."
+    },
+    "fr": {
+      "token": "Jeton",
+      "description": "Créez un [jeton d’accès personnel](https://developers.figma.com/docs/rest-api/personal-access-tokens/) dans Paramètres → Sécurité de Figma avec file_content:read. Lit le JSON des fichiers et nœuds, pas le contexte de conception Figma MCP."
+    },
+    "ja": {
+      "token": "トークン",
+      "description": "Figma の設定 → セキュリティで file_content:read 権限の[個人アクセストークン](https://developers.figma.com/docs/rest-api/personal-access-tokens/)を作成。ファイルとノードの JSON を読み取り、Figma MCP のデザインコンテキストは提供しません。"
+    },
+    "ko": {
+      "token": "토큰",
+      "description": "Figma 설정 → 보안에서 file_content:read 권한의 [개인 액세스 토큰](https://developers.figma.com/docs/rest-api/personal-access-tokens/)을 만드세요. 파일과 노드 JSON을 읽으며 Figma MCP 디자인 컨텍스트는 제공하지 않습니다."
+    },
+    "pt-BR": {
+      "token": "Token",
+      "description": "Crie um [token de acesso pessoal](https://developers.figma.com/docs/rest-api/personal-access-tokens/) em Configurações → Segurança do Figma com file_content:read. Lê JSON de arquivos e nós, não o contexto de design do Figma MCP."
+    },
+    "ru": {
+      "token": "Токен",
+      "description": "Создайте [личный токен доступа](https://developers.figma.com/docs/rest-api/personal-access-tokens/) в Figma: Настройки → Безопасность, с file_content:read. Читает JSON файлов и узлов, а не контекст дизайна Figma MCP."
+    }
+  }
+}
