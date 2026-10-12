@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
-const source = (await readFile(new URL('../dev.sailry.platform/host/main.js',import.meta.url),'utf8')).replace(/^import .*\n/gm,'').replace(/^export /gm,'');
+const source = (await readFile(new URL('../dev.sailry.platform/host/main.js',import.meta.url),'utf8')).replace(/^import .*\n/gm,'').replace(/^export \{.*\n/gm,'').replace(/^export /gm,'');
 const plain = value => JSON.parse(JSON.stringify(value));
 function host(roles = []) {
   let state;
@@ -66,7 +66,7 @@ test('reuse keeps role selection optional and validates session IDs',()=>{
 });
 test('manifest and initialized schemas expose reuse consistently',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  const tool = manifest.extensions['dev.sailry.platform'].tools[0];
+  const tool = manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === 'spawn_agent');
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
   assert.match(tool.description,/new child inherits/);
@@ -97,11 +97,12 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.equal(policy.initialized.parameters.spawn_agent.properties.background.type,'boolean');
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const tools = manifest.extensions['dev.sailry.platform'].tools;
-  assert.equal(tools[0].handler.parameters.properties.background.type,'boolean');
-  assert.match(tools[0].description,/Use guide_agent for new directions and wait_agent/);
-  assert.match(tools[0].description,/child does not see this conversation/);
-  assert.match(tools[0].description,/self-contained task with the goal, relevant paths, constraints and expected output/);
-  assert.match(tools[0].description,/disjoint files/);
+  const spawn = tools.find(tool => tool.name === 'spawn_agent');
+  assert.equal(spawn.handler.parameters.properties.background.type,'boolean');
+  assert.match(spawn.description,/Use guide_agent for new directions and wait_agent/);
+  assert.match(spawn.description,/child does not see this conversation/);
+  assert.match(spawn.description,/self-contained task with the goal, relevant paths, constraints and expected output/);
+  assert.match(spawn.description,/disjoint files/);
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
 });
@@ -113,4 +114,15 @@ test('wait summaries explicitly request canonical session titles',async()=>{
     {path:'/session',format:'session'});
   assert.deepEqual(tools.find(tool => tool.name === 'guide_agent').display.input.summary,{path:'/session'});
   assert.deepEqual(tools.find(tool => tool.name === 'spawn_agent').display.input.summary,{path:'/title'});
+});
+
+test('catalog tools keep their own schemas and captured roster',()=>{
+  let state;
+  const functions = vm.runInNewContext(`${source}\n({initialize,prepare})`,{readTurnState:()=>state,stageTurnState:value=>state=value});
+  const initialized = functions.initialize({tools:['spawn_agent','add_agent','apply_agents'],roles:[{key:'review',name:'Review',description:'Inspect'}],session_revision:'9007199254740993'});
+  assert.deepEqual(Object.keys(initialized.parameters),['spawn_agent']);
+  assert.deepEqual(plain(initialized.tools),['spawn_agent','add_agent','apply_agents']);
+  assert.equal(state.session_revision,'9007199254740993');
+  assert.match(initialized.instruction,/9007199254740993/);
+  assert.equal(functions.prepare({role:'new-role',task:'Inspect'}).isError,true);
 });

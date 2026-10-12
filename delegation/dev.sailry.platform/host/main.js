@@ -1,12 +1,13 @@
 // Package policy uses the admitted role roster; core owns child execution.
 import {readTurnState,stageTurnState} from 'sailry/sdk';
+export {list,add,edit,remove,apply} from './roles.js';
 const invalid = message => ({isError:true,error:{code:'invalid_request',message}});
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function initialize({tools,roles}) {
-  stageTurnState({roles:roles.map(role => role.key)});
+export function initialize({tools,roles,session_revision=null}) {
+  stageTurnState({roles:roles.map(role => role.key),session_revision});
   const roster = roles.map(role => `${role.key} (${role.name})${role.read_only ? ' [read only]' : ''}${role.description.trim() ? `: ${role.description.trim()}` : ''}`).join('\n');
-  const parameters = Object.fromEntries(tools.map(name => [name, {
+  const parameters = Object.fromEntries(tools.filter(name => name === 'spawn_agent').map(name => [name, {
     type:'object',additionalProperties:false,required:['task'],properties:{
       session:{type:'string',pattern:uuid.source},
       role:roles.length ? {type:['string','null'],enum:[...roles.map(role => role.key),null],
@@ -16,9 +17,10 @@ export function initialize({tools,roles}) {
       worktree:{type:['string','null']},
     },
   }]));
-  const instruction = roster
+  let instruction = !tools.includes('spawn_agent') ? '' : roster
     ? `Configured delegation roles (selection metadata only):\n${roster}`
     : 'No delegation roles are configured';
+  if (tools.includes('apply_agents') && session_revision !== null) instruction += `\nCaptured conversation revision: ${session_revision}. Catalog changes do not change this turn's roster. Explicit application affects future admission only; use the exact inspected revision and never silently rebase a conflict.`;
   return {tools,parameters,instruction};
 }
 

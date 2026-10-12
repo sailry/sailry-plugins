@@ -13,6 +13,36 @@
       ],
       "tools": [
         {
+          "name":"list_agents","presentation":"details","contexts":["workspace"],
+          "description":"List public agent definitions and exact revisions in this execution Node's catalog. Catalog edits affect new conversations only until explicitly applied; they never rewrite this turn's roster or existing children. No provider configuration or credentials are returned.",
+          "handler":{"name":"list","read_only":true,"parameters":{"type":"object","additionalProperties":false,"properties":{}}},
+          "display":{"label":"List agents","locales":{"zh-CN":"列出代理"},"icon":"reicon:users/users2"}
+        },
+        {
+          "name":"add_agent","presentation":"details","contexts":["workspace"],
+          "description":"Add an agent definition to this execution Node's catalog. Use a unique lowercase key, display name and instructions. Optional model identifies an existing provider/model, never credentials. This does not change this conversation's roster; use apply_agents only when explicitly requested.",
+          "handler":{"name":"add","operation":"roles.save","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["key","name","instructions"],"properties":{"key":{"type":"string"},"name":{"type":"string"},"instructions":{"type":"string"},"description":{"type":"string"},"read_only":{"type":"boolean"},"model":{"type":["object","null"]},"max_turns":{"type":["integer","null"],"minimum":1},"skills":{"type":"array","maxItems":3,"items":{"type":"string"}},"appearance":{"type":["object","null"]}}}},
+          "display":{"label":"Add agent","locales":{"zh-CN":"添加代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/name"}}}
+        },
+        {
+          "name":"edit_agent","presentation":"details","contexts":["workspace"],
+          "description":"Edit one catalog agent using its exact ID and decimal-string revision from list_agents. Omitted fields are preserved; explicit null clears optional fields. Inspect conflicts instead of silently rebasing. Existing conversations, queued turns and children keep their captures until explicit application for future admission.",
+          "handler":{"name":"edit","operation":"roles.save","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["id","expected_revision"],"properties":{"id":{"type":"string"},"expected_revision":{"type":"string","pattern":"^[1-9][0-9]*$"},"key":{"type":"string"},"name":{"type":"string"},"instructions":{"type":"string"},"description":{"type":"string"},"read_only":{"type":"boolean"},"model":{"type":["object","null"]},"max_turns":{"type":["integer","null"],"minimum":1},"skills":{"type":"array","maxItems":3,"items":{"type":"string"}},"appearance":{"type":["object","null"]}}}},
+          "display":{"label":"Edit agent","locales":{"zh-CN":"编辑代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/id"}}}
+        },
+        {
+          "name":"delete_agent","presentation":"details","contexts":["workspace"],
+          "description":"Remove exactly one agent definition from this execution Node's catalog using its ID and decimal-string revision from list_agents. Confirm the user's intent before deletion. Existing conversations, queued turns and children retain their immutable definitions and history; this does not delete any conversation or automatically change its roster.",
+          "handler":{"name":"remove","operation":"roles.remove","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["id","expected_revision"],"properties":{"id":{"type":"string"},"expected_revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},
+          "display":{"label":"Delete agent","locales":{"zh-CN":"删除代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/id"}}}
+        },
+        {
+          "name":"apply_agents","presentation":"details","contexts":["workspace"],
+          "description":"Explicitly replace this conversation's selected agent roster for future turn admission only. Supply the complete desired list of catalog IDs with exact decimal-string revisions, and this conversation's exact expected_session_revision from initialization or a completed apply_agents receipt. An empty list clears future role selection. Never silently rebase conflicts. This running turn, already queued turns and existing children keep their immutable captures; this cannot target another conversation.",
+          "handler":{"name":"apply","operation":"roles.apply","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["agents","expected_session_revision"],"properties":{"agents":{"type":"array","maxItems":32,"items":{"type":"object","additionalProperties":false,"required":["id","revision"],"properties":{"id":{"type":"string"},"revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},"expected_session_revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},
+          "display":{"label":"Apply agents","locales":{"zh-CN":"应用代理"},"icon":"reicon:users/users2"}
+        },
+        {
           "name": "spawn_agent",
           "presentation": "details",
           "grouping": "standalone",
@@ -145,12 +175,18 @@
       "host": {
         "entry": "dev.sailry.platform/host/main.js",
         "resources": [
-          "dev.sailry.platform/host/main.js"
+          "dev.sailry.platform/host/main.js",
+          "dev.sailry.platform/host/roles.js"
         ],
         "handlers": [
           "initialize",
           "prepare",
-          "result"
+          "result",
+          "list",
+          "add",
+          "edit",
+          "remove",
+          "apply"
         ],
         "turn": {
           "initialize": "initialize"
