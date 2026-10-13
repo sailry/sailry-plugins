@@ -205,6 +205,12 @@ test('page retains its surface and review draft', () => {
     history:[false,false],supported:true,annotating:false});
   const rendered = () => flatten(f.render(f.view,f.cx));
   const surface = nodes => nodes.find(node=>node?.props?.id === 'browser-surface');
+  const header = rendered().find(node=>node?.props?.id === 'browser-header');
+  assert.equal(header.props.padding,8);
+  assert.equal(Object.hasOwn(header.props,'surface'),false);
+  const tabs = rendered().find(node=>node?.props?.id === 'browser-tabs');
+  assert.equal(tabs.props.selected,'1');
+  assert.equal(tabs.props.items[0].label,'Page');
   assert.deepEqual(surface(rendered()).props,{id:'browser-surface'});
   f.accept('selected');
   f.note('Keep this review');

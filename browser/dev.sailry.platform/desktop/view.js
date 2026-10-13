@@ -21,7 +21,7 @@ export function render(view, cx) {
   if (!tab) return div();
   const button = (id, icon, label, disabled = false) => IconButton.new(id, {icon,label,disabled});
   return div().id('browser-panel').v_flex().size_full().min_h_0().min_w_0()
-    .child(PanelHeader.new('browser-header',{padding:8,surface:'content'})
+    .child(PanelHeader.new('browser-header',{padding:8})
       .child(div().h_flex().w_full().min_w_0().gap_1()
         .child(NavigationTabs.new('browser-tabs', {
           items:state.tabs.map(item => ({id:String(item.id),label:item.title || text.browser_new_tab,
