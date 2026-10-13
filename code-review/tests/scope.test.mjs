@@ -31,6 +31,27 @@ test('inventory finishes before eligible reads', async () => {
   assert.ok(visible.some(item => item.path === '.npmrc' && item.reason === 'credentials'));
 });
 
+test('patch reads distinguish inventory and file revisions', async () => {
+  const fixtureData = await fixture([file('inventory/stock.py'),file('tests/test_stock.py')]);
+  const scope = await fixtureData.invoke('scope',{});
+  const git = await fixtureData.module('git');
+  const selected = scope.files[0];
+  assert.notEqual(scope.snapshot.metadata_revision,selected.metadata_revision);
+  await assert.rejects(git.change(fixtureData.captured.worktree,scope.snapshot,
+    {...selected,metadata_revision:scope.snapshot.metadata_revision}), {code:'revision_conflict'});
+  for (const file of scope.files) {
+    const page = await git.change(fixtureData.captured.worktree,scope.snapshot,file);
+    assert.deepEqual(JSON.parse(JSON.stringify(page.snapshot)),scope.snapshot);
+    assert.equal(page.metadata_revision,file.metadata_revision);
+    assert.equal(page.revision,file.revision);
+  }
+  const reads = fixtureData.calls.filter(call => call.kind === 'read_git_change').slice(-scope.files.length);
+  assert.deepEqual(reads.map(call => call.data),scope.files.map(file => ({
+    worktree:fixtureData.captured.worktree,snapshot:scope.snapshot,path:file.path,
+    expected_metadata_revision:file.metadata_revision,expected_revision:file.revision,offset:0,limit:500,
+  })));
+});
+
 test('tests stay eligible and related files share groups', async () => {
   const fixtureData = await fixture(['src/math.c','include/math.h','tests/math_test.c',
     'other/src/main.rs','other/tests/main_test.rs','locales/en.json','locales/zh.json',

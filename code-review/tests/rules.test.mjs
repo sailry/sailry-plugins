@@ -47,7 +47,7 @@ test('generated metadata preserves rule order and original hashes', async () => 
 test('mutating tools declare atomic storage flows', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.0');
+  assert.equal(manifest.version,'0.1.1');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','report_finding','review_complete']);
   assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');
@@ -65,4 +65,21 @@ test('mutating tools declare atomic storage flows', async () => {
   const skill = await readFile(new URL('SKILL.md',new URL('../skills/code-review/',import.meta.url)),'utf8');
   assert.ok(skill.includes('`read_git_change`'));
   assert.ok(!skill.includes('`git_change`'));
+});
+
+test('skill maps each file to patch arguments', async () => {
+  const text = await readFile(new URL('SKILL.md',skill),'utf8');
+  assert.match(text,/snapshot: scope\.snapshot/);
+  assert.match(text,/path: file\.path/);
+  assert.match(text,/expected_metadata_revision: file\.metadata_revision/);
+  assert.match(text,/expected_revision: file\.revision/);
+  assert.match(text,/Never use it as `expected_metadata_revision`/);
+  assert.match(text,/Every request, including a retry or continuation/);
+  assert.match(text,/Correct the arguments without replacing the captured scope/);
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  assert.match(extension.instructions,/file\.metadata_revision as expected_metadata_revision/);
+  assert.match(extension.instructions,/omit snapshot\/path on later reads/);
+  assert.match(extension.tools.find(tool => tool.name === 'review_scope').description,
+    /snapshot\.metadata_revision identifies the inventory, not an individual file/);
 });

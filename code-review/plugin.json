@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -26,7 +26,7 @@
           "zh-CN": "审查代码变更与拉取请求"
         }
       },
-      "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict requires a fresh tool invocation and re-reading current scope; do not retry within a failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
+      "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. For every read_git_change request, pass scope.snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision from the selected scope.files entry. Never substitute scope.snapshot.metadata_revision for a file's metadata revision or omit snapshot/path on later reads. Check argument mappings before treating a failed patch read as a changed worktree; only actual target or file changes require a new review. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
       "storage": {
         "collections": [
           {
@@ -84,7 +84,7 @@
             "workspace"
           ],
           "presentation": "details",
-          "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
+          "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Read each file with read_git_change using the returned snapshot, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision; snapshot.metadata_revision identifies the inventory, not an individual file. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
           "handler": {
             "name": "scope",
             "flow": {

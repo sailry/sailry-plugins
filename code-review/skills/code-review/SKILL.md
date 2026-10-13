@@ -19,7 +19,21 @@ Read repository instructions applicable to the eligible paths. Read `rules/index
 
 ## Review every group
 
-Read each eligible patch with the Git plugin's `read_git_change` tool using the scope's `snapshot`, `path`, `metadata_revision` as `expected_metadata_revision`, and strong `revision` as `expected_revision`. Follow every diff page using its `next` offset and the same expected revision. Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read relevant surrounding source, callers and existing tests with available read-only tools when a finding needs them; keep those reads within the task and current permissions.
+Read each eligible patch with the Git plugin's `read_git_change` tool. For each `file` in `scope.files`, use this mapping:
+
+```javascript
+read_git_change({
+  snapshot: scope.snapshot,
+  path: file.path,
+  expected_metadata_revision: file.metadata_revision,
+  expected_revision: file.revision,
+  offset: 0
+})
+```
+
+`scope.snapshot.metadata_revision` identifies the whole inventory, not the selected file. Never use it as `expected_metadata_revision`. Every request, including a retry or continuation, includes the unchanged `scope.snapshot` and `file.path`. Follow every diff page using its `next` offset and the same file revisions. If a patch read fails, check these argument mappings first; missing or incorrectly mapped arguments do not establish a worktree change. Correct the arguments without replacing the captured scope. Actual target or file changes require a fresh review.
+
+Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read relevant surrounding source, callers and existing tests with available read-only tools when a finding needs them; keep those reads within the task and current permissions.
 
 Groups connect directory peers, source/test or source/header counterparts and locale variants. If delegation is available, assign complete disjoint groups to direct children, giving a self-contained task with `review_id`, group IDs, exact paths/revisions, selected rule resources, constraints and expected evidence. Children share the worktree and private review store but do not see the parent conversation. Each child must return findings and complete group receipts; only the creator can finalize. The creator independently assesses delegated evidence before keeping a finding.
 
