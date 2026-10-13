@@ -4861,7 +4861,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "feishu",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Documents and comments",
         "homepage": "https://github.com/larksuite/lark-samples/tree/main/mcp_quick_remote_demo",
         "extensions": {
@@ -4945,7 +4945,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "figma",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Design context",
         "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
         "extensions": {
@@ -8962,7 +8962,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "media",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9832,7 +9832,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "notion",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Pages and databases",
         "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
         "extensions": {
@@ -11340,7 +11340,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11822,7 +11822,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12020,7 +12020,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "tencent-docs",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Shared documents",
         "homepage": "https://docs.qq.com/open/auth/mcp.html",
         "extensions": {
@@ -12183,7 +12183,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "wecom",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Workplace services",
         "homepage": "https://github.com/WecomTeam/wecom-cli",
         "extensions": {
@@ -12313,7 +12313,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12640,7 +12640,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "yuque",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Knowledge bases and documents",
         "homepage": "https://github.com/yuque/yuque-mcp-server",
         "extensions": {

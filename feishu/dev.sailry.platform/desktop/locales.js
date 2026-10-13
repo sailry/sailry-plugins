@@ -24,7 +24,9 @@ const outcomes = {
   ru:{failed:'Не удалось создать приложение',read_failed:'Не удалось прочитать настройки',expired:'Срок действия кода истёк; проверьте Feishu перед созданием другого приложения',changed:'Настройки изменены; проверьте Feishu перед созданием другого приложения'}
 };
 
+const replacements = {"en":"Replace app","zh-CN":"替换应用","zh-TW":"替換應用程式","de":"App ersetzen","es":"Reemplazar aplicación","fr":"Remplacer l’application","ja":"アプリを置き換え","ko":"앱 교체","pt-BR":"Substituir aplicativo","ru":"Заменить приложение"};
+
 export function messages(locale) {
   const selected = Object.hasOwn(locales, locale) ? locale : 'en';
-  return {...locales[selected], ...outcomes[selected]};
+  return {...locales[selected], ...outcomes[selected], replace: replacements[selected]};
 }

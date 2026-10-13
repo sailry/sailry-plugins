@@ -72,7 +72,8 @@ export default class Settings extends View {
       : state?.phase === 'starting' || state?.phase === 'exchanging' ? text.waiting : null;
     const controls = div().h_flex().gap_2().flex_wrap()
       .child(RegistrationButton.new('feishu-register',{
-        action:'begin',label:uncertain ? text.check : replace ? text.refresh : text.create,
+        action:'begin',label:uncertain ? text.check : replace ? text.refresh
+          : this.configured ? text.replace : text.create,
         replace_pending:replace,primary:true,disabled:busy
       }))
       .children(state?.can_replace ? [RegistrationButton.new('feishu-cancel',{

@@ -52,7 +52,7 @@ test('declares scoped registration and a package settings page', () => {
   const extension = manifest.extensions['dev.sailry.platform'];
   assert.deepEqual(extension.registration, {provider:'feishu',client_id:'app_id',client_secret:'app_secret',
     tenant_scopes:['docx:document:readonly','docs:document.content:read','docs:document.comment:read']});
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, '0.1.1');
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.deepEqual(extension.desktop.resources, [extension.settings_page.entry,'dev.sailry.platform/desktop/locales.js']);
 });
@@ -105,10 +105,22 @@ test('mount observes without initiating registration', async () => {
   fixture.registrations.shift()({cursor:'1',phase:'idle',busy:false}); await flush();
   const actions = controls(fixture.view.render());
   assert.deepEqual(JSON.parse(JSON.stringify(actions.find(value=>value.id==='feishu-register').props)),
-    {action:'begin',label:'Create app',replace_pending:false,primary:true,disabled:false});
+    {action:'begin',label:'Replace app',replace_pending:false,primary:true,disabled:false});
   assert.equal(actions.find(value=>value.id==='feishu-manual').kind,'configuration');
   assert.ok(!actions.some(value=>value.kind==='qr'));
   assert.equal(fixture.notices.length,0);
+});
+
+test('labels configured replacement and first creation', async () => {
+  for(const locale of Object.keys(manifest.extensions['dev.sailry.platform'].display.locales)) {
+    const fixture = page(locale); await flush();
+    fixture.registrations.shift()({cursor:'1',phase:'idle',busy:false}); await flush();
+    assert.equal(controls(fixture.view.render()).find(value=>value.id==='feishu-register').props.label,
+      fixture.view.text.replace);
+    fixture.view.configured = false;
+    assert.equal(controls(fixture.view.render()).find(value=>value.id==='feishu-register').props.label,
+      fixture.view.text.create);
+  }
 });
 
 test('composes protected actions and refreshes confirmed settings', async () => {
