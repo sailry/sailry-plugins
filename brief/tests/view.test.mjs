@@ -27,6 +27,9 @@ test('panel header owns version selection and the export action',() => {
   const surface = find(view,'brief-preview-artifact');assert.equal(surface.props.artifact,'artifact');assert.equal(surface.props.revision,undefined);
   view.state.follow = false;assert.equal(find(view,'brief-preview-artifact').props.revision,2);
   assert.equal(surface.props.labels.submit,'提交');
+  assert.equal(surface.props.labels.render_error,undefined);
+  assert.equal(surface.props.labels.required,view.text.brief_form_required);
+  assert.equal(surface.props.labels.invalid_form,view.text.brief_form_invalid);
 });
 test('header actions use complete bundled icon paths',() => {
   const view = setup();view.state.before = 1;

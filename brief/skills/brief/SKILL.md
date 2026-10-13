@@ -5,11 +5,13 @@ description: Create session-owned HTML documents, reports, diagrams, demos and i
 
 # HTML artifacts
 
-For a plan request, keep the full ordinary plan in the conversation. Otherwise
-choose content and interactions for the user's actual request, not a prescribed
-plan or form. Offer HTML only when it improves understanding and wait for the
-user's choice. An explicit HTML or HTML-preview request authorizes generation
-directly. Use `write_brief`
+For complex development, design or refactor plans, present the full ordinary plan
+in the conversation first, then end with exactly one concise offer to create an
+HTML version and wait for the user's choice. Do not repeat the offer for that
+plan. Do not offer HTML for pure questions or simple changes, and never generate
+it automatically without acceptance. An explicit HTML or HTML-preview request
+authorizes generation directly. Choose content and interactions for the user's
+actual request, not a prescribed plan or form. Use `write_brief`
 in the main session; delegated agents can contribute analysis to their parent,
 but cannot create or revise a brief. Plan mode permits this session-owned
 document, without permitting project writes or execution.

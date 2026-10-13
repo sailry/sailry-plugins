@@ -16,7 +16,6 @@ export const locales = {
     "brief_close": "Close",
     "brief_form_invalid": "Could not submit answers",
     "brief_form_required": "Complete the required fields",
-    "brief_render_failed": "Could not render visual",
     "brief_answer_failed": "Could not send answers",
     "brief_loading": "Loading",
     "brief_unavailable": "HTML unavailable"
@@ -38,7 +37,6 @@ export const locales = {
     "brief_close": "关闭",
     "brief_form_invalid": "无法提交回答",
     "brief_form_required": "请填写必填项",
-    "brief_render_failed": "无法渲染图表",
     "brief_answer_failed": "无法发送回答",
     "brief_loading": "加载中",
     "brief_unavailable": "HTML 不可用"
@@ -60,7 +58,6 @@ export const locales = {
     "brief_close": "關閉",
     "brief_form_invalid": "無法提交回答",
     "brief_form_required": "請填寫必填欄位",
-    "brief_render_failed": "無法呈現圖表",
     "brief_answer_failed": "無法傳送回答",
     "brief_loading": "載入中",
     "brief_unavailable": "HTML 無法使用"
@@ -82,7 +79,6 @@ export const locales = {
     "brief_close": "閉じる",
     "brief_form_invalid": "回答を送信できません",
     "brief_form_required": "必須項目を入力してください",
-    "brief_render_failed": "図を表示できません",
     "brief_answer_failed": "回答を送信できません",
     "brief_loading": "読み込み中",
     "brief_unavailable": "HTML を利用できません"
@@ -104,7 +100,6 @@ export const locales = {
     "brief_close": "닫기",
     "brief_form_invalid": "답변을 제출할 수 없습니다",
     "brief_form_required": "필수 항목을 입력하세요",
-    "brief_render_failed": "시각 자료를 표시할 수 없습니다",
     "brief_answer_failed": "답변을 보낼 수 없습니다",
     "brief_loading": "불러오는 중",
     "brief_unavailable": "HTML을 사용할 수 없습니다"
@@ -126,7 +121,6 @@ export const locales = {
     "brief_close": "Schließen",
     "brief_form_invalid": "Antworten konnten nicht gesendet werden",
     "brief_form_required": "Pflichtfelder ausfüllen",
-    "brief_render_failed": "Grafik konnte nicht dargestellt werden",
     "brief_answer_failed": "Antworten konnten nicht gesendet werden",
     "brief_loading": "Lädt",
     "brief_unavailable": "HTML nicht verfügbar"
@@ -148,7 +142,6 @@ export const locales = {
     "brief_close": "Cerrar",
     "brief_form_invalid": "No se pudieron enviar las respuestas",
     "brief_form_required": "Completa los campos obligatorios",
-    "brief_render_failed": "No se pudo mostrar el gráfico",
     "brief_answer_failed": "No se pudieron enviar las respuestas",
     "brief_loading": "Cargando",
     "brief_unavailable": "HTML no disponible"
@@ -170,7 +163,6 @@ export const locales = {
     "brief_close": "Fermer",
     "brief_form_invalid": "Impossible d’envoyer les réponses",
     "brief_form_required": "Remplissez les champs obligatoires",
-    "brief_render_failed": "Impossible d’afficher le graphique",
     "brief_answer_failed": "Impossible d’envoyer les réponses",
     "brief_loading": "Chargement",
     "brief_unavailable": "HTML indisponible"
@@ -192,7 +184,6 @@ export const locales = {
     "brief_close": "Fechar",
     "brief_form_invalid": "Não foi possível enviar as respostas",
     "brief_form_required": "Preencha os campos obrigatórios",
-    "brief_render_failed": "Não foi possível exibir o gráfico",
     "brief_answer_failed": "Não foi possível enviar as respostas",
     "brief_loading": "Carregando",
     "brief_unavailable": "HTML indisponível"
@@ -214,7 +205,6 @@ export const locales = {
     "brief_close": "Закрыть",
     "brief_form_invalid": "Не удалось отправить ответы",
     "brief_form_required": "Заполните обязательные поля",
-    "brief_render_failed": "Не удалось отобразить график",
     "brief_answer_failed": "Не удалось отправить ответы",
     "brief_loading": "Загрузка",
     "brief_unavailable": "HTML недоступно"

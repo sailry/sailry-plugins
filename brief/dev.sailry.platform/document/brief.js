@@ -1,7 +1,7 @@
 (() => {
   window.MathJax?.loader?.preLoaded('[mathjax-tex]/svg');
   let current = null,generation = 0,serial = 0,edited = false,sections = [];
-  const sources = new Map(),pending = new Set(),completed = new Set(),notified = new Set();
+  const sources = new Map(),pending = new Set(),completed = new Set();
   const main = document.getElementById('brief'),toc = document.getElementById('document-toc');
   const post = event => window.sailryDocumentPost?.(event);
 
@@ -121,10 +121,6 @@
       } catch (_) {
         if (token !== generation) return;
         const fallback = document.createElement('pre');fallback.textContent = source;element.replaceChildren(fallback);
-        const identity = JSON.stringify([current.identity.artifact,current.identity.revision]);
-        if (!notified.has(identity)) {
-          notified.add(identity);post({kind:'render_error',...current.identity});
-        }
       }
     }
   }

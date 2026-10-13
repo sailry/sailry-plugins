@@ -14,7 +14,7 @@ export function render(view) {
   const content = state.artifact ? ArtifactSurface.new(`brief-preview-${state.artifact.id}`,{
     artifact:state.artifact.id,...(state.follow ? {} : {revision:state.revision}),
     labels:{contents:text.brief_contents,submit:text.brief_submit,required:text.brief_form_required,
-      invalid_form:text.brief_form_invalid,render_error:text.brief_render_failed},
+      invalid_form:text.brief_form_invalid},
   }) : state.loading ? Loading.new('brief-loading')
     : div().size_full().h_flex().justify_center().items_center().child(IconButton.new('brief-retry',{
       icon:'rotate-cw',label:text.brief_retry,disabled:!state.resource || !state.connected,show_label:true,

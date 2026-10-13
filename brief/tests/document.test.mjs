@@ -20,6 +20,14 @@ test('keeps HTML general with optional questions',() => {
   assert.match(skill,/kind=preview/);
   assert.match(skill,/Forms are optional/);
   assert.doesNotMatch(skill,/Always end.*form|Finish with a form/);
+  for (const declaration of [extension.instructions,skill.replace(/\s+/g,' ')]) {
+    assert.match(declaration,/full ordinary plan.*conversation first/);
+    assert.match(declaration,/exactly one concise offer/);
+    assert.match(declaration,/wait for the user's choice/);
+    assert.match(declaration,/Do not repeat the offer for that plan/);
+    assert.match(declaration,/Do not offer HTML for pure questions or simple changes/);
+    assert.match(declaration,/never generate it automatically without acceptance/);
+  }
   assert.deepEqual(extension.tools.slice(0,3).map(tool => tool.name),[
     'write_brief','read_brief','list_briefs',
   ]);
@@ -39,6 +47,12 @@ test('neutral styling retains the host semantic palette',() => {
   assert.doesNotMatch(css,/@import|url\(/);
   assert.match(css,/a:focus-visible[^{}]*summary:focus-visible\s*\{[^}]*outline:/);
   assert.match(css,/--document-radius-(?:sm|lg):\s*calc\(var\(--document-radius\)/);
+  assert.match(css,/--document-action:\s*var\(--document-foreground\)/);
+  assert.match(css,/--document-action-foreground:\s*var\(--document-background\)/);
+  assert.match(css,/body\s*\{[^}]*font-size:\s*var\(--document-font-size\)/);
+  assert.doesNotMatch(css,/var\(--document-(?:primary|success|warning|danger|accent)\)/);
+  for (const [,shadow] of css.matchAll(/box-shadow:\s*([^;]+);/g)) assert.equal(shadow.trim(),'none');
+  assert.match(css,/button\s*\{[^}]*min-height:\s*32px[^}]*font-size:\s*\.875em/);
 });
 
 test('chrome retains responsive and scroll regions',() => {
@@ -148,27 +162,27 @@ test('form labels align only direct inputs and selects',async () => {
   assert.deepEqual(labels.map(label => label.classList.contains('document-control')),[true,true,false,false,false]);
 });
 
-test('visual errors notify once per version and preserve source',async () => {
+test('visual failures keep source without automatic notifications',async () => {
   const visuals = [visual('mermaid','first'),visual('mermaid','second'),visual('math','formula'),visual('chart','chart')];
   const view = setup([],[],[],visuals);await view.mount();
-  assert.equal(view.events.length,1);assert.equal(view.events[0].kind,'render_error');
-  assert.equal(view.events[0].artifact,'document');assert.equal(view.events[0].revision,1);
+  assert.equal(view.events.length,0);
   await view.retheme();await view.mount();
-  assert.equal(view.events.length,1);
+  assert.equal(view.events.length,0);
   for (const source of visuals) {
     assert.equal(source.replacement.children.length,1);
     assert.equal(source.replacement.children[0].textContent,source.textContent);
   }
 });
 
-test('new artifact versions receive independent error feedback',async () => {
-  const view = setup([],[],[],[visual('mermaid','invalid')]);
+test('new artifact versions preserve failed visual source',async () => {
+  const source = visual('mermaid','invalid'),view = setup([],[],[],[source]);
   await view.mount();await view.mount({revision:2});await view.mount({artifact:'another',revision:2});
   await view.mount();await view.retheme();
-  assert.deepEqual(view.events.map(event => [event.artifact,event.revision]),[['document',1],['document',2],['another',2]]);
+  assert.equal(view.events.length,0);
+  assert.equal(source.replacement.children[0].textContent,'invalid');
 });
 
-test('late visual failures cannot notify a newer mount',async () => {
+test('late visual failures cannot replace a newer mount',async () => {
   const source = visual('mermaid','invalid'),view = setup([],[],[],[source]);
   let reject,started;
   const ready = new Promise(resolve => {started = resolve;});
@@ -178,8 +192,10 @@ test('late visual failures cannot notify a newer mount',async () => {
   view.mermaid.render = async () => {throw Error('Invalid diagram');};
   await view.mount({revision:2});reject(Error('Late diagram failure'));await previous;
   assert.equal(obsolete.children.length,0);
-  assert.deepEqual(view.events.map(event => event.revision),[2]);
-  await view.mount();assert.deepEqual(view.events.map(event => event.revision),[2,1]);
+  assert.equal(source.replacement.children[0].textContent,'invalid');
+  assert.equal(view.events.length,0);
+  await view.mount();assert.equal(view.events.length,0);
+  assert.equal(source.replacement.children[0].textContent,'invalid');
 });
 
 test('required forms still report every invalid submission',async () => {
@@ -189,5 +205,5 @@ test('required forms still report every invalid submission',async () => {
   view.submit(form);view.submit(form);
   view.forms.collect = () => {throw Error('Invalid form');};
   view.submit(form);view.submit(form);
-  assert.deepEqual(view.events.map(event => event.kind),['render_error','required','required','invalid_form','invalid_form']);
+  assert.deepEqual(view.events.map(event => event.kind),['required','required','invalid_form','invalid_form']);
 });
