@@ -2222,7 +2222,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2394,7 +2394,7 @@
               {
                 "name": "database_execute",
                 "presentation": "details",
-                "description": "Execute one SQL write statement under the session permission policy. Use for INSERT, UPDATE, DELETE, and schema changes. For a missing writable SQLite file, an authorized schema write initializes it only when its parent directory exists. Reads, catalog, connection checks, and PRAGMAs do not initialize a file. The saved connection's read-only setting still applies. Invoke this tool directly instead of asking for approval in chat. Do not retry a denied or uncertain write automatically.",
+                "description": "Execute one SQL write statement under the session permission policy. Use for INSERT, UPDATE, DELETE, and schema changes. For a missing writable SQLite file, an authorized schema write initializes it and creates missing parent directories; do not create the folder or an empty file separately. Explicit writable connection checks can also initialize a missing file. Reads, catalog, read-only connection checks, and PRAGMAs do not initialize a file. The saved connection's read-only setting still applies. Invoke this tool directly instead of asking for approval in chat. Do not retry a denied or uncertain write automatically.",
                 "contexts": [
                   "workspace",
                   "database"
@@ -2493,7 +2493,7 @@
               {
                 "name": "database_save_connection",
                 "presentation": "details",
-                "description": "Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. Saving records configuration only and does not create a SQLite file. New connections default to read_only=true; use read_only=false only for requested writes. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
+                "description": "Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. If database_connections returns no profiles, create without connection or expected_revision; do not reuse an ID from earlier conversation history. Saving records configuration only and does not create a SQLite file. New connections default to read_only=true; use read_only=false only for requested writes. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
                 "contexts": [
                   "workspace",
                   "database"
@@ -2691,7 +2691,7 @@
                 }
               ]
             },
-            "instructions": "Use database_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use database_save_connection; never request passwords. SQLite needs no credentials and its returned ID can be used in this turn. Saving a connection does not create its file. For a requested new SQLite database, save the connection with read_only=false and use database_execute for the authorized schema write; the parent directory must exist. Do not write an empty file as a workaround or silently change a read-only connection. If credentials_required is true, ask the user to fill the protected settings field."
+            "instructions": "Use database_connections to inspect saved profiles and their revisions. When no profiles are returned, create a connection without connection or expected_revision; do not reuse IDs from earlier conversation history. When asked to add or edit a connection, use database_save_connection; never request passwords. SQLite needs no credentials and its returned ID can be used in this turn. Saving a connection does not create its file. For a requested new SQLite database, save the connection with read_only=false and use database_execute for the authorized schema write; missing parent directories are created automatically. Explicit writable connection checks can also initialize a missing SQLite file. Do not write an empty file as a workaround or silently change a read-only connection. If credentials_required is true, ask the user to fill the protected settings field."
           }
         }
       }
@@ -9837,7 +9837,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "notion",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Pages and databases",
         "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
         "extensions": {
@@ -9909,7 +9909,8 @@
                       "origins": [
                         "https://mcp.notion.com",
                         "https://www.notion.so",
-                        "https://notion.so"
+                        "https://notion.so",
+                        "https://app.notion.com"
                       ],
                       "source": {
                         "kind": "mcp_authorization"
@@ -11345,7 +11346,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11382,6 +11383,7 @@
                 "initialize",
                 "run",
                 "transfer",
+                "completed",
                 "connections",
                 "save",
                 "saved"
@@ -11394,13 +11396,14 @@
               {
                 "name": "ssh_run",
                 "presentation": "details",
-                "description": "Run a command on an allowed saved SSH connection after runtime approval. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
+                "description": "Run a command on a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
                 "contexts": [
                   "workspace",
                   "ssh"
                 ],
                 "handler": {
                   "name": "run",
+                  "result": "completed",
                   "operation": "ssh.run",
                   "parameters": {
                     "type": "object",
@@ -11435,7 +11438,8 @@
                   "input": {
                     "summary": {
                       "path": "/connection",
-                      "code": true
+                      "format": "connection",
+                      "result_path": "/connection_name"
                     },
                     "content": {
                       "path": "/command",
@@ -11447,13 +11451,14 @@
               {
                 "name": "ssh_transfer",
                 "presentation": "details",
-                "description": "Upload or download a file using an allowed SSH connection after runtime approval. The local path is relative to the session worktree. Do not request credentials.",
+                "description": "Upload or download a file using a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. The local path is relative to the session worktree. Do not request credentials.",
                 "contexts": [
                   "workspace",
                   "ssh"
                 ],
                 "handler": {
                   "name": "transfer",
+                  "result": "completed",
                   "operation": "ssh.transfer",
                   "parameters": {
                     "type": "object",
@@ -11495,7 +11500,8 @@
                   "input": {
                     "summary": {
                       "path": "/connection",
-                      "code": true
+                      "format": "connection",
+                      "result_path": "/connection_name"
                     },
                     "content": {
                       "path": "/command",
