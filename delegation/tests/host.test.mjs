@@ -99,12 +99,40 @@ test('background mode retains synchronous default and exposes child control',asy
   const tools = manifest.extensions['dev.sailry.platform'].tools;
   const spawn = tools.find(tool => tool.name === 'spawn_agent');
   assert.equal(spawn.handler.parameters.properties.background.type,'boolean');
-  assert.match(spawn.description,/Use guide_agent for new directions and wait_agent/);
+  assert.match(spawn.description,/Use guide_agent for new directions/);
   assert.match(spawn.description,/child does not see this conversation/);
   assert.match(spawn.description,/self-contained task with the goal, relevant paths, constraints and expected output/);
   assert.match(spawn.description,/disjoint files/);
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
+});
+
+test('background guidance keeps waiting explicit',async()=>{
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools = manifest.extensions['dev.sailry.platform'].tools;
+  for(const name of ['spawn_agent','guide_agent']) {
+    const description = tools.find(tool => tool.name === name).description;
+    assert.match(description,/Keep background work in the background/);
+    assert.match(description,/only call wait_agent when the user explicitly requests waiting or result collection/);
+    assert.doesNotMatch(description,/Wait for the child result before answering|wait_agent to collect its final result before answering/);
+  }
+  const guide = tools.find(tool => tool.name === 'guide_agent');
+  assert.match(guide.description,/queued guidance receipt, not the child's final result/);
+  const wait = tools.find(tool => tool.name === 'wait_agent');
+  assert.match(wait.description,/Only use this tool when the user explicitly requests waiting or result collection/);
+  assert.match(wait.description,/guiding background work alone does not request waiting/);
+  assert.match(wait.description,/resume waiting only if the user still requests it/);
+  assert.doesNotMatch(wait.description,/wait again after guiding the child/);
+});
+
+test('admission receipts never imply child completion',()=>{
+  const policy = host();
+  const running = {session:'child',turn:'turn',status:'running'};
+  const queued = {session:'child',turn:'guidance',recipient:'turn',status:'queued'};
+  for(const receipt of [running,queued]) {
+    assert.deepEqual(plain(policy.result({output:receipt})),receipt);
+    assert.deepEqual(plain(policy.result({output:{kind:'delegation',data:receipt}})),receipt);
+  }
 });
 
 test('child control summaries request canonical session titles',async()=>{
@@ -123,6 +151,10 @@ test('comparison skill matches independent worktree implementations',async()=>{
   assert.match(skill,/followed by comparison or a recommendation/);
   assert.match(skill,/Compose available worktree, delegation, Git and test tools/);
   assert.match(skill,/If the request is only a question, compare the approaches directly without creating worktrees/);
+  assert.match(skill,/requested comparison or recommendation requires collecting every final result with wait_agent/);
+  assert.match(skill,/user requests background execution instead, acknowledge admission and leave the children running/);
+  assert.match(skill,/Guidance alone does not request foreground waiting/);
+  assert.match(skill,/queued receipt without claiming the child has finished/);
   assert.ok(!skill.includes('load_skill'));
 });
 
