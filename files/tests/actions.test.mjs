@@ -22,6 +22,24 @@ function item(actions,path,action) {
   return actions.treeMenu()(path).find(item => actions.entries.get(item.id)?.action === action);
 }
 
+test('managed descendants retain all existing manual menu operations', () => {
+  const {view,actions} = fixture(0);
+  const base = '.sailry/worktrees/id', path = `${base}/source.txt`;
+  const entry = {name:'source.txt',kind:'file'};
+  view.explorer.pages.set(base,{entries:[entry],index:new Map([[entry.name,entry]])});
+  view.explorer.expanded.add(base);
+  view.transfers.canPaste = () => true;
+  const menu = actions.tree(path,[]);
+  const operations = menu.filter(item => !item.separator).map(item => actions.entries.get(item.id));
+  for (const action of ['copy','cut','paste','rename','download','trash','new_file','new_directory']) {
+    const operation = operations.find(operation => operation.action === action);
+    assert.ok(operation,action);
+    assert.equal(operation.target.directory,base);
+    assert.deepEqual(plain(operation.target.paths),[path]);
+    assert.equal(menu.find(item => actions.entries.get(item.id) === operation).enabled,true);
+  }
+});
+
 test('large directory renders reuse prepared menu targets', () => {
   const {view,actions} = fixture(1_100);
   let builds = 0;

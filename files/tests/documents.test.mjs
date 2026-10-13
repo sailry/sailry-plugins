@@ -50,6 +50,17 @@ test('tab order and selection survive snapshots and exact decimal cursor orderin
 
 function fixtureState(cursor,documents,confirm) { return fixture({cursor,documents,reveal:null},undefined,confirm); }
 
+test('managed file documents retain ordinary editing and save actions',async () => {
+  const path = '.sailry/worktrees/id/source.txt';
+  const {documents,calls,cx} = fixtureState('1',[document('managed',{path,dirty:true,can_save:true})]);
+  await documents.open(path,undefined,cx);
+  await documents.action('undo',cx);
+  await documents.save(cx);
+  assert.deepEqual(plain(calls),[['open',path,{}],['action','managed',{kind:'undo'}],['save','managed']]);
+  assert.equal(documents.current().readonly,false);
+  assert.equal(documents.current().path,path);
+});
+
 test('reveal selects existing documents and waits for an admitted loading document', async () => {
   const {documents,cx,calls} = fixtureState('1',[document('one'),document('two',{dirty:true})]);
   await documents.select('two',cx);

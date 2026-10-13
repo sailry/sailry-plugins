@@ -19,6 +19,24 @@ function fixture(read) {
   return {explorer:new Explorer(error => errors.push(error)),errors,calls};
 }
 
+test('manual expansion retains nested managed file paths',async () => {
+  const base = '.sailry/worktrees/id';
+  const listings = new Map([
+    ['', [entry('.sailry','directory')]],
+    ['.sailry', [entry('worktrees','directory')]],
+    ['.sailry/worktrees', [entry('id','directory')]],
+    [base, [entry('source.txt')]],
+  ]);
+  const {explorer,calls,errors} = fixture(path => page(path,listings.get(path)));
+  await explorer.load('',false,cx);
+  for (const path of ['.sailry','.sailry/worktrees',base]) await explorer.expand(path,cx);
+  explorer.select(`${base}/source.txt`);
+  assert.deepEqual(plain(explorer.targets(`${base}/source.txt`)),[`${base}/source.txt`]);
+  assert.equal(explorer.directory(`${base}/source.txt`),base);
+  assert.deepEqual(plain(calls.map(call => call[0])),['','.sailry','.sailry/worktrees',base]);
+  assert.deepEqual(errors,[]);
+});
+
 test('paging appends without aliasing duplicate names and refreshes a changed cursor', async () => {
   let call = 0;
   const next = {revision:'r1',directory:false,name:'a.txt'};
