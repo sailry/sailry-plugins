@@ -141,3 +141,33 @@ test('only successful save results enable same-turn queries',async()=>{
   assert.deepEqual(plain(api.save({connection:created,expected_revision:1,name:'Updated'})),
     {connection:created,expected_revision:1,name:'Updated'});
 });
+
+test('initializes missing SQLite only through authorized schema writes',async()=>{
+  const api=await fixture();
+  const initialized=api.initialize({tools:[...tools,...management],connections:{databases:[],ssh:[]}});
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const source=await readFile(new URL('../dev.sailry.platform/host/tools.js',import.meta.url),'utf8');
+  const extension=manifest.extensions['dev.sailry.platform'];
+  const save=extension.tools.find(tool=>tool.name==='database_save_connection');
+  const execute=extension.tools.find(tool=>tool.name==='database_execute');
+  assert.ok(source.includes(save.description));
+  assert.ok(source.includes(execute.description));
+  assert.match(save.description,/Saving records configuration only and does not create a SQLite file/);
+  assert.match(save.description,/default to read_only=true/);
+  assert.match(execute.description,/authorized schema write initializes it only when its parent directory exists/);
+  assert.match(execute.description,/Reads, catalog, connection checks, and PRAGMAs do not initialize/);
+  assert.match(extension.instructions,/Do not write an empty file as a workaround/);
+  assert.match(extension.instructions,/silently change a read-only connection/);
+  assert.deepEqual(plain(save.handler.parameters),plain(initialized.parameters.database_save_connection));
+  const args={name:'New SQLite',engine:'sqlite',path:'output/test.db',read_only:false};
+  assert.deepEqual(plain(api.save(args)),args);
+  const readOnly={name:args.name,engine:args.engine,path:args.path};
+  assert.deepEqual(plain(api.save(readOnly)),{...readOnly,read_only:true});
+  const output={kind:'database_profile',data:{id:created,revision:1,engine:'sqlite',read_only:false,credentials_required:false}};
+  api.saved({arguments:args,output});
+  assert.deepEqual(plain(api.execute({connection:created,sql:'CREATE TABLE items(value INTEGER)'})),{
+    connection:created,sql:'CREATE TABLE items(value INTEGER)',row_limit:1000,timeout_ms:30000,
+  });
+  assert.equal(save.handler.operation,'databases.save');
+  assert.equal(execute.handler.operation,'databases.execute');
+});
