@@ -25,7 +25,7 @@ export function run(args) {
 }
 
 export function read(args) {
-  if (!object(args, ['id']) || (args.id !== undefined && typeof args.id !== 'string'))
+  if (!object(args, ['id']) || (args.id != null && typeof args.id !== 'string'))
     return invalid('Invalid command id');
   return args;
 }

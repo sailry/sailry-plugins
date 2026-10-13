@@ -1,7 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {run,write} from '../dev.sailry.platform/host/main.js';
+import {run,read,write} from '../dev.sailry.platform/host/main.js';
+
+test('reads exact command IDs or lists without an ID', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools
+    .find(tool => tool.name === 'read_command');
+  const field = declaration.handler.parameters.properties.id;
+  assert.deepEqual(field.type, ['string', 'null']);
+  assert.deepEqual(declaration.handler.parameters.required, []);
+  assert.match(declaration.description, /data.id by run_command with background=true/);
+  assert.match(declaration.description, /does not start a process or read a file directly/);
+  assert.match(declaration.description, /Never substitute a PID, filename, command text or invented ID/);
+  assert.match(declaration.description, /Use run_command to start a new command/);
+  assert.match(field.description, /omit or null to list commands/);
+  const pattern = new RegExp(field.pattern);
+  for(const id of ['00000000-0000-0000-0000-000000000000',
+    '11111111-1111-4111-8111-111111111111', 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE']) {
+    assert(pattern.test(id));
+    assert.deepEqual(read({id}), {id});
+  }
+  for(const id of ['bogus', '123', 'file.txt', 'cat /etc/hosts']) assert(!pattern.test(id));
+  assert.deepEqual(read({}), {});
+  assert.deepEqual(read({id:null}), {id:null});
+  for(const args of [{id:3},{id:false},{id:[]},{id:null,session:'other'}]) {
+    assert.equal(read(args).error.code, 'invalid_request');
+  }
+});
 
 test('command format affects only the summary', () => {
   const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));

@@ -1759,7 +1759,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1913,7 +1913,7 @@
                   },
                   "icon": "reicon:it/terminal-square"
                 },
-                "description": "Read a background command's status and recent stdout/stderr. Omit id to list this session's background commands. No new process is started.",
+                "description": "Read an existing background command's status and recent stdout/stderr; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, or an id listed by read_command. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list this session's background commands. Use run_command to start a new command.",
                 "handler": {
                   "name": "read",
                   "operation": "process.read",
@@ -1923,7 +1923,12 @@
                     "additionalProperties": false,
                     "properties": {
                       "id": {
-                        "type": "string"
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$",
+                        "description": "Exact background command UUID from run_command data.id or a listed command id; omit or null to list commands"
                       }
                     },
                     "required": []
