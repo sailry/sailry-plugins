@@ -9,21 +9,22 @@ import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 const source = readFileSync(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 const {render} = vm.runInNewContext(`${source}\n({render})`,{
-  div:() => new Element(),Header:Element,Picker:Element,IconButton:Element,Loading:Element,ArtifactSurface:Element,
+  div:() => new Element(),Header:Element,IconButton:Element,Loading:Element,ArtifactSurface:Element,
 });
 function setup() {
   const state = new Controller({}, {id:'artifact',session:'session'}, () => {}, () => {});
-  state.artifact = {id:'artifact',revision:2,title:'Brief title'};state.revision = 2;state.items = [{revision:2},{revision:1}];
+  state.artifact = {id:'artifact',revision:2,title:'Brief title',kind:'document'};state.revision = 2;state.items = [{revision:2},{revision:1}];
   return {state,text:messages('zh-CN')};
 }
 const find = (view,id) => flatten(render(view)).find(item => item instanceof Element && item.props.id === id);
 
 test('panel header owns version selection and the export action',() => {
-  const view = setup(),header = JSON.parse(find(view,'brief-header').props.content),menu = find(view,'brief-export-picker');
+  const view = setup(),header = JSON.parse(find(view,'brief-header').props.content),menu = header.actions[0].menu;
   assert.equal(header.filters[0].selected,'2');assert.equal(header.filters[0].label,'版本');assert.equal(header.actions[0].icon,'icons/ellipsis-vertical.svg');
-  assert.deepEqual(JSON.parse(JSON.stringify(menu.props.items)),[
-    {id:'brief-export-html',label:'HTML',disabled:false,value:{format:'html'}},{id:'brief-export-image',label:'图片',disabled:false,value:{format:'png'}},
+  assert.deepEqual(JSON.parse(JSON.stringify(menu)),[
+    {id:'brief-export-html',label:'HTML',enabled:true},{id:'brief-export-image',label:'图片',enabled:true},
   ]);
+  assert.equal(find(view,'brief-export-picker'),undefined);
   const surface = find(view,'brief-preview-artifact');assert.equal(surface.props.artifact,'artifact');assert.equal(surface.props.revision,undefined);
   view.state.follow = false;assert.equal(find(view,'brief-preview-artifact').props.revision,2);
   assert.equal(surface.props.labels.submit,'提交');
@@ -41,12 +42,24 @@ test('header actions use complete bundled icon paths',() => {
 });
 test('interactive previews offer only HTML export',() => {
   const view = setup();view.state.artifact.kind = 'preview';
-  const menu = find(view,'brief-export-picker');
-  assert.deepEqual(JSON.parse(JSON.stringify(menu.props.items)),[
-    {id:'brief-export-html',label:'HTML',disabled:false,value:{format:'html'}},
+  const menu = JSON.parse(find(view,'brief-header').props.content).actions[0].menu;
+  assert.deepEqual(JSON.parse(JSON.stringify(menu)),[
+    {id:'brief-export-html',label:'HTML',enabled:true},
   ]);
   assert(find(view,'brief-preview-artifact'));
   assert.equal(JSON.parse(find(view,'brief-header').props.content).filters[0].selected,'2');
+});
+test('export declarations preserve connection loading and busy guards',() => {
+  for (const field of ['connected','loading','exporting']) {
+    const view = setup();view.state[field] = field === 'connected' ? false : true;
+    const action = JSON.parse(find(view,'brief-header').props.content).actions[0];
+    assert.equal(action.disabled,true);assert(action.menu.every(item => !item.enabled));
+    assert(find(view,'brief-preview-artifact'));
+  }
+  const view = setup();delete view.state.artifact.kind;
+  assert.deepEqual(JSON.parse(find(view,'brief-header').props.content).actions[0].menu.map(item => item.id),['brief-export-html']);
+  view.state.before = 1;
+  assert.equal(JSON.parse(find(view,'brief-header').props.content).actions[0].menu,undefined);
 });
 test('refresh keeps the preview and disables actions without loading text',() => {
   const view = setup();view.state.loading = true;
