@@ -30,7 +30,7 @@ export function render(view) {
       .child(new Button('terminal-retry').ghost().label(text.retry).disabled(view.busy)
         .on_click((_, cx) => view.retry(cx)))] : [])
     .children(!attached && (!stoppedShell || !view.error) ? [div().flex_1().v_flex().items_center().justify_center()
-      .child(stoppedShell || view.loading && !selected ? new Spinner() : selected ? text.stopped : text.empty)] : [])
+      .child(stoppedShell && view.busy || view.loading && !selected ? new Spinner() : selected ? text.stopped : text.empty)] : [])
     .child(div().id(`terminal-content-${selected?.status.kind ?? 'empty'}`)
       .flex_grow(attached ? 1 : 0).min_h_0().min_w_0().children([
       Terminal.new('commands-terminal', {terminal:attached ? selected.id : null}),

@@ -37,12 +37,24 @@ function fixture(item, error = null) {
   return {nodes, calls, view, root, render:() => render(view), text:text(root)};
 }
 
-test('stopped ordinary shells attach with a spinner', () => {
+test('explicit shell opening shows a spinner', () => {
   const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}});
   assert.doesNotMatch(setup.text, /Loading/);
   const kinds = node => typeof node === 'string' ? [] : [node.kind,...node.items.flatMap(kinds)];
   assert(kinds(setup.root).includes('Spinner'));
   assert.doesNotMatch(setup.text, /Terminal stopped/);
+  assert.equal(setup.nodes.has('terminal-resume'), false);
+  assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);
+});
+
+test('idle restored shells remain stopped without a loading spinner', () => {
+  const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}});
+  setup.view.busy = false;
+  const root = setup.render();
+  const kinds = node => typeof node === 'string' ? [] : [node.kind,...node.items.flatMap(kinds)];
+  const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
+  assert.equal(kinds(root).includes('Spinner'), false);
+  assert.match(text(root), /Terminal stopped/);
   assert.equal(setup.nodes.has('terminal-resume'), false);
   assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);
 });

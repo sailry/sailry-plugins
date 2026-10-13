@@ -15,6 +15,7 @@ export default class Commands extends View {
     this.items = []; this.tools = []; this.selected = this.resource?.id ?? null; this.reveal = null;
     this.loading = false; this.dirty = false; this.busy = false; this.pending = null; this.error = null;
     this.openAttempts = new Map(); this.openRetry = null;
+    this.openIntent = null;
     if (this.resource) cx.spawn(async cx => {
       try { while (true) {
         const event = await nextPaneEvent();
@@ -29,9 +30,13 @@ export default class Commands extends View {
       } } catch (_) { /* View release ends menu observation. */ }
     });
     cx.spawn(async cx => {
-      let cursor = '';
+      let cursor = '', entry = '0';
       try { while (true) {
         const change = await nextChange(cursor); cursor = change.cursor;
+        if (change.entry !== entry) {
+          entry = change.entry;
+          if (entry !== '0') this.openIntent = {target:this.selected};
+        }
         if (change.connected) this.refresh(cx);
       } } catch (_) { /* The captured view has been released. */ }
     });
@@ -67,14 +72,18 @@ export default class Commands extends View {
   fail(key) { if(this.error!==key)toast({id:'terminal-error',message:this.text[key],kind:'error'});this.error=key; }
   select(index, cx) {
     this.selected = this.items[index]?.id ?? null;
+    this.openIntent = this.selected === null ? null : {target:this.selected};
     if (!this.pending && this.error === 'failed' && this.openRetry && this.selected !== this.openRetry) {
       this.error = null; this.openRetry = null;
     }
     this.openSelected(cx); cx.notify();
   }
   openSelected(cx) {
+    if (!this.openIntent || this.loading || this.busy || this.pending) return;
+    const intent = this.openIntent; this.openIntent = null;
+    if (intent.target !== null && intent.target !== this.selected) return;
     const item = this.items.find(item => item.id === this.selected);
-    if (this.busy || this.pending || !item || item.status.kind !== 'stopped' || item.tool || item.ssh) return;
+    if (!item || item.status.kind !== 'stopped' || item.tool || item.ssh) return;
     if (this.error) {
       const failed = this.openAttempts.get(this.openRetry);
       if (this.error !== 'failed' || !this.openRetry

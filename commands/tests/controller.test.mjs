@@ -6,10 +6,10 @@ import {selection} from '../dev.sailry.platform/desktop/access.js';
 
 const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{kind:'stopped'}});
 
-async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}) {
+async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}, initialEntry = 0) {
   const context = vm.createContext({});
   const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], requests = new Map();
-  const host = {items, complete:null, prepareError:null};
+  const host = {items, complete:null, prepareError:null, change:null};
   const prepare = (action, target) => {
     const id = `request-${prepared.length}`;
     const request = {id, action, target};
@@ -32,7 +32,8 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
           ? {...item, revision:item.revision + 1, status:{kind:'running'}} : item);
         return {Ok:{kind:'terminal', data:{id:request.target}}};
       },
-      forgetRequest:id => forgotten.push(id), nextChange() {},
+      forgetRequest:id => forgotten.push(id),
+      nextChange:() => new Promise(resolve => { host.change = resolve; }),
     },
     'sailry/ui':{nextMenuEvent() {}, pane:() => resource ? {resource} : null,
       openPane:value => { panes.push(value); return true; }, updatePane:value => updates.push(value),
@@ -48,17 +49,39 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   }, {context}));
   await module.evaluate();
   const view = new module.namespace.default();
-  view.init(null, {spawn() {}});
+  const background = [];
+  view.init(null, {spawn(callback) { background.push(callback); }});
   const pending = [];
   const cx = {notify() {}, spawn(callback) { pending.push(Promise.resolve().then(() => callback(cx))); }};
   let cursor = 0;
   const settle = async () => { while (cursor < pending.length) await pending[cursor++]; };
-  return {view, host, cx, settle, prepared, completed, forgotten, panes, updates,notices};
+  background.at(-1)(cx);
+  let changes = 0, entry = initialEntry;
+  const observe = async () => {
+    while (!host.change) await Promise.resolve();
+    const receive = host.change; host.change = null;
+    receive({cursor:String(++changes), connected:true, entry:String(entry)});
+    while (!host.change) await Promise.resolve();
+    await settle();
+  };
+  const enter = async () => { entry++; await observe(); };
+  await observe();
+  return {view, host, cx, settle, observe, enter, prepared, completed, forgotten, panes, updates,notices};
 }
 
-test('reopens the captured stopped shell once with its existing identity', async () => {
+test('restored shell metadata never launches a hidden process', async () => {
   const setup = await fixture();
-  setup.view.refresh(setup.cx); await setup.settle();
+  setup.view.refresh(setup.cx); setup.view.refresh(setup.cx); await setup.settle();
+  await setup.observe();
+  assert.equal(setup.prepared.length, 0);
+  assert.equal(setup.view.selected, 'shell');
+  assert.equal(setup.view.items[0].status.kind, 'stopped');
+  assert.equal(setup.panes.length, 0);
+});
+
+test('explicit entry reopens the captured shell once with its existing identity', async () => {
+  const setup = await fixture();
+  await setup.enter();
   assert.deepEqual(setup.prepared, [{id:'request-0', action:'open', target:'shell'}]);
   assert.equal(setup.view.selected, 'shell');
   assert.equal(setup.view.items[0].status.kind, 'running');
@@ -75,12 +98,12 @@ test('opens selected ordinary shells without replaying CLI or SSH launches', asy
     {...shell(), status:{kind:'exited', data:{code:0}}}, {...shell(), status:{kind:'running'}},
   ]) {
     const setup = await fixture([item]);
-    setup.view.refresh(setup.cx); await setup.settle();
+    await setup.enter();
     assert.equal(setup.prepared.length, 0);
   }
   const setup = await fixture([shell('first'), shell('second')], null);
   setup.view.selected = 'second';
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   assert.deepEqual(setup.prepared.map(request => request.target), ['second']);
   assert.equal(setup.view.items[0].status.kind, 'stopped');
 });
@@ -98,7 +121,7 @@ test('selecting a stopped shell tab opens it without creating another pane', asy
 test('confirmed open failure requires an explicit retry with a new request', async () => {
   const setup = await fixture();
   setup.host.complete = async () => ({Err:{code:'busy'}});
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   assert.equal(setup.view.error, 'failed');
   assert.equal(setup.notices.length,1);assert.equal(setup.notices[0].message,'Terminal action failed');
   assert.equal(setup.view.openRetry, 'shell');
@@ -115,7 +138,7 @@ test('confirmed open failure requires an explicit retry with a new request', asy
 test('uncertain open retains the original request and never retries automatically', async () => {
   for (const failure of [async () => ({Err:{code:'outcome_unknown'}}), async () => { throw new Error('disconnected'); }]) {
     const setup = await fixture(); setup.host.complete = failure;
-    setup.view.refresh(setup.cx); await setup.settle();
+    await setup.enter();
     assert.equal(setup.view.error, 'unknown');
     assert.equal(setup.view.pending.id, 'request-0');
     assert.equal(setup.forgotten.length, 0);
@@ -139,20 +162,24 @@ test('a completed open does not replace a subsequently selected tab', async () =
       ? {...item, status:{kind:'running'}} : item);
     resolve({Ok:{kind:'terminal', data:{id:request.target}}});
   }; });
-  setup.view.refresh(setup.cx);
+  const entering = setup.enter();
   while (!release) await Promise.resolve();
   setup.view.select(1, setup.cx);
-  setup.host.complete = null; release(); await setup.settle();
+  setup.host.complete = null; release(); await entering; await setup.settle();
   assert.equal(setup.view.selected, 'second');
   assert.deepEqual(setup.prepared.map(request => request.target), ['first', 'second']);
   assert.equal(setup.panes.length, 0);
 });
 
-test('a subsequent stopped revision reopens the same shell exactly once', async () => {
+test('stopped revisions remain stopped until another explicit entry', async () => {
   const setup = await fixture();
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   setup.host.items = setup.host.items.map(item => ({...item, revision:item.revision + 1, status:{kind:'stopped'}}));
   setup.view.refresh(setup.cx); setup.view.refresh(setup.cx); await setup.settle();
+  await setup.observe();
+  assert.equal(setup.prepared.length, 1);
+  assert.equal(setup.view.items[0].status.kind, 'stopped');
+  await setup.enter();
   assert.deepEqual(setup.prepared.map(request => [request.id, request.target]),
     [['request-0', 'shell'], ['request-1', 'shell']]);
   assert.equal(setup.view.items.length, 1);
@@ -165,7 +192,7 @@ test('switching after failure opens another shell and preserves revision-specifi
   const setup = await fixture([shell('first'), shell('second')], null);
   setup.view.selected = 'first';
   setup.host.complete = async () => ({Err:{code:'busy'}});
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   assert.equal(setup.view.openRetry, 'first');
   setup.host.complete = null;
   setup.view.select(1, setup.cx); await setup.settle();
@@ -193,7 +220,7 @@ test('switching shells does not clear unrelated load or action failures', async 
 
 test('a preparation failure retains the open target for an explicit retry', async () => {
   const setup = await fixture(); setup.host.prepareError = new Error('draft capacity exhausted');
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   assert.equal(setup.view.error, 'failed');
   assert.equal(setup.view.openRetry, 'shell');
   assert.equal(setup.view.pending, null);
@@ -209,7 +236,7 @@ test('a preparation failure retains the open target for an explicit retry', asyn
 
 test('uncertain opens keep panes busy and reject actions until explicit retry', async () => {
   const setup = await fixture(); setup.host.complete = async () => ({Err:{code:'outcome_unknown'}});
-  setup.view.refresh(setup.cx); await setup.settle();
+  await setup.enter();
   assert.equal(setup.view.busy, false);
   assert.equal(setup.updates.filter(update => Object.hasOwn(update, 'busy')).at(-1).busy, true);
   for (const action of ['close', 'create', 'open']) setup.view.perform(action, 'shell', setup.cx);
@@ -222,6 +249,40 @@ test('uncertain opens keep panes busy and reject actions until explicit retry', 
   assert.deepEqual(setup.completed, ['request-0', 'request-0']);
   assert.equal(setup.prepared.length, 1);
   assert.equal(setup.updates.filter(update => Object.hasOwn(update, 'busy')).at(-1).busy, false);
+});
+
+test('an initial explicit entry waits for the captured terminal inventory', async () => {
+  const setup = await fixture([shell()], {kind:'terminal', id:'shell'}, 1);
+  assert.deepEqual(setup.prepared, [{id:'request-0', action:'open', target:'shell'}]);
+  assert.equal(setup.view.selected, 'shell');
+  assert.equal(setup.view.items[0].status.kind, 'running');
+});
+
+test('entering a running shell never authorizes a later background restart', async () => {
+  const setup = await fixture([{...shell(), status:{kind:'running'}}]);
+  await setup.enter();
+  setup.host.items = [shell()];
+  await setup.observe();
+  assert.equal(setup.prepared.length, 0);
+  assert.equal(setup.view.items[0].status.kind, 'stopped');
+  await setup.enter();
+  assert.equal(setup.prepared.length, 1);
+});
+
+test('a removed selection never transfers its opening intent to another shell', async () => {
+  const setup = await fixture([shell('first'), shell('second')], null);
+  let release;
+  setup.host.complete = request => new Promise(resolve => { release = () => {
+    setup.host.items = [{...shell('first'), revision:2}];
+    resolve({Ok:{kind:'terminal', data:{id:request.target}}});
+  }; });
+  const entering = setup.enter();
+  while (!release) await Promise.resolve();
+  setup.view.select(1, setup.cx);
+  setup.host.complete = null; release(); await entering; await setup.settle();
+  assert.equal(setup.view.selected, 'first');
+  assert.equal(setup.view.items[0].status.kind, 'stopped');
+  assert.deepEqual(setup.prepared.map(request => request.target), ['first']);
 });
 
 
