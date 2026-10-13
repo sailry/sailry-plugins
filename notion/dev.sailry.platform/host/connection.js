@@ -6,9 +6,5 @@ export async function connection() {
   const result = {configured, sailry_content: {version: 1, blocks: [
     card("connection", {configured}, fallback(configured ? "connected" : "connect")),
   ]}};
-  if (!configured) {
-    result.isError = true;
-    result.error = {code: "not_configured", message: fallback("connect").label};
-  }
   return result;
 }

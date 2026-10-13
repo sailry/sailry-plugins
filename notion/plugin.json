@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "notion",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pages and databases",
   "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
   "extensions": {
@@ -25,7 +25,7 @@
         "key": "connection", "entry": "dev.sailry.platform/desktop/connection.js", "mcp_server": "notion",
         "props_schema": {"type": "object", "additionalProperties": false, "required": ["configured"], "properties": {"configured": {"type": "boolean"}}},
         "capabilities": {"refresh": true, "browser": [{
-          "name": "login", "origins": ["https://mcp.notion.com", "https://www.notion.so", "https://notion.so"],
+          "name": "login", "origins": ["https://mcp.notion.com", "https://www.notion.so", "https://notion.so", "https://app.notion.com"],
           "source": {"kind": "mcp_authorization"}, "modes": ["embedded", "external"]
         }]}
       }],
