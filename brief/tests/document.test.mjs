@@ -10,7 +10,7 @@ test('keeps HTML general with optional questions',() => {
   const extension = manifest.extensions['dev.sailry.platform'];
   const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
   assert.equal(manifest.name,'brief');
-  assert.equal(manifest.version,'0.1.3');
+  assert.equal(manifest.version,'0.1.4');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.display.label,'HTML');
   assert(Object.values(extension.display.locales).every(label => label === 'HTML'));
@@ -69,36 +69,73 @@ test('neutral styling retains the host semantic palette',() => {
   assert.match(css,/--document-action:\s*var\(--document-foreground\)/);
   assert.match(css,/--document-action-foreground:\s*var\(--document-background\)/);
   assert.match(css,/body\s*\{[^}]*font-size:\s*var\(--document-font-size\)/);
-  assert.doesNotMatch(css,/var\(--document-(?:primary|success|warning|danger|accent)\)/);
-  for (const [,shadow] of css.matchAll(/box-shadow:\s*([^;]+);/g)) assert.equal(shadow.trim(),'none');
+  assert.doesNotMatch(css,/var\(--document-(?:primary|accent)\)/);
+  // Only the contents dropdown casts a shadow, derived from the foreground token.
+  for (const [,rule,shadow] of css.matchAll(/([^{}]*)\{[^}]*box-shadow:\s*([^;]+);/g)) {
+    if (rule.trim() === '#document-sidebar') assert.match(shadow,/^[\d\spx]+color-mix\(in srgb, var\(--document-foreground\) \d+%, transparent\)$/);
+    else assert.equal(shadow.trim(),'none');
+  }
   assert.match(css,/button\s*\{[^}]*min-height:\s*32px[^}]*font-size:\s*\.875em/);
+});
+
+test('semantic variants tint callouts and badges with host tokens',() => {
+  const css = readFileSync(new URL('../dev.sailry.platform/document/brief.css',import.meta.url),'utf8');
+  for (const [variant,token] of [['warn','warning'],['risk','danger'],['ok','success']]) {
+    assert.match(css,new RegExp(`\\.callout\\.${variant} \\{ --document-tone: var\\(--document-${token}\\); border-color: color-mix\\(in srgb, var\\(--document-${token}\\)`));
+  }
+  assert.doesNotMatch(css,/\.callout\.info\s*\{/);
+  assert.match(css,/\.badge \{[^}]*border-radius: 999px/);
+  assert.match(css,/\.badge\.new \{ background: var\(--document-muted\)/);
+  assert.match(css,/\.badge\.removed,\.badge\.risk \{ color: var\(--document-danger\)/);
+  assert.match(css,/ol\.steps > li::before \{ content: counter\(document-step\)/);
+  assert.match(css,/\.compare \{[^}]*minmax\(min\(100%,220px\),1fr\)/);
+  assert.match(css,/(?:^|\n)pre \{[^}]*white-space: pre;/);
+  assert.doesNotMatch(css,/pre-wrap/);
 });
 
 test('chrome retains responsive and scroll regions',() => {
   const css = readFileSync(new URL('../dev.sailry.platform/document/brief.css',import.meta.url),'utf8');
   const template = readFileSync(new URL('../dev.sailry.platform/document/template.html',import.meta.url),'utf8');
   const ids = [...template.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(ids,['document-sidebar','document-brand','document-title','document-navigation',
-    'document-contents','document-toc','brief']);
-  assert.match(template,/<details id="document-navigation" open>/);
+  assert.deepEqual(ids,['document-header','document-brand','document-separator','document-title','document-menu',
+    'document-menu-label','document-layout','document-sidebar','document-contents','document-toc','brief']);
+  assert.match(template,/<span id="document-brand">Sailry<\/span>/);
+  assert.match(template,/<button id="document-menu" type="button" aria-expanded="false" aria-controls="document-sidebar">/);
+  // Exports serialize only main, so the header and contents must stay outside it.
+  assert.match(template,/<\/header>[^]*<aside id="document-sidebar">[^]*<\/aside>\s*<main id="brief"><\/main>/);
   assert.doesNotMatch(template,/<(?:script|style)|\son\w+=/);
   for (const selector of ['pre','.document-table','.document-diagram,.document-chart','.document-math']) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     assert.match(css,new RegExp(`(?:^|\\n)${escaped}\\s*\\{[^}]*overflow-x: auto;`));
   }
-  assert.match(css,/@media\(max-width:720px\)[^]*#document-sidebar[^]*position: static;/);
+  assert.match(css,/#document-header \{ position: sticky; top: 0;[^}]*height: var\(--document-header-height\)/);
+  assert.match(css,/main \{[^}]*max-width: 720px; margin: 0 auto;/);
+  assert.doesNotMatch(css,/margin: auto; min-width/);
+  assert.match(css,/@media\(max-width:1000px\) \{[^@]*#document-menu \{ display: inline-flex; \}[^@]*#document-sidebar \{ display: none; position: fixed;[^@]*#document-sidebar\[data-open\] \{ display: block; \}/);
+  assert.match(css,/@media\(max-width:520px\) \{[^@]*#document-brand,#document-separator \{ display: none; \}/);
+  assert.match(css,/@media print \{ #document-header,#document-sidebar,button \{ display: none !important; \}/);
   assert.match(css,/@media print[^]*details > \* \{ display: block; \}/);
 });
 
 function element(id = '',title) {
-  const classes = new Set();
-  return {id,dataset:{title},children:[],scrolled:false,style:{setProperty() {}},
+  const classes = new Set(),attributes = new Map();
+  return {id,dataset:{title},children:[],headings:[],scrolled:false,style:{setProperty() {}},
     classList:{toggle(name,enabled) {enabled ? classes.add(name) : classes.delete(name);},
       contains(name) {return classes.has(name);}},
     append(child) {this.children.push(child);},replaceChildren(...children) {this.children = children;},
     replaceWith(replacement) {this.replacement = replacement;},
-    setAttribute() {},removeAttribute() {},getBoundingClientRect() {return {top:100};},addEventListener() {},querySelector() {return {};},
+    setAttribute(name,value) {attributes.set(name,String(value));},removeAttribute(name) {attributes.delete(name);},
+    getAttribute(name) {return attributes.get(name);},hasAttribute(name) {return attributes.has(name);},
+    toggleAttribute(name,enabled) {enabled ? attributes.set(name,'') : attributes.delete(name);},
+    getBoundingClientRect() {return {top:100};},addEventListener() {},focus() {this.focused = true;},
+    querySelector() {return this.headings[0] ?? {};},querySelectorAll() {return this.headings;},
+    closest(selector) {return selector === 'section[data-title]' ? this.owner : this.container;},
     scrollIntoView() {this.scrolled = true;}};
+}
+
+function heading(section,text,container) {
+  const item = element();item.textContent = text;item.owner = section;item.container = container;
+  section.headings.push(item);return item;
 }
 
 function visual(kind,text) {
@@ -106,7 +143,8 @@ function visual(kind,text) {
 }
 
 function setup(sections,targets = [],labels = [],visuals = []) {
-  const chrome = ['brief','document-toc','document-title','document-contents'].map(id => element(id));
+  const chrome = ['brief','document-toc','document-title','document-contents','document-sidebar','document-menu',
+    'document-menu-label','document-layout'].map(id => element(id));
   const main = chrome[0],toc = chrome[1],listeners = {},events = [];
   main.querySelectorAll = selector => selector === 'section[data-title]' ? sections
     : selector === 'label' ? labels
@@ -127,11 +165,15 @@ function setup(sections,targets = [],labels = [],visuals = []) {
   vm.runInNewContext(source,{window,document,TextEncoder});
   const click = href => {
     let prevented = false;
-    listeners.click({target:{closest() {return {getAttribute() {return href;}};}},
+    listeners.click({target:{closest(selector) {return selector === 'a[href^="#"]' ? {getAttribute() {return href;}} : null;}},
       preventDefault() {prevented = true;}});
     assert(prevented);
   };
-  return {toc,click,events,scroll:() => listeners.scroll(),mermaid:window.mermaid,forms:window.sailryForms,
+  const press = (...inside) => listeners.click({target:{closest(selector) {return inside.includes(selector) ? {} : null;}},
+    preventDefault() {}});
+  const chromeElement = id => chrome.find(item => item.id === id);
+  return {toc,click,press,chrome:chromeElement,events,scroll:() => listeners.scroll(),
+    key:key => listeners.keydown({key}),mermaid:window.mermaid,forms:window.sailryForms,MathJax:window.MathJax,
     submit:form => listeners.submit({target:form,preventDefault() {}}),
     retheme:(value = {}) => window.sailryDocument.retheme(value),
     mount:(identity = {}) => window.sailryDocument.mount({
@@ -154,6 +196,50 @@ test('the directory highlights the section at the current scroll position',async
   second.getBoundingClientRect = () => ({top:70});view.scroll();
   assert(view.toc.children[1].classList.contains('active'));assert.equal(view.toc.children[0].classList.contains('active'),false);
   assert.doesNotMatch(source,/document-zoom|showModal|setZoom/);
+});
+
+test('the directory lists section subheadings and follows them',async () => {
+  const first = element('first','First'),second = element('second','Second');
+  heading(first,'First',null);
+  const sub = heading(first,' Detail ',null);
+  heading(first,'Option',{});
+  heading(second,'Nested',element());
+  const view = setup([first,second],[element('document-heading-0')]);
+  await view.mount();
+  assert.deepEqual(view.toc.children.map(link => [link.textContent,link.className ?? '']),
+    [['First',''],['Detail','sub'],['Second','']]);
+  assert.equal(sub.id,'document-heading-1');
+  assert.equal(view.toc.children[1].href,'#document-heading-1');
+  sub.getBoundingClientRect = () => ({top:90});view.scroll();
+  assert(view.toc.children[1].classList.contains('active'));
+  assert.equal(view.toc.children[0].classList.contains('active'),false);
+});
+
+test('the contents menu toggles and closes from links, Escape and outside clicks',async () => {
+  const view = setup([element('first','First')]);
+  await view.mount();
+  const sidebar = view.chrome('document-sidebar'),menu = view.chrome('document-menu');
+  assert.equal(view.chrome('document-menu-label').textContent,'Contents');
+  assert.equal(menu.hasAttribute('hidden'),false);
+  assert.equal(view.chrome('document-layout').getAttribute('data-contents'),'some');
+  view.press('#document-menu');
+  assert(sidebar.hasAttribute('data-open'));assert.equal(menu.getAttribute('aria-expanded'),'true');
+  view.press('#document-sidebar');assert(sidebar.hasAttribute('data-open'));
+  view.click('#first');assert.equal(sidebar.hasAttribute('data-open'),false);
+  assert.equal(menu.getAttribute('aria-expanded'),'false');
+  view.press('#document-menu');view.key('Escape');
+  assert.equal(sidebar.hasAttribute('data-open'),false);assert(menu.focused);
+  view.press('#document-menu');view.press();
+  assert.equal(sidebar.hasAttribute('data-open'),false);
+  view.press('#document-menu');view.press('#document-menu');
+  assert.equal(sidebar.hasAttribute('data-open'),false);
+});
+
+test('sectionless content hides the contents chrome',async () => {
+  const view = setup([]);await view.mount();
+  assert(view.chrome('document-sidebar').hasAttribute('hidden'));
+  assert(view.chrome('document-menu').hasAttribute('hidden'));
+  assert.equal(view.chrome('document-layout').getAttribute('data-contents'),'none');
 });
 
 test('generated anchors avoid document and authored target collisions',async () => {
@@ -225,4 +311,23 @@ test('required forms still report every invalid submission',async () => {
   view.forms.collect = () => {throw Error('Invalid form');};
   view.submit(form);view.submit(form);
   assert.deepEqual(view.events.map(event => event.kind),['required','required','invalid_form','invalid_form']);
+});
+
+test('formula words render upright while TeX commands are preserved',async () => {
+  const cases = [
+    ['rate = paid/visits','\\mathrm{rate} = \\mathrm{paid}/\\mathrm{visits}'],
+    ['\\frac{a}{b}','\\frac{a}{b}'],
+    ['\\text{rate} = x','\\text{rate} = x'],
+    ['\\sin x + \\alpha','\\sin x + \\alpha'],
+    // Runs shorter than three letters stay products, so mc remains m times c.
+    ['E = mc^2','E = mc^2'],
+    ['x_{max} + \\operatorname*{argmin} cost','x_{\\mathrm{max}} + \\operatorname*{argmin} \\mathrm{cost}'],
+    ['\\begin{cases} x & \\text{if {nested} word} \\\\ y \\end{cases}','\\begin{cases} x & \\text{if {nested} word} \\\\ y \\end{cases}'],
+  ];
+  const visuals = cases.map(([source],index) => visual(index % 2 ? 'math' : 'math-inline',source));
+  const view = setup([],[],[],visuals),rendered = [];
+  view.MathJax.tex2svgPromise = async source => {rendered.push(source);throw Error('Unrendered');};
+  await view.mount();
+  assert.deepEqual(rendered,cases.map(([,expected]) => expected));
+  assert.deepEqual(visuals.map(source => source.replacement.children[0].textContent),cases.map(([source]) => source));
 });

@@ -83,7 +83,8 @@ Structured documents retain their existing HTML and PNG export behavior.
 - Sections and contents: `<section data-title="Overview">...</section>`; use
   `h1` through `h4` for headings. Missing section headings are supplied from
   `data-title`. A lead paragraph uses `<p class="lead">`.
-- Callouts: `<div class="callout info">`, `warn`, `risk` or `ok`.
+- Callouts: `<div class="callout info">`, `warn`, `risk` or `ok`; start with
+  `<strong>Title</strong>` followed by the body text.
 - Tables: ordinary `table`, `thead`, `tbody`, `tr`, `th`, `td` and `caption`.
 - Steps: `<ol class="steps">`; file changes: `<ul class="files">` with a
   `code` path and concise explanation in each `li`.
@@ -102,6 +103,8 @@ Structured documents retain their existing HTML and PNG export behavior.
 - Formulas: `<span class="math-inline">x^2</span>` for inline TeX and
   `<pre class="math">...</pre>` for an independent formula. Write the TeX source
   without dollar delimiters; the local renderer supplies mathematical layout.
+  Use `\text{}` for words inside formulas, and write plain prose definitions as
+  text rather than math.
 
 ```html
 <pre class="chart">{"type":"bar","title":"Sales","data":[{"label":"Jan","value":120},{"label":"Feb","value":150}]}</pre>

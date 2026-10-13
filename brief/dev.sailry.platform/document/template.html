@@ -6,10 +6,16 @@
   <title></title>
 </head>
 <body>
-  <aside id="document-sidebar">
-    <header id="document-brand"><span aria-hidden="true">Sailry</span><strong id="document-title"></strong></header>
-    <details id="document-navigation" open><summary id="document-contents"></summary><nav id="document-toc" aria-label=""></nav></details>
-  </aside>
-  <main id="brief"></main>
+  <header id="document-header">
+    <span id="document-brand">Sailry</span><span id="document-separator" aria-hidden="true">/</span><strong id="document-title"></strong>
+    <button id="document-menu" type="button" aria-expanded="false" aria-controls="document-sidebar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"/></svg><span id="document-menu-label"></span></button>
+  </header>
+  <div id="document-layout">
+    <aside id="document-sidebar">
+      <p id="document-contents"></p>
+      <nav id="document-toc" aria-label=""></nav>
+    </aside>
+    <main id="brief"></main>
+  </div>
 </body>
 </html>
