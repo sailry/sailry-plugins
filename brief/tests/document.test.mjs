@@ -10,7 +10,7 @@ test('keeps HTML general with optional questions',() => {
   const extension = manifest.extensions['dev.sailry.platform'];
   const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
   assert.equal(manifest.name,'brief');
-  assert.equal(manifest.version,'0.1.2');
+  assert.equal(manifest.version,'0.1.3');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.display.label,'HTML');
   assert(Object.values(extension.display.locales).every(label => label === 'HTML'));
@@ -31,6 +31,25 @@ test('keeps HTML general with optional questions',() => {
   assert.deepEqual(extension.tools.slice(0,3).map(tool => tool.name),[
     'write_brief','read_brief','list_briefs',
   ]);
+});
+
+test('requested file paths are distinct from session artifact delivery',() => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
+  assert.match(extension.instructions,/explicitly requested worktree file path/);
+  assert.match(extension.instructions,/create and verify that real file with available file or command tools/);
+  assert.match(extension.instructions,/do not substitute write_brief or create an additional artifact unless separately requested/);
+  assert.match(extension.instructions,/If writing is unavailable, report the limitation/);
+  assert.match(extension.instructions,/returned card already delivers it/);
+  assert.match(extension.instructions,/Do not invent a file path or duplicate that card/);
+  assert.match(skill,/Preserve the current work mode and\npermissions/);
+  assert.match(skill,/generating HTML does not grant filesystem access/);
+  assert.match(skill,/returned card already delivers the artifact/);
+  const declaration = extension.tools.find(tool => tool.name === 'write_brief');
+  assert.match(declaration.description,/only a session-owned artifact, not a worktree file/);
+  assert.match(declaration.description,/use available file or command tools/);
+  assert.match(declaration.description,/do not invent a filepath or duplicate it/);
 });
 
 test('neutral styling retains the host semantic palette',() => {

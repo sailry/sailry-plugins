@@ -5,6 +5,23 @@ description: Create session-owned HTML documents, reports, diagrams, demos and i
 
 # HTML artifacts
 
+## Choose the output target
+
+If the user requests a specific worktree file path, create and verify that real
+file with available file or command tools, then deliver its standalone Markdown
+link for sidebar preview. Do not substitute `write_brief` or create an additional
+session artifact unless the user separately requests one. If file writing is
+unavailable in this mode or tool catalog, explain the limitation rather than
+claiming the requested file was saved.
+
+`write_brief` creates only a session-owned artifact, not a worktree file. Its
+returned card already delivers the artifact; do not invent a file path or add a
+duplicate Markdown file link. A separately requested file copy must actually be
+created and verified before linking it. Preserve the current work mode and
+permissions; generating HTML does not grant filesystem access.
+
+## Create a session artifact
+
 For complex development, design or refactor plans, present the full ordinary plan
 in the conversation first, then end with exactly one concise offer to create an
 HTML version and wait for the user's choice. Do not repeat the offer for that
