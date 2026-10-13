@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Button,Switch,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {SettingsGroup,SegmentedTabs,IconButton,EmptyState,Modal} from 'sailry/ui';
+import {SettingsGroup,SegmentedTabs,IconButton,EmptyState,Modal,Toggle} from 'sailry/ui';
 import {installed,installing,available} from './model.js';
 
 function button(id,label,action,disabled=false) {
@@ -93,6 +93,9 @@ export function render(view) {
     .children(view.request ? [button('code-retry',text.code_retry,(_,cx)=>view.retry(cx),view.pending)] : [])
     .child(SettingsGroup.new('code_settings',{title:text.code_settings,header_action:true})
       .child(button('code-update-rules',text.code_update_rules,(_,cx)=>view.submit({kind:'update_code_rules'},cx),view.busy()))
+      .child(row('settings-row-code-editor',text.code_editor_enabled,
+        Toggle.new('code-editor-enabled',{label:text.code_editor_enabled,
+          checked:view.saved?.editor_enabled ?? false,disabled:view.busy()})))
       .child(row('settings-row-code_rules_updated',text.code_rules_updated,view.rules?.retrieved ?? '')))
     .child(div().v_flex().gap_4()
       .child(div().id('code-server-toolbar').w(220).child(SegmentedTabs.new('code-tabs',{selected:view.tab,

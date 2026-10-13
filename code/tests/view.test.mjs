@@ -23,6 +23,7 @@ const {render}=vm.runInNewContext(source+'\n({render})',{
   installed,installing,available,div:()=>element('div'),theme:()=>({colors:{muted_foreground:'#999'}}),
   Button:class {constructor(id){return element('button',{id});}},
   Switch:class {constructor(id){return element('switch',{id});}},
+  Toggle:{new:(id,props)=>element('switch',{id,...props})},
   SettingsGroup:{new:(id,props)=>element('group',{id,...props})},
   SegmentedTabs:{new:(id,props)=>element('tabs',{id,...props})},
   IconButton:{new:(id,props)=>element('icon-button',{id,...props})},
@@ -41,6 +42,20 @@ function candidate(name,install,status='not_installed') {
   return {server:name,languages:['Ada'],candidate:{server:name,status,package:{name,version:'1',install,
     unavailable:install ? null : 'language source requires unsupported build or version rules'}}};
 }
+
+test('editor switch defaults off with accessible name',()=>{
+  const view=fixture([]);
+  let tree=render(view),control=find(tree,'code-editor-enabled');
+  assert.equal(control.kind,'switch');
+  assert.equal(control.props.checked,false);
+  assert.equal(control.props.disabled,false);
+  assert.equal(control.props.label,view.text.code_editor_enabled);
+  assert.equal(find(tree,'settings-row-code-editor').items[0].items[0],view.text.code_editor_enabled);
+  view.saved.editor_enabled=true;view.busy=()=>true;
+  tree=render(view);control=find(tree,'code-editor-enabled');
+  assert.equal(control.props.checked,true);
+  assert.equal(control.props.disabled,true);
+});
 
 test('available list hides unsupported but retains busy entries',()=>{
   const supported=candidate('supported',{package:'supported'}),unsupported=candidate('unsupported',null);

@@ -9,7 +9,7 @@ const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',i
 const plain=value=>JSON.parse(JSON.stringify(value));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 async function fixture(locale='en') {
-  let saved={revision:0,enabled:true,after_edit:true,servers:{},languages:{}};
+  let saved={revision:0,enabled:true,editor_enabled:false,after_edit:true,servers:{},languages:{}};
   const commands=[],calls=[],forgotten=[],notices=[],fields=new Map(),releases=[];
   let serial=0,fail=null,hold=false,held=null;
   const inventory=[],observers=[];
@@ -51,6 +51,31 @@ async function fixture(locale='en') {
     hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;},
     inventory:values=>{const observer=observers.shift();if(observer)observer(plain(values));else inventory.push(plain(values));}};
 }
+
+test('editor switch preserves shared service settings',async()=>{
+  const state=await fixture();
+  assert.equal(state.saved().editor_enabled,false);
+  const before=plain(state.saved());
+  state.view.control({id:'code-editor-enabled',value:true},state.cx);
+  await state.settle();
+  assert.deepEqual(state.saved(),{...before,editor_enabled:true,revision:1});
+  const command=state.commands.find(value=>value.kind==='save_code_settings');
+  assert.equal(command.data.expected_revision,0);
+  state.view.toggleEditor(false,state.cx);
+  await state.settle();
+  assert.equal(state.saved().editor_enabled,false);
+  assert.equal(state.saved().enabled,true);
+  assert.equal(state.saved().after_edit,true);
+  state.fail('revision_conflict',undefined,'save_code_settings');
+  state.view.toggleEditor(true,state.cx);
+  await state.settle();
+  assert.equal(state.saved().editor_enabled,false);
+  assert.equal(state.notices.at(-1).kind,'error');
+  state.view.connected=false;
+  const count=state.commands.length;
+  state.view.toggleEditor(true,state.cx);
+  assert.equal(state.commands.length,count);
+});
 
 test('unions installed packages and language descriptions',()=>{
   const result=rows([{name:'Rust',id:'rust',servers:[{server:'analyzer',status:'stopped'}]},

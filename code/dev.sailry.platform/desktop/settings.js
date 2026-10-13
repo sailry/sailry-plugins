@@ -134,6 +134,12 @@ export default class Settings extends View {
       }
     });
   }
+  toggleEditor(enabled,cx) {
+    if (this.busy()) return;
+    const settings = clone(this.saved);
+    settings.editor_enabled = enabled;
+    this.submit({kind:'save_code_settings',data:{settings,expected_revision:this.saved.revision}},cx);
+  }
   toggle(server,enabled,cx) {
     if (this.busy()) return;
     const settings = clone(this.saved);
@@ -217,6 +223,7 @@ export default class Settings extends View {
     });
   }
   control(event,cx) {
+    if (event.id === 'code-editor-enabled') { this.toggleEditor(event.value,cx); return; }
     if (event.id === 'code-tabs') { this.tab = event.value; cx.notify(); return; }
     for (const row of this.rows()) {
       if (event.id === `code-details-${row.server}`) this.open('details',row,cx);
