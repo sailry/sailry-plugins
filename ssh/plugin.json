@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -38,6 +38,7 @@
           "initialize",
           "run",
           "transfer",
+          "completed",
           "connections",
           "save",
           "saved"
@@ -50,13 +51,14 @@
         {
           "name": "ssh_run",
           "presentation": "details",
-          "description": "Run a command on an allowed saved SSH connection after runtime approval. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
+          "description": "Run a command on a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
           "contexts": [
             "workspace",
             "ssh"
           ],
           "handler": {
             "name": "run",
+            "result": "completed",
             "operation": "ssh.run",
             "parameters": {
               "type": "object",
@@ -91,7 +93,8 @@
             "input": {
               "summary": {
                 "path": "/connection",
-                "code": true
+                "format": "connection",
+                "result_path": "/connection_name"
               },
               "content": {
                 "path": "/command",
@@ -103,13 +106,14 @@
         {
           "name": "ssh_transfer",
           "presentation": "details",
-          "description": "Upload or download a file using an allowed SSH connection after runtime approval. The local path is relative to the session worktree. Do not request credentials.",
+          "description": "Upload or download a file using a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. The local path is relative to the session worktree. Do not request credentials.",
           "contexts": [
             "workspace",
             "ssh"
           ],
           "handler": {
             "name": "transfer",
+            "result": "completed",
             "operation": "ssh.transfer",
             "parameters": {
               "type": "object",
@@ -151,7 +155,8 @@
             "input": {
               "summary": {
                 "path": "/connection",
-                "code": true
+                "format": "connection",
+                "result_path": "/connection_name"
               },
               "content": {
                 "path": "/command",

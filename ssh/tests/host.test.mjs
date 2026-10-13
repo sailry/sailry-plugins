@@ -51,6 +51,45 @@ test('prepares only explicit upload or download while preserving both path domai
   assert.deepEqual(plain(api.initialize({tools,resources:true,connections:{...connections,ssh:[]}}).tools),tools);
 });
 
+test('distinguishes unavailable connections from invalid inputs',async()=>{
+  const api=await fixture();api.initialize({tools,connections});
+  for(const call of [()=>api.run({connection:other,command:'uname -a'}),
+    ()=>api.transfer({connection:other,path:'file.txt',remote_path:'/tmp/file.txt',direction:'upload'})]) {
+    assert.equal(call().error.code,'permission_denied');
+    assert.match(call().error.message,/ssh_connections/);
+  }
+  assert.equal(api.run({connection:other,command:null}).error.code,'invalid_request');
+  assert.equal(api.transfer({connection:other,path:'file.txt',remote_path:'/tmp/file.txt',direction:'other'}).error.code,'invalid_request');
+});
+
+test('retains saved names without changing operation outcomes',async()=>{
+  const api=await fixture();api.initialize({tools,connections});
+  const output={kind:'ssh_outcome',data:{kind:'command',stdout:'ready'}};
+  assert.deepEqual(plain(api.completed({arguments:{connection:'a'},output})),{...output,connection_name:'Work host'});
+  assert.equal(api.completed({arguments:{connection:other},output}),output);
+  const saved={kind:'ssh_profile',data:{id:created,name:'Build host',revision:1}};
+  api.saved({arguments:{},output:saved});
+  assert.deepEqual(plain(api.completed({arguments:{connection:created},output})),{...output,connection_name:'Build host'});
+  const failure={isError:true,error:{code:'unavailable',message:'Unavailable'}};
+  const named=plain(api.completed({arguments:{connection:created},output:failure}));
+  assert.equal(named.isError,true);
+  assert.deepEqual(named.error,failure.error);
+  assert.equal(named.connection_name,'Build host');
+  api.saved({arguments:{connection:created},output:{kind:'ssh_profile',data:{id:created,name:'Renamed host'}}});
+  assert.equal(api.completed({arguments:{connection:created},output}).connection_name,'Renamed host');
+  for(const name of ['',null,7]) {
+    api.initialize({tools,connections:{ssh:[{id:created,name}]}});
+    assert.equal(api.completed({arguments:{connection:created},output}),output);
+  }
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  for(const name of tools) {
+    const tool=manifest.extensions['dev.sailry.platform'].tools.find(tool=>tool.name===name);
+    assert.equal(tool.handler.result,'completed');
+    assert.equal(tool.display.input.summary.format,'connection');
+    assert.equal(tool.display.input.summary.result_path,'/connection_name');
+  }
+});
+
 test('saves accept typed credentials without exposing read or trust inputs',async()=>{
   const api=await fixture();
   const all=[...tools,...management];

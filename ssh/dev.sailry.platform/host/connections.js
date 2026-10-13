@@ -46,7 +46,9 @@ export function saved({arguments:args,output}) {
   if (output && !output.isError && !output.error && output.kind === 'ssh_profile' && uuid.test(output.data?.id)
       && (args.connection == null || args.connection === output.data.id)) {
     const state = readTurnState();
-    stageTurnState({...state,connections:[...new Set([...state.connections,output.data.id])]});
+    const names={...state.names};
+    if (text(output.data.name)) names[output.data.id]=output.data.name;
+    stageTurnState({...state,connections:[...new Set([...state.connections,output.data.id])],names});
   }
   return output;
 }

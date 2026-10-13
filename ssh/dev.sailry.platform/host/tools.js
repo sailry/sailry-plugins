@@ -9,12 +9,12 @@ export const definitions = {
     handler:'save',operation:'ssh.save',presentation:'details',
   },
   ssh_run:{
-    description:"Run a command on an allowed saved SSH connection after runtime approval. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
-    handler:'run',operation:'ssh.run',presentation:'details',
+    description:"Run a command on a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
+    handler:'run',result:'completed',operation:'ssh.run',presentation:'details',
   },
   ssh_transfer:{
-    description:"Upload or download a file using an allowed SSH connection after runtime approval. The local path is relative to the session worktree. Do not request credentials.",
-    handler:'transfer',operation:'ssh.transfer',presentation:'details',
+    description:"Upload or download a file using a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. The local path is relative to the session worktree. Do not request credentials.",
+    handler:'transfer',result:'completed',operation:'ssh.transfer',presentation:'details',
   },
 };
 export function parameters(name,profiles) {
