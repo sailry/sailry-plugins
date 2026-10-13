@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {status,diff,log,show,blame,changes,change} from '../dev.sailry.platform/host/main.js';
 
 test('history preserves first-page defaults and exact continuation', () => {
@@ -73,4 +74,24 @@ test('mapped changes require strong revision on continuation', () => {
   for (const args of [{...initial,limit:501},{...initial,command:'checkout'},{...initial,offset:-1}]) {
     assert.equal(change(args).isError,true);
   }
+  for (const field of ['snapshot','path','expected_metadata_revision']) {
+    const args = {...initial,expected_revision:'e'.repeat(64),offset:0};
+    delete args[field];
+    assert.equal(change(args).error.code,'invalid_request');
+  }
+});
+
+test('file change descriptions distinguish captured revision fields', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  const tool = extension.tools.find(tool => tool.name === 'read_git_change');
+  assert.equal(manifest.version,'0.1.1');
+  assert.equal(extension.api_version,'v1');
+  assert.deepEqual(tool.handler.parameters.required,['snapshot','path','expected_metadata_revision']);
+  assert.match(tool.description,/Every request requires the unchanged snapshot/);
+  const fields = tool.handler.parameters.properties;
+  assert.match(fields.snapshot.description,/pass it unchanged on every page/);
+  assert.match(fields.path.description,/required on every page/);
+  assert.match(fields.expected_metadata_revision.description,/file entry's metadata_revision, not snapshot.metadata_revision/);
+  assert.match(fields.expected_revision.description,/Strong revision of this file/);
 });

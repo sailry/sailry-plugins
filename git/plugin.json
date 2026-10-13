@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -1273,7 +1273,7 @@
         {
           "name": "read_git_change",
           "presentation": "details",
-          "description": "Read a literal file diff from a returned Git changes snapshot. Pass its path and expected_metadata_revision. The first request uses offset=0 and no expected_revision; every continuation or later check supplies the returned strong revision. offset counts mapped diff lines, limit defaults to 200 and is at most 500. Complete source lines preserve whitespace except terminal CR/LF and carry one-based old/new line numbers. Pages are bounded to 48 KiB encoded JSON without truncating lines. Binary, non-UTF-8, unsupported modes, oversized files and oversized lines return an explicit skip_reason. Commit snapshots remain fixed when references move; working snapshots reject metadata or content changes. Files are bounded to 32 MiB. Select only registered worktrees in this session project.",
+          "description": "Read a literal file diff from a returned Git changes snapshot. Every request requires the unchanged snapshot, the selected file's path and its metadata_revision as expected_metadata_revision. Do not use snapshot.metadata_revision for the file revision. The first request uses offset=0; omit expected_revision unless a strong file revision is already captured. Every continuation or later check supplies the returned strong revision. offset counts mapped diff lines, limit defaults to 200 and is at most 500. Complete source lines preserve whitespace except terminal CR/LF and carry one-based old/new line numbers. Pages are bounded to 48 KiB encoded JSON without truncating lines. Binary, non-UTF-8, unsupported modes, oversized files and oversized lines return an explicit skip_reason. Commit snapshots remain fixed when references move; working snapshots reject metadata or content changes. Files are bounded to 32 MiB. Select only registered worktrees in this session project.",
           "contexts": [
             "workspace"
           ],
@@ -1291,6 +1291,7 @@
                 },
                 "snapshot": {
                   "type": "object",
+                  "description": "Complete snapshot returned by the change inventory or review scope; pass it unchanged on every page",
                   "properties": {
                     "target": {
                       "anyOf": [
@@ -1418,16 +1419,19 @@
                   "additionalProperties": false
                 },
                 "path": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Path of the selected file entry in this snapshot; required on every page"
                 },
                 "expected_metadata_revision": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "The selected file entry's metadata_revision, not snapshot.metadata_revision"
                 },
                 "expected_revision": {
                   "type": [
                     "string",
                     "null"
-                  ]
+                  ],
+                  "description": "Strong revision of this file from the review scope or a previous read; required for continuation"
                 },
                 "offset": {
                   "type": "integer",
