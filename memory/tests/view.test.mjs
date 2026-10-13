@@ -34,6 +34,7 @@ function fixture() {
     SettingsGroup:{new:(id,props)=>element('SettingsGroup',id,props)},
     EmptyState:{new:(id,props)=>element('EmptyState',id,props)},
     Loading:{new:(id,props)=>element('Loading',id,props)},
+    IconButton:{new:(id,props)=>element('IconButton',id,props)},
     window:{viewport_size:()=>({width:1280,height:820})},
   });
   const view = {text:{settings_memory:'Memories',memory_empty:'No memories',settings_edit:'Edit',settings_delete:'Delete'},
@@ -92,18 +93,24 @@ test('initial reads reserve configuration and list space',()=>{
   assert.ok(setup.nodes.has('memory-search-retry'));
 });
 
-test('populated catalogs preserve captured edit and remove actions without empty content',()=>{
+test('catalog rows use named icon controls without empty content',()=>{
   const setup=fixture(),entry={id:'retained',title:'Retained memory',kind:'feedback',project:null};
   setup.view.results=[entry];setup.render();
   assert.equal(setup.nodes.has('memory-empty'),false);
   assert.ok(setup.nodes.has('memory-retained'));
-  setup.nodes.get('memory-edit-retained').on_click({},{});
-  setup.nodes.get('memory-delete-retained').on_click({},{});
-  assert.deepEqual(setup.calls,[['edit',entry],['remove',entry]]);
+  const edit=setup.nodes.get('memory-edit-retained'),remove=setup.nodes.get('memory-delete-retained');
+  assert.equal(edit.kind,'IconButton');assert.equal(remove.kind,'IconButton');
+  assert.deepEqual(plain(edit.props),{icon:'reicon:newicons/edit',label:'Edit',disabled:false});
+  assert.deepEqual(plain(remove.props),{icon:'reicon:ui/trash2',label:'Delete',disabled:false});
+  assert.equal(edit.props.show_label,undefined);assert.equal(remove.props.show_label,undefined);
+  assert.deepEqual(setup.calls,[]);
   setup.view.loading=true;const group=setup.render();
   assert.equal(setup.nodes.has('memory-loading'),false);
   assert.ok(setup.nodes.has('memory-retained'));
   assert.deepEqual(plain(group.props),{heading:false});
+  setup.view.busy=()=>true;setup.render();
+  assert.equal(setup.nodes.get('memory-edit-retained').props.disabled,true);
+  assert.equal(setup.nodes.get('memory-delete-retained').props.disabled,true);
 });
 
 test('catalog failures keep existing memories without a retry bar',()=>{

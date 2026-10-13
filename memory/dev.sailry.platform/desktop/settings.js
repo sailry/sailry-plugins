@@ -60,6 +60,12 @@ export default class Settings extends View {
       this.scope=event.value;this.refresh(cx);
     } else if(event.id===`memory-kind-${this.dialogId}` && this.editing && !this.editing.loading && !this.editing.pending && !this.editing.request && ['user','feedback','project','reference'].includes(event.value)) {
       this.editing.entry.summary.kind=event.value;cx.notify();
+    } else if (!this.busy()) {
+      const entry=this.results.find(entry=>event.id===`memory-edit-${entry.id}` || event.id===`memory-delete-${entry.id}`);
+      if (entry) {
+        if (event.id===`memory-edit-${entry.id}`) this.edit(entry,cx);
+        else this.remove(entry,cx);
+      }
     }
   }
   project() { return this.scope === 'all' || this.scope === 'global' ? null : this.scope; }

@@ -79,6 +79,29 @@ test('native selects preserve configuration guards and captured editor identity'
   assert.equal(owner.entry.summary.kind,'reference','a stale tab event cannot edit a replacement dialog');
 });
 
+test('catalog icon events preserve targets and disabled guards',async()=>{
+  const f=await fixture();
+  await f.act(()=>f.view.control({id:`memory-edit-${id}`},f.cx));
+  assert.equal(f.view.editing.entry.summary.id,id);
+  assert.equal(f.view.editing.entry.summary.revision,1);
+  assert.equal(f.fields.get(f.view.editing.body),entry.body);
+  f.view.close(f.cx);
+  f.view.control({id:`memory-delete-${id}`},f.cx);
+  assert.deepEqual(plain(f.view.removal.summary),entry.summary);
+  assert.equal(f.prepared.length,0,'a row icon only opens its existing dialog');
+  f.view.close(f.cx);
+  for (const action of ['edit','delete']) {
+    f.view.loading=true;f.view.control({id:`memory-${action}-${id}`},f.cx);f.view.loading=false;
+    f.view.connected=false;f.view.control({id:`memory-${action}-${id}`},f.cx);f.view.connected=true;
+    f.view.control({id:`memory-${action}-missing`},f.cx);
+    assert.equal(f.view.editing,null);assert.equal(f.view.removal,null);
+  }
+  f.view.results=[];
+  f.view.control({id:`memory-delete-${id}`},f.cx);
+  assert.equal(f.view.removal,null);
+  assert.equal(f.prepared.length,0);
+});
+
 test('keeps a conflicting configuration draft until explicit reload',async()=>{
   const f=await fixture();
   f.view.draft.context_bytes=4096;

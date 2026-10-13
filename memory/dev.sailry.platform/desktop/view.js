@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Button,Switch,Tab,TabBar,DropdownMenu,Field} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,Loading} from 'sailry/ui';
+import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,Loading,IconButton} from 'sailry/ui';
 
 function row(view,key,control,description) {
   return div().id(`settings-row-${key}`).h_flex().items_center().w_full().py_3().gap_4().text_sm().flex_wrap()
@@ -54,8 +54,8 @@ function catalog(view) {
       .child(div().flex_1().min_w_0().v_flex().gap_1().child(div().truncate().child(entry.title))
         .children(review ? [div().text_color(theme().colors.muted_foreground).child(text[review.duplicate_of ? 'memory_possible_duplicate' : 'memory_needs_review'])] : [])
         .child(div().text_color(theme().colors.muted_foreground).child(`${view.kindLabel(entry.kind)} · ${view.projectLabel(entry.project)}`)))
-      .child(new Button(`memory-edit-${entry.id}`).ghost().label(text.settings_edit).disabled(view.busy()).on_click((_,cx)=>view.edit(entry,cx)))
-      .child(new Button(`memory-delete-${entry.id}`).ghost().label(text.settings_delete).disabled(view.busy()).on_click((_,cx)=>view.remove(entry,cx)));
+      .child(IconButton.new(`memory-edit-${entry.id}`,{icon:'reicon:newicons/edit',label:text.settings_edit,disabled:view.busy()}))
+      .child(IconButton.new(`memory-delete-${entry.id}`,{icon:'reicon:ui/trash2',label:text.settings_delete,disabled:view.busy()}));
   });
   return SettingsGroup.new('settings_memory',{heading:false})
     .children(rows)
