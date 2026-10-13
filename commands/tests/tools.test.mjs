@@ -76,6 +76,16 @@ test('input preserves bytes and validates its bound', () => {
 });
 
  test('access defaults to confinement and validates explicit escape', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools
+    .find(tool => tool.name === 'run_command');
+  const access = declaration.handler.parameters.properties.access;
+  for (const description of [declaration.description, access.description]) {
+    assert.match(description, /existing Git metadata/i);
+    assert.match(description, /macOS also blocks .*\.git paths/);
+    assert.match(description, /Git writes, including git init, git add and git commit/);
+    assert.match(description, /Ask and Project require fresh approval for each unrestricted command/);
+  }
   assert.equal(run({command:'true'}).access, 'workspace');
   assert.equal(run({command:'true',access:'unrestricted'}).access, 'unrestricted');
   for (const access of [null, '', true, 'full', {}, []])
