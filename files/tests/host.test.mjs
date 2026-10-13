@@ -159,7 +159,7 @@ test('captured display selectors retain path and first-line query presentation',
   for (const name of ['read_file','write_file']) {
     assert.deepEqual(tool(name).display.input.summary,{path:'/path',code:true});
   }
-  assert.deepEqual(tool('read_office').display.input.summary,{path:'/source/value',code:true});
+  assert.deepEqual(tool('read_office').display.input.summary,{path:'/source/value',code:true,result_path:'/data/path'});
   assert.deepEqual(tool('write_file').display.input.target,{path:'/path'});
   assert.ok(extension.host.resources.includes('dev.sailry.platform/host/locales.js'));
   for (const key of ['approval_create_file','approval_replace_file']) {
