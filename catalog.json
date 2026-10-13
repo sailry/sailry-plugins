@@ -2992,7 +2992,7 @@
                 "name": "spawn_agent",
                 "presentation": "details",
                 "grouping": "standalone",
-                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the roles listed in this tool when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, supply its returned session ID and normally omit role. It retains its own history, role, model, worktree and existing settings. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions. The child does not see this conversation. Write a self-contained task with the goal, relevant paths, constraints and expected output. Give concurrent children sharing one project directory disjoint files, then integrate and verify their findings.",
+                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the roles listed in this tool when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, copy its exact returned session ID and normally omit role; never reconstruct the ID. It retains its own history, role, model, worktree and existing settings. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions. The child does not see this conversation. Write a self-contained task with the goal, relevant paths, constraints and expected output. Give concurrent children sharing one project directory disjoint files, then integrate and verify their findings.",
                 "contexts": [
                   "workspace"
                 ],
@@ -3064,7 +3064,7 @@
                 "contexts": [
                   "workspace"
                 ],
-                "description": "Give new directions to a running child owned by this conversation using its returned session ID. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. Wait for the child result before answering.",
+                "description": "Give new directions to a running child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. If the child has finished and the user requests follow-up work, use spawn_agent with that session ID and a new task instead. Wait for the child result before answering.",
                 "display": {
                   "label": "Guide subagent",
                   "locales": {
@@ -3073,7 +3073,8 @@
                   "icon": "reicon:users/users2",
                   "input": {
                     "summary": {
-                      "path": "/session"
+                      "path": "/session",
+                      "format": "session"
                     },
                     "content": {
                       "path": "/message"
@@ -3089,7 +3090,7 @@
                 "contexts": [
                   "workspace"
                 ],
-                "description": "Wait for a child owned by this conversation using its returned session ID and collect its durable final status and answer. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; wait again after guiding the child. This does not create or replay work.",
+                "description": "Wait for a child owned by this conversation and collect its durable final status and answer. Copy its exact returned session ID; never reconstruct it. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; wait again after guiding the child. This does not create or replay work.",
                 "display": {
                   "label": "Wait for subagent",
                   "locales": {

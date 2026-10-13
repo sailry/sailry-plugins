@@ -107,13 +107,38 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
 });
 
-test('wait summaries explicitly request canonical session titles',async()=>{
+test('child control summaries request canonical session titles',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const tools = manifest.extensions['dev.sailry.platform'].tools;
   assert.deepEqual(tools.find(tool => tool.name === 'wait_agent').display.input.summary,
     {path:'/session',format:'session'});
-  assert.deepEqual(tools.find(tool => tool.name === 'guide_agent').display.input.summary,{path:'/session'});
+  assert.deepEqual(tools.find(tool => tool.name === 'guide_agent').display.input.summary,{path:'/session',format:'session'});
   assert.deepEqual(tools.find(tool => tool.name === 'spawn_agent').display.input.summary,{path:'/title'});
+});
+
+test('comparison skill matches independent worktree implementations',async()=>{
+  const skill = await readFile(new URL('../skills/compare-worktrees/SKILL.md',import.meta.url),'utf8');
+  assert.match(skill,/description: Implement two or more competing approaches/);
+  assert.match(skill,/independent subagents in separate registered worktrees/);
+  assert.match(skill,/followed by comparison or a recommendation/);
+  assert.match(skill,/Compose available worktree, delegation, Git and test tools/);
+  assert.match(skill,/If the request is only a question, compare the approaches directly without creating worktrees/);
+  assert.ok(!skill.includes('load_skill'));
+});
+
+test('child controls preserve exact identity and explicit follow-up',async()=>{
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools = manifest.extensions['dev.sailry.platform'].tools;
+  for(const name of ['spawn_agent','guide_agent','wait_agent']) {
+    const description = tools.find(tool => tool.name === name).description;
+    assert.match(description,/exact returned session ID/);
+    assert.match(description,/never reconstruct/);
+  }
+  const guide = tools.find(tool => tool.name === 'guide_agent');
+  assert.match(guide.description,/running child owned by this conversation/);
+  assert.match(guide.description,/user requests follow-up work/);
+  assert.match(guide.description,/spawn_agent with that session ID and a new task/);
+  assert.match(guide.description,/entire current tool batch settles/);
 });
 
 test('catalog tools keep their own schemas and captured roster',()=>{

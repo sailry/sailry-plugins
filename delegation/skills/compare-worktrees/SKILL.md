@@ -1,13 +1,13 @@
 ---
 name: compare-worktrees
-description: Implement several requested approaches in isolated registered worktrees, compare their changes and verification, and let the user select the result.
+description: Implement two or more competing approaches with independent subagents in separate registered worktrees, compare their changes and verification, and recommend a result.
 metadata:
   display-name: Compare approaches
 ---
 
 # Compare approaches
 
-Use this skill when the user requests competing implementations or experiments. Compose existing worktree, delegation, Git and test tools; do not introduce another execution engine. If the request is only a question, compare the approaches directly without creating worktrees.
+Use this skill when the user requests two or more competing implementations or experiments in independent worktrees, followed by comparison or a recommendation. Compose available worktree, delegation, Git and test tools; do not introduce another execution engine or invent unavailable capabilities. If the request is only a question, compare the approaches directly without creating worktrees.
 
 ## Establish one baseline
 
