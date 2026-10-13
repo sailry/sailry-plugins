@@ -1,4 +1,5 @@
-import {View, div, Attachment, Icon} from "gpui-kit";
+import {View, div} from "gpui-kit";
+import {Attachment, Icon} from "gpui-component";
 import {Action, state, theme, nextChange, status, toast} from "sailry/card";
 import {messages} from "./locales.js";
 
@@ -37,10 +38,10 @@ export default class Connection extends View {
     const unknown = state.login === "unconfirmed" || (state.login === "failed" && state.can_cancel);
     const statusLabel = state.configured ? text.connected
       : ["starting", "pending", "exchanging"].includes(state.login) ? text[state.login] : text.connect;
-    return Attachment.new("notion-connection-card").w_full().h_auto().min_w_0().rounded_2xl().py_3()
+    return new Attachment("notion-connection-card").w_full().h_auto().min_w_0().rounded_2xl().py_3()
       .child(div().h_flex().w_full().min_w_0().gap_3().items_center()
         .child(div().p_2().rounded_lg().bg(colors.muted)
-          .child(Icon.new("reicon:files/file-text").size("large")))
+          .child(new Icon("reicon:files/file-text").size("large")))
         .child(div().v_flex().flex_1().min_w_0().gap_1()
           .child(div().font_medium().child(text.title))
           .child(div().text_sm().text_color(colors.muted_foreground).child(statusLabel)))

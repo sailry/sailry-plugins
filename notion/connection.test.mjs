@@ -31,7 +31,7 @@ test('declares the official remote connection', () => {
 });
 
 test('declares a card-only entry with native named targets', () => {
-  assert.equal(manifest.version, '0.1.2');
+  assert.equal(manifest.version, '0.1.3');
   assert.equal(extension.desktop.entry, undefined);
   assert.equal(extension.desktop.navigation, undefined);
   assert.equal(extension.tools[0].handler.read_only, true);
@@ -68,8 +68,8 @@ test('mount reads status but login remains a native gesture', async () => {
   let statusReads = 0;
   const element = new Proxy({}, {get:() => () => element});
   const NativeAction = {new(id,props) {actions.push({id,...props}); return element;}};
-  const NativeAttachment = {new(id) {cards.push(id); return element;}};
-  const NativeIcon = {new() {return element;}};
+  class NativeAttachment { constructor(id) {cards.push(id); return element;} }
+  class NativeIcon { constructor() {return element;} }
   const Connection = create(class {}, () => element, NativeAttachment, NativeIcon, NativeAction,
     () => ({cursor:'0',props:{configured:false},configured:false,login:'idle',can_open:false,can_cancel:false,action:null,locale:'en'}),
     () => ({colors:{}}), async () => {throw new Error('released');}, async () => {statusReads++;}, () => {}, messages);
