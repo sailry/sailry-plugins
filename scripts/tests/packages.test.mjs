@@ -81,7 +81,7 @@ test('versions accept previews and reject invalid SemVer identifiers', t => {
   }
 });
 
-test('repository packages and examples keep the pre-release version', t => {
+test('repository packages and examples accept valid version increments', t => {
   const {temp, manifest, data} = fixture(t);
   const scripts = path.join(temp, 'scripts');
   mkdirSync(scripts);
@@ -101,9 +101,20 @@ test('repository packages and examples keep the pre-release version', t => {
   assert.match(valid.stdout, /Checked 2 packages/);
   for (const filename of [manifest, example]) {
     writeFileSync(filename, JSON.stringify({...data, version: '0.1.1'}));
+    const updated = check();
+    assert.equal(updated.status, 0, updated.stderr);
+    for (const version of ['invalid', '0.01.1']) {
+      writeFileSync(filename, JSON.stringify({...data, version}));
+      const invalid = check();
+      assert.equal(invalid.status, 1);
+      assert.ok(invalid.stderr.includes(`${path.relative(temp, filename)}: Package version must be a semantic version`));
+    }
+    writeFileSync(filename, JSON.stringify({...data, extensions: {
+      'dev.sailry.platform': {...data.extensions['dev.sailry.platform'], api_version:'v2'},
+    }}));
     const invalid = check();
     assert.equal(invalid.status, 1);
-    assert.ok(invalid.stderr.includes(`${path.relative(temp, filename)}: Repository package version must stay 0.1.0`));
+    assert.ok(invalid.stderr.includes('Sailry extension must use v1'));
     writeFileSync(filename, JSON.stringify(data));
   }
 });

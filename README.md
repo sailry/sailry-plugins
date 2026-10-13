@@ -8,18 +8,22 @@ Each top-level package is an ordinary Agent Plugins package with Sailry's v1
 extension manifest. `examples/` contains optional developer examples. Package
 sources are maintained here only; the application pins this repository as a Git
 submodule and embeds its reviewed package snapshot for offline installation.
-Startup adds missing default packages and refreshes changed bundled contents,
+Startup adds missing default packages and refreshes newer bundled versions,
 preserving configuration and enable choices. It does not reinstall packages
 removed by the user.
 
 ## Versions and immutable packages
 
-Until an explicit release decision, every official package manifest stays at
-`0.1.0`; individual changes do not increment it. Sailry's extension API remains
-`v1`, and numeric format versions remain `1`. Immutable content digests distinguish
-package contents while preserving captured resources and sent-turn references.
-Updates apply to new admission; historical captures keep their recorded package.
-The application detects content changes without requiring a version increment.
+New packages start at `0.1.0`. Increase the semantic version when package content
+changes; ordinary updates increment the patch version, such as `0.1.0` to
+`0.1.1`. Update detection requires strictly newer SemVer precedence. Same-version
+content changes, build metadata alone and older versions do not offer an update.
+This package policy does not declare a product release: Sailry's extension API
+remains `v1`, and numeric format versions remain `1`.
+Immutable content digests still verify installed contents and preserve captured
+resources and sent-turn references. Updates apply to new admission; historical
+captures keep their recorded package. Standalone imported skills retain their
+repository-commit update identity rather than adopting plugin release versions.
 
 ## Working with the application submodule
 

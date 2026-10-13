@@ -6,7 +6,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -171,7 +171,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "browser",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1113,7 +1113,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2696,7 +2696,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8271,7 +8271,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9144,7 +9144,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -9983,7 +9983,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -12065,7 +12065,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",

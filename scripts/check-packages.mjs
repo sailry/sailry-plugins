@@ -84,15 +84,12 @@ function main() {
   for (const file of files) {
     const filename = path.join(root, file);
     try {
-      const data = file.endsWith('.json') ? JSON.parse(readFileSync(filename, 'utf8')) : null;
+      if (file.endsWith('.json')) JSON.parse(readFileSync(filename, 'utf8'));
       if (file.endsWith('.js') || file.endsWith('.mjs')) {
         dependencies(readFileSync(filename, 'utf8'), filename);
         ++sources;
       }
       if (path.basename(file) === 'plugin.json') {
-        if (data.version !== '0.1.0') {
-          throw new Error('Repository package version must stay 0.1.0 until an explicit release');
-        }
         resources += checkPackage(filename);
         ++packages;
       }

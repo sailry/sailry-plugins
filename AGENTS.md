@@ -9,10 +9,13 @@
 - Plugins own their UI, state, workflows and tool orchestration. Reuse the public
   [SDK contract](https://github.com/sailry/sailry-harness/blob/main/sdk/plugins.md);
   shared execution, transport and persistence services remain in the application.
-- Keep all official package manifest versions at `0.1.0` until the user explicitly
-  authorizes a release. Do not increment versions for individual changes. Keep the
-  Sailry extension API at `v1` and numeric format versions at `1`.
-- Immutable content digests distinguish package contents. Preserve captured
+- Start new packages at `0.1.0`. Increase the semantic version for changed package
+  content; ordinary updates increment the patch version. Update detection uses
+  strictly newer SemVer precedence, not content differences. Same-version changes,
+  build metadata alone and older versions do not offer an update. This does not
+  declare a product release; keep the Sailry extension API at `v1` and numeric
+  format versions at `1`.
+- Immutable content digests verify package contents and identify captures. Preserve captured
   package resources and sent-turn references; updates apply to new admission.
   Never rewrite historical captures to deliver a package fix.
 - Regenerate `catalog.json` with `python3 scripts/catalog.py` after manifest
