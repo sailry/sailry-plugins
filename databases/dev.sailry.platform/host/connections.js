@@ -2,7 +2,7 @@ import {readTurnState,stageTurnState} from 'sailry/sdk';
 
 const uuid = /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 const fields = ['connection','expected_revision','name','engine','path','host','port','username','database','read_only'];
-const invalid = () => ({isError:true,error:{code:'invalid_request',message:'Invalid database connection arguments'}});
+const invalid = (message='Invalid database connection arguments') => ({isError:true,error:{code:'invalid_request',message}});
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 const text = value => typeof value === 'string' && value.trim().length > 0;
 
@@ -13,8 +13,11 @@ export function connections(args) {
 export function save(args) {
   if (!object(args) || Object.keys(args).some(key=>!fields.includes(key))) return invalid();
   const create = args.connection == null && args.expected_revision == null;
-  if (!create && (!uuid.test(args.connection) || !readTurnState().connections.includes(args.connection)
+  if (!create && (!uuid.test(args.connection)
       || !Number.isSafeInteger(args.expected_revision) || args.expected_revision < 1)) return invalid();
+  if (!create && !readTurnState().connections.includes(args.connection)) {
+    return invalid('Connection is not available in this session; use database_connections or create a connection without connection and expected_revision');
+  }
   for (const field of ['name','path','host','username','database']) {
     if (field in args && (typeof args[field] !== 'string' || (field !== 'database' && !text(args[field])))) return invalid();
   }

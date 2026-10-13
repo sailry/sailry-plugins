@@ -118,6 +118,11 @@ test('save validates create fields and preserves omitted update fields',async()=
     {connection:created}, {expected_revision:1}, {connection:created,expected_revision:null},
     {connection:other,expected_revision:1}, {connection:created,expected_revision:0},
     {connection:created,expected_revision:1,name:null}]) assert.equal(api.save(args).error.code,'invalid_request');
+  const unavailable=api.save({connection:other,expected_revision:1,read_only:false});
+  assert.match(unavailable.error.message,/Connection is not available in this session/);
+  assert.match(unavailable.error.message,/create a connection without connection and expected_revision/);
+  assert.match(api.initialize({tools:management,connections:{databases:[],ssh:[]}})
+    .parameters.database_save_connection.properties.connection.description,/omit with expected_revision to create/);
 });
 
 test('only successful save results enable same-turn queries',async()=>{
@@ -142,7 +147,7 @@ test('only successful save results enable same-turn queries',async()=>{
     {connection:created,expected_revision:1,name:'Updated'});
 });
 
-test('initializes missing SQLite only through authorized schema writes',async()=>{
+test('describes safe writable SQLite initialization',async()=>{
   const api=await fixture();
   const initialized=api.initialize({tools:[...tools,...management],connections:{databases:[],ssh:[]}});
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
@@ -154,8 +159,10 @@ test('initializes missing SQLite only through authorized schema writes',async()=
   assert.ok(source.includes(execute.description));
   assert.match(save.description,/Saving records configuration only and does not create a SQLite file/);
   assert.match(save.description,/default to read_only=true/);
-  assert.match(execute.description,/authorized schema write initializes it only when its parent directory exists/);
-  assert.match(execute.description,/Reads, catalog, connection checks, and PRAGMAs do not initialize/);
+  assert.match(save.description,/If database_connections returns no profiles, create without connection or expected_revision/);
+  assert.match(execute.description,/authorized schema write initializes it and creates missing parent directories/);
+  assert.match(execute.description,/Explicit writable connection checks can also initialize/);
+  assert.match(execute.description,/Reads, catalog, read-only connection checks, and PRAGMAs do not initialize/);
   assert.match(extension.instructions,/Do not write an empty file as a workaround/);
   assert.match(extension.instructions,/silently change a read-only connection/);
   assert.deepEqual(plain(save.handler.parameters),plain(initialized.parameters.database_save_connection));

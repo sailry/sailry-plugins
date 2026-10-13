@@ -5,7 +5,7 @@ export const definitions = {
     handler:"connections",operation:"databases.connections",presentation:"details",
   },
   database_save_connection:{
-    description:"Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. Saving records configuration only and does not create a SQLite file. New connections default to read_only=true; use read_only=false only for requested writes. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
+    description:"Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. If database_connections returns no profiles, create without connection or expected_revision; do not reuse an ID from earlier conversation history. Saving records configuration only and does not create a SQLite file. New connections default to read_only=true; use read_only=false only for requested writes. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
     handler:"save",operation:"databases.save",presentation:"details",
   },
   database_catalog:{
@@ -17,7 +17,7 @@ export const definitions = {
     handler:"query",operation:"databases.query",presentation:"content",
   },
   database_execute:{
-    description:"Execute one SQL write statement under the session permission policy. Use for INSERT, UPDATE, DELETE, and schema changes. For a missing writable SQLite file, an authorized schema write initializes it only when its parent directory exists. Reads, catalog, connection checks, and PRAGMAs do not initialize a file. The saved connection's read-only setting still applies. Invoke this tool directly instead of asking for approval in chat. Do not retry a denied or uncertain write automatically.",
+    description:"Execute one SQL write statement under the session permission policy. Use for INSERT, UPDATE, DELETE, and schema changes. For a missing writable SQLite file, an authorized schema write initializes it and creates missing parent directories; do not create the folder or an empty file separately. Explicit writable connection checks can also initialize a missing file. Reads, catalog, read-only connection checks, and PRAGMAs do not initialize a file. The saved connection's read-only setting still applies. Invoke this tool directly instead of asking for approval in chat. Do not retry a denied or uncertain write automatically.",
     handler:"execute",operation:"databases.execute",presentation:"details",
   },
 };
