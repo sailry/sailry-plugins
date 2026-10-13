@@ -1368,7 +1368,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -1393,7 +1393,7 @@
                 "zh-CN": "审查代码变更与拉取请求"
               }
             },
-            "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict requires a fresh tool invocation and re-reading current scope; do not retry within a failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
+            "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. For every read_git_change request, pass scope.snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision from the selected scope.files entry. Never substitute scope.snapshot.metadata_revision for a file's metadata revision or omit snapshot/path on later reads. Check argument mappings before treating a failed patch read as a changed worktree; only actual target or file changes require a new review. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
             "storage": {
               "collections": [
                 {
@@ -1451,7 +1451,7 @@
                   "workspace"
                 ],
                 "presentation": "details",
-                "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
+                "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Read each file with read_git_change using the returned snapshot, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision; snapshot.metadata_revision identifies the inventory, not an individual file. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
                 "handler": {
                   "name": "scope",
                   "flow": {
@@ -2701,7 +2701,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2997,7 +2997,7 @@
                 "name": "spawn_agent",
                 "presentation": "details",
                 "grouping": "standalone",
-                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions and wait_agent to collect its final result before answering. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the roles listed in this tool when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, copy its exact returned session ID and normally omit role; never reconstruct the ID. It retains its own history, role, model, worktree and existing settings. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions. The child does not see this conversation. Write a self-contained task with the goal, relevant paths, constraints and expected output. Give concurrent children sharing one project directory disjoint files, then integrate and verify their findings.",
+                "description": "Delegate a task and await its result by default. Set background to true when work may need follow-up guidance or this conversation must remain responsive; this returns the admitted child session ID while it runs. Use guide_agent for new directions. Keep background work in the background; only call wait_agent when the user explicitly requests waiting or result collection. A running admission is not a completed child result. Give it a short display title separate from the full instructions. A new child inherits this turn's project, work mode and permission. Choose a role from the roles listed in this tool when it fits the delegated task; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. Optionally select a registered worktree in the same project. To reuse an idle child owned by this conversation, copy its exact returned session ID and normally omit role; never reconstruct the ID. It retains its own history, role, model, worktree and existing settings. Busy or foreign children cannot be reused. Children have isolated history and cannot delegate further. Multiple independent calls may run concurrently. Use only when delegation fits the user's instructions. The child does not see this conversation. Write a self-contained task with the goal, relevant paths, constraints and expected output. Give concurrent children sharing one project directory disjoint files, then integrate and verify their findings.",
                 "contexts": [
                   "workspace"
                 ],
@@ -3069,7 +3069,7 @@
                 "contexts": [
                   "workspace"
                 ],
-                "description": "Give new directions to a running child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. If the child has finished and the user requests follow-up work, use spawn_agent with that session ID and a new task instead. Wait for the child result before answering.",
+                "description": "Give new directions to a running child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. If the child has finished and the user requests follow-up work, use spawn_agent with that session ID and a new task instead. This returns a queued guidance receipt, not the child's final result. Keep background work in the background; only call wait_agent when the user explicitly requests waiting or result collection.",
                 "display": {
                   "label": "Guide subagent",
                   "locales": {
@@ -3095,7 +3095,7 @@
                 "contexts": [
                   "workspace"
                 ],
-                "description": "Wait for a child owned by this conversation and collect its durable final status and answer. Copy its exact returned session ID; never reconstruct it. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; wait again after guiding the child. This does not create or replay work.",
+                "description": "Wait for a child owned by this conversation and collect its durable final status and answer. Only use this tool when the user explicitly requests waiting or result collection; guiding background work alone does not request waiting. Copy its exact returned session ID; never reconstruct it. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; resume waiting only if the user still requests it. This does not create or replay work.",
                 "display": {
                   "label": "Wait for subagent",
                   "locales": {
@@ -6682,7 +6682,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -7954,7 +7954,7 @@
               {
                 "name": "read_git_change",
                 "presentation": "details",
-                "description": "Read a literal file diff from a returned Git changes snapshot. Pass its path and expected_metadata_revision. The first request uses offset=0 and no expected_revision; every continuation or later check supplies the returned strong revision. offset counts mapped diff lines, limit defaults to 200 and is at most 500. Complete source lines preserve whitespace except terminal CR/LF and carry one-based old/new line numbers. Pages are bounded to 48 KiB encoded JSON without truncating lines. Binary, non-UTF-8, unsupported modes, oversized files and oversized lines return an explicit skip_reason. Commit snapshots remain fixed when references move; working snapshots reject metadata or content changes. Files are bounded to 32 MiB. Select only registered worktrees in this session project.",
+                "description": "Read a literal file diff from a returned Git changes snapshot. Every request requires the unchanged snapshot, the selected file's path and its metadata_revision as expected_metadata_revision. Do not use snapshot.metadata_revision for the file revision. The first request uses offset=0; omit expected_revision unless a strong file revision is already captured. Every continuation or later check supplies the returned strong revision. offset counts mapped diff lines, limit defaults to 200 and is at most 500. Complete source lines preserve whitespace except terminal CR/LF and carry one-based old/new line numbers. Pages are bounded to 48 KiB encoded JSON without truncating lines. Binary, non-UTF-8, unsupported modes, oversized files and oversized lines return an explicit skip_reason. Commit snapshots remain fixed when references move; working snapshots reject metadata or content changes. Files are bounded to 32 MiB. Select only registered worktrees in this session project.",
                 "contexts": [
                   "workspace"
                 ],
@@ -7972,6 +7972,7 @@
                       },
                       "snapshot": {
                         "type": "object",
+                        "description": "Complete snapshot returned by the change inventory or review scope; pass it unchanged on every page",
                         "properties": {
                           "target": {
                             "anyOf": [
@@ -8099,16 +8100,19 @@
                         "additionalProperties": false
                       },
                       "path": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Path of the selected file entry in this snapshot; required on every page"
                       },
                       "expected_metadata_revision": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The selected file entry's metadata_revision, not snapshot.metadata_revision"
                       },
                       "expected_revision": {
                         "type": [
                           "string",
                           "null"
-                        ]
+                        ],
+                        "description": "Strong revision of this file from the review scope or a previous read; required for continuation"
                       },
                       "offset": {
                         "type": "integer",
