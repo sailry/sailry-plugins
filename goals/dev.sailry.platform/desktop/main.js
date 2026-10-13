@@ -74,7 +74,7 @@ export default class Goals extends View {
   }
   perform(kind,cx) {
     if (this.busy || this.loading || this.pending || !this.state.connected || this.state.readonly || !this.goal) return;
-    this.pending={id:prepareRequest({kind:'call_plugin',data:{handler:'control',input:{kind,expected_revision:this.goal.revision}}}),kind};
+    this.pending={id:prepareRequest({kind:'call_plugin',data:{handler:'control',input:{kind,goal_id:this.goal.id,expected_revision:this.goal.revision}}}),kind};
     this.execute(cx);
   }
   execute(cx) {

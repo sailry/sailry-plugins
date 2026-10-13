@@ -16,6 +16,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
   let current=plain(entry),state;
   const requests=[];
   const scope={session:'session-id',turn:null};
+  const session={revision:'3',config:{mode:'code'}};
   const history={page:{runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}],queue:{revision:'9007199254740993',paused:true,items:[]}},next_before:null};
   const sdk={context:()=>scope,newId:()=> 'new-goal',getConversationValue:async key=>{
     assert.equal(key,'goal');return plain(current);
@@ -31,7 +32,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
       }
     }
     return {Ok:{data:operations.length===1 ? plain(current) : operations.map(()=>({data:{}}))}};
-  },forgetRequest:()=>{},readSession:async()=>({revision:'3',config:{mode:'code'}}),
+  },forgetRequest:()=>{},readSession:async()=>plain(session),
   readConversation:async()=>plain(history),readTurn:async()=>({run:plain(history.page.runs[0])}),
   readTurnState:()=>state,stageTurnState:value=>state=plain(value)};
   function prepare(operations) {requests.push(plain(operations));return String(requests.length-1);}
@@ -47,7 +48,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     modules.set(path,module);await module.link(load);return module;
   }
   const main=await load('./main.js');await main.evaluate();
-  return {api:main.namespace,requests,history,state:()=>state,current:()=>plain(current)};
+  return {api:main.namespace,requests,history,scope,session,state:()=>state,current:()=>plain(current)};
 }
 
 test('restored active goals remain suspended without a write or continuation',async()=>{
@@ -74,7 +75,7 @@ test('restoration preserves terminal state and exact live revision',async()=>{
 
 test('only explicit resume writes a live state and submits work',async()=>{
   const {api,requests,current}=await fixture();
-  const result=await api.control({kind:'resume',expected_revision:'5'});
+  const result=await api.control({kind:'resume',goal_id:value.id,expected_revision:'5'});
   assert.equal(result.goal.state,'active');
   assert.equal(current().restored,false);
   assert.equal(requests.length,1);
@@ -109,8 +110,58 @@ test('explicit interruption still pauses an active goal',async()=>{
 
 test('clear records absence in the captured conversation',async()=>{
   const {api,requests,current}=await fixture();
-  assert.equal((await api.control({kind:'clear',expected_revision:'5'})).goal,null);
+  assert.equal((await api.control({kind:'clear',goal_id:value.id,expected_revision:'5'})).goal,null);
   assert.deepEqual(requests[0],[{kind:'conversation_remove',data:{key:'goal',expected_revision:'5'}}]);
   assert.equal(current().present,false);
   assert.equal(current().revision,'6');
+});
+
+test('control tools require the inspected identity and exact revision',async()=>{
+  for (const kind of ['pause','resume','clear']) {
+    const {api,requests}=await fixture();
+    for (const args of [
+      {goal_id:'another-goal',expected_revision:'5'},
+      {goal_id:value.id,expected_revision:'4'},
+      {goal_id:value.id,expected_revision:5},
+      {goal_id:value.id,expected_revision:'05'},
+    ]) await assert.rejects(api[kind](args),/Goal changed/);
+    await assert.rejects(api[kind]({goal_id:value.id}),/Invalid goal arguments/);
+    await assert.rejects(api[kind]({goal_id:value.id,expected_revision:'5',kind}),/Invalid goal arguments/);
+    assert.equal(requests.length,0);
+  }
+  const {api,requests}=await fixture();
+  await assert.rejects(api.control({kind:'unknown',goal_id:value.id,expected_revision:'5'}),/Invalid goal action/);
+  assert.equal(requests.length,0);
+});
+
+test('agent resume uses its current turn without admitting another',async()=>{
+  const {api,scope,requests,state,current,session}=await fixture();
+  scope.turn='current-turn';
+  await api.initialize({mode:'code',tools:['get_goal','resume_goal']});
+  assert.equal(state().executingGoal,false);
+  assert.equal((await api.resume({goal_id:value.id,expected_revision:'5'})).goal.state,'active');
+  assert.deepEqual(requests[0].map(operation=>operation.kind),['queue_pause','conversation_write']);
+  assert.equal(current().value.after,'last-turn');
+  assert.equal(state().executingGoal,true);
+  const plan=await fixture();plan.scope.turn='current-turn';plan.session.config.mode='plan';
+  await assert.rejects(plan.api.resume({goal_id:value.id,expected_revision:'5'}),/Code mode/);
+  assert.equal(plan.requests.length,0);
+  const selected=await api.initialize({mode:'plan',tools:['get_goal','create_goal','update_goal','resume_goal','pause_goal','clear_goal']});
+  assert.deepEqual(plain(selected.tools),['get_goal']);
+  assert.equal(state().executingGoal,false);
+  assert.equal(session.config.mode,'code');
+});
+
+test('agent pause and clear preserve canonical result before stopping',async()=>{
+  for (const kind of ['pause','clear']) {
+    const {api,scope,history,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+    scope.turn='current-turn';
+    history.page.runs.push({turn:scope.turn,sequence:2,status:'running',origin:null});
+    await api.initialize({mode:'code',tools:[`${kind}_goal`]});
+    const result=await api[kind]({goal_id:value.id,expected_revision:'5'});
+    assert.equal(result.goal?.state ?? null,kind==='pause'?'paused':null);
+    assert.equal(requests[0].length,1);
+    assert.equal(requests[0][0].kind,kind==='pause'?'conversation_write':'conversation_remove');
+    assert.equal((await api.observe()).stop,true);
+  }
 });

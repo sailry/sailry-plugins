@@ -19,14 +19,12 @@ function view(goal=null) {
     state:{connected:true,readonly:false,mode:'code'},busy:false,loading:false,draft:()=>'',perform(){}};
 }
 
-test('description lines preserve source and use shared status rows',()=>{
+test('description preserves source without indented status rows',()=>{
   const setup=view({description:'First 中文 🙂\r\n\n  Second  ',state:'active'});
   const panel=render(setup);
   assert.equal(panel.id,'goal-description');
-  assert.deepEqual(plain(panel.props.items),[
-    {id:'goal-item-0',text:'First 中文 🙂',state:'in_progress',details:true},
-    {id:'goal-item-1',text:'  Second  ',state:'in_progress',details:true},
-  ]);
+  assert.deepEqual(plain(panel.props.items),[]);
+  assert.equal(panel.props.body,setup.goal.description);
   assert.deepEqual(panel.items.map(item=>item.id),['goal-stop','goal-clear']);
 });
 
@@ -34,21 +32,24 @@ test('states and draft content remain plugin policy',()=>{
   for(const state of ['pending','completed','paused','blocked','failed']) {
     const setup=view({description:'Goal',state});
     const panel=render(setup);
-    assert.equal(panel.props.items[0].state,state);
+    assert.deepEqual(plain(panel.props.items),[]);
+    assert.equal(panel.props.body,'Goal');
     assert.equal(panel.items.some(item=>item.id==='goal-resume'),['paused','blocked','failed'].includes(state));
   }
   const setup=view();setup.draft=()=>'/literal content';
-  assert.equal(render(setup).props.items[0].text,'/literal content');
+  assert.equal(render(setup).props.body,'/literal content');
   setup.draft=()=>'';
   assert.deepEqual(plain(render(setup).props.items),[]);
+  assert.equal(render(setup).props.body,undefined);
 });
 
 test('long Unicode descriptions are not truncated',()=>{
   const description='中文🙂'.repeat(1000);
   const setup=view({description,state:'paused'});
-  assert.equal(render(setup).props.items[0].text,description);
+  assert.equal(render(setup).props.body,description);
   setup.goal.description=Array.from({length:300},(_,index)=>`Line ${index}`).join('\n');
-  assert.equal(render(setup).props.items.length,300);
+  assert.equal(render(setup).props.body,setup.goal.description);
+  assert.deepEqual(plain(render(setup).props.items),[]);
 });
 
 test('read failures preserve goals without retry bars; pending actions remain recoverable',()=>{
@@ -63,7 +64,7 @@ test('refresh disables controls while preserving source content',()=>{
   for(const state of ['active','paused']) {
     const setup=view({description:'Retained goal',state});
     setup.loading=true;
-    assert.equal(render(setup).props.items[0].text,'Retained goal');
+    assert.equal(render(setup).props.body,'Retained goal');
     assert.ok(render(setup).items.every(item=>item.disabledValue===true));
     setup.pending={id:'original-request'};
     assert.ok(render(setup).items.every(item=>item.disabledValue===true));

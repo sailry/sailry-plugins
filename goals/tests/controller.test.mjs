@@ -34,6 +34,7 @@ async function fixture() {
       }
       assert.equal(request.data.handler,'control');
       if(host.failure) return {Err:{code:host.failure,message:'Unconfirmed action'}};
+      assert.equal(request.data.input.goal_id,host.goal.id);
       assert.equal(request.data.input.expected_revision,host.goal.revision);
       const revision=String(BigInt(host.goal.revision)+1n);
       host.goal=request.data.input.kind==='clear' ? null : {...host.goal,
@@ -151,7 +152,7 @@ test('held refresh blocks stale controls until current revision',async()=>{
   await setup.perform('clear');
   const controls=setup.prepared.filter(request=>request.data.handler==='control');
   assert.deepEqual(controls.map(request=>request.data.input),[
-    {kind:'pause',expected_revision:'5'},{kind:'clear',expected_revision:'6'},
+    {kind:'pause',goal_id:'goal',expected_revision:'5'},{kind:'clear',goal_id:'goal',expected_revision:'6'},
   ]);
   assert.equal(setup.host.goal,null);
   assert.equal(setup.view.goal,null);

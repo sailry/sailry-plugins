@@ -93,30 +93,37 @@ export async function completed(args) {
   return {};
 }
 export async function control(args) {
+  argumentsOf(args,['kind','goal_id','expected_revision']);
+  if (!['pause','resume','clear'].includes(args.kind)) throw new Error('Invalid goal action');
   const {entry,value}=await current();
-  if (!value || args.expected_revision!==entry.revision) throw new Error('Goal changed; read it before updating');
+  if (!value || args.goal_id!==value.id || args.expected_revision!==entry.revision) throw new Error('Goal changed; read it before updating');
   const operations=[];
   if (args.kind==='pause' || args.kind==='clear') {
     operations.push(args.kind==='clear' ? {kind:'conversation_remove',data:{key,expected_revision:entry.revision}} : write(entry,{...entry.value,state:'paused'}));
     const history=await readConversation();
-    if (value.state==='active') for (const run of history.page.runs) if (run.origin==null && ['running','stopping'].includes(run.status)) operations.push({kind:'stop',data:{turn:run.turn}});
+    if (value.state==='active') for (const run of history.page.runs) if (run.turn!==context().turn && run.origin==null && ['running','stopping'].includes(run.status)) operations.push({kind:'stop',data:{turn:run.turn}});
   } else if (args.kind==='resume' && ['paused','blocked','failed'].includes(value.state)) {
     const session=await readSession();
     if (session.config.mode==='plan') throw new Error('Goal execution requires Code mode');
     const history=await readConversation();
     operations.push({kind:'queue_pause',data:{session:context().session,expected_revision:history.page.queue.revision,paused:false}});
     operations.push(write(entry,{...entry.value,state:'active',after:await anchor(history)}));
-    operations.push(next({...entry,revision:String(BigInt(entry.revision)+1n)}));
+    if (!context().turn) operations.push(next({...entry,revision:String(BigInt(entry.revision)+1n)}));
   } else throw new Error('Invalid goal action');
   await execute(prepareTransaction(operations));
+  if (args.kind==='resume' && context().turn) stageTurnState({...readTurnState(),executingGoal:true});
   return read();
 }
+function controlArguments(args) {argumentsOf(args,['goal_id','expected_revision']);}
+export async function pause(args) {controlArguments(args);return control({...args,kind:'pause'});}
+export async function resume(args) {controlArguments(args);return control({...args,kind:'resume'});}
+export async function clear(args) {controlArguments(args);return control({...args,kind:'clear'});}
 export async function command(args) {
   const text=args.arguments;
   if (['pause','stop','resume','clear'].includes(text)) {
     if (args.message.references?.length || args.message.attachments?.length) throw new Error('Goal controls do not accept references or attachments');
     const entry=await getConversationValue(key);
-    return control({kind:text==='stop'?'pause':text,expected_revision:entry.revision});
+    return control({kind:text==='stop'?'pause':text,goal_id:goal(entry)?.id,expected_revision:entry.revision});
   }
   if (!text) return {...await read(),ui_intent:'goal'};
   const session=await readSession();

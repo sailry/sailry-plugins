@@ -8468,6 +8468,105 @@
                   },
                   "icon": "reicon:ui/target"
                 }
+              },
+              {
+                "name": "resume_goal",
+                "presentation": "content",
+                "handler": {
+                  "name": "resume",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "goal_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "expected_revision": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]*$"
+                      }
+                    },
+                    "required": [
+                      "goal_id",
+                      "expected_revision"
+                    ]
+                  }
+                },
+                "description": "Resume the inspected paused, blocked or failed goal only when the user explicitly requests resuming it. Use the exact goal identifier and string revision from get_goal. Existing scope and permissions still apply; never undo a Stop yourself.",
+                "display": {
+                  "label": "Resume goal",
+                  "locales": {
+                    "zh-CN": "继续目标"
+                  },
+                  "icon": "reicon:ui/target"
+                }
+              },
+              {
+                "name": "pause_goal",
+                "presentation": "content",
+                "handler": {
+                  "name": "pause",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "goal_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "expected_revision": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]*$"
+                      }
+                    },
+                    "required": [
+                      "goal_id",
+                      "expected_revision"
+                    ]
+                  }
+                },
+                "description": "Pause the inspected goal only when the user requests pausing or stopping it. Use the exact goal identifier and string revision from get_goal. Retain the goal and its conversation history.",
+                "display": {
+                  "label": "Pause goal",
+                  "locales": {
+                    "zh-CN": "暂停目标"
+                  },
+                  "icon": "reicon:ui/target"
+                }
+              },
+              {
+                "name": "clear_goal",
+                "presentation": "content",
+                "handler": {
+                  "name": "clear",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "goal_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "expected_revision": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]*$"
+                      }
+                    },
+                    "required": [
+                      "goal_id",
+                      "expected_revision"
+                    ]
+                  }
+                },
+                "description": "Clear the inspected goal only when the user explicitly requests clearing it. Use its exact identifier and string revision from get_goal. This removes that goal and stops its execution, while retaining conversation history. Never clear a goal to replace it yourself.",
+                "display": {
+                  "label": "Clear goal",
+                  "locales": {
+                    "zh-CN": "清除目标"
+                  },
+                  "icon": "reicon:ui/target"
+                }
               }
             ],
             "display": {
@@ -8497,7 +8596,10 @@
                 "observe",
                 "completed",
                 "control",
-                "command"
+                "command",
+                "resume",
+                "pause",
+                "clear"
               ],
               "turn": {
                 "initialize": "initialize",
