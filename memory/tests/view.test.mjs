@@ -58,6 +58,7 @@ test('settings choices use real selects and editor tabs fill their form control'
   setup.functions.editor(view);
   const tabs=setup.nodes.get('memory-kind-4');
   assert.equal(tabs.kind,'SegmentedTabs');assert.equal(tabs.props.selected,'feedback');
+  assert.equal(tabs.props.fill,true);
   assert.deepEqual(plain(tabs.props.items.map(item=>item.id)),['user','feedback','project','reference']);
   view.configuration.pending=true;setup.functions.configuration(view);
   assert.equal(setup.nodes.get('memory-budget').props.disabled,true);

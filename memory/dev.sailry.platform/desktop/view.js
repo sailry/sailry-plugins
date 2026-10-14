@@ -76,7 +76,7 @@ function editor(view) {
     .child(div().text_lg().font_semibold().child(text[summary.revision ? 'memory_editor' : 'memory_create']))
     .child(div().v_flex().min_h_0().overflow_y_scroll().gap_3()
       .child(new Field().label(text.memory_title).child(TextField.new(owner.title,{disabled})))
-      .child(new Field().label(text.memory_kind).child(SegmentedTabs.new(`memory-kind-${view.dialogId}`,{selected:summary.kind,disabled,
+      .child(new Field().label(text.memory_kind).child(SegmentedTabs.new(`memory-kind-${view.dialogId}`,{selected:summary.kind,disabled,fill:true,
         items:kinds.map(id=>({id,label:view.kindLabel(id)}))})))
       .child(new Field().label(text.memory_body).child(TextField.new(owner.body,{disabled})))
       .children(summary.revision ? [new Switch('memory-archive').label(text.memory_archived).checked(summary.archived).disabled(disabled || !!owner.sources.length)

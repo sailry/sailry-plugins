@@ -39,7 +39,7 @@ export function editor(view) {
     form=form.child(new Field().label(text.ssh_passphrase).child(SecretField.new(owner.passphrase,{disabled:locked})));
   }
   const authentication=SegmentedTabs.new(`ssh-authentication-${view.dialog}`,{
-    selected:owner.authentication,disabled:locked||picking,
+    selected:owner.authentication,disabled:locked||picking,fill:true,
     items:['password','private_key','key_path'].map(id=>({id,label:text[id==='key_path'?'ssh_key_file':`ssh_${id}`]})),
   });
   return div().id('ssh-editor').v_flex().gap_4().w_full().child(authentication).child(form).child(sharing(view,owner))
