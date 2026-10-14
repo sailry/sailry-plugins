@@ -28,7 +28,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading']
+  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading','SelectField']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const constructors=Object.fromEntries(['Button','Progress','Tab','TabBar','Tag','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
@@ -36,7 +36,8 @@ function fixture() {
     div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,VISIBLE,formatRows,unit,DIMENSIONS,
     theme:()=>({colors:{muted_foreground:'muted'}}),window:{viewport_size:()=>({width:1440})},
   });
-  const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'})};
+  const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'}),
+    filters:()=>({range:{items:[{id:'30d',label:'30 days'}],selected:'30d'},selects:[{id:'usage-filter-project',label:'All projects',items:[],selected:'1:'}]})};
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
 
@@ -45,6 +46,7 @@ test('initial reads use shared rows without fabricated usage',()=>{
   for(const error of [null,'usage_read_failed']) {
     setup.view.error=error;setup.render();
     assert.equal(setup.nodes.get('usage-initial-loading').kind,'Loading');
+    assert.equal(setup.nodes.get('usage-content').items[0].selector,'usage-filters');
     assert.equal(setup.nodes.has('usage-summary'),false);
     assert.equal(setup.nodes.has('usage-breakdown'),false);
     assert.equal(setup.nodes.has('usage-requests'),false);
@@ -58,7 +60,7 @@ test('filter refreshes retain report sections and avoid flow changes',()=>{
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   setup.render();
   const selectors=setup.nodes.get('usage-content').items.map(item=>item.selector);
-  assert.deepEqual(selectors,['usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
+  assert.deepEqual(selectors,['usage-filters','usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
   state.select('project','selected');const generation=state.start();
   for(const observation of [null,{report:null,connected:true,refreshing:true},
     {report:null,connected:true,refreshing:false,error:{code:'unavailable'}}]) {

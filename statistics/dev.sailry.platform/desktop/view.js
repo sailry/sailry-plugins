@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,Progress,Tab,TabBar,Tag,Pagination} from 'gpui-component';
 import {theme,Header} from 'sailry';
-import {SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading} from 'sailry/ui';
+import {SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading,SelectField} from 'sailry/ui';
 import {compact,grouped} from './format.js';
 import {heatmap,trend,SERIES} from './charts.js';
 import {overview,percent} from './summary.js';
@@ -108,6 +108,17 @@ function distribution(view,data) {
       .on_click((_,cx)=>{state.expanded=!state.expanded;cx.notify();}))] : []);
 }
 
+function filters(view) {
+  const {range,selects}=view.filters();
+  // Wrapping moves the selects below the range tabs on narrow pages instead of overflowing.
+  return div().id('usage-filters').h_flex().flex_wrap().justify_between().items_center().gap_3().min_w_0()
+    .child(new TabBar('usage-filter-range').variant('segmented').selected_index(range.items.findIndex(item=>item.id===range.selected))
+      .children(range.items.map(item=>new Tab().label(item.label)))
+      .on_change((index,cx)=>view.filter('range',range.items[index].id,cx)))
+    .child(div().id('usage-filter-selects').h_flex().flex_wrap().gap_2().min_w_0()
+      .children(selects.map(({id,label,items,selected})=>div().w(176).min_w_0().child(SelectField.new(id,{label,items,selected})))));
+}
+
 function requests(view,data) {
   const {state,text}=view,rows=formatRows(data.requests.items,text);
   const fields=['time','session','model','input_cache','output','first_token','duration','cost'];
@@ -128,6 +139,7 @@ export function render(view) {
   const {state,text}=view,data=state.data();
   const refreshing=state.view?.refreshing;
   const body=column().id('usage-content').relative().w_full().max_w(1040).mx_auto().p_6().gap_4()
+    .child(filters(view))
     .children(!data ? [div().relative().w_full().h_64().child(Loading.new('usage-initial-loading'))] : [])
     .children(data&&!view.error&&(state.previous||refreshing)?[div().absolute().top_0().left_6().right_6()
       .child(new Progress('usage-loading').loading(true).size('xsmall').accessibility_label(text.usage_loading))]:[]);
