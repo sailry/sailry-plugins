@@ -1,17 +1,18 @@
 // Every scene layer uses the same logical plane and uniform display scale.
 export const WORLD_WIDTH = 1120;
-export const WORLD_HEIGHT = 860;
+export const WORLD_HEIGHT = 900;
 export const PERSON_SIZE = 60;
 export const DESK_WIDTH = 62;
 export const DESK_HEIGHT = DESK_WIDTH * 185 / 216;
 const cells = [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2]];
 export const ROOMS = cells.map(([column,row]) => {
-  const bounds = {x:20 + column * 380,y:60 + row * 294,width:320,height:205};
+  const bounds = {x:20 + column * 380,y:60 + row * 300,width:320,height:240};
   return {bounds,board:{x:bounds.x + 20,y:bounds.y - 52,width:280,height:88}};
 });
 export function seatPosition(room,index) {
   const {bounds} = ROOMS[room];
-  return {x:bounds.x + 68 + index % 3 * 92,y:bounds.y + 122 + Math.floor(index / 3) * 68};
+  // Seats keep clear of the whiteboard above and the pager on the bottom edge.
+  return {x:bounds.x + 68 + index % 3 * 92,y:bounds.y + 140 + Math.floor(index / 3) * 68};
 }
 export function approvalPosition(index,count = 6) {
   return {x:465 + index % 3 * 95,y:(count <= 3 ? 485 : 440) + Math.floor(index / 3) * 81};

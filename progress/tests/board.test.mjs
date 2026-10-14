@@ -170,6 +170,33 @@ test('hiding invalidates previews and showing the cached page resumes them', asy
   assert.equal(state.previews.get('running').text,'Visible');
 });
 
+test('cards follow the shared activity order within each group', () => {
+  const data = catalog(['a','b','c'].map(id => session(id)));
+  data.session_lanes = {a:'running',b:'running',c:'running'};
+  data.terminals = [{id:'shell',worktree:'tree',title:'Shell'}];data.terminal_lanes = {shell:'running'};
+  data.activity_order = ['session:c','terminal:shell','session:a','session:b'];
+  assert.deepEqual(plain(sections(data,new Map(),text).running[0].cards.map(card => card.id)),['c','shell','a','b']);
+  delete data.activity_order;
+  assert.deepEqual(plain(sections(data,new Map(),text).running[0].cards.map(card => card.id)),['c','b','a','shell']);
+});
+
+test('read terminals rest in the idle group with a neutral state', () => {
+  const data = catalog([]);
+  data.terminals = [{id:'shell',worktree:'tree',title:'Shell'}];data.terminal_lanes = {shell:'completed'};
+  const card = sections(data,new Map(),text).idle[0].cards[0];
+  assert.equal(card.state,'idle');assert.equal(card.lane,'completed');
+});
+
+test('terminal read changes reread the shared order', async () => {
+  let reads = 0;
+  const state = new State(async () => {reads += 1;return catalog([session('running')]);},async () => [],() => {});
+  await state.refresh();state.visible = true;
+  state.hosts({hosts:[],unread_terminals:[],visible:true});await state.pending;
+  assert.equal(reads,1);
+  state.hosts({hosts:[],unread_terminals:['shell'],visible:true});await state.pending;
+  assert.equal(reads,2);
+});
+
 test('navigation metadata validates packaged imports', async () => {
   checkPackage(fileURLToPath(new URL('plugin.json',root)));
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));

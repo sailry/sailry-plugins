@@ -11,30 +11,26 @@ function catalog(count=4) {
 }
 const render=(data,floor)=>layout(data,new Map(),text,floor);
 
-test('peers keep their seats across input ordering',()=>{
-  const data=catalog(),floor=new Floor(),first=render(data,floor);
-  const seats=new Map(first.rooms[0].items.map(item=>[item.id,item.seat]));
+test('seats follow the shared activity order',()=>{
+  const data=catalog(),floor=new Floor();
+  data.activity_order=['s2','s0','s3','s1'].map(id=>`session:${id}`);
+  const seats=()=>Object.fromEntries(render(data,floor).rooms[0].items.map(item=>[item.id,item.seat]));
+  assert.deepEqual(seats(),{s2:0,s0:1,s3:2,s1:3});
   data.sessions.reverse();
-  const second=render(data,floor);
-  for(const item of second.rooms[0].items)assert.equal(item.seat,seats.get(item.id));
+  assert.deepEqual(seats(),{s2:0,s0:1,s3:2,s1:3});
+  data.activity_order.reverse();
+  assert.deepEqual(seats(),{s1:0,s3:1,s0:2,s2:3});
 });
 
-test('running work moves ahead of waiting and finished sessions',()=>{
-  const data=catalog(14),floor=new Floor();
-  for(const session of data.sessions)data.session_lanes[session.id]='completed';
+test('ordering applies across lanes before pagination',()=>{
+  const data=catalog(8),floor=new Floor();
+  data.session_lanes.s7='idle';data.session_lanes.s0='completed';
+  data.sessions[3].activity.waiting='approval';data.session_lanes.s3='waiting';
+  data.activity_order=['s3','s0','s1','s2','s4','s5','s6','s7'].map(id=>`session:${id}`);
   let room=render(data,floor).rooms[0];
-  assert.equal(room.items.find(item=>item.id==='s0').seat,13);
-  for(const id of ['s0','s1'])data.session_lanes[id]='running';
-  data.sessions[2].activity.waiting='approval';data.session_lanes.s2='waiting';
-  room=render(data,floor).rooms[0];
-  assert.deepEqual(room.items.slice(0,3).map(item=>item.id),['s1','s0','s2']);
-  assert.ok(room.visible.some(item=>item.id==='s0'));
-  assert.equal(room.pages,3);
-  const seats=new Map(room.items.map(item=>[item.id,item.seat]));
-  data.sessions.reverse();room=render(data,floor).rooms[0];
-  for(const item of room.items)assert.equal(item.seat,seats.get(item.id));
-  data.session_lanes.s0='completed';
-  assert.equal(render(data,floor).rooms[0].items.find(item=>item.id==='s0').seat,2);
+  assert.deepEqual(room.visible.map(item=>item.id),['s3','s0','s1','s2','s4','s5']);
+  floor.turnRoom(room.key,1,room.pages);room=render(data,floor).rooms[0];
+  assert.deepEqual(room.visible.map(item=>item.id),['s6','s7']);
 });
 
 test('running overflow fills consecutive pages without holes',()=>{
@@ -67,11 +63,10 @@ test('more than six sessions and eight projects remain reachable',()=>{
   assert.equal(render(data,floor).approvals[0].id,'s0');
 });
 
-test('removed seats are reused and another node clears placement',()=>{
-  const data=catalog(),floor=new Floor(),first=render(data,floor),seat=first.rooms[0].items.find(item=>item.id==='s0').seat;
+test('removed sessions close gaps and another node clears placement',()=>{
+  const data=catalog(),floor=new Floor();
   data.sessions=data.sessions.filter(session=>session.id!=='s0');
-  render(data,floor);data.sessions.push({...data.sessions[0],id:'new'});data.session_lanes.new='running';
-  assert.equal(render(data,floor).rooms[0].items.find(item=>item.id==='new').seat,seat);
+  assert.deepEqual(render(data,floor).rooms[0].items.map(item=>item.seat),[0,1,2]);
   floor.page=5;floor.roomPages.set('project',3);data.node='replacement';
   render(data,floor);assert.equal(floor.page,0);assert.equal(floor.roomPages.get('project'),0);
 });

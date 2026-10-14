@@ -3,6 +3,18 @@ export const lanes = ['waiting','running','completed','idle'];
 export const labels = {waiting:'activity_board_waiting',running:'activity_board_running',
   completed:'activity_completed',idle:'activity_idle',failed:'activity_failed'};
 export const group = lane => lane === 'failed' ? 'completed' : lane;
+export const statusColors = {running:'primary',idle:'muted_foreground',approval:'warning',input:'chart_3',
+  completed:'success',failed:'destructive'};
+// Read results rest in the idle group and use its neutral color.
+export function statusColor(item) {
+  if (item.state === 'idle') return statusColors.idle;
+  return statusColors[item.lane === 'waiting' ? item.approval ? 'approval' : 'input' : item.lane] ?? statusColors.idle;
+}
+// The shared Client orders activity items; packages only look up positions.
+export function order(catalog) {
+  const positions = new Map((catalog.activity_order ?? []).map((key,index) => [key,index]));
+  return item => positions.get(`${item.kind}:${item.id}`) ?? positions.size;
+}
 const defaultAppearance = {icon:'folder',color:'none'};
 
 export function sessionStatus(session,text) {
@@ -53,7 +65,7 @@ export function sections(catalog,previews,text) {
       column.set(projectId,{id:projectId,name:project?.name ?? text.activity_no_project,
         appearance:project?.appearance ?? defaultAppearance,cards:[]});
     }
-    column.get(projectId).cards.push(card);
+    card.state = state;column.get(projectId).cards.push(card);
   }
   for (const session of [...catalog.sessions].reverse()) {
     if (session.archived || session.delegation) continue;
@@ -63,6 +75,7 @@ export function sections(catalog,previews,text) {
     const status = sessionStatus(session,text);
     const content = preview?.turn === (session.activity.run?.turn ?? null) ? preview.text : null;
     add(group(lane),session.project,{kind:'session',id:session.id,lane,
+      approval:lane === 'waiting' && session.activity.waiting === 'approval',
       title:session.activity.title.trim().replace(/[\r\n]/g,' ') || text.chat_new,status,
       time:session.activity.run?.finished_ms ?? session.activity.run?.started_ms ?? null,
       phase:['running','stopping'].includes(session.activity.run?.status)
@@ -81,6 +94,9 @@ export function sections(catalog,previews,text) {
       preview:null,duration:null,time:null,phase:lane === 'running' ? 'turn_tools_running' : null,
       project:project?.name ?? '',path:tree.project ? tree.path : '',appearance:project?.appearance ?? defaultAppearance});
   }
+  const position = order(catalog);
+  for (const column of Object.values(columns)) for (const section of column.values())
+    section.cards.sort((left,right) => position(left) - position(right));
   return Object.fromEntries(lanes.map(lane => [lane,[...columns[lane].values()]
     .sort((left,right) => left.id === null ? -1 : right.id === null ? 1 : left.id.localeCompare(right.id))]));
 }
@@ -122,12 +138,14 @@ export class State {
   }
   hosts(value) {
     const resumed = value.visible && !this.visible;
+    // Terminal read state also feeds the shared order, so a change rereads it.
+    const reordered = !!this.catalog && String(this.catalog.unread_terminals) !== String(value.unread_terminals);
     this.visible = value.visible;
     if (!this.visible) this.generation += 1;
     if (this.catalog) {
       this.catalog.hosts = value.hosts;this.catalog.unread_terminals = value.unread_terminals;
       this.changed();
     }
-    if (resumed) this.refresh();
+    if (resumed || reordered && this.visible) this.refresh();
   }
 }

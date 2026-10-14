@@ -21,14 +21,14 @@ function fixture(count=0) {
     }});
     if(id)nodes.set(id,proxy);return proxy;
   }
-  const native=Object.fromEntries(['Header','Workspace','Image','Conversation','ComposedButton','CardButton','PanelHeader','IconButton','EmptyState','Loading','ClampedText'].map(kind=>[kind,{new:(id,props)=>{
+  const native=Object.fromEntries(['Header','Workspace','Image','Conversation','ComposedButton','CardButton','PanelHeader','IconButton','EmptyState','Loading','ClampedText','StatusRing'].map(kind=>[kind,{new:(id,props)=>{
     const result=element(kind,id,props);
     if(kind==='ClampedText')result.child(props.text);
     return result;
   }}]));
-  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER,boardPadding,boardClearance})`,{
+  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER,EDGE,boardPadding,boardClearance,pagerWidth})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
-    Tag:function(){return element('Tag');},Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
+    Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{background:'background',surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
     PathBuilder:{stroke:width=>{
       const path={width,commands:[],build(){return this;}};
@@ -148,22 +148,56 @@ test('only active work lights the computer screen',()=>{
   session.activity.waiting='approval';setup.render();assert.ok(Math.abs(monitor()-unlit)<1e-8);
 });
 
-test('every person keeps the matching legend color before selection',()=>{
+test('each active seat has one ring in its legend color',()=>{
   const setup=fixture(1),session=setup.view.board.catalog.sessions[0];
   for(const [lane,waiting,state] of [['running',null,'running'],['waiting','approval','approval'],['waiting','input','input'],
-    ['completed',null,'completed'],['idle',null,'idle'],['failed',null,'failed']]) {
+    ['completed',null,'completed'],['failed',null,'failed']]) {
     setup.view.board.catalog.session_lanes[session.id]=lane;session.activity.waiting=waiting;
     setup.render();
     const ring=setup.nodes.get('plaza-session-0-status'),legend=setup.nodes.get(`plaza-legend-${state}`);
-    assert.equal(ring.style.border_color[0],legend.style.bg[0]);
-    assert.deepEqual(plain(ring.style.border),[1.5]);
-    assert.equal(ring.items.length,0);assert.equal(ring.style.bg,undefined);
-    assert.equal(setup.nodes.has('plaza-session-0-selection'),false);
+    assert.equal(ring.kind,'StatusRing');
+    assert.equal(ring.props.color,legend.style.bg[0]);
+    assert.deepEqual(plain(ring.props),{color:legend.style.bg[0],opacity:1,line:1.5,running:lane==='running'});
     setup.click('plaza-session-0');setup.render();
-    assert.equal(setup.nodes.get('plaza-session-0-status').style.border_color[0],legend.style.bg[0]);
-    assert.ok(setup.nodes.has('plaza-session-0-selection'));
+    const rings=[...setup.nodes.values()].filter(node=>node.kind==='StatusRing'&&node.selector.startsWith('plaza-session-0'));
+    assert.equal(rings.length,1,'selection must not add a second ring');
     setup.view.panelOpen=false;
   }
+});
+
+test('idle seats and read terminals have no ring',()=>{
+  const setup=fixture(1),catalog=setup.view.board.catalog;
+  catalog.session_lanes['session-0']='idle';catalog.sessions[0].activity.run=null;
+  catalog.terminals=[{id:'shell',worktree:'tree',title:'Shell'}];catalog.terminal_lanes={shell:'completed'};
+  setup.render();
+  assert.ok(setup.nodes.has('plaza-session-0-position'));assert.ok(setup.nodes.has('plaza-terminal-shell-position'));
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='StatusRing').length,0);
+  catalog.unread_terminals=['shell'];setup.render();
+  assert.equal(setup.nodes.get('plaza-terminal-shell-status').props.color,'success');
+});
+
+test('seat tooltips show only the title',()=>{
+  const setup=fixture(1);setup.render();
+  const seat=setup.nodes.get('plaza-session-0');
+  assert.equal(seat.props.tooltip,'Task 0');
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Tag').length,0);
+});
+
+test('seats follow the shared activity order before paging',()=>{
+  const setup=fixture(8),catalog=setup.view.board.catalog;
+  catalog.activity_order=['session-6','session-1','session-4','session-3','session-0','session-2','session-7','session-5'].map(id=>`session:${id}`);
+  setup.render();
+  const seated=()=>[...setup.nodes.keys()].filter(id=>/^plaza-session-\d+-position$/.test(id))
+    .map(id=>setup.nodes.get(id).style).map(style=>[style.top[0],style.left[0]]);
+  const order=[...setup.nodes.keys()].filter(id=>/^plaza-session-\d+-position$/.test(id))
+    .sort((left,right)=>{
+      const [a,b]=[setup.nodes.get(left).style,setup.nodes.get(right).style];
+      return a.top[0]-b.top[0]||a.left[0]-b.left[0];
+    }).map(id=>id.replace(/^plaza-|-position$/g,''));
+  assert.deepEqual(order,['session-6','session-1','session-4','session-3','session-0','session-2']);
+  assert.equal(seated().length,6);
+  setup.click('plaza-room-next-project');setup.render();
+  assert.ok(setup.nodes.has('plaza-session-7-position')&&setup.nodes.has('plaza-session-5-position'));
 });
 
 test('whiteboards stack each total above its label',()=>{
@@ -224,11 +258,11 @@ test('whiteboards cover the opening in the top edge',()=>{
   assert.deepEqual(plain([start[0],start[2],end[0],end[2]]),['move_to',0,'line_to',0]);
   assert.ok(Math.abs(start[1]-left-board.w[0])<1e-9&&Math.abs(end[1]-left)<1e-9);
   const desk=setup.nodes.get('plaza-desk-project-0').style;
-  assert.ok(Math.abs(desk.top[0]-board.top[0]-board.h[0]-setup.boardClearance(scale))<1e-9);
+  assert.ok(desk.top[0]-board.top[0]-board.h[0]>=setup.boardClearance(scale)-1e-9);
 });
 
-test('pagers sit centered below continuous rooms',()=>{
-  const sizes=[[{width:900,height:1000},true,0.65],[{width:1600,height:1038},false,1]];
+test('pagers sit in an opening of the bottom edge',()=>{
+  const sizes=[[{width:900,height:1000},true,0.65],[{width:1600,height:1078},false,1]];
   for(const [size,sidebar,expected] of sizes) {
     const setup=fixture(8);
     Object.assign(setup.viewport,size);setup.view.panelOpen=sidebar;setup.view.selected={kind:'room',id:'project'};setup.render();
@@ -239,24 +273,53 @@ test('pagers sit centered below continuous rooms',()=>{
     const pager=setup.nodes.get('plaza-room-pages-project').style,outline=setup.nodes.get('plaza-room-outline-0').style;
     const bottom=outline.top[0]+outline.h[0],next=setup.nodes.get('plaza-room-3-board').style;
     assert.ok(Math.abs(pager.left[0]+pager.w[0]/2-(outline.left[0]+outline.w[0]/2))<1e-9);
-    assert.ok(pager.top[0]>=bottom&&pager.top[0]+pager.h[0]<=next.top[0]);
+    assert.ok(Math.abs(pager.top[0]+pager.h[0]/2-bottom)<1e-9,'the pager is centered on the bottom edge');
+    assert.ok(pager.top[0]+pager.h[0]<=next.top[0]);
+    // The bottom edge stops short of the pager on both sides.
+    const commands=setup.nodes.get('plaza-room-outline-0').items[0].props.path.commands;
+    const opening=commands.findIndex(([method],index)=>index>0&&method==='move_to');
+    const [,gapRight,gapY]=commands[opening-1],[,gapLeft,resumeY]=commands[opening];
+    assert.ok(Math.abs(gapY-outline.h[0])<1e-9&&Math.abs(resumeY-outline.h[0])<1e-9);
+    const middle=outline.w[0]/2;
+    assert.ok(Math.abs(gapRight-middle-(pager.w[0]/2+setup.PAGER.notch))<1e-9);
+    assert.ok(Math.abs(middle-gapLeft-(pager.w[0]/2+setup.PAGER.notch))<1e-9);
     const people=[...setup.nodes.values()].filter(node=>/^plaza-session-\d+-position$/.test(node.selector));
     assert.ok(people.length>0);
     for(const {style:person} of people) {
-      assert.ok(person.top[0]+person.h[0]<=pager.top[0]||pager.top[0]+pager.h[0]<=person.top[0]||
-        person.left[0]+person.w[0]<=pager.left[0]||pager.left[0]+pager.w[0]<=person.left[0]);
+      assert.ok(person.top[0]+person.h[0]<=pager.top[0],'seats clear the pager');
     }
     setup.click('plaza-room-next-project');setup.render();
     assert.deepEqual(plain(setup.nodes.get('plaza-room-pages-project').style.w),plain(pager.w));
   }
   const single=fixture(4);single.render();
   assert.equal(single.nodes.has('plaza-room-pages-project'),false);
-  for(const setup of [fixture(8),single]) {
+  for(const [setup,opened] of [[fixture(8),1],[single,0]]) {
     setup.render();
     for(let index=0;index<8;index++) {
       const commands=setup.nodes.get(`plaza-room-outline-${index}`).items[0].props.path.commands;
-      assert.equal(commands.filter(([method])=>method==='move_to').length,1);
+      assert.equal(commands.filter(([method])=>method==='move_to').length,index===0?1+opened:1);
     }
+  }
+});
+
+test('room edges and neutral rings share one token',()=>{
+  const setup=fixture(1);setup.render();
+  assert.deepEqual(plain(setup.EDGE),{color:'muted_foreground',opacity:0.55});
+});
+
+test('room padding clears the whiteboard and the bottom edge',()=>{
+  for(const width of [900,1440]) {
+    const setup=fixture(1);setup.viewport.width=width;setup.render();
+    const scale=setup.nodes.get('plaza-world').style.w[0]/setup.WORLD_WIDTH;
+    const board=setup.nodes.get('plaza-room-project-board').style,outline=setup.nodes.get('plaza-room-outline-0').style;
+    const person=setup.nodes.get('plaza-session-0-position').style;
+    assert.ok(person.top[0]-(board.top[0]+board.h[0])>=12*scale,'seats keep room below the whiteboard');
+    for(let seat=0;seat<6;seat++) {
+      const desk=setup.nodes.get(`plaza-desk-project-${seat}`).style;
+      assert.ok(desk.top[0]-(board.top[0]+board.h[0])>=setup.boardClearance(scale)-1e-9);
+    }
+    const lowest=setup.ROOMS[0].bounds.y+140+68;
+    assert.ok(outline.top[0]+outline.h[0]-lowest*scale>=30*scale,'the last row keeps room above the bottom edge');
   }
 });
 

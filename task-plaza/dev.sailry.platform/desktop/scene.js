@@ -1,15 +1,17 @@
 import {div,PathBuilder,Background} from 'gpui-kit';
-import {Button,Icon,Tag} from 'gpui-component';
+import {Button,Icon} from 'gpui-component';
 import {theme} from 'sailry';
-import {ComposedButton} from 'sailry/ui';
+import {ComposedButton,StatusRing} from 'sailry/ui';
 import {sprite} from './art.js';
 import {statusColors,statusColor} from './state.js';
 import {ROOMS,WORLD_WIDTH,WORLD_HEIGHT,PERSON_SIZE,DESK_WIDTH,DESK_HEIGHT,SEATED,STANDING,ATRIUM,seatPosition,approvalPosition} from './geometry.js';
-export const variants = {waiting:'warning',running:'primary',completed:'success',failed:'danger',idle:'secondary'};
 
 // Room chrome stays at theme size; the scene geometry follows the scale.
-export const BOARD = {padding_x:12,padding_y:10,row_gap:4,clearance:6,hang:0.65,radius:4,line:1.2};
-export const PAGER = {button:22,height:20,gap:4,offset:4};
+export const BOARD = {padding_x:12,padding_y:10,row_gap:4,clearance:14,hang:0.65,radius:4,line:1.2};
+// The pager sits in an opening of the bottom edge with `notch` clearance on each side.
+export const PAGER = {button:22,height:20,gap:4,notch:6};
+// Room edges and neutral rings share one theme token.
+export const EDGE = {color:'muted_foreground',opacity:0.55};
 const CORNER = 4;
 const deskTop = index => seatPosition(index,0).y - 14 - DESK_HEIGHT - ROOMS[index].bounds.y;
 const shrink = scale => Math.min(1,scale);
@@ -44,8 +46,9 @@ function board(view,value,index,scale) {
   const {bounds} = ROOMS[index], {text} = view, colors = theme().colors, rem = window.rem_size();
   const counts = {running:0,approval:0,completed:0,idle:0};
   for (const item of value?.items ?? []) {
+    const state = item.state === 'idle' ? 'idle' : item.lane;
     if (item.approval) counts.approval += 1;
-    else if (item.lane in counts) counts[item.lane] += 1;
+    else if (state in counts) counts[state] += 1;
   }
   const id = `plaza-room-${value?.key ?? index}`, width = boardWidth(index,scale), height = boardHeight(rem,scale);
   const tone = state => !counts[state] ? colors.muted_foreground : state === 'idle' ? colors.foreground : colors[statusColors[state]];
@@ -65,27 +68,30 @@ function board(view,value,index,scale) {
   return div().id(`${id}-board`).absolute().left((bounds.x + bounds.width / 2) * scale - width / 2).top(boardTop(index,scale,rem))
     .w(width).h(height).rounded(BOARD.radius).bg(colors.background).child(sign);
 }
-function outline(index,scale) {
+function outline(value,index,scale) {
   const {bounds} = ROOMS[index], width = bounds.width * scale, height = bounds.height * scale;
-  const middle = width / 2, cover = boardWidth(index,scale) / 2;
+  const middle = width / 2, cover = boardWidth(index,scale) / 2, pager = pagerWidth(value,window.rem_size());
   const left = Math.max(middle - cover,CORNER), right = Math.min(middle + cover,width - CORNER), path = PathBuilder.stroke(1);
-  // The whiteboard covers the top edge between its borders; the bottom edge stays continuous.
+  // The whiteboard covers the top edge between its borders; a paged room also
+  // opens its bottom edge around the pager, like a legend on a border.
+  const notch = pager ? Math.min(pager / 2 + PAGER.notch,middle - CORNER) : 0;
   path.move_to(right,0);
   if (right < width - CORNER) path.line_to(width - CORNER,0);
-  path.curve_to(width,CORNER,width,0).line_to(width,height - CORNER).curve_to(width - CORNER,height,width,height)
-    .line_to(CORNER,height).curve_to(0,height - CORNER,0,height).line_to(0,CORNER).curve_to(CORNER,0,0,0);
+  path.curve_to(width,CORNER,width,0).line_to(width,height - CORNER).curve_to(width - CORNER,height,width,height);
+  if (notch) path.line_to(middle + notch,height).move_to(middle - notch,height);
+  path.line_to(CORNER,height).curve_to(0,height - CORNER,0,height).line_to(0,CORNER).curve_to(CORNER,0,0,0);
   if (left > CORNER) path.line_to(left,0);
   return div().id(`plaza-room-outline-${index}`).absolute()
     .left(bounds.x * scale).top(bounds.y * scale).w(width).h(height)
-    .child(window.paint_path(path.build(),Background.solid(theme().colors.muted_foreground).opacity(0.55)).w(width).h(height));
+    .child(window.paint_path(path.build(),Background.solid(theme().colors[EDGE.color]).opacity(EDGE.opacity)).w(width).h(height));
 }
 function paging(view,value,index,scale) {
   const width = pagerWidth(value,window.rem_size());
   if (!width) return null;
   const {bounds} = ROOMS[index], colors = theme().colors, label = width - PAGER.button * 2 - PAGER.gap * 2;
-  // The pager shares the room's center just below its bottom edge.
+  // The pager is centered on the room's bottom edge, inside its opening.
   return div().id(`plaza-room-pages-${value.key}`).absolute()
-    .left((bounds.x + bounds.width / 2) * scale - width / 2).top((bounds.y + bounds.height + PAGER.offset) * scale)
+    .left((bounds.x + bounds.width / 2) * scale - width / 2).top((bounds.y + bounds.height) * scale - PAGER.height / 2)
     .w(width).h(PAGER.height).h_flex().items_center().gap(PAGER.gap).text_xs().text_color(colors.muted_foreground)
     .child(new Button(`plaza-room-prev-${value.key}`).ghost().size('small').p_0().w(PAGER.button).h(PAGER.height)
       .disabled(value.page === 0).tooltip(view.text.previous).child(new Icon('icons/chevron-left.svg').size('xsmall'))
@@ -95,26 +101,26 @@ function paging(view,value,index,scale) {
       .disabled(value.page + 1 === value.pages).tooltip(view.text.next).child(new Icon('icons/chevron-right.svg').size('xsmall'))
       .on_click((_event,cx) => {view.floor.turnRoom(value.key,1,value.pages);cx.notify();}));
 }
+// One ring per seat in its state color; idle seats have none and selection adds none.
+export function ring(item) {
+  if (item.lane === 'idle' || item.state === 'idle') return null;
+  const token = statusColor(item);
+  return {color:token === statusColors.idle ? EDGE.color : token,
+    opacity:token === statusColors.idle ? EDGE.opacity : 1,running:item.lane === 'running'};
+}
 function person(view,item,position,scale,approval = false) {
   const id = item.kind === 'terminal' ? `plaza-terminal-${item.id}` : `plaza-${item.id}`;
   const dimension = approval ? 80 : PERSON_SIZE, size = dimension * scale, index = approval ? STANDING[item.character] : SEATED[item.character];
-  const status = approval ? null : item.waiting === 'input' ? '?' : item.lane === 'failed' ? '!'
-    : item.lane === 'completed' ? '✓' : item.kind === 'terminal' ? '>_' : null;
-  const selected = view.panelOpen && view.selected?.kind === 'session' && view.selected.id === item.id;
-  const color = theme().colors[statusColor(item)];
+  const status = ring(item);
   view.targets.set(id,item);
   return div().id(`${id}-position`).absolute().left((position.x - dimension / 2) * scale)
     .top((position.y - dimension) * scale).w(size).h(size)
-    .child(ComposedButton.new(id,{size,label:`${item.title}, ${item.status}, ${item.project}`,
-      tooltip:`${item.title} · ${item.status}`})
+    .child(ComposedButton.new(id,{size,label:`${item.title}, ${item.status}, ${item.project}`,tooltip:item.title})
       .child(div().relative().w(size).h(size).h_flex().justify_center()
-        .child(div().id(`${id}-status`).absolute().bottom(0).left(size * 0.07).w(size * 0.86).h(14 * scale)
-          .rounded_full().border(1.5).border_color(color))
-        .children(selected ? [div().id(`${id}-selection`).absolute().bottom(0).left(size * 0.03).w(size * 0.94).h(18 * scale)
-          .rounded_full().border_1().border_color(theme().colors.foreground)] : [])
-        .child(sprite(id,index,size))
-        .children(status ? [div().absolute().top(14 * scale).right(0)
-          .child(new Tag().variant(variants[item.lane] ?? 'secondary').size('small').rounded_full().child(status))] : [])));
+        .children(status ? [div().id(`${id}-ring`).absolute().bottom(0).left(size * 0.07).w(size * 0.86).h(14 * scale)
+          .child(StatusRing.new(`${id}-status`,{color:theme().colors[status.color],opacity:status.opacity,
+            line:1.5,running:status.running}))] : [])
+        .child(sprite(id,index,size))));
 }
 function plaza(view,model,scale) {
   const colors = theme().colors, width = ATRIUM.width * scale, height = ATRIUM.height * scale;
@@ -125,7 +131,7 @@ function plaza(view,model,scale) {
 }
 export function scene(view,model,scale) {
   const world = div().id('plaza-world').relative().flex_shrink(0).w(WORLD_WIDTH * scale).h(WORLD_HEIGHT * scale)
-    .children(ROOMS.map((_room,index) => outline(index,scale))).child(plaza(view,model,scale));
+    .children(ROOMS.map((_room,index) => outline(model.visible[index],index,scale))).child(plaza(view,model,scale));
   const furnishings = [], people = [];
   for (let room = 0;room < 8;room += 1) {
     const value = model.visible[room];

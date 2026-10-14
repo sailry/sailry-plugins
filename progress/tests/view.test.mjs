@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {lanes,labels,sections,clock,plain as readable} from '../dev.sailry.platform/desktop/state.js';
+import {lanes,labels,sections,clock,plain as readable,statusColors,statusColor} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 const plain=value=>JSON.parse(JSON.stringify(value));
 
-function fixture() {
+function fixture(width=1440) {
   const nodes=new Map();
   function element(kind='div',id=null,props={}) {
     const value={kind,selector:id,props,items:[],contentSlot:null,style:{}};
@@ -26,15 +26,16 @@ function fixture() {
   }
   const adapters=Object.fromEntries(['EmptyState','Appearance','CardButton','ClampedText','ThinkingIcon','ScrollRegion','Collapse','CollapseSlot','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
-  const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),Icon:function(id){return element('Icon',id);},Tag:function(){return element('Tag');},
-    ...adapters,lanes,labels,sections,clock,plain:readable,pageInsets:()=>({rail_width:56}),
-    theme:()=>({colors:{muted_foreground:'muted',border:'border'}}),window:{rem_size:()=>16,viewport_size:()=>({width:1440})},
+  const {render,BOARD_MAX_WIDTH}=vm.runInNewContext(`${source}\n({render,BOARD_MAX_WIDTH})`,{
+    div:()=>element(),Icon:function(id){return element('Icon',id);},
+    ...adapters,lanes,labels,sections,clock,plain:readable,statusColors,statusColor,pageInsets:()=>({rail_width:56}),
+    theme:()=>({colors:{muted_foreground:'muted',border:'border',primary:'primary',warning:'warning',chart_3:'reply',
+      success:'success',destructive:'failure'}}),window:{rem_size:()=>16,viewport_size:()=>({width})},
   });
   const view={text:messages('en'),board:{connected:true,error:false,previews:new Map(),
     catalog:{node:'captured',projects:[{id:'project',name:'Project'}],worktrees:[{id:'tree',project:'project',path:'/fixture'}],
       sessions:[],terminals:[],unread_terminals:[],session_lanes:{},terminal_lanes:{}}}};
-  return {view,nodes,render(){nodes.clear();return render(view,{theme:()=>({radius:{lg:11}})});}};
+  return {view,nodes,BOARD_MAX_WIDTH,render(){nodes.clear();return render(view,{theme:()=>({radius:{lg:11}})});}};
 }
 
 test('empty lanes fill their viewport without cards',()=>{
@@ -182,24 +183,59 @@ test('cards show project, title, plain preview, status and timing',()=>{
   assert.ok(containing(location,setup.nodes.get('activity-retained-project-icon')));
   const title=setup.nodes.get('activity-retained-title');
   assert.deepEqual(plain(title.style.truncate),[]);
-  assert.deepEqual(plain(title.style.text_base),[]);
+  assert.deepEqual(plain(title.style.text_sm),[]);assert.equal(title.style.text_base,undefined);
   assert.equal(setup.nodes.get('activity-retained-content').props.text,'Summary Done: cargo test');
   const state=setup.nodes.get('activity-retained-state');
   assert.equal(state.items[0].kind,'ThinkingIcon');
   assert.equal(state.items[0].props.phase,'turn_tools_running');
-  const tag=state.items[1];
-  assert.equal(tag.kind,'Tag');
-  assert.deepEqual(plain(tag.style.variant),['primary']);
-  assert.deepEqual(plain(tag.style.rounded_full),[]);
-  assert.equal(tag.items[0],setup.view.text.activity_running);
+  const status=state.items[1],dot=setup.nodes.get('activity-retained-dot');
+  assert.equal(status,setup.nodes.get('activity-retained-status'));
+  assert.equal(status.items[0],dot);assert.equal(status.items[1].items[0],setup.view.text.activity_running);
+  assert.deepEqual(plain(status.style.text_color),['primary']);assert.deepEqual(plain(dot.style.bg),['primary']);
+  assert.deepEqual(plain(status.style.text_xs),[]);
+  assert.deepEqual(plain(setup.nodes.get('activity-retained-time').style.text_xs),[]);
+  assert.equal(status.style.border_1,undefined);assert.equal(status.style.rounded_full,undefined);
+  assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Tag').length,0);
   assert.equal(setup.nodes.get('activity-retained-time').items[1],clock(started));
   assert.equal(setup.nodes.has('activity-retained-duration'),false);
   catalog.sessions[0].activity.run={turn:'turn',status:'completed',started_ms:started,finished_ms:started+94000};
   catalog.session_lanes.retained='completed';setup.render();
   assert.equal(setup.nodes.has('activity-retained-loading'),false);
-  assert.deepEqual(plain(setup.nodes.get('activity-retained-state').items[0].style.variant),['success']);
+  assert.deepEqual(plain(setup.nodes.get('activity-retained-status').style.text_color),['success']);
   assert.equal(setup.nodes.get('activity-retained-duration').items[1],'1m34s');
   catalog.sessions[0].activity.run=null;setup.render();
   assert.equal(setup.nodes.has('activity-retained-time'),false);
   assert.equal(setup.nodes.has('activity-retained-content'),false);
+});
+
+test('status dots share the plaza colors and neutral idle tone',()=>{
+  const setup=fixture(),catalog=setup.view.board.catalog;
+  const cases=[['running',null,'running','primary'],['waiting','approval','running','warning'],['waiting','input','running','reply'],
+    ['completed',null,'completed','success'],['failed',null,'failed','failure'],['idle',null,'cancelled','muted']];
+  for(const [lane,waiting,status,color] of cases) {
+    catalog.sessions=[{id:'retained',project:'project',worktree:'tree',archived:false,delegation:null,
+      activity:{title:'Retained task',queued:0,waiting,run:{turn:'turn',status}}}];
+    catalog.session_lanes.retained=lane;setup.render();
+    assert.deepEqual(plain(setup.nodes.get('activity-retained-dot').style.bg),[color]);
+    assert.deepEqual(plain(setup.nodes.get('activity-retained-status').style.text_color),[color]);
+  }
+});
+
+test('wide windows center the board at its maximum width',()=>{
+  for(const [width,expected] of [[1200,(1200-56-32-36)/4],[1440,(1280-36)/4],[2400,(1280-36)/4]]) {
+    const setup=fixture(width);setup.render();
+    const board=setup.nodes.get('activity-board');
+    assert.deepEqual(plain(board.style.max_w),[setup.BOARD_MAX_WIDTH]);assert.deepEqual(plain(board.style.mx_auto),[]);
+    for(const lane of lanes)assert.ok(Math.abs(setup.nodes.get(`${labels[lane]}-column`).style.w[0]-expected)<1e-9);
+  }
+});
+
+test('cards follow the shared activity order within a project group',()=>{
+  const setup=fixture(),catalog=setup.view.board.catalog;
+  catalog.sessions=['a','b','c'].map(id=>({id,project:'project',worktree:'tree',archived:false,delegation:null,
+    activity:{title:id,queued:0,waiting:null,run:null}}));
+  catalog.session_lanes={a:'idle',b:'idle',c:'idle'};catalog.activity_order=['session:b','session:c','session:a'];
+  setup.render();
+  const area=setup.nodes.get('captured-activity-project-activity_idle-project-cards');
+  assert.deepEqual(area.items.map(card=>card.selector),['activity-b','activity-c','activity-a']);
 });

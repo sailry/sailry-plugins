@@ -1,9 +1,7 @@
 // Presentation placement only; activity lanes remain owned by the shared Client.
-import {sections} from './state.js';
+import {sections,order} from './state.js';
 export const ROOM_COUNT = 8;
 export const SEAT_COUNT = 6;
-const priority = item => item.lane === 'running' ? 0 : item.lane === 'waiting' ? 1 : 2;
-const identity = item => `${item.kind}:${item.id}`;
 
 export function character(id) {
   let hash = 0;
@@ -12,25 +10,18 @@ export function character(id) {
 }
 export class Floor {
   constructor() {
-    this.node = null;this.page = 0;
-    this.seats = new Map();this.roomPages = new Map();
+    this.node = null;this.page = 0;this.roomPages = new Map();
   }
-  assign(node,rooms) {
+  // Seats follow the shared activity order before pagination.
+  assign(node,rooms,position = () => 0) {
     if (node !== this.node) {
-      this.node = node;this.page = 0;this.seats.clear();this.roomPages.clear();
+      this.node = node;this.page = 0;this.roomPages.clear();
     }
     const active = new Set(rooms.map(room => room.key));
-    for (const key of this.seats.keys()) if (!active.has(key)) {
-      this.seats.delete(key);this.roomPages.delete(key);
-    }
+    for (const key of this.roomPages.keys()) if (!active.has(key)) this.roomPages.delete(key);
     for (const room of rooms) {
-      const positions = this.seats.get(room.key) ?? new Map();
-      // State changes may move active work forward; peers keep their prior order.
-      room.items.sort((left,right) => priority(left) - priority(right)
-        || (positions.get(identity(left)) ?? Number.MAX_SAFE_INTEGER) - (positions.get(identity(right)) ?? Number.MAX_SAFE_INTEGER));
-      const assigned = new Map();
-      room.items.forEach((item,seat) => {item.seat = seat;assigned.set(identity(item),seat);});
-      this.seats.set(room.key,assigned);
+      room.items.sort((left,right) => position(left) - position(right));
+      room.items.forEach((item,seat) => {item.seat = seat;});
       room.pages = Math.max(1,Math.ceil(room.items.length / SEAT_COUNT));
       room.page = Math.min(this.roomPages.get(room.key) ?? 0,room.pages - 1);
       this.roomPages.set(room.key,room.page);
@@ -65,7 +56,7 @@ export function layout(catalog,previews,text,floor) {
       else if (card.lane === 'idle') counts.idle += 1;
     }
   }
-  floor.assign(catalog.node,rooms);
+  floor.assign(catalog.node,rooms,order(catalog));
   return {rooms,visible:rooms.slice(floor.page * ROOM_COUNT,(floor.page + 1) * ROOM_COUNT),
     approvals,pages:Math.max(1,Math.ceil(rooms.length / ROOM_COUNT)),counts};
 }
