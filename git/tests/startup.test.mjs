@@ -276,12 +276,11 @@ test('native branch controls open the existing captured chooser only when loaded
   state.changes[0].reject(Error('closed'));await settle();
 });
 
-test('closing the selected document focuses the actual successor surface',()=>{
-  const surfaces=[],fallback=[],choices=new Map();
-  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},
-    collapseOpen:id=>choices.get(id) ?? null,views:{defaultOpen:true}});
+test('closing the selected document enters the successor native leaf',()=>{
+  const fallback=[],entries=[];
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusEntry:id=>entries.push(id),
+    collapseOpen:id=>id.endsWith('/hidden.txt') ? false : null,views:{defaultOpen:true}});
   const owner=new Git();
-  owner.surfaces={focus:id=>surfaces.push(id)};
   owner.repo=new Repository({},()=>{});owner.contentFocus={focus:()=>fallback.push(true)};
   const documents=[
     {id:'first',request:{kind:'file'},files:[{path:'first.txt',text:'diff'}]},
@@ -290,33 +289,46 @@ test('closing the selected document focuses the actual successor surface',()=>{
   ];
   owner.repo.tabs=documents.map(document=>document.id);
   owner.repo.documents=new Map(documents.map(document=>[document.id,document]));
-  owner.repo.selected='first';owner.current='tracked/first.txt';choices.set('diff-file-combined/hidden.txt',false);
+  owner.repo.selected='first';owner.current='tracked/first.txt';
   owner.closeDocument('first');assert.equal(owner.repo.selected,'output');
   assert.equal(owner.current,null);
   owner.closeDocument('output');assert.equal(owner.repo.selected,'combined');
-  assert.deepEqual(surfaces,['git-output-output','git-diff-combined/visible.txt']);
-  choices.set('diff-file-combined/visible.txt',false);owner.focusDocument();
-  assert.equal(fallback.length,1,'an empty or collapsed document keeps its content keyboard scope');
+  owner.focusDocument();
+  assert.deepEqual(entries,['focus-git-output-output','focus-git-diff-combined/visible.txt','focus-git-diff-combined/visible.txt']);
+  assert.equal(fallback.length,0);
   owner.closeDocument('combined');assert.equal(owner.repo.selected,null);
-  assert.equal(surfaces.length,2);assert.equal(fallback.length,1,'the last close does not steal focus');
+  assert.equal(entries.at(-1),null);
+  assert.equal(fallback.length,0,'the last close does not steal focus');
 });
 
 test('binary successors keep the content keyboard scope without requesting a diff surface',()=>{
-  const surfaces=[],fallback=[];
-  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},
+  const fallback=[],entries=[];
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusEntry:id=>entries.push(id),
     collapseOpen:()=>null,views:{defaultOpen:true}});
-  const owner=new Git();owner.surfaces={focus:id=>surfaces.push(id)};owner.contentFocus={focus:()=>fallback.push(true)};
+  const owner=new Git();owner.contentFocus={focus:()=>fallback.push(true)};
   owner.repo={selected:'binary',documents:new Map([
     ['binary',{id:'binary',request:{kind:'file'},files:[{path:'image.png',text:'raw metadata',binary:true}]}],
     ['combined',{id:'combined',request:{kind:'changes'},files:[{path:'image.png',text:'raw metadata',binary:true}]}],
   ])};
   owner.focusDocument();owner.repo.selected='combined';owner.focusDocument();
-  assert.equal(surfaces.length,0);assert.equal(fallback.length,2);
+  assert.equal(fallback.length,2);
+  assert.deepEqual(entries,[null,null]);
+});
+
+test('folded text diffs keep the content keyboard scope',()=>{
+  const entries=[],fallback=[];
+  const Git=vm.runInNewContext(`${source}\nGit`,{View:class {},focusEntry:id=>entries.push(id),
+    collapseOpen:()=>false,views:{defaultOpen:true}});
+  const owner=new Git();owner.contentFocus={focus:()=>fallback.push(true)};
+  owner.repo={selected:'combined',documents:new Map([
+    ['combined',{id:'combined',request:{kind:'changes'},files:[{path:'notes.txt',text:'diff'}]}],
+  ])};
+  owner.focusDocument();assert.deepEqual(entries,[null]);assert.equal(fallback.length,1);
 });
 
 test('closing a background document does not change content focus',()=>{
   const Git=vm.runInNewContext(`${source}\nGit`,{View:class {}});
-  const owner=new Git();owner.surfaces={focus:()=>assert.fail('background close must not focus')};owner.repo=new Repository({},()=>{});
+  const owner=new Git();owner.contentFocus={focus:()=>assert.fail('background close must not focus')};owner.repo=new Repository({},()=>{});
   owner.repo.tabs=['first','second'];owner.repo.documents=new Map(owner.repo.tabs.map(id=>[id,{id,request:{kind:'file'}}]));
   owner.repo.selected='second';owner.current='dir/tracked/src';
   owner.closeDocument('first');assert.equal(owner.repo.selected,'second');assert.equal(owner.current,'dir/tracked/src');

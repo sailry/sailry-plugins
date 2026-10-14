@@ -12,7 +12,7 @@ export class Surfaces {
         active.add(id);
         const current = this.states.get(id);
         if (!current) this.states.set(id,{kind:'source',text,state:this.createEditor(text)});
-        else if (current.text !== text) { current.state.set_value(text); current.text = text; }
+        else if (current.text !== text) this.states.set(id,{kind:'source',text,state:this.createEditor(text)});
         continue;
       }
       const single = ['file','stash'].includes(document.request.kind);
@@ -23,13 +23,12 @@ export class Surfaces {
         active.add(id);
         const current = this.states.get(id);
         if (!current) this.states.set(id,{kind:'diff',text,state:this.createDiff(text)});
-        else if (current.text !== text) { current.state.set_patch(text); current.text = text; }
+        else if (current.text !== text) this.states.set(id,{kind:'diff',text,state:this.createDiff(text)});
       }
     }
     for (const id of this.states.keys()) if (!active.has(id)) this.states.delete(id);
   }
   get(id) { return this.states.get(id)?.state; }
-  focus(id) { const state = this.get(id); if (!state) return false; state.focus(); return true; }
   clear() { this.states.clear(); }
 }
 

@@ -49,7 +49,7 @@ function results(view) {
   const {result,text}=view;
   const pages=Math.max(1,Math.ceil((result?.rows.length??0)/50));
   return div().id('db-results').v_flex().size_full().min_h_0().min_w_0()
-    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,empty_stripes:true,header:!!result?.columns.length})))
+    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,header:!!result?.columns.length})))
     .children(pages>1||result?.truncated?[div().h_flex().p_2().gap_2().items_center().text_sm()
       .children(result.truncated?[div().text_color(theme().colors.muted_foreground).child(text.db_truncated)]:[])
       .child(div().flex_1())
@@ -58,7 +58,7 @@ function results(view) {
 function log(view) {
   const {text}=view;
   return div().id('database-history').relative().size_full().min_h_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
-    .child(DataTable.new('database-history-grid',{revision:String(view.epoch),columns:[],rows:[],stripe:true,empty_stripes:true,header:false}))
+    .child(DataTable.new('database-history-grid',{revision:String(view.epoch),columns:[],rows:[],stripe:true,header:false}))
     .child(div().id('database-history-rows').absolute().inset_0().v_flex().overflow_y_scrollbar()
     .children([...view.logs].reverse().map((entry,index)=>{
       const result=entry.result?.rows??entry.request?.output?.data?.data,error=entry.result?.error??entry.request?.error;

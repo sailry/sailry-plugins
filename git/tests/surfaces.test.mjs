@@ -4,19 +4,18 @@ import {Surfaces,patch} from '../dev.sailry.platform/desktop/surfaces.js';
 
 function fixture() {
   const calls = [];
-  const make = (kind,text) => ({kind,text,set_patch(text){this.text=text;calls.push(['patch',text]);},
-    set_value(text){this.text=text;calls.push(['source',text]);},focus(){calls.push(['focus',this.text]);}});
+  const make = (kind,text) => { calls.push([kind,text]); return {kind,text}; };
   return {surfaces:new Surfaces(text=>make('diff',text),text=>make('source',text)),calls};
 }
 function document(id,text,kind='file') { return {id,request:{kind},files:[{path:'a.txt',text}],text}; }
 
-test('keeps state for stable captures and updates changed text',()=>{
+test('keeps stable states and replaces changed text',()=>{
   const {surfaces,calls}=fixture(), docs=new Map([['a',document('a','@@ -1 +1 @@\n-old\n+new\n')]]);
   surfaces.sync(docs); const initial=surfaces.get('git-diff-a');
-  surfaces.sync(docs); assert.equal(surfaces.get('git-diff-a'),initial); assert.deepEqual(calls,[]);
+  surfaces.sync(docs); assert.equal(surfaces.get('git-diff-a'),initial); assert.equal(calls.length,1);
   docs.set('a',document('a','@@ -1 +1 @@\n-old\n+latest\n'));
-  surfaces.sync(docs); assert.equal(surfaces.get('git-diff-a'),initial); assert.equal(calls[0][0],'patch');
-  assert(surfaces.focus('git-diff-a')); assert.equal(calls.at(-1)[0],'focus');
+  surfaces.sync(docs); const changed=surfaces.get('git-diff-a');
+  assert.notEqual(changed,initial);assert.equal(changed.kind,'diff');assert.equal(calls.length,2);
 });
 
 test('releases closed captures and isolates per-file states',()=>{
@@ -30,12 +29,12 @@ test('releases closed captures and isolates per-file states',()=>{
   assert.equal(surfaces.get('git-output-output').kind,'source'); surfaces.clear(); assert.equal(surfaces.states.size,0);
 });
 
-test('source refresh preserves the editor and focus target',()=>{
+test('source refresh replaces changed editor state',()=>{
   const {surfaces,calls}=fixture(),docs=new Map([['output',document('output','first','output')]]);
   surfaces.sync(docs);const state=surfaces.get('git-output-output');
   docs.set('output',document('output','second','output'));surfaces.sync(docs);
-  assert.equal(surfaces.get('git-output-output'),state);assert.deepEqual(calls,[['source','second']]);
-  assert(surfaces.focus('git-output-output'));assert.deepEqual(calls.at(-1),['focus','second']);
+  assert.notEqual(surfaces.get('git-output-output'),state);
+  assert.deepEqual(calls,[['source','first'],['source','second']]);
 });
 
 test('normalizes only declared truncated hunks',()=>{

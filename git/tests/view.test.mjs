@@ -19,6 +19,7 @@ function element(kind,props) {
   const proxy = new Proxy(value,{get:(target,key) => key in target ? target[key] : (...args) => { target.style[key]=args; return proxy; }});
   return proxy;
 }
+const FocusEntry={new:id=>element('focus-entry',{id})};
 const {history} = vm.runInNewContext(`${source}\n({history})`, {
   div:() => element('div'),
   theme:() => ({colors:{muted_foreground:'#999'}}),
@@ -340,6 +341,7 @@ test('unopened diffs omit the document status bar', () => {
 
 test('output documents omit diff status and path actions', () => {
   const {content} = vm.runInNewContext(`${source}\n({content})`,{
+    FocusEntry,
     div:() => element('div'),theme:() => ({colors:{}}),
     StatusBar:class {constructor(){return element('status');}},
     Editor:class {constructor(state){return element('source',state);}},
@@ -348,6 +350,7 @@ test('output documents omit diff status and path actions', () => {
   const document={id:'output:',request:{kind:'output'},text:'Git output'};
   const nodes=descendants(content({surfaces:retained([document]),text:{git_output:'Output'},repo:{documents:new Map([[document.id,document]]),selected:document.id}}));
   assert.ok(nodes.some(node=>node.kind==='source'&&node.props.text===document.text));
+  assert.ok(nodes.some(node=>node.kind==='focus-entry'&&node.props.id==='focus-git-output-output:'));
   assert.equal(nodes.some(node=>node.kind==='status'),false);
   assert.equal(nodes.some(node=>node.style.id?.[0]==='document-path'),false);
   assert.equal(nodes.some(node=>node.kind==='menu'),false);
@@ -355,6 +358,7 @@ test('output documents omit diff status and path actions', () => {
 
 test('single diffs grow inside the document flex viewport', () => {
   const {content} = vm.runInNewContext(`${source}\n({content})`,{
+    FocusEntry,
     div:() => element('div'),theme:() => ({colors:{success:'success',destructive:'destructive'}}),
     StatusBar:class {constructor(){return element('status');}},
     Diff:class {constructor(state){return element('diff',{state});}},
@@ -375,6 +379,7 @@ test('single diffs grow inside the document flex viewport', () => {
   assert.deepEqual(editor.style.flex_1,[]);
   assert.deepEqual(editor.items[0].style.flex_1,[]);
   const diff=descendants(editor).find(node=>node.kind==='diff');
+  assert.ok(descendants(editor).some(node=>node.kind==='focus-entry'&&node.props.id==='focus-git-diff-notes.txt'));
   assert.equal(editor.items[0].items[0].style.id[0],'git-diff-notes.txt');
   assert.equal(diff.props.state.text.endsWith(document.files[0].text),true);
   assert.deepEqual(diff.style.header_visible,[false]);
@@ -382,6 +387,7 @@ test('single diffs grow inside the document flex viewport', () => {
 
 function diffViews() {
   return vm.runInNewContext(`${source}\n({content,combined})`,{
+    FocusEntry,
     div:() => element('div'),theme:() => ({colors:{muted_foreground:'muted'}}),
     StatusBar:class {constructor(){return element('status');}},
     Diff:class {constructor(state){return element('diff',{state});}},
@@ -441,7 +447,9 @@ test('combined diffs scale the code row budget', () => {
       assert.ok(frame);assert.deepEqual(frame.style.h,[heights[index]]);
       assert.deepEqual(frame.style.w_full,[]);assert.deepEqual(frame.style.min_h_0,[]);
       assert.deepEqual(frame.style.min_w_0,[]);
-      const diff=frame.items[0];assert.equal(diff.kind,'diff');
+      const entry=frame.items[0];assert.equal(entry.kind,'focus-entry');
+      assert.equal(entry.props.id,`focus-git-diff-changes:/${file.path}`);
+      const diff=entry.items[0];assert.equal(diff.kind,'diff');
       assert.deepEqual(diff.style.size_full,[]);assert.deepEqual(diff.style.header_visible,[false]);
     }
   }

@@ -4,7 +4,7 @@ import {div} from 'gpui-kit';
 import {Button, Icon, StatusBar, Pagination} from 'gpui-component';
 import {Header,theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, Modal, Picker, SegmentedTabs, EmptyState, Loading, Collapse, CollapseSlot} from 'sailry/ui';
+import {PanelHeader, NavigationTabs, IconButton, SelectableRow, ResourceTree, NativeContextMenu, Menu, Modal, Picker, SegmentedTabs, EmptyState, Loading, Collapse, CollapseSlot, FocusEntry} from 'sailry/ui';
 import {rows, checkbox, selectedId} from './changes.js';
 export const defaultOpen = true;
 const fileName = path => path.split('/').at(-1);
@@ -46,7 +46,7 @@ function surface(view,file,id,maxRows,cx) {
   const state = view.surfaces.get(id);
   if (!state) return div();
   const element = new Diff(state).header_visible(false).border_0().size_full();
-  const frame = div().id(id).w_full().min_h_0().min_w_0().child(element);
+  const frame = div().id(id).w_full().min_h_0().min_w_0().child(FocusEntry.new(`focus-${id}`).child(element));
   // Component Root maps md to rem; Diff uses mono/16 rems at 1.6 lines.
   if (maxRows) {
     const typography = cx.theme().typography;
@@ -83,7 +83,7 @@ export function content(view,cx) {
   const menu = request?.kind === 'file' ? [{id:'open',label:view.text.workspace_open_file,enabled:true,value:{kind:'system',path:request.path}},{id:'copy',label:view.text.workspace_copy_path,enabled:true,value:{kind:'copy',text:request.path}}] : [];
   return div().id('git-diff').v_flex().size_full().min_h_0().min_w_0().track_focus(view.contentFocus)
     .child(div().id('document-editor').v_flex().flex_1().min_h_0().min_w_0()
-      .child(!document ? empty(view) : request.kind === 'output' ? div().id(`git-output-${document.id}`).size_full().child(new Editor(view.surfaces.get(`git-output-${document.id}`)).readonly(true).appearance(false).bordered(false).size_full().aria_label(view.text.git_output))
+      .child(!document ? empty(view) : request.kind === 'output' ? div().id(`git-output-${document.id}`).size_full().child(FocusEntry.new(`focus-git-output-${document.id}`).child(new Editor(view.surfaces.get(`git-output-${document.id}`)).readonly(true).appearance(false).bordered(false).size_full().aria_label(view.text.git_output)))
         : request.kind === 'file' || request.kind === 'stash' ? (files[0] ? surface(view,files[0],`git-diff-${document.id}`) : empty(view)) : combined(view,document,cx)))
     .children(document && request.kind !== 'output' ? [div().id('document-path').min_w_0().flex_shrink(0).child(new StatusBar().h_8().border_t_0().bg('#00000000')
       .child(NativeContextMenu.new('git-document-path',{items:menu.map(nativeItem)})

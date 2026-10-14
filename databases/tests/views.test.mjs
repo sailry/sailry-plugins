@@ -248,7 +248,7 @@ test('empty SSH directories fill their viewport without cards',async()=>{
   }
 });
 
-test('database catalogs and assistants use native slots with empty striped results',async()=>{
+test('database catalogs and assistants use native slots and result tables',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';
   setup.functions.render(owner);
   assert.equal(setup.nodes.get('database-workspace').props.navigation,'resource');
@@ -258,7 +258,7 @@ test('database catalogs and assistants use native slots with empty striped resul
   assert.equal(setup.nodes.get('database-tree').props.current,null);
   assert.deepEqual(plain(setup.nodes.get('database-assistant-first').props),{assistant:'database',resource:{kind:'database',id:'first'},heading:'connection_assistant'});
   assert.equal(setup.nodes.has('db_data_empty'),false);
-  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,empty_stripes:true,header:false});
+  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,header:false});
 });
 
 test('database catalog renders the retained UI selection through the native tree',async()=>{
@@ -286,7 +286,6 @@ test('database result pagination uses Kit page numbers',async()=>{
   assert.deepEqual(plain(pages.style.current_page),[2]);assert.deepEqual(plain(pages.style.total_pages),[3]);assert.deepEqual(plain(pages.style.visible_pages),[3]);
   pages.on_change(3,setup.cx);assert.equal(owner.page,2);
   assert.equal(setup.nodes.get('database-results').props.stripe,true);
-  assert.equal(setup.nodes.get('database-results').props.empty_stripes,true);
   assert.equal(setup.nodes.get('database-results').props.header,true);
 });
 
@@ -298,7 +297,6 @@ test('database zero-row results preserve real columns without no-data text',asyn
   assert.deepEqual(plain(table.props.columns),['id','value']);
   assert.deepEqual(plain(table.props.rows),[]);
   assert.equal(table.props.header,true);
-  assert.equal(table.props.empty_stripes,true);
   assert.equal('empty' in table.props,false);
   assert.equal(setup.nodes.has('db_data_empty'),false);
 });
@@ -339,11 +337,11 @@ test('capped database history has native selectable rows and captured copy/open 
     assert.equal(wrapper.nodes[0],setup.nodes.get(`db-history-${entry}`));
     assert.equal(setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:entry})}`).props.stripe,index%2===1);
   }
-  assert.deepEqual(plain(setup.nodes.get('database-history-grid').props),{revision:'0',columns:[],rows:[],stripe:true,empty_stripes:true,header:false});
+  assert.deepEqual(plain(setup.nodes.get('database-history-grid').props),{revision:'0',columns:[],rows:[],stripe:true,header:false});
   assert.equal(setup.nodes.get('database-history-rows').nodes.length,100);
 });
 
-test('empty database history has viewport stripes and no artificial log entries',async()=>{
+test('empty database history has no artificial log entries',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);
   setup.functions.log(owner);
   assert.deepEqual(plain(setup.nodes.get('database-history-grid').props.rows),[]);

@@ -6,7 +6,7 @@ import * as sdk from 'sailry/sdk';
 import {createText, readText, setText, nextTextEvent} from 'sailry/forms';
 import {Workspace, workspaceMode, ActionScope, registerShortcuts, closePanel, toast, nextControlEvent, nextMenuEvent,
   nextNavigationTabEvent, nextTreeEvent, nextContextMenuEvent, nextPickerEvent, modal_closed,
-  canInvokeContribution, readResourceTarget, nextResourceTarget, nextWindowActivation, collapseOpen} from 'sailry/ui';
+  canInvokeContribution, readResourceTarget, nextResourceTarget, nextWindowActivation, collapseOpen, focusEntry} from 'sailry/ui';
 import {Repository} from './repository.js';
 import {Actions} from './actions.js';
 import {Menus} from './menus.js';
@@ -108,19 +108,19 @@ export default class Git extends View {
   report(key) { toast({id:'git-error',message:this.text[key] ?? this.text.git_action_failed,kind:'error'}); }
   focusDocument() {
     const document = this.repo.documents.get(this.repo.selected);
-    if (!document) return;
+    if (!document) { focusEntry(null); return; }
     const request = document.request;
-    if (request.kind === 'output') this.surfaces.focus(`git-output-${document.id}`);
+    let target = null;
+    if (request.kind === 'output') target = `git-output-${document.id}`;
     else if (['file','stash'].includes(request.kind)) {
-      if (document.files?.[0] && !document.files[0].binary) this.surfaces.focus(`git-diff-${document.id}`);
-      else this.contentFocus.focus();
-    }
-    else {
+      if (document.files?.[0] && !document.files[0].binary) target = `git-diff-${document.id}`;
+    } else {
       const file = document.files?.find(file => !file.binary && file.text
         && (collapseOpen(`diff-file-${document.id}/${file.path}`) ?? views.defaultOpen));
-      if (file) this.surfaces.focus(`git-diff-${document.id}/${file.path}`);
-      else this.contentFocus.focus();
+      if (file) target = `git-diff-${document.id}/${file.path}`;
     }
+    focusEntry(target ? `focus-${target}` : null);
+    if (!target) this.contentFocus.focus();
   }
   closeDocument(id) {
     const active = this.repo.selected === id;
