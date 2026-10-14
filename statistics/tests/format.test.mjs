@@ -24,8 +24,11 @@ test('formatting retains original compact units and context thresholds',()=>{
   assert.equal(format.context('20','0'),null);
   assert.deepEqual([null,79.9,80,99.9,100,120].map(format.severity),['muted','muted','warning','warning','danger','danger']);
 });
-test('ranking keeps exact totals and stable node/provider ties',()=>{
-  const row = (node,provider,model,input) => ({node,group:{key:{kind:'model',data:{provider,model}},metrics:{tokens:input === null ? null : {input,output:'0'}}}});
-  const rows=[row('b','a','same','9007199254740992'),row('a','b','same','9007199254740993'),row('a','a','same','9007199254740992'),row('a','a','missing',null)];
-  assert.deepEqual(format.ranking(rows).map(row=>[row.node,row.group.key.data.provider]),[['a','b'],['a','a'],['b','a'],['a','a']]);
+test('grouping, shares and request prices stay exact',()=>{
+  assert.deepEqual([null,'0','999','1712','18446744073709551615'].map(format.grouped),[null,'0','999','1,712','18,446,744,073,709,551,615']);
+  assert.equal(format.ratio('1','4'),25);
+  assert.equal(format.ratio('1','0'),null);
+  assert.equal(format.ratio(null,'4'),null);
+  assert.deepEqual(['41200','123','18446744073709551615'].map(format.price),['0.0412','0.0001','18446744073709.5516']);
+  assert.equal(format.price(null),null);
 });

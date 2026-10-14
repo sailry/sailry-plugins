@@ -1,36 +1,67 @@
-import {compact,amount,integer,duration} from './format.js';
+import {compact,price,integer,duration,ratio} from './format.js';
+
+/** Cache hit rates below this percentage are highlighted. */
+export const LOW_CACHE = 50;
+/** First text later than this many microseconds is highlighted. */
+export const SLOW_FIRST_TOKEN = 10000000n;
+/** Responses taking at least this many microseconds are highlighted. */
+export const SLOW_RESPONSE = 15000000n;
+export const WARNING_ICON = 'reicon:ui/alert-triangle';
+
 const pad=(value,width=2)=>String(value).padStart(width,'0');
-function timestamp(value) {
+const sameDay=(left,right)=>left.getFullYear()===right.getFullYear()&&left.getMonth()===right.getMonth()&&left.getDate()===right.getDate();
+/** Local time for a request row: time only today, month and day otherwise. */
+export function when(value,now = Date.now()) {
   const date=new Date(Number(value));
   if(!Number.isFinite(date.getTime()))return null;
-  const label=`${date.getFullYear()}/${pad(date.getMonth()+1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  const offset=-date.getTimezoneOffset(),zone=`${offset<0?'-':'+'}${pad(Math.floor(Math.abs(offset)/60))}:${pad(Math.abs(offset)%60)}`;
-  return [label,`${label}.${pad(date.getMilliseconds(),3)} ${zone}`];
+  const time=`${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  return sameDay(date,new Date(now)) ? time : `${pad(date.getMonth()+1)}/${pad(date.getDate())} ${time}`;
 }
-export function formatRows(items,text) {
+function exactTime(value) {
+  const date=new Date(Number(value));
+  if(!Number.isFinite(date.getTime()))return null;
+  const offset=-date.getTimezoneOffset(),zone=`${offset<0?'-':'+'}${pad(Math.floor(Math.abs(offset)/60))}:${pad(Math.abs(offset)%60)}`;
+  return `${date.getFullYear()}/${pad(date.getMonth()+1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(),3)} ${zone}`;
+}
+/** Whole-percent cache hit rate for one response, or null without input. */
+export function hits(tokens) {
+  if(tokens?.input==null || tokens.cached_input==null)return null;
+  const input=integer(tokens.input),cached=integer(tokens.cached_input);
+  const value=ratio(cached<input?cached:input,input);
+  return value==null ? null : Math.floor(value);
+}
+export const lateStart=value=>value!=null && integer(value)>SLOW_FIRST_TOKEN;
+export const longResponse=value=>value!=null && integer(value)>=SLOW_RESPONSE;
+
+export function formatRows(items,text,now = Date.now()) {
   const unknown=text.composer_metric_unknown;
   const exact=value=>value==null?unknown:String(value);
-  const line=(value,icon,tone)=>({text:value,...icon?{icon,tone}: {}});
-  const pair=(primary,secondary)=>({primary,secondary});
+  const missing={text:unknown,text_tone:'muted'};
   const rows=[],cells=[],details=[],row_ids=[];
   for(const request of items) {
-    const time=timestamp(request.position.timestamp_ms)??[unknown,unknown],tokens=['input','output','cached_input','reasoning'].map(key=>request.tokens?.[key]);
-    const common=[duration(request.first_token_us,text),duration(request.elapsed_us,text),amount(request.usd_micros)??unknown];
-    const scope=request.scope_name||text.usage_unassigned;
-    const tokenValues=tokens.map(value=>compact(value)??unknown),tokenDetails=tokens.map(exact);
-    const timing=[request.first_token_us,request.elapsed_us].map(value=>value==null?unknown:text.usage_duration_us.replace('%{value}',value));
+    const tokens=request.tokens ?? {},rate=hits(tokens),low=rate!=null&&rate<LOW_CACHE;
+    const title=request.session_title||text.usage_untitled,scope=request.scope_name||text.usage_unassigned;
+    const time=when(request.position.timestamp_ms,now)??unknown,full=exactTime(request.position.timestamp_ms)??unknown;
+    const first=request.first_token_us,elapsed=request.elapsed_us;
     const micros=integer(request.usd_micros),cost=micros==null?unknown:`${micros/1000000n}.${String(micros%1000000n).padStart(6,'0')}`;
-    const labels=[['model',request.model,'provider',request.provider_name],['project',scope,'time',time[1]],
-      ['input',tokenDetails[0],'output',tokenDetails[1]],['cached',tokenDetails[2],'reasoning',tokenDetails[3]],
-      ['first_token',timing[0],'duration',timing[1]]];
-    rows.push([...labels.map(([,primary,,secondary])=>`${primary} · ${secondary}`),cost]);
-    details.push([...labels.map(([first,primary,second,secondary])=>`${text[`usage_column_${first}`]}: ${primary}\n${text[`usage_column_${second}`]}: ${secondary}`),cost]);
+    const timing=[first,elapsed].map(value=>value==null?unknown:text.usage_duration_us.replace('%{value}',value));
+    rows.push([full,`${title} · ${scope}`,`${request.model} · ${request.provider_name}`,
+      `${exact(tokens.input)} · ${rate==null?unknown:`${rate}%`}`,exact(tokens.output),timing[0],timing[1],cost]);
+    details.push([full,`${title}\n${scope}`,
+      `${text.usage_column_model}: ${request.model}\n${text.usage_column_provider}: ${request.provider_name}`,
+      `${text.usage_column_input}: ${exact(tokens.input)}\n${text.usage_column_cached}: ${exact(tokens.cached_input)}`,
+      `${text.usage_column_output}: ${exact(tokens.output)}\n${text.usage_column_reasoning}: ${exact(tokens.reasoning)}`,
+      `${text.usage_column_first_token}: ${timing[0]}`,`${text.usage_column_duration}: ${timing[1]}`,cost]);
     cells.push([
-      pair(line(request.model),line(request.provider_name)),pair(line(scope),line(time[0])),
-      pair(line(tokenValues[0],'reicon:arrows/arrow-down','chart_2'),line(tokenValues[1],'reicon:arrows/arrow-up','chart_4')),
-      pair(line(tokenValues[2],'reicon:ui/hard-drive','muted'),line(tokenValues[3],'reicon:devices/cpu','muted')),
-      pair(line(common[0],'reicon:devices/lightning','muted'),line(common[1],'reicon:time/clock','muted')),
-      {primary:line(common[2])}
+      {primary:{text:time,text_tone:'muted'}},
+      {primary:{text:title,chip:scope,...request.session_title?{}:{text_tone:'muted'}}},
+      {primary:{text:request.model,note:request.provider_name,badge:Array.from(request.provider_name||request.model||'?')[0].toUpperCase()}},
+      {primary:{text:compact(tokens.input)??unknown,...rate==null?{}:{meter:{value:Math.min(rate,100),label:`${rate}%`,
+        tone:low?'warning':'muted',...low?{icon:WARNING_ICON}:{}}}}},
+      {primary:{text:compact(tokens.output)??unknown}},
+      {primary:first==null?missing:{text:duration(first,text),...lateStart(first)?{text_tone:'warning'}:{}}},
+      {primary:elapsed==null?missing:{text:duration(elapsed,text),...longResponse(elapsed)?{text_tone:'warning'}:{}}},
+      {primary:micros==null?missing:{text:`$${price(micros)}`}},
     ]);
     row_ids.push(`${request.position.node}:${request.position.timestamp_ms}:${request.position.sequence}`);
   }
