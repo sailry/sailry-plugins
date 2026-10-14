@@ -65,6 +65,28 @@ function contributions() {
   return {owner,change,event,reads,branches,choices,published};
 }
 
+function badgeFixture(options={}) {
+  const published=[],reported=[];
+  const location={cursor:'0',surface:'composer',node:'captured-node',worktree:'captured',branch:'main',
+    main:true,git:true,connected:true,can_move:true};
+  const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt'}],truncated:false,omitted_paths:0},
+    refresh:options.refresh ?? (async()=>true)};
+  const globals={
+    Git:class {
+      init(){this.text={git_detached:'Detached HEAD',tool_partial:'Partial'};this.repo=repo;this.notify=()=>{};}
+      report(key){reported.push(key);}
+      refreshWorktrees(){}
+    },
+    readScope:()=>({worktree:'captured'}),readLocation:()=>location,
+    publishContributions:states=>published.push(states),
+    readGitDiff:options.read ?? (async()=>({additions:1,deletions:0,truncated:false})),
+    faultCode:message=>message,
+  };
+  const Context=vm.runInNewContext(`${contextSource}\nContext`,globals),owner=new Context();
+  owner.init({}, {spawn:()=>{}});
+  return {owner,repo,published,reported};
+}
+
 test('branch contributions survive concurrent repository observation',async()=>{
   for (const eventFirst of [false,true]) {
     const state=contributions();
@@ -100,6 +122,76 @@ test('released or failed observation cannot open a contribution picker',async()=
     else state.reads[1].reject(Error('repository unavailable'));
     await settle();assert.equal(state.choices.length,0);state.owner.release();
   }
+});
+
+test('badge keeps known counts through overlapping refreshes',async()=>{
+  const refresh=deferred(),diff=deferred();let reads=0;
+  const state=badgeFixture({refresh:()=>refresh.promise,read:()=>{reads++;return diff.promise;}});
+  state.owner.counts={added:7,removed:3,partial:false};state.owner.publish();
+  const first=state.owner.invalidate(),latest=state.owner.invalidate();
+  refresh.resolve(true);await settle();
+  assert.equal(reads,1,'only the latest refresh reads diffs');
+  assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
+    segment=>segment.label.label),['+7','-3']);
+  diff.resolve({additions:4,deletions:2,truncated:false});
+  await Promise.all([first,latest]);
+  assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
+    segment=>segment.label.label),['+4','-2']);
+});
+
+test('transient diff failure keeps known badge counts',async()=>{
+  const state=badgeFixture({read:async()=>{throw Error('unavailable');}});
+  const known={added:5,removed:1,partial:true};state.owner.counts=known;
+  await state.owner.invalidate();
+  assert.equal(state.owner.counts,known);
+  assert.deepEqual(state.reported,['git_read_failed']);
+  const badge=state.published.at(-1).find(entry=>entry.id==='changes');
+  assert.equal(badge.visible,true);
+  assert.deepEqual(Array.from(badge.segments,segment=>segment.label.label),['+5','-1']);
+});
+
+test('refresh failures preserve only transient badge counts',async()=>{
+  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
+    const state=badgeFixture();state.owner.counts={added:5,removed:1,partial:false};
+    state.owner.publish();
+    state.repo.refresh=async()=>{state.repo.readCode=code;return false;};
+    await state.owner.invalidate();
+    assert.equal(state.owner.counts,null,code);
+    assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,false,code);
+  }
+  const state=badgeFixture(),known={added:5,removed:1,partial:false};state.owner.counts=known;
+  state.owner.publish();
+  state.repo.refresh=async()=>{state.repo.readCode='unavailable';return false;};
+  await state.owner.invalidate();
+  assert.equal(state.owner.counts,known);
+  assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,true);
+});
+
+test('scope failures clear known badge counts',async()=>{
+  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
+    const state=badgeFixture({read:async()=>{throw Error(code);}});
+    state.owner.counts={added:5,removed:1,partial:false};
+    await state.owner.invalidate();
+    assert.equal(state.owner.counts,null,code);
+    assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,false,code);
+    assert.deepEqual(state.reported,['git_read_failed']);
+  }
+});
+
+test('scope changes and disconnect clear badge counts',async()=>{
+  for (const moved of [{node:'other-node'},{worktree:'other-worktree'}]) {
+    let reads=0;const state=badgeFixture({refresh:async()=>{reads++;return true;}});
+    state.owner.counts={added:2,removed:1,partial:false};
+    state.owner.location={...state.owner.location,...moved};
+    await state.owner.invalidate();
+    assert.equal(reads,0);
+    assert.equal(state.owner.counts,null);
+    assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
+  }
+  const state=badgeFixture();state.owner.counts={added:2,removed:1,partial:false};
+  state.repo.connected=false;state.owner.refreshWorktrees({});
+  assert.equal(state.owner.counts,null);
+  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
 });
 
 test('repository observation continues while optional worktree discovery is pending',async()=>{

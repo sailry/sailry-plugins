@@ -71,6 +71,16 @@ test('accepted read failures use the ordinary notification channel',async()=>{
   }
 });
 
+test('status refresh exposes its typed failure code',async()=>{
+  for (const code of ['unavailable','not_found','permission_denied','wrong_target']) {
+    const {owner}=fixture({inspectGit:async()=>{throw Error('typed failure');},faultCode:()=>code});
+    assert.equal(await owner.refresh(),false);
+    assert.equal(owner.readCode,code);
+  }
+  const {owner}=fixture();await owner.refresh();
+  assert.equal(owner.readCode,null);
+});
+
 test('stale and released reads cannot report failures',async()=>{
   for (const [method,read] of [
     ['inspectGit',owner=>owner.refresh()],
