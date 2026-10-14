@@ -26,13 +26,14 @@ function landing(view) {
   const {text}=view;
   return EmptyState.new('db_workspace_empty',{icon:'hard-drive',label:text.db_workspace_empty})
     .child(div().w_full().max_w_96().child(IconButton.new('db-new',{icon:'plus',label:text.db_new,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:view.locked()})))
-    .child(div().id('db-saved-connections').v_flex().w_full().max_w_96().max_h(320).overflow_y_scroll().gap_2()
-      .children(view.profiles.map(profile=>NativeContextMenu.new(`db-connection-${profile.id}`,{items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
-        .child(SelectableRow.new(`db-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
-        .child(div().h_flex().w_full().gap_3().child(new Icon('icons/hard-drive.svg').size_5())
-          .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
-            .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile,text))))
-          .child(new Icon('icons/chevron-right.svg').size_4()))))));
+    .child(div().id('db-saved-connections').v_flex().w_full().h_auto().max_w_96().min_h_0().max_h(320).flex_initial()
+      .child(div().id('db-saved-connections-scroll').v_flex().w_full().flex_1().min_h_0().overflow_y_scrollbar().gap_2()
+        .children(view.profiles.map(profile=>NativeContextMenu.new(`db-connection-${profile.id}`,{fill:false,items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
+          .child(SelectableRow.new(`db-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
+          .child(div().h_flex().w_full().gap_3().child(new Icon('icons/hard-drive.svg').size_5())
+            .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
+              .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile,text))))
+            .child(new Icon('icons/chevron-right.svg').size_4())))))));
 }
 function feedback(view,form=false) {
   const {pending,text}=view;

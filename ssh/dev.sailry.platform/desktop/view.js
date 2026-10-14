@@ -15,13 +15,14 @@ function picker(view){const{text}=view,profile=view.profiles.find(profile=>profi
   return Picker.new(`ssh-picker-${view.pickerRevision}`,{mode:'command',open:view.picker,title:text.connection_search,empty:text.connection_search_empty,items});}
 function landing(view){const{text}=view;return EmptyState.new('ssh_workspace_empty',{icon:'square-terminal',label:text.ssh_workspace_empty})
   .child(div().w_full().max_w_96().child(IconButton.new('ssh-new',{icon:'plus',label:text.ssh_new,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:view.locked()})))
-  .child(div().id('ssh-saved-connections').v_flex().w_full().max_w_96().max_h(320).overflow_y_scroll().gap_2()
-    .children(view.profiles.map(profile=>NativeContextMenu.new(`ssh-connection-${profile.id}`,{items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
-      .child(SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
-      .child(div().h_flex().w_full().gap_3().child(new Icon('icons/network.svg').size_5())
-        .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
-          .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile))))
-        .child(new Icon('icons/chevron-right.svg').size_4()))))));}
+  .child(div().id('ssh-saved-connections').v_flex().w_full().h_auto().max_w_96().min_h_0().max_h(320).flex_initial()
+    .child(div().id('ssh-saved-connections-scroll').v_flex().w_full().flex_1().min_h_0().overflow_y_scrollbar().gap_2()
+      .children(view.profiles.map(profile=>NativeContextMenu.new(`ssh-connection-${profile.id}`,{fill:false,items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
+        .child(SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
+        .child(div().h_flex().w_full().gap_3().child(new Icon('icons/network.svg').size_5())
+          .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
+            .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile))))
+          .child(new Icon('icons/chevron-right.svg').size_4())))))));}
 function feedback(view,form=false){const{text,outcome,pending}=view,content=div().v_flex().min_w_0();if(form)content.gap_3();else content.gap_2().px_3().py_2();return content
   .children(outcome?.kind==='completed'?[
     ...[outcome.stdout,outcome.stderr].flatMap((value,index)=>value?[new Field().label(text[index?'command_stderr':'command_stdout']).child(TextField.new(view.output[index],{readonly:true}))]:[]),
