@@ -33,7 +33,13 @@ export function hits(tokens) {
 export const lateStart=value=>value!=null && integer(value)>SLOW_FIRST_TOKEN;
 export const longResponse=value=>value!=null && integer(value)>=SLOW_RESPONSE;
 
-export function formatRows(items,text,now = Date.now()) {
+/** Provider type logo on the badge surface, or the provider's initial when its type has no logo. */
+export function mark(icon,name) {
+  return icon ? {badge_icon:icon} : {badge:Array.from(name||'?')[0].toUpperCase()};
+}
+
+/** Table rows; `icons` maps provider IDs to type logos. */
+export function formatRows(items,text,now = Date.now(),icons = new Map()) {
   const unknown=text.composer_metric_unknown;
   const exact=value=>value==null?unknown:String(value);
   const missing={text:unknown,text_tone:'muted'};
@@ -46,18 +52,19 @@ export function formatRows(items,text,now = Date.now()) {
     const micros=integer(request.usd_micros),cost=micros==null?unknown:`${micros/1000000n}.${String(micros%1000000n).padStart(6,'0')}`;
     const timing=[first,elapsed].map(value=>value==null?unknown:text.usage_duration_us.replace('%{value}',value));
     rows.push([full,`${title} · ${scope}`,`${request.model} · ${request.provider_name}`,
-      `${exact(tokens.input)} · ${rate==null?unknown:`${rate}%`}`,exact(tokens.output),timing[0],timing[1],cost]);
+      exact(tokens.input),rate==null?unknown:`${rate}%`,exact(tokens.output),timing[0],timing[1],cost]);
     details.push([full,`${title}\n${scope}`,
       `${text.usage_column_model}: ${request.model}\n${text.usage_column_provider}: ${request.provider_name}`,
-      `${text.usage_column_input}: ${exact(tokens.input)}\n${text.usage_column_cached}: ${exact(tokens.cached_input)}`,
+      `${text.usage_column_input}: ${exact(tokens.input)}`,`${text.usage_column_cached}: ${exact(tokens.cached_input)}`,
       `${text.usage_column_output}: ${exact(tokens.output)}\n${text.usage_column_reasoning}: ${exact(tokens.reasoning)}`,
       `${text.usage_column_first_token}: ${timing[0]}`,`${text.usage_column_duration}: ${timing[1]}`,cost]);
     cells.push([
       {primary:{text:time,text_tone:'muted'}},
       {primary:{text:title,chip:scope,...request.session_title?{}:{text_tone:'muted'}}},
-      {primary:{text:request.model,note:request.provider_name,badge:Array.from(request.provider_name||request.model||'?')[0].toUpperCase()}},
-      {primary:{text:compact(tokens.input)??unknown,...rate==null?{}:{meter:{value:Math.min(rate,100),label:`${rate}%`,
-        tone:low?'warning':'muted',...low?{icon:WARNING_ICON}:{}}}}},
+      {primary:{text:request.model,note:request.provider_name,...mark(icons.get(request.provider),request.provider_name||request.model)}},
+      {primary:{text:compact(tokens.input)??unknown}},
+      {primary:rate==null?missing:{text:'',meter:{value:Math.min(rate,100),label:`${rate}%`,
+        tone:low?'warning':'muted',...low?{icon:WARNING_ICON}:{}}}},
       {primary:{text:compact(tokens.output)??unknown}},
       {primary:first==null?missing:{text:duration(first,text),...lateStart(first)?{text_tone:'warning'}:{}}},
       {primary:elapsed==null?missing:{text:duration(elapsed,text),...longResponse(elapsed)?{text_tone:'warning'}:{}}},

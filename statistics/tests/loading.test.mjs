@@ -8,7 +8,7 @@ import {compact,grouped} from '../dev.sailry.platform/desktop/format.js';
 import {heatmap,trend,SERIES} from '../dev.sailry.platform/desktop/charts.js';
 import {overview,percent} from '../dev.sailry.platform/desktop/summary.js';
 import {breakdown,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
-import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
+import {formatRows,mark} from '../dev.sailry.platform/desktop/requests.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -28,15 +28,16 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading']
+  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading','SelectField']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const constructors=Object.fromEntries(['Button','Progress','Tab','TabBar','Tag','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,VISIBLE,formatRows,unit,DIMENSIONS,
+    div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,VISIBLE,formatRows,mark,unit,DIMENSIONS,
     theme:()=>({colors:{muted_foreground:'muted'}}),window:{viewport_size:()=>({width:1440})},
   });
-  const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'})};
+  const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'}),
+    filters:()=>({range:{items:[{id:'30d',label:'30 days'}],selected:'30d'},selects:[{id:'usage-filter-project',label:'All projects',items:[],selected:'1:'}]})};
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
 
@@ -45,6 +46,7 @@ test('initial reads use shared rows without fabricated usage',()=>{
   for(const error of [null,'usage_read_failed']) {
     setup.view.error=error;setup.render();
     assert.equal(setup.nodes.get('usage-initial-loading').kind,'Loading');
+    assert.equal(setup.nodes.get('usage-content').items[0].selector,'usage-filters');
     assert.equal(setup.nodes.has('usage-summary'),false);
     assert.equal(setup.nodes.has('usage-breakdown'),false);
     assert.equal(setup.nodes.has('usage-requests'),false);
@@ -58,7 +60,7 @@ test('filter refreshes retain report sections and avoid flow changes',()=>{
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   setup.render();
   const selectors=setup.nodes.get('usage-content').items.map(item=>item.selector);
-  assert.deepEqual(selectors,['usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
+  assert.deepEqual(selectors,['usage-filters','usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
   state.select('project','selected');const generation=state.start();
   for(const observation of [null,{report:null,connected:true,refreshing:true},
     {report:null,connected:true,refreshing:false,error:{code:'unavailable'}}]) {
@@ -68,12 +70,26 @@ test('filter refreshes retain report sections and avoid flow changes',()=>{
     const body=setup.nodes.get('usage-content');
     assert.deepEqual(body.items.filter(item=>item.selector).map(item=>item.selector),selectors);
     assert.equal(setup.nodes.has('usage-initial-loading'),false);
-    if(!setup.view.error) {
-      const progress=setup.nodes.get('usage-loading'),wrapper=body.items.find(item=>item.items.includes(progress));
-      assert.ok(wrapper);assert.deepEqual(plain(wrapper.style.absolute),[]);
-      assert.deepEqual(plain(wrapper.style.top_0),[]);
-    } else assert.equal(setup.nodes.has('usage-loading'),false);
+    // Retained reports refresh in place without a page-level progress bar.
+    assert.equal(setup.nodes.has('usage-loading'),false);
   }
+});
+
+test('token legend is a two-by-two grid with reasoning unshared',()=>{
+  const setup=fixture(),{state}=setup.view;
+  const totals={responses:'2',tokens:{input:'1000',output:'200',cached_input:'600',reasoning:'50'},cost:null,generation:null};
+  const report={node:'captured',query:{dimension:'model'},totals,days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
+  state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
+  setup.render();
+  const rows=setup.nodes.get('usage-parts').items;
+  assert.equal(rows.length,2);
+  assert.deepEqual(rows.map(row=>row.items.map(cell=>cell.selector)),
+    [['usage-part-cache','usage-part-input'],['usage-part-output','usage-part-reasoning']]);
+  const texts=id=>setup.nodes.get(id).items.slice(1).map(item=>item.items[0]);
+  assert.deepEqual(texts('usage-part-cache'),['Cached','600','50.0%']);
+  assert.deepEqual(texts('usage-part-input'),['Uncached','400','33.3%']);
+  assert.deepEqual(texts('usage-part-output'),['Output','200','16.7%']);
+  assert.deepEqual(texts('usage-part-reasoning'),['Reasoning','50']);
 });
 
 test('one-year ranges add the fitted heatmap below the trend',()=>{

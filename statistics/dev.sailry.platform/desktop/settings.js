@@ -1,7 +1,7 @@
 import {View} from 'gpui-kit';
 import {context,header_action} from 'sailry';
 import {readUsageInventory,readUsageChoices,watchUsage,nextUsageChange,refreshUsage} from 'sailry/sdk';
-import {nextTableEvent,writeClipboard,toast} from 'sailry/ui';
+import {nextTableEvent,nextControlEvent,writeClipboard,toast} from 'sailry/ui';
 import {formatRows} from './requests.js';
 import {messages} from './locales.js';
 import {State,RANGES,choices} from './state.js';
@@ -19,20 +19,21 @@ export default class Usage extends View {
       writeClipboard(event.rows.filter(index=>rows[index]).map(index=>rows[index].join('\t')).join('\n'));
     }} catch (_) { /* Releasing the table closes its event stream. */ }});
     cx.spawn(async cx=>{
-      try {while(true) {
-        const event=await header_action();
-        if(event==='usage-refresh')this.refresh(cx);
-        else {
-          let value;try{value=JSON.parse(event);}catch(_){continue;}
-          if(!value.id.startsWith('usage-filter-'))continue;
-          const [generation,...parts]=value.value.split(':');
-          if(generation!==String(this.state.generation))continue;
-          const selection=parts.join(':'),field=value.id.slice('usage-filter-'.length);
-          if(this.state.select(field,selection))this.observe(cx);
-        }
-      }} catch (_) { /* Closing the page releases its header. */ }
+      try {while(true) if(await header_action()==='usage-refresh')this.refresh(cx);}
+      catch (_) { /* Closing the page releases its header. */ }
+    });
+    cx.spawn(async cx=>{
+      try {while(true) this.control(await nextControlEvent(),cx);}
+      catch (_) { /* Closing the page releases its controls. */ }
     });
   }
+  /** Select confirmations carry the generation that rendered their choices; stale ones are ignored. */
+  control(event,cx) {
+    if(typeof event.value!=='string' || !event.id.startsWith('usage-filter-'))return;
+    const [generation,...parts]=event.value.split(':');
+    if(generation===String(this.state.generation))this.filter(event.id.slice('usage-filter-'.length),parts.join(':'),cx);
+  }
+  filter(field,value,cx) {if(this.state.select(field,value))this.observe(cx);}
   observe(cx) {
     const generation=this.state.start();this.error=null;this.choiceCursor=null;
     try {watchUsage(this.state.query,false);}catch(_){this.report('usage_read_failed');cx.notify();return;}
@@ -69,13 +70,15 @@ export default class Usage extends View {
   page(value,cx) {if(this.state.turn(value))this.observe(cx);}
   group(value,cx) {if(this.state.group(value))this.observe(cx);else cx.notify();}
   header() {
-    const state=this.state,text=this.text,options=choices(state,this.inventory,this.resources,text);
-    const field=(name,label,items,selected,{primary=false,segmented=false,searchable=false}={})=>({id:`usage-filter-${name}`,label,
-      items:items.map(item=>({...item,id:`${state.generation}:${item.id}`})),selected:`${state.generation}:${selected}`,primary,segmented,searchable});
-    return {title:text.usage,filters_label:text.usage_filters,filters:[
-      field('range',text.usage_range,Object.keys(RANGES).map(id=>({id,label:text[`usage_range_${id}`]})),state.range,{primary:true,segmented:true}),
-      ...['project','provider','model'].map(name=>field(name,text[`usage_all_${name}s`],options[name],state.query[`${name}s`][0] ?? '',{searchable:true}))],
-      actions:[{id:'usage-refresh',label:text.usage_refresh,icon:'icons/rotate-cw.svg',disabled:state.view?.refreshing ?? false}]};
+    return {title:this.text.usage,actions:[{id:'usage-refresh',label:this.text.usage_refresh,icon:'icons/rotate-cw.svg',
+      disabled:this.state.view?.refreshing ?? false}]};
+  }
+  /** Page filter choices; select item ids are tagged with the current query generation. */
+  filters() {
+    const state=this.state,text=this.text,options=choices(state,this.inventory,this.resources,text),tag=id=>`${state.generation}:${id}`;
+    return {range:{items:Object.keys(RANGES).map(id=>({id,label:text[`usage_range_${id}`]})),selected:state.range},
+      selects:['project','provider','model'].map(name=>({id:`usage-filter-${name}`,label:text[`usage_all_${name}s`],
+        items:options[name].map(item=>({...item,id:tag(item.id)})),selected:tag(state.query[`${name}s`][0] ?? '')}))};
   }
   render() {return render(this);}
 }
