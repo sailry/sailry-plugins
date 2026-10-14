@@ -7,56 +7,83 @@ import {statusColors,statusColor} from './state.js';
 import {ROOMS,WORLD_WIDTH,WORLD_HEIGHT,PERSON_SIZE,DESK_WIDTH,DESK_HEIGHT,SEATED,STANDING,ATRIUM,seatPosition,approvalPosition} from './geometry.js';
 export const variants = {waiting:'warning',running:'primary',completed:'success',failed:'danger',idle:'secondary'};
 
+// Room chrome stays at theme size; only the scene geometry follows the scale.
+export const BOARD = {padding_x:12,padding_y:10,row_gap:4,clearance:6,hang:0.65,radius:4,line:1.2};
+export const PAGER = {button:22,height:20,gap:4,padding:6};
+const CORNER = 4;
+const deskTop = index => seatPosition(index,0).y - 14 - DESK_HEIGHT - ROOMS[index].bounds.y;
+
+export function boardWidth(index,scale) {
+  return Math.max(ROOMS[index].board.width * scale,220);
+}
+// Name, count and label lines at their theme sizes, plus padding and the 1px border.
+export function boardHeight(rem) {
+  return rem * BOARD.line * (0.875 + 0.875 + 0.75) + BOARD.row_gap + BOARD.padding_y * 2 + 2;
+}
+// The board straddles the room's top edge and keeps a fixed gap above the desks.
+export function boardTop(index,scale,rem) {
+  const height = boardHeight(rem);
+  return ROOMS[index].bounds.y * scale + Math.min(deskTop(index) * scale - BOARD.clearance,height * BOARD.hang) - height;
+}
+// The widest label reserves a stable width, so paging never shifts the controls.
+export function pagerWidth(value,rem) {
+  if (!value || value.pages < 2) return 0;
+  return PAGER.button * 2 + PAGER.gap * 2 + Math.max(2,`${value.pages}/${value.pages}`.length * 0.5) * rem;
+}
 function board(view,value,index,scale) {
-  const {board:bounds} = ROOMS[index], {text} = view, colors = theme().colors;
+  const {bounds} = ROOMS[index], {text} = view, colors = theme().colors, rem = window.rem_size();
   const counts = {running:0,approval:0,completed:0,idle:0};
   for (const item of value?.items ?? []) {
     if (item.approval) counts.approval += 1;
     else if (item.lane in counts) counts[item.lane] += 1;
   }
-  const id = `plaza-room-${value?.key ?? index}`, width = Math.max(bounds.width * scale,220);
-  // A definite height lets the native button's content fill the final size,
-  // including room for its border and the three theme-sized text rows.
-  const height = Math.max(bounds.height * scale,window.rem_size() * 4.25);
+  const id = `plaza-room-${value?.key ?? index}`, width = boardWidth(index,scale), height = boardHeight(rem);
+  const tone = state => !counts[state] ? colors.muted_foreground : state === 'idle' ? colors.foreground : colors[statusColors[state]];
   const entries = [['running',text.room_running],['approval',text.room_approvals],['completed',text.room_completed],['idle',text.room_idle]];
-  const label = div().v_flex().size_full().min_w_0().justify_center().items_center().text_center().gap_0p5().px_3().py_1()
-    .text_color(colors.foreground).text_sm().line_height(1.15)
-    .child(div().w_full().font_semibold().truncate().child(value?.name ?? text.empty_room))
-    .children(value ? [div().id(`${id}-statistics`).v_flex().w_full().gap_0p5()
-      .children([0,2].map(offset => div().id(`${id}-row-${offset / 2}`).h_flex().w_full().gap_3()
-        .children(entries.slice(offset,offset + 2).map(([state,title]) => div().id(`${id}-${state}`).h_flex().flex_1().min_w_0().items_center().justify_between().gap_2()
-          .child(div().truncate().text_color(colors.muted_foreground).child(title))
-          .child(div().flex_none().font_medium().text_color(colors[statusColors[state]]).child(String(counts[state])))))))] : []);
-  const whiteboard = new Button(id).outline().p_0().absolute()
-    .left((bounds.x + bounds.width / 2) * scale - width / 2).top(bounds.y * scale).w(width).h(height)
-    .bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
-  if (value) whiteboard.on_click((_event,cx) => view.inspectRoom(value.key,cx));
-  return whiteboard;
+  const label = div().v_flex().size_full().min_w_0().justify_center().gap(BOARD.row_gap).px(BOARD.padding_x).py(BOARD.padding_y)
+    .text_color(colors.foreground).line_height(BOARD.line)
+    .child(div().id(`${id}-name`).w_full().min_w_0().truncate().text_sm().font_semibold().child(value?.name ?? text.empty_room))
+    .children(value ? [div().id(`${id}-statistics`).h_flex().w_full().min_w_0()
+      .children(entries.map(([state,title]) => div().id(`${id}-${state}`).v_flex().flex_1().min_w_0().items_center()
+        .child(div().id(`${id}-${state}-count`).text_sm().font_semibold().text_color(tone(state)).child(String(counts[state])))
+        .child(div().max_w_full().truncate().text_xs().text_color(colors.muted_foreground).child(title))))] : []);
+  // Kit's outline hover tints with a translucent fill. The opaque backing keeps
+  // the sign solid over the room edge and the ground in every state.
+  const sign = new Button(id).outline().secondary().p_0().w(width).h(height).rounded(BOARD.radius)
+    .border_color(colors.border).bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
+  if (value) sign.on_click((_event,cx) => view.inspectRoom(value.key,cx));
+  return div().id(`${id}-board`).absolute().left((bounds.x + bounds.width / 2) * scale - width / 2).top(boardTop(index,scale,rem))
+    .w(width).h(height).rounded(BOARD.radius).bg(colors.background).child(sign);
 }
-function outline(index,scale) {
-  const {bounds} = ROOMS[index], width = bounds.width * scale, height = bounds.height * scale;
-  const door = 46 * scale, middle = width / 2, path = PathBuilder.stroke(1);
-  // The open threshold makes a room boundary, with no opaque card or wall layer.
-  path.move_to(middle - door / 2,height - 4).line_to(middle - door / 2,height)
-    .line_to(4,height).curve_to(0,height - 4,0,height).line_to(0,4).curve_to(4,0,0,0)
-    .line_to(width - 4,0).curve_to(width,4,width,0).line_to(width,height - 4)
-    .curve_to(width - 4,height,width,height).line_to(middle + door / 2,height)
-    .line_to(middle + door / 2,height - 4);
+function outline(value,index,scale) {
+  const {bounds} = ROOMS[index], width = bounds.width * scale, height = bounds.height * scale, rem = window.rem_size();
+  const middle = width / 2, cover = boardWidth(index,scale) / 2, pager = pagerWidth(value,rem);
+  const left = Math.max(middle - cover,CORNER), right = Math.min(middle + cover,width - CORNER), path = PathBuilder.stroke(1);
+  // The whiteboard covers the top edge between its borders; a paged room opens
+  // its bottom edge evenly around the centered pager.
+  path.move_to(right,0);
+  if (right < width - CORNER) path.line_to(width - CORNER,0);
+  path.curve_to(width,CORNER,width,0).line_to(width,height - CORNER).curve_to(width - CORNER,height,width,height);
+  if (pager) path.line_to(middle + pager / 2 + PAGER.padding,height).move_to(middle - pager / 2 - PAGER.padding,height);
+  path.line_to(CORNER,height).curve_to(0,height - CORNER,0,height).line_to(0,CORNER).curve_to(CORNER,0,0,0);
+  if (left > CORNER) path.line_to(left,0);
   return div().id(`plaza-room-outline-${index}`).absolute()
     .left(bounds.x * scale).top(bounds.y * scale).w(width).h(height)
     .child(window.paint_path(path.build(),Background.solid(theme().colors.muted_foreground).opacity(0.55)).w(width).h(height));
 }
 function paging(view,value,index,scale) {
-  if (!value || value.pages < 2) return null;
-  const {bounds} = ROOMS[index], colors = theme().colors;
+  const width = pagerWidth(value,window.rem_size());
+  if (!width) return null;
+  const {bounds} = ROOMS[index], colors = theme().colors, label = width - PAGER.button * 2 - PAGER.gap * 2;
+  // The pager shares the room's center and sits in the opening of its bottom edge.
   return div().id(`plaza-room-pages-${value.key}`).absolute()
-    .left((bounds.x + bounds.width / 2 - 37) * scale).top((bounds.y + bounds.height + 4) * scale)
-    .h_flex().items_center().gap_1().text_xs().text_color(colors.muted_foreground)
-    .child(new Button(`plaza-room-prev-${value.key}`).ghost().size('small').p_0().w(22).h(20)
+    .left((bounds.x + bounds.width / 2) * scale - width / 2).top((bounds.y + bounds.height) * scale - PAGER.height / 2)
+    .w(width).h(PAGER.height).h_flex().items_center().gap(PAGER.gap).text_xs().text_color(colors.muted_foreground)
+    .child(new Button(`plaza-room-prev-${value.key}`).ghost().size('small').p_0().w(PAGER.button).h(PAGER.height)
       .disabled(value.page === 0).tooltip(view.text.previous).child(new Icon('icons/chevron-left.svg').size('xsmall'))
       .on_click((_event,cx) => {view.floor.turnRoom(value.key,-1,value.pages);cx.notify();}))
-    .child(`${value.page + 1}/${value.pages}`)
-    .child(new Button(`plaza-room-next-${value.key}`).ghost().size('small').p_0().w(22).h(20)
+    .child(div().id(`plaza-room-page-${value.key}`).w(label).text_center().child(`${value.page + 1}/${value.pages}`))
+    .child(new Button(`plaza-room-next-${value.key}`).ghost().size('small').p_0().w(PAGER.button).h(PAGER.height)
       .disabled(value.page + 1 === value.pages).tooltip(view.text.next).child(new Icon('icons/chevron-right.svg').size('xsmall'))
       .on_click((_event,cx) => {view.floor.turnRoom(value.key,1,value.pages);cx.notify();}));
 }
@@ -74,8 +101,7 @@ function person(view,item,position,scale,approval = false) {
       tooltip:`${item.title} · ${item.status}`})
       .child(div().relative().w(size).h(size).h_flex().justify_center()
         .child(div().id(`${id}-status`).absolute().bottom(0).left(size * 0.07).w(size * 0.86).h(14 * scale)
-          .rounded_full().border_2().border_color(color)
-          .child(div().absolute().inset(0).rounded_full().bg(color).opacity(0.22)))
+          .rounded_full().border(1.5).border_color(color))
         .children(selected ? [div().id(`${id}-selection`).absolute().bottom(0).left(size * 0.03).w(size * 0.94).h(18 * scale)
           .rounded_full().border_1().border_color(theme().colors.foreground)] : [])
         .child(sprite(id,index,size))
@@ -91,7 +117,7 @@ function plaza(view,model,scale) {
 }
 export function scene(view,model,scale) {
   const world = div().id('plaza-world').relative().flex_shrink(0).w(WORLD_WIDTH * scale).h(WORLD_HEIGHT * scale)
-    .children(ROOMS.map((_room,index) => outline(index,scale))).child(plaza(view,model,scale));
+    .children(ROOMS.map((_room,index) => outline(model.visible[index],index,scale))).child(plaza(view,model,scale));
   const furnishings = [], people = [];
   for (let room = 0;room < 8;room += 1) {
     const value = model.visible[room];

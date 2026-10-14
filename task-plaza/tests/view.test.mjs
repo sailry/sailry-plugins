@@ -26,10 +26,10 @@ function fixture(count=0) {
     if(kind==='ClampedText')result.child(props.text);
     return result;
   }}]));
-  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE})`,{
+  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
     Tag:function(){return element('Tag');},Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
-    theme:()=>({colors:{surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
+    theme:()=>({colors:{background:'background',surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
     PathBuilder:{stroke:width=>{
       const path={width,commands:[],build(){return this;}};
       for(const method of ['move_to','line_to','curve_to','dash_array'])path[method]=(...args)=>{path.commands.push([method,...args]);return path;};
@@ -66,7 +66,7 @@ test('eight rooms surround a plaza with six desks each',()=>{
   for(let index=0;index<4;index++)assert.equal(setup.nodes.get(`plaza-session-${index}`).kind,'ComposedButton');
   assert.equal([...setup.nodes.values()].filter(node=>node.kind==='Conversation').length,0);
   assert.equal(setup.nodes.get('plaza-room-project').kind,'Button');
-  assert.ok(setup.nodes.get('plaza-room-project').style.left[0]>0);
+  assert.ok(setup.nodes.get('plaza-room-project-board').style.left[0]>0);
   assert.ok(setup.nodes.has('plaza-viewport'));
 });
 
@@ -156,8 +156,8 @@ test('every person keeps the matching legend color before selection',()=>{
     setup.render();
     const ring=setup.nodes.get('plaza-session-0-status'),legend=setup.nodes.get(`plaza-legend-${state}`);
     assert.equal(ring.style.border_color[0],legend.style.bg[0]);
-    assert.equal(ring.items[0].style.bg[0],legend.style.bg[0]);
-    assert.equal(ring.style.border_2.length,0);
+    assert.deepEqual(plain(ring.style.border),[1.5]);
+    assert.equal(ring.items.length,0);assert.equal(ring.style.bg,undefined);
     assert.equal(setup.nodes.has('plaza-session-0-selection'),false);
     setup.click('plaza-session-0');setup.render();
     assert.equal(setup.nodes.get('plaza-session-0-status').style.border_color[0],legend.style.bg[0]);
@@ -166,23 +166,83 @@ test('every person keeps the matching legend color before selection',()=>{
   }
 });
 
-test('whiteboards separate four totals into two rows',()=>{
+test('whiteboards stack each total above its label',()=>{
   const setup=fixture(12),catalog=setup.view.board.catalog;
   for(const [index,session] of catalog.sessions.entries()) {
     catalog.session_lanes[session.id]=['running','waiting','completed','idle','waiting','failed'][index%6];
     session.activity.waiting=index%6===1?'approval':index%6===4?'input':null;
   }
+  const tones={running:'primary',approval:'warning',completed:'success',idle:'foreground'};
   for(const locale of ['en','zh-CN']) {
     setup.view.text=setup.messages(locale);setup.render();
-    const board=setup.nodes.get('plaza-room-project'),grid=setup.nodes.get('plaza-room-project-statistics');
-    assert.ok(board.style.h[0]>=68);
-    assert.equal(grid.items.length,2);assert.ok(grid.items.every(row=>row.items.length===2));
-    for(const state of ['running','approval','completed','idle']) {
-      const cell=setup.nodes.get(`plaza-room-project-${state}`);
-      assert.equal(cell.items[1].items[0],'2');
-      assert.ok(!cell.items[0].items[0].includes('·'));
+    const name=setup.nodes.get('plaza-room-project-name'),grid=setup.nodes.get('plaza-room-project-statistics');
+    assert.deepEqual(plain(name.items),['Project']);
+    assert.ok(name.style.truncate&&name.style.font_semibold);assert.equal(name.style.text_center,undefined);
+    assert.deepEqual(grid.items,Object.keys(tones).map(state=>setup.nodes.get(`plaza-room-project-${state}`)));
+    for(const state of Object.keys(tones)) {
+      const cell=setup.nodes.get(`plaza-room-project-${state}`),[count,label]=cell.items;
+      assert.ok(cell.style.flex_1&&cell.style.items_center);
+      assert.equal(count,setup.nodes.get(`plaza-room-project-${state}-count`));
+      assert.equal(count.items[0],'2');assert.equal(count.style.text_color[0],tones[state]);
+      assert.ok(count.style.font_semibold);
+      assert.equal(label.style.text_color[0],'muted');assert.ok(label.style.text_xs&&label.style.truncate);
     }
   }
+});
+
+test('empty totals use the muted foreground',()=>{
+  const setup=fixture();setup.render();
+  for(const state of ['running','approval','completed','idle']) {
+    const count=setup.nodes.get(`plaza-room-project-${state}-count`);
+    assert.equal(count.items[0],'0');assert.equal(count.style.text_color[0],'muted');
+  }
+});
+
+test('whiteboards stay opaque and padded behind the hover tint',()=>{
+  const setup=fixture(1);setup.render();
+  const backing=setup.nodes.get('plaza-room-project-board'),sign=setup.nodes.get('plaza-room-project'),label=sign.items[0];
+  assert.equal(backing.items[0],sign);
+  assert.equal(backing.style.bg[0],'background');assert.equal(sign.style.bg[0],'background');
+  assert.equal(sign.style.border_color[0],'border');
+  assert.deepEqual(plain(sign.style.rounded),[setup.BOARD.radius]);assert.deepEqual(plain(backing.style.rounded),[setup.BOARD.radius]);
+  assert.deepEqual([sign.style.w[0],sign.style.h[0]],[backing.style.w[0],backing.style.h[0]]);
+  for(const node of [backing,sign])assert.equal(node.style.opacity,undefined);
+  assert.equal(sign.style.hover,undefined);
+  assert.deepEqual(plain([label.style.px,label.style.py]),[[setup.BOARD.padding_x],[setup.BOARD.padding_y]]);
+});
+
+test('whiteboards cover the opening in the top edge',()=>{
+  const setup=fixture(1);setup.render();
+  const scale=setup.nodes.get('plaza-world').style.w[0]/setup.WORLD_WIDTH,{bounds}=setup.ROOMS[0];
+  const board=setup.nodes.get('plaza-room-project-board').style;
+  const commands=setup.nodes.get('plaza-room-outline-0').items[0].props.path.commands;
+  const left=board.left[0]-bounds.x*scale,top=board.top[0]-bounds.y*scale;
+  assert.ok(top<0&&top+board.h[0]>0,'the whiteboard straddles the top edge');
+  const [start,end]=[commands[0],commands.at(-1)];
+  assert.deepEqual(plain([start[0],start[2],end[0],end[2]]),['move_to',0,'line_to',0]);
+  assert.ok(Math.abs(start[1]-left-board.w[0])<1e-9&&Math.abs(end[1]-left)<1e-9);
+  const desk=setup.nodes.get('plaza-desk-project-0').style;
+  assert.ok(Math.abs(desk.top[0]-board.top[0]-board.h[0]-setup.BOARD.clearance)<1e-9);
+});
+
+test('pagers share the center of the bottom opening',()=>{
+  const opening=(setup,index)=>{
+    const outline=setup.nodes.get(`plaza-room-outline-${index}`),commands=outline.items[0].props.path.commands;
+    const at=commands.findIndex(([method,,y])=>method==='move_to'&&y===outline.style.h[0]);
+    return at<0?null:{left:commands[at][1],right:commands[at-1][1],width:outline.style.w[0]};
+  };
+  const paged=fixture(8);paged.render();
+  const pager=paged.nodes.get('plaza-room-pages-project').style,outline=paged.nodes.get('plaza-room-outline-0').style;
+  const gap=opening(paged,0);
+  assert.ok(Math.abs(pager.left[0]+pager.w[0]/2-(outline.left[0]+outline.w[0]/2))<1e-9);
+  assert.ok(Math.abs(pager.top[0]+pager.h[0]/2-(outline.top[0]+outline.h[0]))<1e-9);
+  assert.ok(Math.abs((gap.left+gap.right)/2-gap.width/2)<1e-9);
+  assert.ok(Math.abs(gap.right-gap.left-pager.w[0]-paged.PAGER.padding*2)<1e-9);
+  paged.click('plaza-room-next-project');paged.render();
+  assert.deepEqual(plain(paged.nodes.get('plaza-room-pages-project').style.w),plain(pager.w));
+  const single=fixture(4);single.render();
+  assert.equal(single.nodes.has('plaza-room-pages-project'),false);
+  for(let index=0;index<8;index++)assert.equal(opening(single,index),null);
 });
 
 test('taller whiteboards leave desks and page controls clear',()=>{
@@ -198,9 +258,9 @@ test('taller whiteboards leave desks and page controls clear',()=>{
   }
   for(const width of [900,1440])for(const sidebar of [false,true]) {
     setup.viewport.width=width;setup.view.panelOpen=sidebar;setup.view.selected={kind:'room',id:'project'};setup.render();
-    const board=setup.nodes.get('plaza-room-project').style,desk=setup.nodes.get('plaza-desk-project-0').style;
+    const board=setup.nodes.get('plaza-room-project-board').style,desk=setup.nodes.get('plaza-desk-project-0').style;
     assert.ok(board.top[0]+board.h[0]<=desk.top[0]);
-    const pager=setup.nodes.get('plaza-room-pages-project').style,next=setup.nodes.get('plaza-room-p3').style;
+    const pager=setup.nodes.get('plaza-room-pages-project').style,next=setup.nodes.get('plaza-room-p3-board').style;
     assert.ok(pager.top[0]+20<=next.top[0]);
     const last=setup.nodes.get('plaza-room-pages-p7').style,world=setup.nodes.get('plaza-world').style;
     assert.ok(setup.nodes.get('plaza-scene-frame').style.pb_8);
@@ -246,7 +306,7 @@ test('approval groups fit without touching adjacent rooms',()=>{
       assert.ok(person.left[0]+person.w[0]<=plaza.left[0]+plaza.w[0]);
       assert.ok(person.top[0]+person.h[0]<=plaza.top[0]+plaza.h[0]);
     }
-    assert.ok(setup.nodes.get('plaza-room-6').style.top[0]>plaza.top[0]+plaza.h[0]);
+    assert.ok(setup.nodes.get('plaza-room-6-board').style.top[0]>plaza.top[0]+plaza.h[0]);
     for(let index=0;index<people.length;index++)for(let other=index+1;other<people.length;other++) {
       const first=people[index],second=people[other];
       assert.ok(first.left[0]+first.w[0]<=second.left[0]||second.left[0]+second.w[0]<=first.left[0]||
