@@ -3,13 +3,25 @@
 import {compact, integer, total} from './format.js';
 export {compact};
 
-const DAY = 86400000;
+const DAY = 86400000, HALF_HOUR = 1800000;
 const pad = value => String(value).padStart(2, '0');
 const localDay = date => Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY;
 const localDate = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-const utcDate = day => new Date(day * DAY).toISOString().slice(0, 10);
+const clock = date => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+const monthDay = date => `${date.getMonth() + 1}/${date.getDate()}`;
 const timestamp = value => new Date(Number(value));
 const valueOf = point => total(point.metrics.tokens) ?? (integer(point.metrics.responses) === 0n ? 0n : null);
+
+export const SERIES = [{id:'cache', color:'chart_3', label:'usage_cache_hits'},
+  {id:'input', color:'chart_2', label:'usage_uncached_input'}, {id:'output', color:'chart_4', label:'usage_column_output'}];
+
+/** Disjoint token parts: cached input capped at input, uncached input and output. */
+export function parts(tokens) {
+  if (!tokens) return null;
+  const input = integer(tokens.input), cached = integer(tokens.cached_input);
+  const cache = cached < input ? cached : input;
+  return [cache, input - cache, integer(tokens.output)];
+}
 
 export function heatmap(points, text) {
   const first = points.length ? timestamp(points[0].start_ms) : null;
@@ -44,69 +56,83 @@ export function heatmap(points, text) {
         : text('usage_month').replace('%{month}', String(date.getMonth() + 1)),
       ...(rows === 1 ? {} : {label_group:`${date.getFullYear()}-${date.getMonth() + 1}`}),
       tooltip:{
-        heading:`${localDate(date)} ${pad(date.getHours())}:${pad(date.getMinutes())}`,
+        heading:localDate(date),
         title:`${compact(day.tokens) ?? text('composer_metric_unknown')} ${text('composer_tokens')}`,
         rows:day.models.map(([label, value]) => ({label, value:compact(value)})),
       },
     };
   });
-  return {rows, columns, cells};
+  return {rows, columns, cells, active:days.filter(day => day.tokens > 0n).length};
 }
 
-function buckets(points, period) {
+/** Groups report points into half-hour, day or Monday-based week buckets in local time. */
+export function buckets(points, unit) {
   const grouped = new Map();
   for (const point of points) {
     const date = timestamp(point.start_ms);
     if (!Number.isFinite(date.getTime())) continue;
-    // The Node report already groups UTC days; local time must not move a week boundary.
-    const day = Math.floor(date.getTime() / DAY);
-    const start = period === 'weekly' ? day - (date.getUTCDay() + 6) % 7 : day;
+    // Report days start at local midnight, so local calendar arithmetic keeps weeks aligned.
+    const start = unit === 'week'
+      ? new Date(date.getFullYear(), date.getMonth(), date.getDate() - (date.getDay() + 6) % 7).getTime()
+      : date.getTime();
     let bucket = grouped.get(start);
     if (!bucket) {
-      bucket = {start, first:day, last:day, values:[0n, 0n, 0n]};
+      bucket = {start:new Date(start), first:date, last:date, values:[0n, 0n, 0n]};
       grouped.set(start, bucket);
     }
-    bucket.first = Math.min(bucket.first, day);
-    bucket.last = Math.max(bucket.last, day);
-    const tokens = point.metrics.tokens;
-    if (tokens && bucket.values) {
-      const input = integer(tokens.input), cached = integer(tokens.cached_input);
-      const cache = cached < input ? cached : input;
-      bucket.values[0] += cache;
-      bucket.values[1] += input - cache;
-      bucket.values[2] += integer(tokens.output);
-    } else if (!tokens && integer(point.metrics.responses) > 0n) {
-      bucket.values = null;
-    }
+    if (date < bucket.first) bucket.first = date;
+    if (date > bucket.last) bucket.last = date;
+    const values = parts(point.metrics.tokens);
+    if (values && bucket.values) values.forEach((value, index) => { bucket.values[index] += value; });
+    else if (!values && integer(point.metrics.responses) > 0n) bucket.values = null;
   }
   return [...grouped.values()].sort((a, b) => a.start - b.start);
 }
 
-export function trend(points, period, text) {
-  const grouped = buckets(points, period);
+/** Rounded axis with at most four divisions and integer steps. */
+export function axis(maximum) {
+  const peak = Number(maximum);
+  if (!(peak > 0)) return {maximum:0, ticks:[{value:0, label:'0'}, {value:1, label:'1'}]};
+  const raw = peak / 4, power = 10 ** Math.floor(Math.log10(raw));
+  const step = Math.max(1, [1, 2, 2.5, 5, 10].map(factor => factor * power).find(value => value >= raw));
+  const divisions = Math.max(1, Math.ceil(peak / step));
+  const label = value => value < 1000 ? String(value) : compact(BigInt(Math.round(value))).replace('.0', '');
+  return {maximum:step * divisions,
+    ticks:Array.from({length:divisions + 1}, (_, index) => ({value:step * index, label:label(step * index)}))};
+}
+
+function heading(bucket, unit) {
+  if (unit === 'half_hour') return `${localDate(bucket.start)} ${clock(bucket.start)}–${clock(new Date(bucket.start.getTime() + HALF_HOUR))}`;
+  const first = localDate(bucket.first), last = localDate(bucket.last);
+  return first === last ? first : `${first} – ${last}`;
+}
+
+// Sparse labels: three-hour marks, or about seven labels counted back from the newest bucket.
+function labels(grouped, unit) {
+  if (unit === 'half_hour') return grouped.map(({start}) => start.getMinutes() === 0 && start.getHours() % 3 === 0 ? clock(start) : '');
+  const step = Math.max(1, Math.ceil(grouped.length / 7));
+  return grouped.map(({start}, index) => (grouped.length - 1 - index) % step === 0 ? monthDay(start) : '');
+}
+
+export function trend(report, unit, text) {
+  const grouped = buckets(unit === 'half_hour' ? report.recent ?? [] : report.days, unit);
   const sum = values => values.reduce((sum, value) => sum + value, 0n);
-  const maximum = grouped.reduce((maximum, bucket) => {
+  const peak = grouped.reduce((maximum, bucket) => {
     const value = bucket.values ? sum(bucket.values) : 0n;
     return value > maximum ? value : maximum;
   }, 0n);
-  const labels = ['usage_column_cached', 'usage_uncached_input', 'usage_column_output'];
-  const unknown = text('composer_metric_unknown');
-  const divisions = Number(maximum < 1n ? 1n : maximum > 4n ? 4n : maximum);
-  const scale = Number(maximum > 0n ? maximum : 1n);
+  const unknown = text('composer_metric_unknown'), names = labels(grouped, unit);
   return {
-    series:[{id:'cache', color:'chart_3'}, {id:'input', color:'chart_2'}, {id:'output', color:'chart_4'}],
-    maximum:Number(maximum),
-    ticks:Array.from({length:divisions + 1}, (_, index) => {
-      const value = scale * index / divisions;
-      return {value, label:compact(BigInt(Math.floor(value)))};
-    }),
-    buckets:grouped.map(bucket => ({
-      label:utcDate(bucket.start).slice(5),
+    series:SERIES.map(({id, color}) => ({id, color})),
+    ...axis(peak),
+    height:200,
+    buckets:grouped.map((bucket, index) => ({
+      label:names[index],
       values:bucket.values?.map(Number) ?? null,
       tooltip:{
-        heading:`${utcDate(bucket.first)}${bucket.first === bucket.last ? '' : ` – ${utcDate(bucket.last)}`} · ${text('usage_utc_time')}`,
-        rows:labels.map((label, index) => ({label:text(label), value:bucket.values?.[index].toString() ?? unknown})),
-        footer:{label:text('composer_tokens'), value:bucket.values ? sum(bucket.values).toString() : unknown},
+        heading:heading(bucket, unit),
+        rows:SERIES.map((series, part) => ({label:text(series.label), value:bucket.values ? compact(bucket.values[part]) : unknown})),
+        footer:{label:text('composer_tokens'), value:bucket.values ? compact(sum(bucket.values)) : unknown},
       },
     })),
   };

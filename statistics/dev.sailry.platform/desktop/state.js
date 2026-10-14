@@ -1,27 +1,63 @@
 // Query choices and pagination are presentation state; core combines canonical reports.
-const DAY = 86400000;
+const MINUTE = 60000, HALF_HOUR = 1800000, DAY = 86400000;
+/** Range length and the trend bucket that keeps its bars readable. */
+export const RANGES = {
+  '24h':{days:1, unit:'half_hour'},
+  '7d':{days:7, unit:'day'},
+  '30d':{days:30, unit:'day'},
+  '90d':{days:90, unit:'week'},
+  '1y':{days:365, unit:'week'},
+};
+export const DIMENSIONS = ['model','provider','project'];
 const revoked = view => ['not_configured','not_found','permission_denied','revision_conflict'].includes(view?.error?.code);
 export const nodeId = value => Array.isArray(value) ? value.map(byte=>byte.toString(16).padStart(2,'0')).join('') : value;
-export function query(days,now = Date.now()) {
-  const end_ms = (Math.floor(now/DAY)+1)*DAY;
-  return {start_ms:end_ms-days*DAY,end_ms,dimension:'model',projects:[],worktrees:[],providers:[],models:[],before:null};
+export const unit = range => RANGES[range]?.unit ?? 'day';
+/** The viewer's current offset from UTC; the Node buckets days at this offset. */
+export const offset = now => -new Date(now).getTimezoneOffset() || 0;
+// Provider rows sum model groups locally; only project rows need another grouping.
+export const dimension = breakdown => breakdown === 'project' ? 'project' : 'model';
+export function query(range,now = Date.now(),grouping = 'model') {
+  const minutes = offset(now), shift = minutes*MINUTE, width = range === '24h' ? HALF_HOUR : DAY;
+  // The window ends at the next local boundary so the current bucket is complete.
+  const end_ms = (Math.floor((now+shift)/width)+1)*width-shift;
+  return {start_ms:end_ms-RANGES[range].days*DAY,end_ms,utc_offset_minutes:minutes,dimension:grouping,
+    projects:[],worktrees:[],providers:[],models:[],before:null};
 }
 export class State {
   constructor(node) {
-    this.node=nodeId(node);this.days=365;this.query=query(this.days);this.period='daily';
+    this.node=nodeId(node);this.range='30d';this.breakdown='model';this.expanded=false;this.query=query(this.range);
     this.generation=0;this.cursor='';this.page=1;this.cursors=[null];this.view=null;this.previous=null;
   }
   data() {return this.previous ?? this.view?.report ?? null;}
   ready() {return !this.previous && !!this.data() && this.view.connected && !this.view.refreshing && !this.view.error;}
   reset() {this.page=1;this.cursors=[null];this.query.before=null;this.previous=null;}
+  /** Moves the window to the current time; true when its bounds changed. */
+  advance(now = Date.now()) {
+    const current=query(this.range,now);
+    if(['start_ms','end_ms','utc_offset_minutes'].every(key=>current[key]===this.query[key]))return false;
+    Object.assign(this.query,{start_ms:current.start_ms,end_ms:current.end_ms,utc_offset_minutes:current.utc_offset_minutes});
+    return true;
+  }
   select(field,value) {
     const previous=this.data();
-    if (field === 'range') {this.days=Number(value);Object.assign(this.query,query(this.days),{projects:this.query.projects,providers:this.query.providers,models:this.query.models});}
+    if (field === 'range') {
+      if(!RANGES[value])return false;
+      const {dimension,projects,providers,models}=this.query;
+      this.range=value;Object.assign(this.query,query(value),{dimension,projects,providers,models});
+    }
     else if(field === 'project') {this.query.projects=value ? [value] : [];this.query.worktrees=[];this.query.providers=[];this.query.models=[];}
     else if(field === 'provider') {this.query.providers=value ? [value] : [];this.query.models=[];}
     else if(field === 'model') this.query.models=value ? [value] : [];
     else return false;
     this.reset();this.previous=previous;this.view=null;return true;
+  }
+  /** Switches the breakdown; true when the report must be read with another grouping. */
+  group(value) {
+    if(!DIMENSIONS.includes(value) || value===this.breakdown)return false;
+    this.breakdown=value;this.expanded=false;
+    if(dimension(value)===this.query.dimension)return false;
+    // Request pages do not depend on the grouping, so the current page is kept.
+    this.previous=this.data();this.query.dimension=dimension(value);this.view=null;return true;
   }
   turn(page) {
     if(!this.ready() || page<1 || page===this.page || page>this.cursors.length+1)return false;

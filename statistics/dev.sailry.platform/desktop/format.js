@@ -9,10 +9,24 @@ export function compact(value) {
   }
   return String(value);
 }
+/** Exact integer with thousands separators. */
+export function grouped(value) {
+  return value == null ? null : String(integer(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+/** Percentage of `part` in `whole`, or null without a positive whole. */
+export function ratio(part,whole) {
+  return part == null || whole == null || integer(whole) <= 0n ? null : Number(integer(part)) * 100 / Number(integer(whole));
+}
 export function amount(micros) {
   if (micros == null) return null;
   micros = integer(micros);
   return `${micros / 1000000n}.${String(micros % 1000000n / 10000n).padStart(2,'0')}`;
+}
+/** Per-response cost keeps sub-cent precision. */
+export function price(micros) {
+  if (micros == null) return null;
+  micros = integer(micros);
+  return `${micros / 1000000n}.${String(micros % 1000000n).padStart(6,'0').slice(0,4)}`;
 }
 export function cache(usage) {
   if (!usage || integer(usage.input) === 0n) return null;
@@ -36,19 +50,4 @@ export function context(tokens,limit) {
 }
 export function severity(percent) {
   return percent == null || percent < 80 ? 'muted' : percent < 100 ? 'warning' : 'danger';
-}
-export function ranking(groups) {
-  return groups.filter(entry => entry.group.key.kind === 'model').map(entry => ({...entry,tokens:total(entry.group.metrics.tokens)}))
-    .sort((left,right) => {
-      if (left.tokens !== right.tokens) {
-        if (left.tokens === null) return 1;
-        if (right.tokens === null) return -1;
-        return left.tokens > right.tokens ? -1 : 1;
-      }
-      const a = left.group.key.data, b = right.group.key.data;
-      for (const [first,second] of [[a.model,b.model],[left.node,right.node],[a.provider,b.provider]]) {
-        if (first !== second) return first < second ? -1 : 1;
-      }
-      return 0;
-    });
 }

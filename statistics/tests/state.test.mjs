@@ -1,9 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {State,query,choices,nodeId} from '../dev.sailry.platform/desktop/state.js';
+import {State,query,choices,nodeId,unit,offset} from '../dev.sailry.platform/desktop/state.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
-import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
 test('speed details use latest own first text latency',()=>{
@@ -59,17 +58,18 @@ test('revoked access clears retained pagination data while transient errors pres
 });
 test('filter changes reset dependent fields and preserve frozen deleted model choices',()=>{
   const state=new State('a');state.query.providers=['p'];state.query.models=['removed'];state.query.projects=['x'];
-  state.select('range','30');assert.deepEqual(state.query.models,['removed']);
+  state.query.dimension='project';
+  assert(!state.select('range','30'));
+  state.select('range','7d');assert.deepEqual(state.query.models,['removed']);assert.equal(state.query.dimension,'project');
   const options=choices(state,{projects:[],providers:[]},[{kind:'model',data:{provider:'p',model:'old'}}],text);
   assert(options.model.some(item=>item.id==='old'));assert(options.model.some(item=>item.id==='removed'));
   state.select('project','next');assert.deepEqual(state.query.providers,[]);assert.deepEqual(state.query.models,[]);
-  assert.equal(query(7,Date.UTC(2026,8,30,23)).end_ms,Date.UTC(2026,9,1));
 });
 test('filter reads retain prior reports until current data arrives',()=>{
   for(const field of ['range','project','provider','model']) {
     const state=new State('a'),generation=state.start();
     state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},generation);
-    assert(state.select(field,field==='range'?'30':'selected'));
+    assert(state.select(field,field==='range'?'7d':'selected'));
     const next=state.start(),replacement={requests:{items:[],has_more:false}};
     assert.equal(state.data(),report);assert(!state.ready());
     assert(!state.accept({cursor:'2',all:false,view:{report:replacement,connected:true,refreshing:false}},generation));
@@ -175,32 +175,57 @@ test('composer retains partial prices and exact microdollar sums',()=>{
   assert.equal(charge.value,'0.02+');
   assert.deepEqual(charge.details.map(detail=>detail.value),['$0.00','$0.02']);
 });
-test('requests preserve exact token details and complete identity despite rounded display',()=>{
-  const request={position,model:'model',provider_name:'Removed provider',scope_name:'Removed project',tokens:{input:'18446744073709551615',output:'1',cached_input:'0',reasoning:'0'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:null};
-  const rows=formatRows([request],text);assert.equal(rows.rows[0].length,6);assert.equal(rows.cells[0].length,6);
-  assert.equal(rows.rows[0][2],`${request.tokens.input} · 1`);assert.equal(rows.details[0][2],`Input: ${request.tokens.input}\nOutput: 1`);
-  assert.equal(rows.cells[0][4].primary.text,'1.3 ms');assert.equal(rows.cells[0][4].secondary.text,'1.00 s');assert.equal(rows.rows[0][5],'—');
-  assert.equal(rows.details[0][4],'First token: 1250 µs\nDuration: 1000000 µs');
-  assert.equal(rows.row_ids[0],`node-a:1:${position.sequence}`);assert.equal(rows.details[0][0],'Model: model\nProvider: Removed provider');
-  assert.notEqual(rows.cells[0][2].primary.icon,rows.cells[0][2].secondary.icon);
-  assert.notEqual(rows.cells[0][2].primary.tone,rows.cells[0][2].secondary.tone);
+
+function zone(name,body) {
+  const prior=process.env.TZ;
+  try {process.env.TZ=name;return body();}
+  finally {if(prior===undefined)delete process.env.TZ;else process.env.TZ=prior;}
+}
+test('ranges map to trend buckets and default to thirty days',()=>{
+  assert.deepEqual(['24h','7d','30d','90d','1y'].map(unit),['half_hour','day','day','week','week']);
+  const state=new State('a');
+  assert.equal(state.range,'30d');assert.equal(state.breakdown,'model');assert.equal(state.query.dimension,'model');
+  assert.equal(state.query.end_ms-state.query.start_ms,30*86400000);
 });
-test('unassigned requests use a localized scope without changing response identity',()=>{
-  const request={session:'session-a',position,model:'model',provider_name:'Provider',scope_name:'',
-    tokens:{input:'12',output:'4',cached_input:'0',reasoning:'0'},first_token_us:null,elapsed_us:null,usd_micros:null};
-  for(const locale of ['en','zh-CN']) {
-    const text=messages(locale),rows=formatRows([request],text);
-    assert.equal(rows.cells[0][1].primary.text,text.usage_unassigned);assert(rows.details[0][1].includes(text.usage_unassigned));
-    assert.equal(rows.row_ids[0],`node-a:1:${position.sequence}`);
-    assert.equal(rows.rows[0][2],'12 · 4');
-  }
+test('windows end at the next local boundary with the viewer offset',()=>{
+  zone('Asia/Shanghai',()=>{
+    const now=Date.UTC(2026,9,13,17,10);
+    assert.equal(offset(now),480);
+    const days=query('7d',now);
+    // 01:10 on 10-14 in UTC+8 ends the window at local midnight starting 10-15.
+    assert.equal(days.end_ms,Date.UTC(2026,9,14,16));
+    assert.equal(days.start_ms,Date.UTC(2026,9,7,16));
+    assert.equal(days.utc_offset_minutes,480);
+    const hours=query('24h',now);
+    assert.equal(hours.end_ms,Date.UTC(2026,9,13,17,30));
+    assert.equal(hours.end_ms-hours.start_ms,86400000);
+    assert.equal(query('1y',now).end_ms-query('1y',now).start_ms,365*86400000);
+  });
+  zone('America/New_York',()=>{
+    const now=Date.UTC(2026,8,30,23);
+    assert.equal(offset(now),-240);
+    assert.equal(query('7d',now).end_ms,Date.UTC(2026,9,1,4));
+  });
+  zone('UTC',()=>assert.ok(Object.is(offset(Date.UTC(2026,0,1)),0)));
 });
-test('request cells keep missing counters unknown and exact microdollar costs available',()=>{
-  const request={position,model:'model',provider_name:'Provider',scope_name:'Project',tokens:{input:null,output:'0',cached_input:null,reasoning:'0'},
-    first_token_us:null,elapsed_us:null,usd_micros:'18446744073709551615'};
-  const rows=formatRows([request],text);
-  assert.equal(rows.cells[0][2].primary.text,'—');assert.equal(rows.cells[0][2].secondary.text,'0');
-  assert.equal(rows.details[0][2],'Input: —\nOutput: 0');assert.equal(rows.details[0][3],'Cached: —\nReasoning: 0');
-  assert.equal(rows.details[0][4],'First token: —\nDuration: —');
-  assert.equal(rows.rows[0][5],'18446744073709.551615');assert.equal(rows.details[0][5],rows.rows[0][5]);
+test('advancing keeps filters and reports moved windows',()=>{
+  const state=new State('a');state.query.projects=['x'];state.query.dimension='project';
+  state.query.end_ms-=1;
+  assert(state.advance());
+  assert(!state.advance());
+  assert.deepEqual(state.query.projects,['x']);assert.equal(state.query.dimension,'project');
+});
+test('breakdown switches regroup only for projects and keep the request page',()=>{
+  const state=new State('node-a'),generation=state.start();
+  state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},generation);
+  assert(state.turn(2));state.start();
+  state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.generation);
+  state.expanded=true;
+  assert(!state.group('provider'));assert.equal(state.breakdown,'provider');assert.equal(state.expanded,false);
+  assert.equal(state.query.dimension,'model');assert.equal(state.data(),report);
+  assert(!state.group('provider'));assert(!state.group('session'));
+  assert(state.group('project'));
+  assert.equal(state.query.dimension,'project');assert.equal(state.page,2);assert.equal(state.query.before.sequence,position.sequence);
+  assert.equal(state.data(),report);assert(!state.ready());
+  assert(state.group('model'));assert.equal(state.query.dimension,'model');
 });

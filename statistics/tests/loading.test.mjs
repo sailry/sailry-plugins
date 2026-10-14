@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {State} from '../dev.sailry.platform/desktop/state.js';
+import {State,unit,DIMENSIONS} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
-import {compact,total,integer,amount,speed,ranking} from '../dev.sailry.platform/desktop/format.js';
-import {heatmap,trend} from '../dev.sailry.platform/desktop/charts.js';
+import {compact,grouped} from '../dev.sailry.platform/desktop/format.js';
+import {heatmap,trend,SERIES} from '../dev.sailry.platform/desktop/charts.js';
+import {overview,percent} from '../dev.sailry.platform/desktop/summary.js';
+import {breakdown,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
 import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
@@ -26,12 +28,12 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['Header','EmptyState','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading']
+  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
-  const constructors=Object.fromEntries(['Icon','Progress','Tab','TabBar','Pagination']
+  const constructors=Object.fromEntries(['Button','Progress','Tab','TabBar','Tag','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),...adapters,...constructors,compact,total,integer,amount,speed,ranking,heatmap,trend,formatRows,
+    div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,VISIBLE,formatRows,unit,DIMENSIONS,
     theme:()=>({colors:{muted_foreground:'muted'}}),window:{viewport_size:()=>({width:1440})},
   });
   const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'})};
@@ -44,7 +46,7 @@ test('initial reads use shared rows without fabricated usage',()=>{
     setup.view.error=error;setup.render();
     assert.equal(setup.nodes.get('usage-initial-loading').kind,'Loading');
     assert.equal(setup.nodes.has('usage-summary'),false);
-    assert.equal(setup.nodes.has('usage-ranking-empty'),false);
+    assert.equal(setup.nodes.has('usage-breakdown'),false);
     assert.equal(setup.nodes.has('usage-requests'),false);
     assert.ok(setup.nodes.has('usage-header'));assert.ok(setup.nodes.has('usage-content'));
   }
@@ -52,11 +54,11 @@ test('initial reads use shared rows without fabricated usage',()=>{
 
 test('filter refreshes retain report sections and avoid flow changes',()=>{
   const setup=fixture(),{state}=setup.view;
-  const report={node:'captured',totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],groups:[],requests:{items:[],has_more:false}};
+  const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   setup.render();
   const selectors=setup.nodes.get('usage-content').items.map(item=>item.selector);
-  assert.deepEqual(selectors,['usage-summary','usage-activity-card','usage-trend-card','usage-ranking-card','usage-requests-card']);
+  assert.deepEqual(selectors,['usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
   state.select('project','selected');const generation=state.start();
   for(const observation of [null,{report:null,connected:true,refreshing:true},
     {report:null,connected:true,refreshing:false,error:{code:'unavailable'}}]) {
@@ -72,4 +74,15 @@ test('filter refreshes retain report sections and avoid flow changes',()=>{
       assert.deepEqual(plain(wrapper.style.top_0),[]);
     } else assert.equal(setup.nodes.has('usage-loading'),false);
   }
+});
+
+test('one-year ranges add the fitted heatmap below the trend',()=>{
+  const setup=fixture(),{state}=setup.view;
+  const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
+  state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
+  setup.render();
+  assert.ok(setup.nodes.has('usage-trend-day'));assert.equal(setup.nodes.has('usage-heatmap-plot'),false);
+  state.range='1y';setup.render();
+  assert.ok(setup.nodes.has('usage-trend-week'));
+  assert.equal(setup.nodes.get('usage-heatmap-plot').kind,'Heatmap');
 });
