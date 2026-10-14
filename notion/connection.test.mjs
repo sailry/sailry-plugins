@@ -31,7 +31,7 @@ test('declares the official remote connection', () => {
 });
 
 test('declares a card-only entry with native named targets', () => {
-  assert.equal(manifest.version, '0.1.3');
+  assert.equal(manifest.version, '0.1.4');
   assert.equal(extension.desktop.entry, undefined);
   assert.equal(extension.desktop.navigation, undefined);
   assert.equal(extension.tools[0].handler.read_only, true);
@@ -67,7 +67,12 @@ test('mount reads status but login remains a native gesture', async () => {
   const jobs = [], actions = [], cards = [];
   let statusReads = 0;
   const element = new Proxy({}, {get:() => () => element});
-  const NativeAction = {new(id,props) {actions.push({id,...props}); return element;}};
+  // These keys are embedded by the public desktop asset source, unlike the full Kit catalog.
+  const availableIcons = new Set(['reicon:arrows/arrow-up-right','icons/external-link.svg','icons/close.svg','icons/refresh-cw.svg']);
+  const NativeAction = {new(id,props) {
+    assert.ok(availableIcons.has(props.icon), `unregistered action icon: ${props.icon}`);
+    actions.push({id,...props}); return element;
+  }};
   class NativeAttachment { constructor(id) {cards.push(id); return element;} }
   class NativeIcon { constructor() {return element;} }
   const Connection = create(class {}, () => element, NativeAttachment, NativeIcon, NativeAction,
@@ -82,11 +87,14 @@ test('mount reads status but login remains a native gesture', async () => {
   view.render(cx);
   assert.deepEqual(cards, ['notion-connection-card']);
   assert.deepEqual(actions.filter(action => action.action.kind === 'connect').map(action => action.action.mode), ['embedded','external']);
+  assert.equal(actions.find(action => action.id === 'notion-login').icon, 'reicon:arrows/arrow-up-right');
   assert.ok(actions.every(action => action.icon && action.label), 'native icon actions retain accessible labels');
   assert.ok(actions.every(action => !('on_click' in action)), 'package never receives a callable login bridge');
   actions.length = 0; view.state.login = 'pending'; view.state.can_open = true; view.state.can_cancel = true;
   view.render(cx);
   assert.deepEqual(actions.map(action => action.action.kind), ['browser','browser','cancel','refresh']);
+  assert.equal(actions.find(action => action.id === 'notion-open-login').icon, 'reicon:arrows/arrow-up-right');
+  assert.equal(actions.find(action => action.id === 'notion-cancel-login').icon, 'icons/close.svg');
   assert.ok(actions.filter(action => action.action.kind === 'browser').every(action => !action.disabled));
   assert.ok(!actions.some(action => action.action.kind === 'connect'), 'reopening preserves the active attempt');
   for (const login of ['unconfirmed','failed']) {

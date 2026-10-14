@@ -47,16 +47,16 @@ export default class Connection extends View {
           .child(div().text_sm().text_color(colors.muted_foreground).child(statusLabel)))
         .child(div().h_flex().gap_1().flex_wrap()
         .children(!state.configured && !pending ? [
-          Action.new("notion-login", {label:unknown ? text.check : text.login, icon:unknown ? "icons/refresh-cw.svg" : "icons/arrow-up-right.svg", disabled:busy,
+          Action.new("notion-login", {label:unknown ? text.check : text.login, icon:unknown ? "icons/refresh-cw.svg" : "reicon:arrows/arrow-up-right", disabled:busy,
             action:unknown ? {kind:"connect"} : {kind:"connect",target:"login",mode:"embedded"}}),
           ...(!unknown ? [Action.new("notion-login-external", {label:text.external,icon:"icons/external-link.svg",disabled:busy,
             action:{kind:"connect",target:"login",mode:"external"}})] : []),
         ] : [])
         .children(pending ? [
-          Action.new("notion-open-login", {label:text.open,icon:"icons/arrow-up-right.svg",disabled:busy || !state.can_open,action:{kind:"browser",target:"login",mode:"embedded"}}),
+          Action.new("notion-open-login", {label:text.open,icon:"reicon:arrows/arrow-up-right",disabled:busy || !state.can_open,action:{kind:"browser",target:"login",mode:"embedded"}}),
           Action.new("notion-open-external", {label:text.openExternal,icon:"icons/external-link.svg",disabled:busy || !state.can_open,action:{kind:"browser",target:"login",mode:"external"}}),
         ] : [])
-        .children(state.can_cancel ? [Action.new("notion-cancel-login", {label:text.cancel,icon:"icons/x.svg",disabled:busy,action:{kind:"cancel"}})] : [])
+        .children(state.can_cancel ? [Action.new("notion-cancel-login", {label:text.cancel,icon:"icons/close.svg",disabled:busy,action:{kind:"cancel"}})] : [])
         .child(Action.new("notion-refresh", {label:text.refresh,icon:"icons/refresh-cw.svg",disabled:busy,action:{kind:"refresh"}}))));
   }
 }
