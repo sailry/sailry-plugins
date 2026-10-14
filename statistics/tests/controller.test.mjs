@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {State,RANGES,DIMENSIONS,query,choices} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {compact,grouped,duration} from '../dev.sailry.platform/desktop/format.js';
-import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
+import {formatRows,mark} from '../dev.sailry.platform/desktop/requests.js';
 import {breakdown,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
 import {percent} from '../dev.sailry.platform/desktop/summary.js';
 
@@ -147,7 +147,7 @@ function elements(extra={}) {
   const constructors=Object.fromEntries(['Button','Tab','TabBar','Tag','Pagination','Progress']
     .map(kind=>[kind,function(id){return element(kind,id);}]));
   const context={div:()=>element(),theme:()=>({colors:{muted_foreground:'muted'}}),...adapters,...constructors,
-    compact,grouped,percent,breakdown,VISIBLE,DIMENSIONS,formatRows,...extra};
+    compact,grouped,percent,breakdown,VISIBLE,DIMENSIONS,formatRows,mark,...extra};
   return {nodes,context};
 }
 const viewSource=async()=>(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
@@ -156,7 +156,8 @@ const viewSource=async()=>(await readFile(new URL('../dev.sailry.platform/deskto
 test('breakdown tables reuse one card and fold beyond six rows',async()=>{
   const {nodes,context}=elements(),groups=[];
   const {card,distribution}=vm.runInNewContext(`${await viewSource()}\n({card,distribution})`,context);
-  const notices=[],view={text:messages('en'),state:new State(node),group:value=>notices.push(value)},data={node,groups,query:{dimension:'model'}};
+  const notices=[],view={text:messages('en'),state:new State(node),group:value=>notices.push(value),
+    inventory:{node,projects:[],providers:[{id:'p',name:'Provider',icon:'icons/providers/openai.svg',models:[]}]}},data={node,groups,query:{dimension:'model'}};
   card('usage-breakdown-card',distribution(view,data));
   const group=nodes.get('usage-breakdown-card-box');
   assert.equal(group.kind,'SettingsGroup');assert.deepEqual(plain(group.props),{heading:false});
@@ -164,6 +165,7 @@ test('breakdown tables reuse one card and fold beyond six rows',async()=>{
   assert.equal(table.kind,'DataTable');assert.deepEqual(plain(table.props.rows),[]);
   assert.equal(table.props.empty,view.text.usage_empty);assert.equal(table.props.header_height,32);
   assert.deepEqual(plain(table.props.columns),['Name','Share','Tokens','Cache hits','Responses','Cost']);
+  assert.equal(table.props.fill,1);
   assert.equal(nodes.has('usage-breakdown-more'),false);
   const tabs=nodes.get('usage-breakdown-tabs');
   assert.equal(tabs.calls.selected_index[0],0);assert.equal(tabs.items.length,3);
@@ -173,10 +175,12 @@ test('breakdown tables reuse one card and fold beyond six rows',async()=>{
   nodes.clear();distribution(view,data);table=nodes.get('usage-breakdown');
   assert.equal(table.props.rows.length,VISIBLE);
   assert.equal(table.props.cells[0][0].primary.note,'Provider');
-  assert.equal(table.props.cells[0][1].primary.meter.width,120);
+  assert.equal(table.props.cells[0][0].primary.badge_icon,'icons/providers/openai.svg');
+  const meter=table.props.cells[0][1].primary.meter;
+  assert.equal(meter.fill,true);assert.equal(meter.width,undefined);
   assert.equal(table.props.rows[0][0],'m0 · Provider');
   const more=nodes.get('usage-breakdown-more');
-  assert.equal(more.calls.label[0],'Show all 7');
+  assert.equal(more.calls.label[0],'Show all');
   more.calls.on_click[0](null,{notify(){}});
   nodes.clear();distribution(view,data);
   assert.equal(nodes.get('usage-breakdown').props.rows.length,VISIBLE+1);
@@ -206,19 +210,23 @@ test('filters render above the cards and drive queries',async()=>{
   assert.equal(setup.calls.filter(call=>call[0]==='watch').length,3);
 });
 
-test('request tables use eight one-line columns with a total footer',async()=>{
+test('request tables fill the session column and split cache hits',async()=>{
   const {nodes,context}=elements();
   const {requests}=vm.runInNewContext(`${await viewSource()}\n({requests})`,context);
-  const state=new State(node),request={position:{node,timestamp_ms:'1',sequence:'1'},model:'Model',provider_name:'Provider',scope_name:'Project',
+  const state=new State(node),request={position:{node,timestamp_ms:'1',sequence:'1'},model:'Model',provider:'p',provider_name:'Provider',scope_name:'Project',
     session_title:'Title',tokens:{input:'1200',output:'340',cached_input:'100',reasoning:'20'},first_token_us:'1250',elapsed_us:'1000000',usd_micros:'123'};
   const data=items=>({totals:{responses:'1234'},requests:{items,has_more:false}});
-  const content=requests({state,text:messages('en')},data([request])),table=nodes.get('usage-requests');
+  const inventory={node,projects:[],providers:[{id:'p',name:'Provider',icon:'icons/providers/xai.svg',models:[]}]};
+  const content=requests({state,text:messages('en'),inventory},{...data([request]),node}),table=nodes.get('usage-requests');
   assert.equal(content.items[1].selector,'usage-table');assert.equal(nodes.get('usage-table').calls.h[0],72);
   assert.equal(table.kind,'DataTable');assert.equal(table.props.row_height,40);assert.equal(table.props.header_height,32);
-  assert.deepEqual(plain(table.props.columns),['Time','Session','Model','Input · Cache','Output','First token','Duration','Cost']);
-  assert.deepEqual(plain(table.props.alignments),['start','start','start','end','end','end','end','end']);
-  assert.equal(table.props.widths.length,8);
-  assert.equal(table.props.cells[0][1].primary.chip,'Project');assert.equal(table.props.rows[0][7],'0.000123');
+  assert.deepEqual(plain(table.props.columns),['Time','Session','Model','Input','Cached','Output','First token','Duration','Cost']);
+  assert.deepEqual(plain(table.props.alignments),['start','start','start','end','end','end','end','end','end']);
+  assert.equal(table.props.widths.length,9);assert.equal(table.props.fill,1);
+  assert(table.props.widths.slice(5).every(width=>width>=72));
+  assert.equal(table.props.cells[0][1].primary.chip,'Project');assert.equal(table.props.rows[0][8],'0.000123');
+  assert.equal(table.props.cells[0][2].primary.badge_icon,'icons/providers/xai.svg');
+  assert.equal(table.props.cells[0][4].primary.meter.label,'8%');
   assert.equal(nodes.get('usage-pagination').items[0].items[0],'1,234 total');
   assert.equal(nodes.has('usage-pages'),false);
   requests({state,text:messages('en')},{...data([]),requests:{items:[],has_more:true}});

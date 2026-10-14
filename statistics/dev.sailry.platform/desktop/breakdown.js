@@ -22,8 +22,8 @@ function identity(group, mode, names, text) {
   const {kind, data} = group.key;
   const provider = id => group.name ?? names.providers.get(id) ?? id.slice(0, 8);
   if (kind === 'model') {
-    if (mode === 'model') return {id:`${data.provider}:${data.model}`, name:data.model, note:provider(data.provider)};
-    if (mode === 'provider') return {id:data.provider, name:provider(data.provider), note:null};
+    if (mode === 'model') return {id:`${data.provider}:${data.model}`, name:data.model, note:provider(data.provider), provider:data.provider};
+    if (mode === 'provider') return {id:data.provider, name:provider(data.provider), note:null, provider:data.provider};
     return null;
   }
   if (mode !== 'project') return null;
