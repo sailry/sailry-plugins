@@ -7,23 +7,33 @@ import {statusColors,statusColor} from './state.js';
 import {ROOMS,WORLD_WIDTH,WORLD_HEIGHT,PERSON_SIZE,DESK_WIDTH,DESK_HEIGHT,SEATED,STANDING,ATRIUM,seatPosition,approvalPosition} from './geometry.js';
 export const variants = {waiting:'warning',running:'primary',completed:'success',failed:'danger',idle:'secondary'};
 
-// Room chrome stays at theme size; only the scene geometry follows the scale.
+// Room chrome stays at theme size; the scene geometry follows the scale.
 export const BOARD = {padding_x:12,padding_y:10,row_gap:4,clearance:6,hang:0.65,radius:4,line:1.2};
-export const PAGER = {button:22,height:20,gap:4,padding:6};
+export const PAGER = {button:22,height:20,gap:4,offset:4};
 const CORNER = 4;
 const deskTop = index => seatPosition(index,0).y - 14 - DESK_HEIGHT - ROOMS[index].bounds.y;
+const shrink = scale => Math.min(1,scale);
+
+// Small scenes trim the board's vertical padding and desk clearance, so each
+// pager below its room still clears the next row's whiteboard.
+export function boardPadding(scale) {
+  return BOARD.padding_y * shrink(scale) ** 2;
+}
+export function boardClearance(scale) {
+  return BOARD.clearance * shrink(scale);
+}
 
 export function boardWidth(index,scale) {
   return Math.max(ROOMS[index].board.width * scale,220);
 }
 // Name, count and label lines at their theme sizes, plus padding and the 1px border.
-export function boardHeight(rem) {
-  return rem * BOARD.line * (0.875 + 0.875 + 0.75) + BOARD.row_gap + BOARD.padding_y * 2 + 2;
+export function boardHeight(rem,scale) {
+  return rem * BOARD.line * (0.875 + 0.875 + 0.75) + BOARD.row_gap + boardPadding(scale) * 2 + 2;
 }
-// The board straddles the room's top edge and keeps a fixed gap above the desks.
+// The board straddles the room's top edge and keeps a gap above the desks.
 export function boardTop(index,scale,rem) {
-  const height = boardHeight(rem);
-  return ROOMS[index].bounds.y * scale + Math.min(deskTop(index) * scale - BOARD.clearance,height * BOARD.hang) - height;
+  const height = boardHeight(rem,scale);
+  return ROOMS[index].bounds.y * scale + Math.min(deskTop(index) * scale - boardClearance(scale),height * BOARD.hang) - height;
 }
 // The widest label reserves a stable width, so paging never shifts the controls.
 export function pagerWidth(value,rem) {
@@ -37,10 +47,10 @@ function board(view,value,index,scale) {
     if (item.approval) counts.approval += 1;
     else if (item.lane in counts) counts[item.lane] += 1;
   }
-  const id = `plaza-room-${value?.key ?? index}`, width = boardWidth(index,scale), height = boardHeight(rem);
+  const id = `plaza-room-${value?.key ?? index}`, width = boardWidth(index,scale), height = boardHeight(rem,scale);
   const tone = state => !counts[state] ? colors.muted_foreground : state === 'idle' ? colors.foreground : colors[statusColors[state]];
   const entries = [['running',text.room_running],['approval',text.room_approvals],['completed',text.room_completed],['idle',text.room_idle]];
-  const label = div().v_flex().size_full().min_w_0().justify_center().gap(BOARD.row_gap).px(BOARD.padding_x).py(BOARD.padding_y)
+  const label = div().v_flex().size_full().min_w_0().justify_center().gap(BOARD.row_gap).px(BOARD.padding_x).py(boardPadding(scale))
     .text_color(colors.foreground).line_height(BOARD.line)
     .child(div().id(`${id}-name`).w_full().min_w_0().truncate().text_sm().font_semibold().child(value?.name ?? text.empty_room))
     .children(value ? [div().id(`${id}-statistics`).h_flex().w_full().min_w_0()
@@ -55,17 +65,15 @@ function board(view,value,index,scale) {
   return div().id(`${id}-board`).absolute().left((bounds.x + bounds.width / 2) * scale - width / 2).top(boardTop(index,scale,rem))
     .w(width).h(height).rounded(BOARD.radius).bg(colors.background).child(sign);
 }
-function outline(value,index,scale) {
-  const {bounds} = ROOMS[index], width = bounds.width * scale, height = bounds.height * scale, rem = window.rem_size();
-  const middle = width / 2, cover = boardWidth(index,scale) / 2, pager = pagerWidth(value,rem);
+function outline(index,scale) {
+  const {bounds} = ROOMS[index], width = bounds.width * scale, height = bounds.height * scale;
+  const middle = width / 2, cover = boardWidth(index,scale) / 2;
   const left = Math.max(middle - cover,CORNER), right = Math.min(middle + cover,width - CORNER), path = PathBuilder.stroke(1);
-  // The whiteboard covers the top edge between its borders; a paged room opens
-  // its bottom edge evenly around the centered pager.
+  // The whiteboard covers the top edge between its borders; the bottom edge stays continuous.
   path.move_to(right,0);
   if (right < width - CORNER) path.line_to(width - CORNER,0);
-  path.curve_to(width,CORNER,width,0).line_to(width,height - CORNER).curve_to(width - CORNER,height,width,height);
-  if (pager) path.line_to(middle + pager / 2 + PAGER.padding,height).move_to(middle - pager / 2 - PAGER.padding,height);
-  path.line_to(CORNER,height).curve_to(0,height - CORNER,0,height).line_to(0,CORNER).curve_to(CORNER,0,0,0);
+  path.curve_to(width,CORNER,width,0).line_to(width,height - CORNER).curve_to(width - CORNER,height,width,height)
+    .line_to(CORNER,height).curve_to(0,height - CORNER,0,height).line_to(0,CORNER).curve_to(CORNER,0,0,0);
   if (left > CORNER) path.line_to(left,0);
   return div().id(`plaza-room-outline-${index}`).absolute()
     .left(bounds.x * scale).top(bounds.y * scale).w(width).h(height)
@@ -75,9 +83,9 @@ function paging(view,value,index,scale) {
   const width = pagerWidth(value,window.rem_size());
   if (!width) return null;
   const {bounds} = ROOMS[index], colors = theme().colors, label = width - PAGER.button * 2 - PAGER.gap * 2;
-  // The pager shares the room's center and sits in the opening of its bottom edge.
+  // The pager shares the room's center just below its bottom edge.
   return div().id(`plaza-room-pages-${value.key}`).absolute()
-    .left((bounds.x + bounds.width / 2) * scale - width / 2).top((bounds.y + bounds.height) * scale - PAGER.height / 2)
+    .left((bounds.x + bounds.width / 2) * scale - width / 2).top((bounds.y + bounds.height + PAGER.offset) * scale)
     .w(width).h(PAGER.height).h_flex().items_center().gap(PAGER.gap).text_xs().text_color(colors.muted_foreground)
     .child(new Button(`plaza-room-prev-${value.key}`).ghost().size('small').p_0().w(PAGER.button).h(PAGER.height)
       .disabled(value.page === 0).tooltip(view.text.previous).child(new Icon('icons/chevron-left.svg').size('xsmall'))
@@ -117,7 +125,7 @@ function plaza(view,model,scale) {
 }
 export function scene(view,model,scale) {
   const world = div().id('plaza-world').relative().flex_shrink(0).w(WORLD_WIDTH * scale).h(WORLD_HEIGHT * scale)
-    .children(ROOMS.map((_room,index) => outline(model.visible[index],index,scale))).child(plaza(view,model,scale));
+    .children(ROOMS.map((_room,index) => outline(index,scale))).child(plaza(view,model,scale));
   const furnishings = [], people = [];
   for (let room = 0;room < 8;room += 1) {
     const value = model.visible[room];

@@ -26,7 +26,7 @@ function fixture(count=0) {
     if(kind==='ClampedText')result.child(props.text);
     return result;
   }}]));
-  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER})`,{
+  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER,boardPadding,boardClearance})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
     Tag:function(){return element('Tag');},Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{background:'background',surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
@@ -208,7 +208,9 @@ test('whiteboards stay opaque and padded behind the hover tint',()=>{
   assert.deepEqual([sign.style.w[0],sign.style.h[0]],[backing.style.w[0],backing.style.h[0]]);
   for(const node of [backing,sign])assert.equal(node.style.opacity,undefined);
   assert.equal(sign.style.hover,undefined);
-  assert.deepEqual(plain([label.style.px,label.style.py]),[[setup.BOARD.padding_x],[setup.BOARD.padding_y]]);
+  const scale=setup.nodes.get('plaza-world').style.w[0]/setup.WORLD_WIDTH;
+  assert.deepEqual(plain(label.style.px),[setup.BOARD.padding_x]);
+  assert.ok(Math.abs(label.style.py[0]-setup.boardPadding(scale))<1e-9);
 });
 
 test('whiteboards cover the opening in the top edge',()=>{
@@ -222,27 +224,40 @@ test('whiteboards cover the opening in the top edge',()=>{
   assert.deepEqual(plain([start[0],start[2],end[0],end[2]]),['move_to',0,'line_to',0]);
   assert.ok(Math.abs(start[1]-left-board.w[0])<1e-9&&Math.abs(end[1]-left)<1e-9);
   const desk=setup.nodes.get('plaza-desk-project-0').style;
-  assert.ok(Math.abs(desk.top[0]-board.top[0]-board.h[0]-setup.BOARD.clearance)<1e-9);
+  assert.ok(Math.abs(desk.top[0]-board.top[0]-board.h[0]-setup.boardClearance(scale))<1e-9);
 });
 
-test('pagers share the center of the bottom opening',()=>{
-  const opening=(setup,index)=>{
-    const outline=setup.nodes.get(`plaza-room-outline-${index}`),commands=outline.items[0].props.path.commands;
-    const at=commands.findIndex(([method,,y])=>method==='move_to'&&y===outline.style.h[0]);
-    return at<0?null:{left:commands[at][1],right:commands[at-1][1],width:outline.style.w[0]};
-  };
-  const paged=fixture(8);paged.render();
-  const pager=paged.nodes.get('plaza-room-pages-project').style,outline=paged.nodes.get('plaza-room-outline-0').style;
-  const gap=opening(paged,0);
-  assert.ok(Math.abs(pager.left[0]+pager.w[0]/2-(outline.left[0]+outline.w[0]/2))<1e-9);
-  assert.ok(Math.abs(pager.top[0]+pager.h[0]/2-(outline.top[0]+outline.h[0]))<1e-9);
-  assert.ok(Math.abs((gap.left+gap.right)/2-gap.width/2)<1e-9);
-  assert.ok(Math.abs(gap.right-gap.left-pager.w[0]-paged.PAGER.padding*2)<1e-9);
-  paged.click('plaza-room-next-project');paged.render();
-  assert.deepEqual(plain(paged.nodes.get('plaza-room-pages-project').style.w),plain(pager.w));
+test('pagers sit centered below continuous rooms',()=>{
+  const sizes=[[{width:900,height:1000},true,0.65],[{width:1600,height:1038},false,1]];
+  for(const [size,sidebar,expected] of sizes) {
+    const setup=fixture(8);
+    Object.assign(setup.viewport,size);setup.view.panelOpen=sidebar;setup.view.selected={kind:'room',id:'project'};setup.render();
+    const scale=setup.nodes.get('plaza-world').style.w[0]/setup.WORLD_WIDTH;
+    assert.ok(Math.abs(scale-expected)<1e-9);
+    const label=setup.nodes.get('plaza-room-project').items[0].style.py[0];
+    assert.ok(Math.abs(label-setup.BOARD.padding_y*Math.min(1,expected)**2)<1e-9);
+    const pager=setup.nodes.get('plaza-room-pages-project').style,outline=setup.nodes.get('plaza-room-outline-0').style;
+    const bottom=outline.top[0]+outline.h[0],next=setup.nodes.get('plaza-room-3-board').style;
+    assert.ok(Math.abs(pager.left[0]+pager.w[0]/2-(outline.left[0]+outline.w[0]/2))<1e-9);
+    assert.ok(pager.top[0]>=bottom&&pager.top[0]+pager.h[0]<=next.top[0]);
+    const people=[...setup.nodes.values()].filter(node=>/^plaza-session-\d+-position$/.test(node.selector));
+    assert.ok(people.length>0);
+    for(const {style:person} of people) {
+      assert.ok(person.top[0]+person.h[0]<=pager.top[0]||pager.top[0]+pager.h[0]<=person.top[0]||
+        person.left[0]+person.w[0]<=pager.left[0]||pager.left[0]+pager.w[0]<=person.left[0]);
+    }
+    setup.click('plaza-room-next-project');setup.render();
+    assert.deepEqual(plain(setup.nodes.get('plaza-room-pages-project').style.w),plain(pager.w));
+  }
   const single=fixture(4);single.render();
   assert.equal(single.nodes.has('plaza-room-pages-project'),false);
-  for(let index=0;index<8;index++)assert.equal(opening(single,index),null);
+  for(const setup of [fixture(8),single]) {
+    setup.render();
+    for(let index=0;index<8;index++) {
+      const commands=setup.nodes.get(`plaza-room-outline-${index}`).items[0].props.path.commands;
+      assert.equal(commands.filter(([method])=>method==='move_to').length,1);
+    }
+  }
 });
 
 test('taller whiteboards leave desks and page controls clear',()=>{
