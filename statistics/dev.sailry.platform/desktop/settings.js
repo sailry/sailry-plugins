@@ -74,10 +74,10 @@ export default class Usage extends View {
   page(value,cx) {if(this.state.turn(value))this.observe(cx);}
   header() {
     const state=this.state,text=this.text,options=choices(state,this.inventory,this.resources,text);
-    const field=(name,label,items,selected,primary=false)=>({id:`usage-filter-${name}`,label,items:items.map(item=>({...item,id:`${state.generation}:${item.id}`})),selected:`${state.generation}:${selected}`,primary});
+    const field=(name,label,items,selected,primary=false,searchable=false)=>({id:`usage-filter-${name}`,label,items:items.map(item=>({...item,id:`${state.generation}:${item.id}`})),selected:`${state.generation}:${selected}`,primary,searchable});
     return {title:text.usage,filters_label:text.usage_filters,filters:[
       field('range',text.usage_range,[7,30,90,365].map(days=>({id:String(days),label:text.usage_range_days.replace('%{days}',days)})),String(state.days),true),
-      ...['project','provider','model'].map(name=>field(name,text[`usage_all_${name}s`],options[name],state.query[`${name}s`][0] ?? ''))],
+      ...['project','provider','model'].map(name=>field(name,text[`usage_all_${name}s`],options[name],state.query[`${name}s`][0] ?? '',false,true))],
       actions:[{id:'usage-refresh',label:text.usage_refresh,icon:'icons/rotate-cw.svg',disabled:state.view?.refreshing ?? false}]};
   }
   render() {return render(this);}

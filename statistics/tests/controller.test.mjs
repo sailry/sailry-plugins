@@ -53,6 +53,7 @@ test('uses the bound Shell host and rejects page-level host changes', async () =
   const setup = fixture(), header = setup.view.header();
   assert.equal(header.title, 'Usage');
   assert.deepEqual(plain(header.filters.map(filter => filter.id)), ['usage-filter-range','usage-filter-project','usage-filter-provider','usage-filter-model']);
+  assert.deepEqual(plain(header.filters.map(filter => filter.searchable)), [false,true,true,true]);
   setup.select('host',remote);
   setup.select('host','all');
   setup.select('provider','selected');
