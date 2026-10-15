@@ -54,10 +54,12 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 | `instructions` | Short package instructions supplied to the model together with the package's tools |
 | `settings_schema` | Path to a settings form schema, such as `dev.sailry.platform/settings.json` |
 | `settings_page` | Settings navigation entry, with an optional custom desktop `entry` |
+| `registration` | Provider application creation bound to public and protected settings fields |
 | `storage` | Optional JSON schemas for private storage collections |
 | `tools` | Agent tools; see `tools.md` |
 | `host` | Headless callback entry; see `host.md` |
 | `desktop`, `ui` | Panels, navigation, assistants and controls; see `desktop.md` |
+| `cards` | Controller-rendered content cards owned by the package |
 
 ### Localized text
 
@@ -85,7 +87,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `projects.read` | The registered project catalog |
 | `conversation.read`, `conversation.control` | The captured conversation; sending messages and stopping turns |
 | `sessions.start` | Starting new conversations |
-| `models.read`, `models.generate` | The model catalog; model requests through the Node |
+| `models.read`, `models.install`, `models.generate` | The model catalog, managed installation and model requests through the Node |
 | `notifications.publish` | Application notifications |
 | `dispatch.manage` | Scheduled and queued plugin work |
 | `process.read`, `process.control`, `terminals.read`, `terminals.control` | Commands and terminals |
@@ -147,5 +149,10 @@ Skill files are limited to 128 KiB, with up to 64 skills per package. Other file
 - `x-sailry-model: true` renders a model picker. A separate string field with `"x-sailry-model-effort": "model"` renders the reasoning-effort picker for the model field named `model`.
 - `x-sailry-tabs` groups fields into tabs: `[{"id": "general", "title": "General", "fields": ["base_url"]}]`.
 - Add `"settings_page": {"navigation": {"label": "Release notes"}}` to give the form its own entry in Settings.
+
+An optional `registration` binds provider-owned application creation to existing
+settings fields. Its `client_id` names a public string field and `client_secret`
+names that provider's protected application-secret field. Keep provider scopes in
+`tenant_scopes`; registration and account OAuth are separate declarations.
 
 Read values with `readSettings()` from the SDK, or with a tool bound to the `settings.read` operation.

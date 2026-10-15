@@ -16,7 +16,7 @@ export function render(view) {
   })});
   const content = state.artifact ? ArtifactSurface.new(`brief-preview-${state.artifact.id}`,{
     artifact:state.artifact.id,...(state.follow && !state.loading && state.revision === state.artifact.revision
-      ? {} : {revision:state.artifact.revision}),
+      ? {} : {revision:state.follow ? state.artifact.revision : state.revision}),
     labels:{contents:text.brief_contents,submit:text.brief_submit,required:text.brief_form_required,
       invalid_form:text.brief_form_invalid},
   }) : state.loading ? Loading.new('brief-loading')

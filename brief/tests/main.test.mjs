@@ -101,20 +101,26 @@ test('header leaves export captured revisions without replaying cancellation',as
   owner.view.release();
 });
 
-test('header dispatch retains unavailable busy and preview export guards',async()=>{
+test('header dispatch retains guards while refresh keeps export',async()=>{
   const owner=fixture(()=>Promise.resolve(content(2)));
   await settle();
-  for(const field of ['connected','loading','exporting']) {
-    owner.view.state[field]=field==='connected'?false:true;
-    owner.header('brief-export-html');await settle();assert.deepEqual(owner.exports,[]);
-    owner.view.state[field]=field==='connected'?true:false;
-  }
-  owner.view.state.artifact.kind='preview';
-  assert.deepEqual(header(owner.view).actions[0].menu.map(item=>item.id),['brief-export-html']);
-  owner.header('brief-export-image');await settle();assert.deepEqual(owner.exports,[]);
-  assert.deepEqual(owner.feedback.map(item=>item.message),[messages('en').brief_export_unsupported]);
+  owner.view.state.connected=false;assert.equal(header(owner.view).actions[0].disabled,true);
+  owner.header('brief-export-html');await settle();assert.deepEqual(owner.exports,[]);
+  owner.view.state.connected=true;owner.view.state.loading=true;
+  assert.equal(header(owner.view).actions[0].disabled,false);
   owner.header('brief-export-html');await settle();
   assert.deepEqual(owner.exports,[{artifact:'artifact',revision:2,format:'html'}]);
+  owner.view.state.loading=false;owner.view.state.exporting=true;
+  assert.equal(header(owner.view).actions[0].disabled,true);
+  owner.header('brief-export-html');await settle();assert.equal(owner.exports.length,1);
+  owner.view.state.exporting=false;
+  owner.view.state.artifact.kind='preview';
+  assert.deepEqual(header(owner.view).actions[0].menu.map(item=>item.id),['brief-export-html']);
+  owner.header('brief-export-image');await settle();assert.equal(owner.exports.length,1);
+  assert.deepEqual(owner.feedback.map(item=>item.message),[messages('en').brief_export_unsupported]);
+  owner.header('brief-export-html');await settle();
+  assert.deepEqual(owner.exports,[{artifact:'artifact',revision:2,format:'html'},
+    {artifact:'artifact',revision:2,format:'html'}]);
   owner.view.release();owner.header('brief-export-html');await settle();
-  assert.equal(owner.exports.length,1);assert.deepEqual(owner.errors,[]);
+  assert.equal(owner.exports.length,2);assert.deepEqual(owner.errors,[]);
 });

@@ -31,8 +31,10 @@ Desktop code is JavaScript that renders native GPUI Kit components. It runs only
 | `sailry` | `context`, `theme`, `Header`, `header_action`, `Image`, `Conversation`, `next_change` |
 | `sailry/ui` | `toast`, `Tooltip`, `Modal`, `EmptyState`, `IconButton`, `SelectField`, `CardList`, `CardRow`, `SettingsPage`, `Loading` |
 | `sailry/sdk` | Settings, storage, models, HTTP, Git, files and conversation requests |
+| `sailry/card`, `sailry/cards` | Package-owned content cards and host-side card blocks |
+| `sailry/registration` | Application registration controls and observation |
 
-Other host modules: `gpui-base`, `sailry/forms`, `sailry/connections`, `sailry/credentials`, `sailry/documents`, `sailry/file-transfers`, `sailry/ssh-transfers`. Any other bare import is rejected, and npm packages are not available. Prefer the components above over hand-drawn controls, and take colors from `theme().colors` instead of hard-coded values.
+Other host modules: `gpui-base`, `sailry/forms`, `sailry/connections`, `sailry/credentials`, `sailry/models`, `sailry/documents`, `sailry/file-transfers`, `sailry/ssh-transfers`. Any other bare import is rejected, and npm packages are not available. Prefer the components above over hand-drawn controls, and take colors from `theme().colors` instead of hard-coded values.
 
 ## A minimal panel
 

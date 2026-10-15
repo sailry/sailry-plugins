@@ -22,19 +22,20 @@ IMPORT = re.compile(
     r"""(?:\b(?:import|export)\b[^;'"`]*?\bfrom\s*|\bimport\s*\(?\s*)['"]([^'"]+)['"]""")
 MODULES = {
     "gpui-base", "gpui-component", "gpui-kit", "sailry", "sailry/ui", "sailry/forms",
-    "sailry/sdk", "sailry/connections", "sailry/credentials", "sailry/documents",
+    "sailry/sdk", "sailry/connections", "sailry/credentials", "sailry/models",
+    "sailry/card", "sailry/cards", "sailry/registration", "sailry/documents",
     "sailry/file-transfers", "sailry/ssh-transfers", "sailry/artifacts", "sailry/search",
 }
 FIELDS = {
     "api_version", "scope", "actions", "display", "description", "icon", "instructions",
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
-    "enabled_service", "oauth",
+    "enabled_service", "oauth", "registration", "cards",
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",
     "ssh.read", "ssh.control", "ssh.manage", "agents.delegate", "roles.read", "roles.write",
-    "models.read", "media.inspect", "media.image", "media.video", "media.settings.read",
+    "models.read", "models.install", "media.inspect", "media.image", "media.video", "media.settings.read",
     "media.settings.write", "computer.read", "computer.control", "browser.read",
     "browser.control", "external_browser.read", "external_browser.control",
     "notifications.publish", "dispatch.manage", "files.read", "files.write", "git.read",
@@ -46,6 +47,7 @@ ACTIONS = {
     "web.settings.write", "knowledge.read", "knowledge.write",
 }
 OPERATION_ACTIONS = {
+    "models.install": "models.install", "models.remove": "models.install",
     "code.packages":"code.read", "code.install":"code.manage", "code.uninstall":"code.manage",
     "code.diagnostics":"code.read", "code.definition":"code.read",
     "code.references":"code.read", "code.hover":"code.read", "code.symbols":"code.read",

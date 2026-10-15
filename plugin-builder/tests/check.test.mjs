@@ -66,6 +66,22 @@ test('rejects unknown actions and extension fields', () => {
   assert.match(result.output, /unknown extension field: network/);
 });
 
+test('accepts the registration declaration and module', () => {
+  const directory = fixture({
+    'plugin.json': manifest({
+      registration: {
+        provider: 'feishu', client_id: 'app_id', client_secret: 'app_secret',
+        tenant_scopes: ['docs:document.content:read'],
+      },
+      desktop: {resources: ['dev.sailry.platform/desktop/settings.js']},
+    }),
+    'dev.sailry.platform/desktop/settings.js':
+      'import {RegistrationButton} from "sailry/registration";\nexport default RegistrationButton;\n',
+  });
+  const result = check(directory);
+  assert.equal(result.code, 0, result.output);
+});
+
 test('rejects undeclared imports and unavailable modules', () => {
   const directory = fixture({
     'plugin.json': manifest({desktop: {
@@ -108,6 +124,7 @@ test('requires the action behind a bound operation', () => {
 });
 
 const operations = [
+  ['models.install', 'models.install'], ['models.remove', 'models.install'],
   ['code.packages','code.read'], ['code.install','code.manage'], ['code.uninstall','code.manage'],
   ['code.diagnostics','code.read'], ['code.definition','code.read'],
   ['code.references','code.read'], ['code.hover','code.read'], ['code.symbols','code.read'],

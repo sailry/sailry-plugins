@@ -6,7 +6,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9835,7 +9835,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "notion",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Pages and databases",
         "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
         "extensions": {
@@ -9872,6 +9872,18 @@
                 },
                 "display": {
                   "label": "Notion",
+                  "locales": {
+                    "en": "Notion",
+                    "zh-CN": "Notion",
+                    "zh-TW": "Notion",
+                    "de": "Notion",
+                    "es": "Notion",
+                    "fr": "Notion",
+                    "ja": "Notion",
+                    "ko": "Notion",
+                    "pt-BR": "Notion",
+                    "ru": "Notion"
+                  },
                   "icon": "reicon:files/file-text"
                 }
               }
@@ -9992,7 +10004,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
