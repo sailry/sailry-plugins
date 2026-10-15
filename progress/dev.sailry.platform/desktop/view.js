@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Icon} from 'gpui-component';
 import {theme} from 'sailry';
 import {EmptyState,Appearance,CardButton,ClampedText,ThinkingIcon,ScrollRegion,pageInsets,Collapse,CollapseSlot,Loading} from 'sailry/ui';
-import {lanes,labels,sections,clock,plain,statusColors,statusColor} from './state.js';
+import {lanes,labels,sections,clock,plain,statusColors,statusColor,dotColor} from './state.js';
 const glyphs = {waiting:'progress-4-line',running:'progress-2-line',completed:'progress-6-line',
   failed:'close-circle-line',idle:'checkbox-blank-circle-line'};
 // Four lanes of about 310px with three 12px gaps; narrower windows keep the responsive layout.
@@ -33,7 +33,7 @@ function card(view,item) {
         .child(div().id(`${id}-state`).h_flex().flex_1().min_w_0().items_center().gap_1p5()
           .children(item.phase ? [ThinkingIcon.new(`${id}-loading`,{phase:item.phase})] : [])
           .child(div().id(`${id}-status`).h_flex().min_w_0().items_center().gap_1p5().text_xs().text_color(colors[statusColor(item)])
-            .child(div().id(`${id}-dot`).size(6).flex_shrink(0).rounded_full().bg(colors[statusColor(item)]))
+            .child(div().id(`${id}-dot`).size(6).flex_shrink(0).rounded_full().bg(colors[dotColor(item)]))
             .child(div().min_w_0().truncate().child(item.status))))
         .children(item.time === null ? [] : [meta('time','reicon:time/calendar',clock(item.time))])
         .children(item.duration ? [meta('duration','reicon:time/clock',item.duration)] : [])));

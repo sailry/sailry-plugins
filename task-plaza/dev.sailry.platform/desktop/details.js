@@ -2,7 +2,7 @@ import {div} from 'gpui-kit';
 import {Icon} from 'gpui-component';
 import {Conversation,theme} from 'sailry';
 import {PanelHeader,IconButton,CardButton,ClampedText,EmptyState} from 'sailry/ui';
-import {plain,clock,statusColor} from './state.js';
+import {plain,clock,dotColor} from './state.js';
 export const DETAIL_WIDTH = 360;
 
 function card(view,item) {
@@ -13,7 +13,7 @@ function card(view,item) {
       .child(div().id(`${id}-title`).w_full().min_w_0().whitespace_normal().text_sm().font_semibold().line_height('1.25rem').child(item.title))
       .children(item.preview ? [ClampedText.new(`${id}-preview`,{text:plain(item.preview),lines:3})] : [])
       .child(div().id(`${id}-state`).h_flex().w_full().min_w_0().items_center().gap_2().text_sm()
-        .child(div().size(8).flex_shrink(0).rounded_full().bg(colors[statusColor(item)]))
+        .child(div().size(8).flex_shrink(0).rounded_full().bg(colors[dotColor(item)]))
         .child(div().flex_1().min_w_0().whitespace_normal().child(item.status))
         .children(item.duration ? [div().flex_none().text_color(colors.muted_foreground).child(item.duration)] : []))
       .child(div().id(`${id}-metadata`).h_flex().w_full().min_w_0().items_center().gap_2().text_sm().text_color(colors.muted_foreground)

@@ -10083,7 +10083,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
@@ -11972,7 +11972,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "task-plaza",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Project rooms and session activity",
         "extensions": {
           "dev.sailry.platform": {

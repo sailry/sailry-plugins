@@ -10,6 +10,14 @@ export function statusColor(item) {
   if (item.state === 'idle') return statusColors.idle;
   return statusColors[item.lane === 'waiting' ? item.approval ? 'approval' : 'input' : item.lane] ?? statusColors.idle;
 }
+// Dots follow the run status in the label, so read results keep their outcome color.
+export function statusTone(session) {
+  const {run,waiting,queued} = session.activity;
+  if (queued > 0 && !['running','stopping'].includes(run?.status)) return 'idle';
+  if (run?.status === 'running') return waiting === 'approval' ? 'approval' : waiting === 'input' ? 'input' : 'running';
+  return {stopping:'running',completed:'completed',failed:'failed'}[run?.status] ?? 'idle';
+}
+export const dotColor = item => statusColors[item.tone] ?? statusColors.idle;
 // The shared Client orders activity items; packages only look up positions.
 export function order(catalog) {
   const positions = new Map((catalog.activity_order ?? []).map((key,index) => [key,index]));
@@ -76,7 +84,7 @@ export function sections(catalog,previews,text) {
     const content = preview?.turn === (session.activity.run?.turn ?? null) ? preview.text : null;
     add(group(lane),session.project,{kind:'session',id:session.id,lane,
       approval:lane === 'waiting' && session.activity.waiting === 'approval',
-      title:session.activity.title.trim().replace(/[\r\n]/g,' ') || text.chat_new,status,
+      title:session.activity.title.trim().replace(/[\r\n]/g,' ') || text.chat_new,status,tone:statusTone(session),
       time:session.activity.run?.finished_ms ?? session.activity.run?.started_ms ?? null,
       phase:['running','stopping'].includes(session.activity.run?.status)
         ? session.activity.waiting ? 'turn_waiting' : 'turn_tools_running' : null,
@@ -90,7 +98,7 @@ export function sections(catalog,previews,text) {
     const state = ['completed','failed'].includes(lane) ? unread.has(terminal.id) ? 'completed' : 'idle' : group(lane);
     const project = projects.get(tree.project), status = text[lane === 'waiting' ? 'activity_input' : labels[lane]];
     add(state,tree.project,{kind:'terminal',id:terminal.id,lane,
-      title:terminal.title?.trim() ? terminal.title : text.terminal,status,content:status,
+      title:terminal.title?.trim() ? terminal.title : text.terminal,status,tone:lane === 'waiting' ? 'input' : lane,content:status,
       preview:null,duration:null,time:null,phase:lane === 'running' ? 'turn_tools_running' : null,
       project:project?.name ?? '',path:tree.project ? tree.path : '',appearance:project?.appearance ?? defaultAppearance});
   }

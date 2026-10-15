@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {lanes,labels,sections,clock,plain as readable,statusColors,statusColor} from '../dev.sailry.platform/desktop/state.js';
+import {lanes,labels,sections,clock,plain as readable,statusColors,statusColor,dotColor} from '../dev.sailry.platform/desktop/state.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
@@ -28,7 +28,7 @@ function fixture(width=1440) {
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render,BOARD_MAX_WIDTH}=vm.runInNewContext(`${source}\n({render,BOARD_MAX_WIDTH})`,{
     div:()=>element(),Icon:function(id){return element('Icon',id);},
-    ...adapters,lanes,labels,sections,clock,plain:readable,statusColors,statusColor,pageInsets:()=>({rail_width:56}),
+    ...adapters,lanes,labels,sections,clock,plain:readable,statusColors,statusColor,dotColor,pageInsets:()=>({rail_width:56}),
     theme:()=>({colors:{muted_foreground:'muted',border:'border',primary:'primary',warning:'warning',chart_3:'reply',
       success:'success',destructive:'failure'}}),window:{rem_size:()=>16,viewport_size:()=>({width})},
   });
@@ -218,6 +218,25 @@ test('status dots share the plaza colors and neutral idle tone',()=>{
     catalog.session_lanes.retained=lane;setup.render();
     assert.deepEqual(plain(setup.nodes.get('activity-retained-dot').style.bg),[color]);
     assert.deepEqual(plain(setup.nodes.get('activity-retained-status').style.text_color),[color]);
+  }
+});
+
+test('read results keep their outcome dot beside a neutral label',()=>{
+  const setup=fixture(),catalog=setup.view.board.catalog;
+  const cases=[['failed',0,'failure'],['completed',0,'success'],['interrupted',0,'muted'],['cancelled',0,'muted'],['completed',2,'muted']];
+  for(const [status,queued,color] of cases) {
+    catalog.sessions=[{id:'retained',project:'project',worktree:'tree',archived:false,delegation:null,
+      activity:{title:'Retained task',queued,waiting:null,run:{turn:'turn',status}}}];
+    catalog.session_lanes.retained='idle';setup.render();
+    assert.deepEqual(plain(setup.nodes.get('activity-retained-dot').style.bg),[color]);
+    assert.deepEqual(plain(setup.nodes.get('activity-retained-status').style.text_color),['muted']);
+  }
+  catalog.sessions=[];
+  catalog.terminals=[{id:'shell',worktree:'tree',title:'Shell'}];
+  for(const [lane,color] of [['failed','failure'],['completed','success']]) {
+    catalog.terminal_lanes.shell=lane;setup.render();
+    assert.deepEqual(plain(setup.nodes.get('activity-terminal-shell-dot').style.bg),[color]);
+    assert.deepEqual(plain(setup.nodes.get('activity-terminal-shell-status').style.text_color),['muted']);
   }
 });
 

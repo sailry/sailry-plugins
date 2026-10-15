@@ -176,6 +176,18 @@ test('idle seats and read terminals have no ring',()=>{
   assert.equal(setup.nodes.get('plaza-terminal-shell-status').props.color,'success');
 });
 
+test('room task dots follow the run status in their label',()=>{
+  const setup=fixture(1),catalog=setup.view.board.catalog,session=catalog.sessions[0];
+  for(const [lane,waiting,status,color] of [['running',null,'running','primary'],['waiting','approval','running','warning'],
+    ['waiting','input','running','reply'],['completed',null,'completed','success'],['idle',null,'failed','failure'],
+    ['idle',null,'completed','success'],['idle',null,'cancelled','#808080ff']]) {
+    catalog.session_lanes[session.id]=lane;session.activity.waiting=waiting;session.activity.run.status=status;
+    setup.view.inspectRoom('project');setup.render();
+    const dot=setup.nodes.get('plaza-detail-session-session-0-state').items[0];
+    assert.deepEqual(plain(dot.style.bg),[color]);
+  }
+});
+
 test('seat tooltips show only the title',()=>{
   const setup=fixture(1);setup.render();
   const seat=setup.nodes.get('plaza-session-0');
