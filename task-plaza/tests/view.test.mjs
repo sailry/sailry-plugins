@@ -26,16 +26,16 @@ function fixture(count=0) {
     if(kind==='ClampedText')result.child(props.text);
     return result;
   }}]));
-  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER,EDGE,boardPadding,boardClearance,pagerWidth})`,{
+  const api=vm.runInNewContext(`${sources.join('\n')}\n({render,ground,layout,Floor,messages,WORLD_WIDTH,WORLD_HEIGHT,ROOMS,PERSON_SIZE,BOARD,PAGER,EDGE,edgeColor,boardPadding,boardClearance,pagerWidth})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},Icon:function(id){return element('Icon',id);},
     Resizable:function(id){return element('Resizable',id);},ResizablePanel:function(){return element('ResizablePanel');},...native,pageInsets:()=>({rail_width:56}),
-    theme:()=>({colors:{background:'background',surface:'surface',foreground:'foreground',border:'border',muted_foreground:'muted',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
+    theme:()=>({colors:{background:'background',surface:'surface',foreground:'foreground',border:'border',muted_foreground:'#808080ff',primary:'primary',warning:'warning',chart_3:'reply',success:'success',destructive:'failure',group_box:'group'}}),
     PathBuilder:{stroke:width=>{
       const path={width,commands:[],build(){return this;}};
       for(const method of ['move_to','line_to','curve_to','dash_array'])path[method]=(...args)=>{path.commands.push([method,...args]);return path;};
       return path;
-    }},Background:{solid:()=>element('Background')},
-    window:{viewport_size:()=>viewport,rem_size:()=>16,paint_path:path=>element('NativePath',null,{path})},openActivityTarget:(...args)=>opened.push(args),
+    }},Background:{solid:color=>element('Background',null,{color})},
+    window:{viewport_size:()=>viewport,rem_size:()=>16,paint_path:(path,fill)=>element('NativePath',null,{path,fill})},openActivityTarget:(...args)=>opened.push(args),
   });
   const sessions=Array.from({length:count},(_,index)=>({id:`session-${index}`,project:'project',worktree:'tree',archived:false,delegation:null,
     activity:{title:`Task ${index}`,queued:0,waiting:null,run:{turn:`turn-${index}`,status:'running'}}}));
@@ -211,7 +211,7 @@ test('whiteboards stack each total above its label',()=>{
     setup.view.text=setup.messages(locale);setup.render();
     const name=setup.nodes.get('plaza-room-project-name'),grid=setup.nodes.get('plaza-room-project-statistics');
     assert.deepEqual(plain(name.items),['Project']);
-    assert.ok(name.style.truncate&&name.style.font_semibold);assert.equal(name.style.text_center,undefined);
+    assert.ok(name.style.truncate&&name.style.font_semibold&&name.style.text_center);
     assert.deepEqual(grid.items,Object.keys(tones).map(state=>setup.nodes.get(`plaza-room-project-${state}`)));
     for(const state of Object.keys(tones)) {
       const cell=setup.nodes.get(`plaza-room-project-${state}`),[count,label]=cell.items;
@@ -219,7 +219,7 @@ test('whiteboards stack each total above its label',()=>{
       assert.equal(count,setup.nodes.get(`plaza-room-project-${state}-count`));
       assert.equal(count.items[0],'2');assert.equal(count.style.text_color[0],tones[state]);
       assert.ok(count.style.font_semibold);
-      assert.equal(label.style.text_color[0],'muted');assert.ok(label.style.text_xs&&label.style.truncate);
+      assert.equal(label.style.text_color[0],'#808080ff');assert.ok(label.style.text_xs&&label.style.truncate);
     }
   }
 });
@@ -228,7 +228,7 @@ test('empty totals use the muted foreground',()=>{
   const setup=fixture();setup.render();
   for(const state of ['running','approval','completed','idle']) {
     const count=setup.nodes.get(`plaza-room-project-${state}-count`);
-    assert.equal(count.items[0],'0');assert.equal(count.style.text_color[0],'muted');
+    assert.equal(count.items[0],'0');assert.equal(count.style.text_color[0],'#808080ff');
   }
 });
 
@@ -237,13 +237,14 @@ test('whiteboards stay opaque and padded behind the hover tint',()=>{
   const backing=setup.nodes.get('plaza-room-project-board'),sign=setup.nodes.get('plaza-room-project'),label=sign.items[0];
   assert.equal(backing.items[0],sign);
   assert.equal(backing.style.bg[0],'background');assert.equal(sign.style.bg[0],'background');
-  assert.equal(sign.style.border_color[0],'border');
+  const edge=setup.nodes.get('plaza-room-outline-0').items[0].props.fill.props.color;
+  assert.equal(edge,'#8080808c');assert.equal(sign.style.border_color[0],edge,'the border matches the room edge');
   assert.deepEqual(plain(sign.style.rounded),[setup.BOARD.radius]);assert.deepEqual(plain(backing.style.rounded),[setup.BOARD.radius]);
   assert.deepEqual([sign.style.w[0],sign.style.h[0]],[backing.style.w[0],backing.style.h[0]]);
   for(const node of [backing,sign])assert.equal(node.style.opacity,undefined);
   assert.equal(sign.style.hover,undefined);
   const scale=setup.nodes.get('plaza-world').style.w[0]/setup.WORLD_WIDTH;
-  assert.deepEqual(plain(label.style.px),[setup.BOARD.padding_x]);
+  assert.deepEqual(plain(label.style.px),[setup.BOARD.padding_x]);assert.deepEqual(plain(label.style.gap),[setup.BOARD.row_gap]);
   assert.ok(Math.abs(label.style.py[0]-setup.boardPadding(scale))<1e-9);
 });
 

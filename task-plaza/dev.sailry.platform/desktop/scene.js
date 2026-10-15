@@ -7,11 +7,16 @@ import {statusColors,statusColor} from './state.js';
 import {ROOMS,WORLD_WIDTH,WORLD_HEIGHT,PERSON_SIZE,DESK_WIDTH,DESK_HEIGHT,SEATED,STANDING,ATRIUM,seatPosition,approvalPosition} from './geometry.js';
 
 // Room chrome stays at theme size; the scene geometry follows the scale.
-export const BOARD = {padding_x:12,padding_y:10,row_gap:4,clearance:14,hang:0.65,radius:4,line:1.2};
+export const BOARD = {padding_x:12,padding_y:10,row_gap:8,clearance:14,hang:0.65,radius:4,line:1.2};
 // The pager sits in an opening of the bottom edge with `notch` clearance on each side.
 export const PAGER = {button:22,height:20,gap:4,notch:6};
 // Room edges and neutral rings share one theme token.
 export const EDGE = {color:'muted_foreground',opacity:0.55};
+// Theme colors are `#rrggbbaa`; borders take one color, so the edge opacity folds into its alpha.
+export function edgeColor(colors) {
+  const color = colors[EDGE.color], alpha = color.length === 9 ? parseInt(color.slice(7),16) : 255;
+  return color.slice(0,7) + Math.round(alpha * EDGE.opacity).toString(16).padStart(2,'0');
+}
 const CORNER = 4;
 const deskTop = index => seatPosition(index,0).y - 14 - DESK_HEIGHT - ROOMS[index].bounds.y;
 const shrink = scale => Math.min(1,scale);
@@ -55,7 +60,7 @@ function board(view,value,index,scale) {
   const entries = [['running',text.room_running],['approval',text.room_approvals],['completed',text.room_completed],['idle',text.room_idle]];
   const label = div().v_flex().size_full().min_w_0().justify_center().gap(BOARD.row_gap).px(BOARD.padding_x).py(boardPadding(scale))
     .text_color(colors.foreground).line_height(BOARD.line)
-    .child(div().id(`${id}-name`).w_full().min_w_0().truncate().text_sm().font_semibold().child(value?.name ?? text.empty_room))
+    .child(div().id(`${id}-name`).w_full().min_w_0().truncate().text_center().text_sm().font_semibold().child(value?.name ?? text.empty_room))
     .children(value ? [div().id(`${id}-statistics`).h_flex().w_full().min_w_0()
       .children(entries.map(([state,title]) => div().id(`${id}-${state}`).v_flex().flex_1().min_w_0().items_center()
         .child(div().id(`${id}-${state}-count`).text_sm().font_semibold().text_color(tone(state)).child(String(counts[state])))
@@ -63,7 +68,7 @@ function board(view,value,index,scale) {
   // Kit's outline hover tints with a translucent fill. The opaque backing keeps
   // the sign solid over the room edge and the ground in every state.
   const sign = new Button(id).outline().secondary().p_0().w(width).h(height).rounded(BOARD.radius)
-    .border_color(colors.border).bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
+    .border_color(edgeColor(colors)).bg(colors.background).disabled(!value).tooltip(value?.name ?? text.empty_room).child(label);
   if (value) sign.on_click((_event,cx) => view.inspectRoom(value.key,cx));
   return div().id(`${id}-board`).absolute().left((bounds.x + bounds.width / 2) * scale - width / 2).top(boardTop(index,scale,rem))
     .w(width).h(height).rounded(BOARD.radius).bg(colors.background).child(sign);
@@ -83,7 +88,7 @@ function outline(value,index,scale) {
   if (left > CORNER) path.line_to(left,0);
   return div().id(`plaza-room-outline-${index}`).absolute()
     .left(bounds.x * scale).top(bounds.y * scale).w(width).h(height)
-    .child(window.paint_path(path.build(),Background.solid(theme().colors[EDGE.color]).opacity(EDGE.opacity)).w(width).h(height));
+    .child(window.paint_path(path.build(),Background.solid(edgeColor(theme().colors))).w(width).h(height));
 }
 function paging(view,value,index,scale) {
   const width = pagerWidth(value,window.rem_size());
