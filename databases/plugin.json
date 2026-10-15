@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "databases",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -32,7 +32,6 @@
         "resources": [
           "dev.sailry.platform/host/main.js",
           "dev.sailry.platform/host/tools.js",
-          "dev.sailry.platform/host/instructions.js",
           "dev.sailry.platform/host/connections.js"
         ],
         "handlers": [

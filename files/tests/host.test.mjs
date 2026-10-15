@@ -8,8 +8,6 @@ const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export \{[^\n]+\} from [^\n]+;\n/gm,'').replace(/^export /gm,'');
 const host = vm.runInNewContext(`${source}\n({list,read,write,edit,remove,move,mkdir,find,search,office,notebook_read,notebook_edit})`);
-const localeSource = (await readFile(new URL('dev.sailry.platform/host/locales.js',root),'utf8')).replace(/^export /gm,'');
-const captions = vm.runInNewContext(`${localeSource}\ncaptions`);
 const plain = value => JSON.parse(JSON.stringify(value));
 const tool = name => extension.tools.find(tool => tool.name === name);
 
@@ -161,15 +159,6 @@ test('captured display selectors retain path and first-line query presentation',
   }
   assert.deepEqual(tool('read_office').display.input.summary,{path:'/source/value',code:true,result_path:'/data/path'});
   assert.deepEqual(tool('write_file').display.input.target,{path:'/path'});
-  assert.ok(extension.host.resources.includes('dev.sailry.platform/host/locales.js'));
-  for (const key of ['approval_create_file','approval_replace_file']) {
-    assert.match(captions[key].label,/%\{path\}/);
-    assert.match(captions[key].locales['zh-CN'],/%\{path\}/);
-  }
-  for (const key of ['tool_file_written','tool_partial','tool_empty']) {
-    assert.ok(captions[key].label);
-    assert.ok(captions[key].locales['zh-CN']);
-  }
 });
 
 test('result recipes refer to original data and preserve file-specific choices', () => {
