@@ -157,7 +157,7 @@ function history(view) {
     .children(page && (page.offset > 0 || page.next) ? [div().h_flex().flex_shrink(0).px_2().justify_between()
       .child(div().text_xs().text_color(colors.muted_foreground).child(`${page.offset + 1}–${page.offset + page.entries.length}`))
       .child(new Pagination('git-history-pages').compact().size('small').total_pages(current + Number(!!page.next)).current_page(current)
-        .disabled(repo.historyLoading || !!repo.pending).on_change((page,cx) => view.run(() => repo.historyPage(page),cx)))] : []);
+        .disabled(!!repo.pending).on_change((page,cx) => view.run(() => repo.historyPage(page),cx)))] : []);
 }
 function toolbar(view) {
   const repo = view.repo, colors = theme().colors, entries = repo.status?.entries ?? [];

@@ -49,8 +49,8 @@ test('interactive previews offer only HTML export',() => {
   assert(find(view,'brief-preview-artifact'));
   assert.equal(JSON.parse(find(view,'brief-header').props.content).filters[0].selected,'2');
 });
-test('export declarations preserve connection loading and busy guards',() => {
-  for (const field of ['connected','loading','exporting']) {
+test('export declarations preserve connection and duplicate guards',() => {
+  for (const field of ['connected','exporting']) {
     const view = setup();view.state[field] = field === 'connected' ? false : true;
     const action = JSON.parse(find(view,'brief-header').props.content).actions[0];
     assert.equal(action.disabled,true);assert(action.menu.every(item => !item.enabled));
@@ -61,9 +61,14 @@ test('export declarations preserve connection loading and busy guards',() => {
   view.state.before = 1;
   assert.equal(JSON.parse(find(view,'brief-header').props.content).actions[0].menu,undefined);
 });
-test('refresh keeps the preview and disables actions without loading text',() => {
+test('refresh keeps the preview and independent controls available',() => {
   const view = setup();view.state.loading = true;
-  assert(find(view,'brief-preview-artifact'));assert.equal(JSON.parse(find(view,'brief-header').props.content).actions[0].disabled,true);
+  assert.equal(find(view,'brief-preview-artifact').props.revision,2);
+  const header = JSON.parse(find(view,'brief-header').props.content);
+  assert.equal(header.filters[0].disabled,false);assert.equal(header.actions[0].disabled,false);
+  assert(header.actions[0].menu.every(item => item.enabled));
+  view.state.revision = 1;
+  assert.equal(find(view,'brief-preview-artifact').props.revision,2);
   view.state.artifact = null;const loader = find(view,'brief-loading');assert(loader);assert.equal(loader.props.label,undefined);
 });
 test('unavailable reads show a retry control without repeating error feedback',() => {

@@ -104,7 +104,7 @@ function strength(view, disabled) {
     placeholder:model && !choices.length ? text.noStrength : text.strengthPlaceholder,
     selected:editing.draft.config ? effortKey(editing.draft.config.effort) : null,
     items:choices.map(effort => ({id:effortKey(effort),label:effortKey(effort)})),
-    disabled:disabled || !choices.length || editing.modelLoading});
+    disabled:disabled || !choices.length});
 }
 export function render(view) {
   const {text,editing} = view, disabled = view.busy || !!view.pending;
@@ -126,12 +126,12 @@ export function render(view) {
       .children(editing.draft.project ? [new Field().label(text.worktree).child(worktrees(view,disabled))] : [])
       .child(new Field().label(text.model).child(ModelPopup.new("task-model",{label:text.model,
         placeholder:editing.draft.config?.model ?? text.modelPlaceholder,catalog:{models:view.models},
-        selected:editing.model,effort:editing.draft.config?.effort ?? "default",disabled:disabled || view.loading || editing.modelLoading}))
+        selected:editing.model,effort:editing.draft.config?.effort ?? "default",disabled}))
         .children(view.modelsError ? [new Button("task-models-retry").label(text.retry).disabled(view.loading)
           .on_click((_,cx) => view.refresh(cx))] : []))
       .child(new Field().label(text.strength).child(strength(view,disabled)))),
     div().h_flex().flex_shrink(0).justify_end().gap_2()
       .child(new Button("task-cancel").label(text.cancel).disabled(view.busy).on_click((_,cx) => view.close(cx)))
       .child(new Button("task-save").primary().label(view.pending ? text.retry : text.save)
-        .disabled(view.busy || editing.modelLoading).on_click((_,cx) => view.save(cx)))];
+        .disabled(view.busy).on_click((_,cx) => view.save(cx)))];
 }

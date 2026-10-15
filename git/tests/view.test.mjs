@@ -28,6 +28,7 @@ const {history} = vm.runInNewContext(`${source}\n({history})`, {
   Icon:class { constructor(path) { return element('icon',{path}); } },
   Button:class { constructor() { throw Error('history rows must use the selectable Kit adapter'); } },
   Loading:{new:(id)=>element('loading',{id})},
+  Pagination:class { constructor(id) { return element('pagination',{id}); } },
 });
 function descendants(element) {
   return typeof element === 'object' && element !== null ? [element,...element.items.flatMap(descendants)] : [];
@@ -61,13 +62,14 @@ test('unconfirmed changes and history reserve rows without false empty',()=>{
 });
 
 test('history refreshes preserve known commits and metadata',()=>{
-  const view={text:{},repo:{historyLoading:true,pending:null,selected:null,history:{offset:0,next:null,
+  const view={text:{},repo:{historyLoading:true,pending:null,selected:null,history:{offset:0,next:{head:'immutable',offset:100},
     entries:[{id:'commit',message:'Retained commit',author:'Author',time_ms:0,references:[],truncated:false}]}}};
   for(const failed of [false,true]) {
     view.repo.failed=failed;
     const nodes=descendants(history(view));
     assert.ok(nodes.some(node=>node.kind==='row'&&node.props.id==='git-commit-commit'));
     assert.equal(nodes.some(node=>node.kind==='empty'||node.kind==='loading'),false);
+    assert.deepEqual(nodes.find(node=>node.kind==='pagination').style.disabled,[false]);
   }
 });
 

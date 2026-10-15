@@ -206,6 +206,17 @@ test('history replaces native pages using the original immutable head',async()=>
   assert.deepEqual(owner.history.entries,[{id:'100'}]);await owner.historyPage(1);assert.equal(reads[2].cursor.head,'immutable');
 });
 
+test('history paging accepts a newer choice while retaining the committed page',async()=>{
+  const replies=[];const {owner}=fixture({readGitLog:async(_limit,cursor)=>new Promise(resolve=>replies.push({cursor,resolve}))});
+  owner.history={head:'immutable',offset:0,entries:[{id:'current'}],next:{head:'immutable',offset:100}};
+  const next=owner.historyPage(2);
+  assert.deepEqual(owner.history.entries,[{id:'current'}]);
+  const current=owner.historyPage(1);
+  replies[1].resolve({head:'immutable',offset:0,entries:[{id:'latest'}],next:{head:'immutable',offset:100}});await current;
+  replies[0].resolve({head:'immutable',offset:100,entries:[{id:'stale'}],next:null});await next;
+  assert.deepEqual(owner.history.entries,[{id:'latest'}]);assert.equal(owner.historyLoading,false);
+});
+
 test('branch creation does not acquire unrelated checkout revisions',async()=>{
   const {owner,prepared}=fixture();await owner.branch('create',{name:'topic',commit:'original'});
   assert.deepEqual(prepared[0],{kind:'create',name:'topic',commit:'original'});

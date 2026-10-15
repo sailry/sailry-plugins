@@ -188,7 +188,7 @@ export class Repository {
   }
 
   historyPage(page) {
-    if (!this.history?.head || !Number.isInteger(page) || page < 1 || this.historyLoading || this.pending) return;
+    if (!this.history?.head || !Number.isInteger(page) || page < 1 || this.pending) return;
     const current = Math.floor(this.history.offset / 100) + 1;
     if (page > current + Number(this.history.next !== null)) return;
     return this.loadHistory({head:this.history.head,offset:(page - 1) * 100});

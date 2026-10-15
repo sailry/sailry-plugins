@@ -99,7 +99,7 @@ export default class ScheduledTasks extends View {
     else if (event.id === "task-strength") {
       const model = this.models.find(model => model.id === editing.model);
       const effort = model?.efforts.find(effort => effortKey(effort) === event.value);
-      if (effort === undefined || editing.modelLoading) return;
+      if (effort === undefined) return;
       return this.selectModel(editing.model,effort,cx);
     } else return;
     cx.notify();
@@ -108,7 +108,7 @@ export default class ScheduledTasks extends View {
     const editing = this.editing;
     if (!editing || this.busy || this.pending || !this.models.some(choice => choice.id === model)) return;
     const version = ++editing.modelVersion;
-    editing.model = model; editing.modelLoading = true; cx.notify();
+    editing.modelLoading = true; cx.notify();
     cx.spawn(async cx => {
       try {
         const config = await resolveSessionModel(model,effort,editing.draft.config);
@@ -116,7 +116,6 @@ export default class ScheduledTasks extends View {
         editing.draft.config = config; editing.model = `${config.provider}/${config.model}`;
       } catch (_) {
         if (this.editing !== editing || editing.modelVersion !== version) return;
-        editing.model = editing.draft.config ? `${editing.draft.config.provider}/${editing.draft.config.model}` : null;
         this.report("modelFailed");
       } finally {
         if (this.editing === editing && editing.modelVersion === version) { editing.modelLoading = false; cx.notify(); }
@@ -136,8 +135,11 @@ export default class ScheduledTasks extends View {
   }
   save(cx) {
     if (this.pending) return this.perform(null, null, cx);
-    if (this.editing?.modelLoading) return;
-    try { this.perform("save", value(this.editing), cx); }
+    try {
+      const editing = this.editing, input = value(editing);
+      editing.modelVersion++; editing.modelLoading = false;
+      this.perform("save", input, cx);
+    }
     catch (error) { this.report(["required", "modelRequired", "invalidTime", "invalidInterval", "invalidClock", "timezoneRequired", "weekdaysRequired"].includes(error.message) ? error.message : "failed"); cx.notify(); }
   }
   perform(handler, input, cx) {
