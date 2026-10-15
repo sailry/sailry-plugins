@@ -101,6 +101,11 @@ test("forms delegate heading, close guard, body and footer to shared modals", ()
   assert.equal(setup.nodes.get("reminder-dialog-0").props.dismissable,false);
   setup.view.busy=false; setup.view.pending="request"; setup.render();
   assert.equal(setup.nodes.get("reminder-dialog-0").props.dismissable,true);
+  setup.view.pending=null;setup.view.editing=null;setup.view.deleting={id:"retained",revision:"2",title:"Retained reminder"};setup.render();
+  const confirmation=setup.nodes.get("reminder-dialog-0");
+  assert.deepEqual(plain(confirmation.props),{open:true,dismissable:true,form:true,title:setup.view.text.deleteTitle,width:528});
+  assert.deepEqual(confirmation.items.map(item=>item.selector),["reminder-delete-confirmation",null]);
+  assert.equal(confirmation.items[0].items[0].items[0],"Retained reminder");
 });
 
 test("unconfirmed reads reserve the reminder card row", () => {
@@ -263,7 +268,7 @@ test("desktop navigation and project tool share the host package without contrac
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.1.1");
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);
   assert.equal(extension.tools.length, 1);
   assert.deepEqual(extension.tools[0].contexts, ["workspace"]);

@@ -157,7 +157,7 @@ function history(view) {
     .children(page && (page.offset > 0 || page.next) ? [div().h_flex().flex_shrink(0).px_2().justify_between()
       .child(div().text_xs().text_color(colors.muted_foreground).child(`${page.offset + 1}–${page.offset + page.entries.length}`))
       .child(new Pagination('git-history-pages').compact().size('small').total_pages(current + Number(!!page.next)).current_page(current)
-        .disabled(repo.historyLoading || !!repo.pending).on_change((page,cx) => view.run(() => repo.historyPage(page),cx)))] : []);
+        .disabled(!!repo.pending).on_change((page,cx) => view.run(() => repo.historyPage(page),cx)))] : []);
 }
 function toolbar(view) {
   const repo = view.repo, colors = theme().colors, entries = repo.status?.entries ?? [];
@@ -204,17 +204,18 @@ export function dialogs(view) {
     : dialog?.action?.discard ? 'git_discard_confirm' : dialog?.action?.discard_all ? 'git_discard_all_confirm'
     : dialog?.action?.remove_remote ? 'git_remove_remote_confirm' : dialog?.operation === 'merge' ? 'git_merge_branch_confirm' : 'git_delete_confirm';
   return div().children([Picker.new(`git-picker-${picker?.id ?? 0}`, {open:!!picker,title:picker?.title ?? '',items:picker?.items ?? [],empty:text.git_no_matches}),
-    Modal.new(`git-dialog-${dialog?.id ?? 0}`,{open:!!dialog}).children(dialog ? [div().id('git-form').v_flex().w(Math.min(420,window.viewport_size().width - 48)).gap_3()
-      .child(div().text_lg().font_semibold().child(text[dialog.title] ?? dialog.title))
+    Modal.new(`git-dialog-${dialog?.id ?? 0}`,{open:!!dialog,form:true,title:dialog ? (text[dialog.title] ?? dialog.title) : '',width:468}).children(dialog ? [
+      div().id('git-form').v_flex().gap_3()
       .children(form === 'confirm' ? [div().text_sm().child(`${text[confirmation]}\n${dialog.target}`)] : [])
-      .children(branch ? [div().v_flex().gap_2().child(div().text_sm().font_medium().child(text[form === 'rename' ? 'git_branch_source' : 'git_branch_base']))
+      .children(form === 'rename' ? [div().v_flex().gap_2().child(div().text_sm().font_medium().child(text.git_branch_source))
         .child(div().text_sm().text_color(colors.muted_foreground).truncate().child([dialog.base,dialog.commit?.slice(0,8)].filter(Boolean).join(' · ')))] : [])
       .children(dialog.input ? [div().v_flex().gap_2().child(div().text_sm().font_medium().child(text[form === 'remote' ? 'git_remote_name' : form === 'tag' ? 'git_name' : 'git_branch_name']))
         .child(div().id(branch ? `${prefix}-name` : 'git-form-name').child(TextField.new(dialog.input,{disabled:dialog.busy})))] : [])
       .children(dialog.extra ? [div().v_flex().gap_2().child(div().text_sm().font_medium().child(text[form === 'remote' ? 'git_remote_url' : 'git_tag_message']))
-        .child(TextField.new(dialog.extra,{disabled:dialog.busy}))] : [])
-      .child(div().h_flex().justify_end().gap_2().mt_3()
+        .child(TextField.new(dialog.extra,{disabled:dialog.busy}))] : []),
+      div().h_flex().justify_end().gap_2()
         .child(new Button('git-form-cancel').label(text.settings_cancel).on_click((_,cx) => { view.actions.close(); cx.notify(); }))
         .child(new Button('git-form-confirm').primary().label(text[form === 'branch' ? 'git_create_branch' : dialog.title] ?? text.settings_save)
-          .disabled(dialog.busy).loading(dialog.busy).on_click((_,cx) => view.run(() => view.actions.submit(),cx))))] : [])]);
+          .disabled(dialog.busy).loading(dialog.busy).on_click((_,cx) => view.run(() => view.actions.submit(),cx)))
+    ] : [])]);
 }

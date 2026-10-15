@@ -71,9 +71,7 @@ function editor(view) {
   let merge = new DropdownMenu('memory-merge-source',text.memory_merge_source);
   const candidates = view.entries.filter(entry => !entry.archived && entry.project === summary.project && entry.id !== summary.id);
   for (const entry of candidates) merge = merge.item(entry.title,cx=>view.merge(entry.id,cx));
-  return div().id('memory-editor').v_flex().w(Math.min(592,window.viewport_size().width-96))
-    .max_h(window.viewport_size().height*0.8-48).gap_3()
-    .child(div().text_lg().font_semibold().child(text[summary.revision ? 'memory_editor' : 'memory_create']))
+  return div().id('memory-editor').v_flex().max_h(window.viewport_size().height*0.8-48).gap_3()
     .child(div().v_flex().min_h_0().overflow_y_scroll().gap_3()
       .child(new Field().label(text.memory_title).child(TextField.new(owner.title,{disabled})))
       .child(new Field().label(text.memory_kind).child(SegmentedTabs.new(`memory-kind-${view.dialogId}`,{selected:summary.kind,disabled,fill:true,
@@ -82,27 +80,36 @@ function editor(view) {
       .children(summary.revision ? [new Switch('memory-archive').label(text.memory_archived).checked(summary.archived).disabled(disabled || !!owner.sources.length)
         .on_change((value,cx)=>{summary.archived=value;cx.notify();})] : [])
       .children(summary.revision && !summary.archived && candidates.length ? [disabled || owner.sources.length ? new Button('memory-merge-source').label(text.memory_merge_source).disabled(true) : merge] : [])
-      .children(owner.sources.length ? [div().text_sm().child(text.memory_merge_description)] : []))
-    .child(div().h_flex().justify_end().gap_2()
-      .child(new Button('memory-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-      .children(owner.loading && owner.error ? [new Button('memory-reload').label(text.memory_retry).on_click((_,cx)=>view.loadEditor(owner,cx))] : [])
-      .child(new Button('memory-save').primary().label(text[owner.request ? 'memory_retry' : owner.sources.length ? 'memory_merge' : 'settings_save'])
-        .disabled(owner.pending || owner.loading || !view.connected).on_click((_,cx)=>view.save(cx))));
+      .children(owner.sources.length ? [div().text_sm().child(text.memory_merge_description)] : []));
+}
+function editorFooter(view) {
+  const owner = view.editing, text = view.text;
+  return div().h_flex().justify_end().gap_2()
+    .child(new Button('memory-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
+    .children(owner.loading && owner.error ? [new Button('memory-reload').label(text.memory_retry).on_click((_,cx)=>view.loadEditor(owner,cx))] : [])
+    .child(new Button('memory-save').primary().label(text[owner.request ? 'memory_retry' : owner.sources.length ? 'memory_merge' : 'settings_save'])
+      .disabled(owner.pending || owner.loading || !view.connected).on_click((_,cx)=>view.save(cx)));
 }
 function removal(view) {
   const {text,removal:owner} = view;
-  return div().id('memory-removal').v_flex().w(400).gap_3()
-    .child(div().text_lg().font_semibold().child(text.settings_delete))
+  return div().id('memory-removal').v_flex().gap_3()
     .child(div().font_medium().child(owner.summary.title))
-    .child(div().text_sm().child(text.memory_delete_confirm))
-    .child(div().h_flex().justify_end().gap_2()
-      .child(new Button('memory-delete-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-      .child(new Button('memory-delete-confirm').primary().label(text[owner.request ? 'memory_retry' : 'settings_delete'])
-        .disabled(owner.pending || !view.connected).on_click((_,cx)=>view.confirmRemoval(cx))));
+    .child(div().text_sm().child(text.memory_delete_confirm));
+}
+function removalFooter(view) {
+  const {text,removal:owner} = view;
+  return div().h_flex().justify_end().gap_2()
+    .child(new Button('memory-delete-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
+    .child(new Button('memory-delete-confirm').primary().label(text[owner.request ? 'memory_retry' : 'settings_delete'])
+      .disabled(owner.pending || !view.connected).on_click((_,cx)=>view.confirmRemoval(cx)));
 }
 export function render(view) {
+  const owner = view.editing ?? view.removal;
+  const title = view.editing ? view.text[view.editing.entry.summary.revision ? 'memory_editor' : 'memory_create']
+    : view.removal ? view.text.settings_delete : '';
   return div().id('memory-settings').v_flex().gap_4()
     .child(configuration(view)).child(toolbar(view))
     .child(catalog(view))
-    .children(view.editing || view.removal ? [Modal.new(`memory-dialog-${view.dialogId}`,{open:true}).child(view.editing ? editor(view) : removal(view))] : []);
+    .child(Modal.new(`memory-dialog-${view.dialogId}`,{open:!!owner,form:true,title,width:view.editing ? 640 : 448})
+      .children(view.editing ? [editor(view),editorFooter(view)] : view.removal ? [removal(view),removalFooter(view)] : []));
 }

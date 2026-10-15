@@ -22,10 +22,12 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const functions = vm.runInNewContext(`${source}\n({catalog,configuration,editor})`,{
+  const functions = vm.runInNewContext(`${source}\n({catalog,configuration,editor,renderView:render})`,{
     div:()=>element(),theme:()=>({colors:{muted_foreground:'muted'}}),
     Button:function(id){return element('Button',id);},
     Switch:function(id){return element('Switch',id);},
+    Tab:function(id){return element('Tab',id);},
+    TabBar:function(id){return element('TabBar',id);},
     Field:function(){return element('Field');},
     DropdownMenu:function(id){return element('DropdownMenu',id);},
     SelectField:{new:(id,props)=>element('SelectField',id,props)},
@@ -35,11 +37,14 @@ function fixture() {
     EmptyState:{new:(id,props)=>element('EmptyState',id,props)},
     Loading:{new:(id,props)=>element('Loading',id,props)},
     IconButton:{new:(id,props)=>element('IconButton',id,props)},
+    Modal:{new:(id,props)=>element('Modal',id,props)},
     window:{viewport_size:()=>({width:1280,height:820})},
   });
   const view = {text:{settings_memory:'Memories',memory_empty:'No memories',settings_edit:'Edit',settings_delete:'Delete'},
     saved:{},results:[],reviews:[],loading:false,busy:()=>false,kindLabel:()=> 'Feedback',projectLabel:()=> 'Global',
-    edit:entry=>calls.push(['edit',entry]),remove:entry=>calls.push(['remove',entry])};
+    edit:entry=>calls.push(['edit',entry]),remove:entry=>calls.push(['remove',entry]),draft:null,
+    configuration:{pending:false,request:null,error:null},query:'query',scope:'all',projects:[],entries:[],connected:true,
+    dialogId:0,editing:null,removal:null};
   return {view,nodes,calls,functions,render(){nodes.clear();return functions.catalog(view);}};
 }
 
@@ -63,6 +68,23 @@ test('settings choices use real selects and editor tabs fill their form control'
   view.configuration.pending=true;setup.functions.configuration(view);
   assert.equal(setup.nodes.get('memory-budget').props.disabled,true);
   assert.equal(setup.nodes.get('memory-review-age').props.disabled,true);
+});
+
+test('memory forms use modal title and footer slots',()=>{
+  const setup=fixture(),view=setup.view;
+  view.text={...view.text,memory_editor:'Edit memory',memory_create:'New memory',memory_title:'Title',memory_kind:'Type',
+    memory_body:'Content',memory_retry:'Retry',memory_merge:'Merge',settings_save:'Save',settings_cancel:'Cancel'};
+  view.editing={entry:{summary:{id:'draft',kind:'feedback',project:null,revision:0,archived:false}},title:'title',body:'body',
+    sources:[],loading:false,pending:false,request:null};
+  setup.functions.renderView(view);
+  let modal=setup.nodes.get('memory-dialog-0');
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'New memory',width:640});
+  assert.deepEqual(modal.items.map(item=>item.selector),['memory-editor',null]);
+  view.editing=null;view.removal={summary:{title:'Keep this target'},pending:false,request:null};
+  setup.functions.renderView(view);modal=setup.nodes.get('memory-dialog-0');
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Delete',width:448});
+  assert.deepEqual(modal.items.map(item=>item.selector),['memory-removal',null]);
+  assert.equal(modal.items[0].items[0].items[0],'Keep this target');
 });
 
 test('settled empty catalogs keep their card during refresh',()=>{

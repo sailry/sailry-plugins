@@ -31,14 +31,36 @@ function render(value,paths = []) {
     transfers:{value:() => value,queue:{paths},busy:false},transferInput:'name'});
 }
 
+function renderMutation(operation) {
+  const mutation = vm.runInNewContext(`${source}\nmutation`,{
+    div:() => element('div'),
+    Modal:{new:(id,props) => element('modal',{id,...props})},TextField:{new:(id,props) => element('input',{id,...props})},
+    Button:function(id) {return element('button',{id});},
+  });
+  return mutation({editing:{id:'entry',input:'name',operation},text:{files_rename:'Rename',files_trash:'Move to Trash',
+    files_new_directory:'New folder',files_new_file:'New file',files_trash_confirm:'Remove %{name}',files_trash_confirm_many:'Remove %{count}',
+    files_check_result:'Check result',files_create:'Create',settings_cancel:'Cancel'},closeEdit(){},submit(){}});
+}
+
 function all(node) { return typeof node === 'object' ? [node,...node.items.flatMap(all)] : [node]; }
 
 test('destination edits preserve captured sources and remaining copy batches', () => {
-  const nodes = all(render({id:'one',kind:'copy',stage:'ready',path:'target/renamed.txt',
-    source_label:'Other project',source_path:'nested/original.txt',can_start:true},[{path:'next.txt'}]));
+  const root = render({id:'one',kind:'copy',stage:'ready',path:'target/renamed.txt',
+    source_label:'Other project',source_path:'nested/original.txt',can_start:true},[{path:'next.txt'}]);
+  const nodes = all(root);
+  assert.deepEqual(root.props,{id:'files-transfer-one',open:true,form:true,title:'Paste',width:508});
+  assert.equal(root.items.length,2);
   for (const text of ['Other project','nested/original.txt','next.txt','target']) assert.ok(nodes.includes(text),text);
   assert.equal(nodes.find(node => node?.kind === 'input').props.disabled,false);
   assert.equal(nodes.some(node => node?.kind === 'progress'),false);
+});
+
+test('entry forms delegate their title and footer to the modal',()=>{
+  const root=renderMutation({kind:'rename',paths:['old.txt'],busy:false,pending:null});
+  assert.deepEqual(root.props,{id:'files-entry-entry',open:true,form:true,title:'Rename',width:468});
+  assert.equal(root.items.length,2);
+  assert.equal(all(root.items[0]).includes('Rename'),false);
+  assert.ok(all(root.items[1]).some(node=>node?.props?.id==='file-entry-confirm'));
 });
 
 test('native progress alternates indeterminate phases and percentages without byte counts', () => {

@@ -4,18 +4,19 @@ import {IconButton,Loading} from 'sailry/ui';
 import {ArtifactSurface} from 'sailry/artifacts';
 
 export function render(view) {
-  const {state,text} = view,disabled = !state.connected || state.loading;
-  const exportDisabled = disabled || state.exporting || !state.artifact;
+  const {state,text} = view,unavailable = !state.connected;
+  const exportDisabled = unavailable || state.exporting || !state.artifact;
   const header = Header.new('brief-header',{content:JSON.stringify({title:state.artifact?.title ?? '',
     filters:[{id:'brief-version',label:text.brief_version,selected:state.revision === null ? '' : String(state.revision),
-      primary:true,disabled:disabled || !state.artifact,items:state.versions()}],
-    actions:[...(state.before === null ? [] : [{id:'brief-more-versions',icon:'icons/ellipsis.svg',label:text.brief_more_versions,disabled}]),
+      primary:true,disabled:unavailable || !state.artifact,items:state.versions()}],
+    actions:[...(state.before === null ? [] : [{id:'brief-more-versions',icon:'icons/ellipsis.svg',label:text.brief_more_versions,disabled:unavailable}]),
       {id:'brief-export',label:text.brief_export,icon:'icons/ellipsis-vertical.svg',disabled:exportDisabled,
         menu:[{id:'brief-export-html',label:text.brief_html,enabled:!exportDisabled},
           ...(state.artifact?.kind === 'document' ? [{id:'brief-export-image',label:text.brief_image,enabled:!exportDisabled}] : [])]}],
   })});
   const content = state.artifact ? ArtifactSurface.new(`brief-preview-${state.artifact.id}`,{
-    artifact:state.artifact.id,...(state.follow ? {} : {revision:state.revision}),
+    artifact:state.artifact.id,...(state.follow && !state.loading && state.revision === state.artifact.revision
+      ? {} : {revision:state.artifact.revision}),
     labels:{contents:text.brief_contents,submit:text.brief_submit,required:text.brief_form_required,
       invalid_form:text.brief_form_invalid},
   }) : state.loading ? Loading.new('brief-loading')

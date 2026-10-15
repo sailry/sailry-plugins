@@ -8,19 +8,25 @@ export class Controller {
   async refresh() {
     if (this.closed || !this.connected || !this.resource) return;
     if (this.loading) {this.again = true;return;}
-    const generation = ++this.generation,target = this.follow ? undefined : this.revision;
+    await this.load(this.follow ? undefined : this.revision,this.follow);
+  }
+  async load(target,follow) {
+    const generation = ++this.generation;
     this.loading = true;this.changed();
     try {
       const [content,page] = await Promise.all([
         this.api.readArtifact(this.resource.id,target),this.api.listArtifactRevisions(this.resource.id),
       ]);
       if (this.closed || generation !== this.generation) return;
-      this.artifact = content.artifact;this.revision = content.artifact.revision;
+      this.artifact = content.artifact;this.revision = content.artifact.revision;this.follow = follow;
       this.merge(page);this.failed = false;
     } catch (_) {
-      if (!this.closed && generation === this.generation) {this.failed = true;this.report('brief_load_failed');}
+      if (!this.closed && generation === this.generation) {
+        this.revision = this.artifact?.revision ?? this.revision;
+        this.failed = true;this.report('brief_load_failed');
+      }
     } finally {
-      if (!this.closed) {
+      if (!this.closed && generation === this.generation) {
         this.loading = false;this.changed();
         const again = this.again;this.again = false;
         if (again) await this.refresh();
@@ -29,33 +35,24 @@ export class Controller {
   }
   async select(value) {
     const revision = Number(value);
-    if (this.closed || this.loading || !this.connected || !Number.isInteger(revision) || revision <= 0
+    if (this.closed || !this.connected || !Number.isInteger(revision) || revision <= 0
       || (revision === this.revision && !this.follow) || !this.items.some(item => item.revision === revision)) return;
-    const original = {revision:this.revision,follow:this.follow};
-    this.revision = revision;this.follow = false;
-    await this.refresh();
-    if (this.failed && !this.closed) {Object.assign(this,original);this.changed();}
+    this.again = false;
+    await this.load(revision,false);
   }
   async freeze(revision) {
     if (this.closed || !Number.isInteger(revision) || revision <= 0) return;
-    this.generation++;this.follow = false;this.revision = revision;this.changed();
-    if (this.loading) {this.again = true;return;}
-    if (this.artifact?.revision !== revision) await this.refresh();
+    const interrupted = this.loading;
+    this.generation++;this.loading = false;this.again = false;
+    this.follow = false;this.revision = revision;this.changed();
+    if (interrupted || this.artifact?.revision !== revision) await this.load(revision,false);
   }
   async more() {
-    if (this.closed || this.loading || !this.connected || this.before === null) return;
-    this.loading = true;this.changed();
+    if (this.closed || !this.connected || this.before === null) return;
     try {
       const page = await this.api.listArtifactRevisions(this.resource.id,this.before);
-      if (!this.closed) this.merge(page);
+      if (!this.closed) {this.merge(page);this.changed();}
     } catch (_) {if (!this.closed) this.report('brief_load_failed');}
-    finally {
-      if (!this.closed) {
-        this.loading = false;this.changed();
-        const again = this.again;this.again = false;
-        if (again) await this.refresh();
-      }
-    }
   }
   merge(page) {
     this.items = [...new Map([...this.items,...page.items].map(item => [item.revision,item])).values()]
@@ -69,7 +66,7 @@ export class Controller {
     return items;
   }
   async export(format) {
-    if (this.closed || this.loading || this.exporting || !this.connected || !this.artifact || !['html','png'].includes(format)) return;
+    if (this.closed || this.exporting || !this.connected || !this.artifact || !['html','png'].includes(format)) return;
     if (this.artifact.kind === 'preview' && format !== 'html') {this.report('brief_export_unsupported');return;}
     this.exporting = true;this.changed();
     try {await this.api.exportArtifact({artifact:this.artifact.id,revision:this.artifact.revision,format});}

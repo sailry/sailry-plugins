@@ -42,6 +42,20 @@ test('concurrent invalidations coalesce into one subsequent read',async () => {
   resolve();await new Promise(done => setImmediate(done));resolve();await pending;
   assert.equal(calls.filter(call => call[0] === 'read').length,2);assert.equal(state.loading,false);
 });
+test('rapid selections keep the committed version and apply only the latest read',async () => {
+  const {state,api,calls} = fixture();await state.refresh();state.items.unshift({revision:3});
+  const reads = new Map();
+  api.readArtifact = (id,revision) => new Promise(resolve => reads.set(revision,artifact => resolve({artifact:{id,...artifact},html:'<p>Body</p>'})));
+  const first = state.select('1');
+  assert.equal(state.revision,2);assert.equal(state.artifact.revision,2);assert.equal(state.follow,true);assert.equal(state.loading,true);
+  await state.export('html');
+  assert.deepEqual(calls.filter(call => call[0] === 'export').at(-1),['export',{artifact:'artifact',revision:2,format:'html'}]);
+  const latest = state.select('3');
+  reads.get(1)({revision:1});await first;
+  assert.equal(state.revision,2);assert.equal(state.artifact.revision,2);assert.equal(state.follow,true);assert.equal(state.loading,true);
+  reads.get(3)({revision:3});await latest;
+  assert.equal(state.revision,3);assert.equal(state.artifact.revision,3);assert.equal(state.follow,false);assert.equal(state.loading,false);
+});
 test('historic pages preserve sorted choices across selections and refreshes',async () => {
   const {state,api} = fixture(80);
   api.listArtifactRevisions = async (_id,before) => {

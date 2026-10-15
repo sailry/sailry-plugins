@@ -10,8 +10,8 @@ const main=(await readFile(new URL("../dev.sailry.platform/desktop/main.js",impo
   .replace(/^import .*;\n/gm,"").replace("export default class","class");
 const plain=value=>JSON.parse(JSON.stringify(value));
 const config={assistant:null,resource:null,provider:"provider",model:"explicit",effort:"high",mode:"plan",permission:"full",credential:null};
-function fixture(resolve=async()=>config) {
-  const nodes=new Map(),texts=new Map(),created=[],released=[],jobs=[],notices=[];
+function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}}) {
+  const nodes=new Map(),texts=new Map(),created=[],released=[],jobs=[],notices=[],requests=[],forgotten=[];
   function element(kind="div",id=null,props={}) {
     const target={kind,selector:id,props,items:[],style:{}};
     const proxy=new Proxy(target,{get(target,key) {
@@ -31,14 +31,16 @@ function fixture(resolve=async()=>config) {
     readText:id=>texts.get(id),releaseText:id=>released.push(id),createDateTime:value=>value,readDateTime:value=>value,
     releaseDateTime:value=>released.push(value),
   });
-  const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,
-    resolveSessionModel:resolve,toast:value=>notices.push(value)});
+  const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,value:api.value,
+    resolveSessionModel:resolve,prepareRequest:command=>{requests.push(plain(command));return "original-request";},
+    completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),toast:value=>notices.push(value)});
   const view=new Controller();Object.assign(view,{text:messages("en"),items:[],busy:false,pending:null,loading:false,modelsError:false,
     catalog:{projects:[{id:"project",name:"Project"},{id:"other",name:"Other"}],worktrees:[{id:"tree",project:"project",path:"Branch"},{id:"foreign",project:"other",path:"Other"}]},
     models:[{id:"provider/explicit",kind:"provider",model:"explicit",efforts:["low","high"]}],editing:api.editor(null,messages("en")),
     close(){},refresh(){}});
   const cx={notify(){},spawn:job=>jobs.push(job)};
-  return {api,view,cx,nodes,texts,created,released,jobs,notices,render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
+  return {api,view,cx,nodes,texts,created,released,jobs,notices,requests,forgotten,
+    render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
 }
 test("new forms use vertical fields, full-width schedules and explicit model strength",()=>{
   const setup=fixture(),{view}=setup;setup.render();
@@ -106,8 +108,9 @@ test("model changes preserve queues and policies; strength choices update only c
   assert.equal(setup.nodes.get("task-worktree").props.selected,"missing");
   assert.deepEqual(plain(setup.nodes.get("task-strength").props.items),[{id:"low",label:"low"},{id:"high",label:"high"}]);
   setup.view.control({id:"task-strength",value:"low"},setup.cx);assert.equal(setup.view.editing.modelLoading,true);
-  setup.render();assert.deepEqual(plain(setup.nodes.get("task-save").style.disabled),[true]);
-  assert.equal(setup.nodes.get("task-model").props.disabled,true);
+  setup.render();assert.deepEqual(plain(setup.nodes.get("task-save").style.disabled),[false]);
+  assert.equal(setup.nodes.get("task-model").props.disabled,false);
+  assert.equal(setup.nodes.get("task-strength").props.disabled,false);
   await setup.settle();const saved=setup.api.value(setup.view.editing);
   assert.equal(saved.queue,"reviews");assert.equal(saved.config.effort,"low");assert.equal(saved.config.mode,"plan");assert.equal(saved.config.permission,"full");
   assert.equal(calls.length,1);assert.equal(calls[0].base,item.config);
@@ -146,10 +149,10 @@ test("model choices wait for delayed models and supported effort to resolve toge
   const pending=setup.jobs.shift()(setup.cx);
   setup.render();
   const choice=setup.nodes.get("task-model");
-  assert.equal(choice.props.selected,"provider/other");
+  assert.equal(choice.props.selected,"provider/explicit");
   assert.equal(choice.props.effort,"high");
-  assert.equal(choice.props.disabled,true,"the picker cannot resend the previous model's effort during resolution");
-  assert.equal(setup.nodes.get("task-strength").props.disabled,true);
+  assert.equal(choice.props.disabled,false);
+  assert.equal(setup.nodes.get("task-strength").props.disabled,false);
   assert.equal(setup.view.editing.draft.config,item.config);
   assert.equal(calls.length,1);assert.equal(calls[0].model,"provider/other");assert.equal(calls[0].effort,"low");
   reply({...calls[0].base,model:"other",effort:"low"});await pending;
@@ -175,4 +178,44 @@ test("failed or stale model replies preserve drafts without defaults or editor r
   setup.view.control({id:"task-model",value:{model:"provider/explicit",effort:"high"}},setup.cx);const latest=setup.jobs.shift()(setup.cx);
   replies[3].resolve(config);await latest;replies[2].resolve({...config,effort:"low"});await earlier;
   assert.equal(original.draft.config.effort,"high");assert.equal(original.modelLoading,false);
+});
+test("pending model reads keep the committed choice and accept a newer selection",async()=>{
+  const replies=[],setup=fixture(()=>new Promise(resolve=>replies.push(resolve)));
+  const item={...setup.view.editing.draft,id:"saved",revision:"3",name:"Review",prompt:"Keep this",config:{...config}};
+  setup.view.editing=setup.api.editor(item,setup.view.text);
+  setup.view.models.push({id:"provider/other",kind:"provider",model:"other",efforts:["low","high"]});
+  setup.view.control({id:"task-model",value:{model:"provider/other",effort:"low"}},setup.cx);
+  const earlier=setup.jobs.shift()(setup.cx);setup.render();
+  assert.equal(setup.nodes.get("task-model").props.selected,"provider/explicit");
+  assert.equal(setup.nodes.get("task-model").props.disabled,false);
+  setup.view.control({id:"task-model",value:{model:"provider/other",effort:"high"}},setup.cx);
+  const latest=setup.jobs.shift()(setup.cx);
+  replies[1]({...config,model:"other",effort:"high"});await latest;
+  replies[0]({...config,model:"other",effort:"low"});await earlier;
+  assert.equal(setup.view.editing.model,"provider/other");
+  assert.equal(setup.view.editing.draft.config.effort,"high");
+});
+test("save freezes the committed model before an uncertain request",async()=>{
+  let reply;
+  const setup=fixture(()=>new Promise(resolve=>{reply=resolve;}));
+  const item={...setup.view.editing.draft,id:"saved",revision:"3",name:"Review",prompt:"Keep this",config:{...config}};
+  setup.view.editing=setup.api.editor(item,setup.view.text);
+  setup.view.models.push({id:"provider/other",kind:"provider",model:"other",efforts:["low"]});
+  setup.view.control({id:"task-model",value:{model:"provider/other",effort:"low"}},setup.cx);
+  const model=setup.jobs.shift()(setup.cx);
+  assert.equal(setup.view.editing.modelLoading,true);
+  setup.view.save(setup.cx);
+  await setup.jobs.shift()(setup.cx);
+  assert.equal(setup.view.pending,"original-request");
+  assert.equal(setup.view.editing.modelLoading,false);
+  assert.equal(setup.requests.length,1);
+  assert.equal(setup.requests[0].data.input.config.model,"explicit");
+  assert.equal(setup.requests[0].data.input.config.effort,"high");
+  reply({...config,model:"other",effort:"low"});await model;
+  assert.equal(setup.view.editing.model,"provider/explicit");
+  assert.equal(setup.view.editing.draft.config.model,"explicit");
+  assert.equal(setup.view.editing.draft.config.effort,"high");
+  setup.view.save(setup.cx);await setup.jobs.shift()(setup.cx);
+  assert.equal(setup.requests.length,1);
+  assert.equal(setup.requests[0].data.input.config.model,"explicit");
 });

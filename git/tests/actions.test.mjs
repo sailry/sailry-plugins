@@ -115,6 +115,14 @@ test('unconfirmed receipts report and retry the captured request without losing 
   assert.equal(state.refreshes(),1);
 });
 
+test('branch submissions retain the selected starting commit',async()=>{
+  const state=fixture([{Ok:{kind:'git_branch_created',data:{}}}]);
+  state.owner.form('branch',{name:'release',commit:'selected-commit'});
+  state.fields.set(state.owner.dialog.input,'topic');
+  await state.owner.submit();
+  assert.deepEqual(state.prepared,[{kind:'create',name:'topic',commit:'selected-commit'}]);
+});
+
 test('closing failed forms releases capacity for later operations',async()=>{
   const state=fixture(Array.from({length:17},()=>({Err:{code:'conflict'}})));
   for(let index=0;index<17;index++) {

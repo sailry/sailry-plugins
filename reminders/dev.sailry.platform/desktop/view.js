@@ -21,15 +21,14 @@ function card(view, item) {
 }
 function confirmation(view) {
   const {text} = view;
-  return div().id("reminder-delete-confirmation").v_flex().w(Math.min(480, window.viewport_size().width - 88)).gap_3()
-    .child(div().text_lg().font_semibold().child(text.deleteTitle))
+  return [div().id("reminder-delete-confirmation").v_flex().gap_3()
     .child(div().truncate().child(view.deleting.title))
-    .child(div().text_sm().text_color(theme().colors.muted_foreground).child(text.deleteMessage))
-    .child(div().h_flex().justify_end().gap_2()
-      .child(new Button("reminder-delete-cancel").label(text.cancel).disabled(view.busy)
-        .on_click((_, cx) => view.close(cx)))
-      .child(new Button("reminder-delete-confirm").danger().label(view.pending ? text.retry : text.remove).disabled(view.busy)
-        .on_click((_, cx) => view.perform("remove", {id:view.deleting.id,revision:view.deleting.revision}, cx))));
+    .child(div().text_sm().text_color(theme().colors.muted_foreground).child(text.deleteMessage)),
+  div().h_flex().justify_end().gap_2()
+    .child(new Button("reminder-delete-cancel").label(text.cancel).disabled(view.busy)
+      .on_click((_, cx) => view.close(cx)))
+    .child(new Button("reminder-delete-confirm").danger().label(view.pending ? text.retry : text.remove).disabled(view.busy)
+      .on_click((_, cx) => view.perform("remove", {id:view.deleting.id,revision:view.deleting.revision}, cx)))];
 }
 function projectFilter(view) {
   const {text} = view;
@@ -62,6 +61,7 @@ export function render(view) {
   return div().id("reminders-page").size_full().v_flex().min_h_0().min_w_0()
     .text_color(colors.foreground).child(body)
     .child(Modal.new(`reminder-dialog-${view.dialogId}`, {open:!!(view.editing || view.deleting), dismissable:!view.busy,
-      form:!!view.editing, title:view.editing?.draft.id ? text.edit : text.create, width:480})
-      .children(view.editing ? editor(view) : view.deleting ? [confirmation(view)] : []));
+      form:!!(view.editing || view.deleting), title:view.editing ? view.editing.draft.id ? text.edit : text.create
+        : view.deleting ? text.deleteTitle : "", width:view.deleting ? 528 : 480})
+      .children(view.editing ? editor(view) : view.deleting ? confirmation(view) : []));
 }
