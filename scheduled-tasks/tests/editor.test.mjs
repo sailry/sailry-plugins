@@ -49,6 +49,7 @@ test("new forms use vertical fields, full-width schedules and explicit model str
   assert.deepEqual(setup.created.map(field=>field.placeholder),["Name this task","What should run?","Seconds"]);
   assert.equal(view.editing.model,null);assert.equal(view.editing.draft.config,null);assert.equal(view.editing.draft.queue,"default");
   assert.equal(setup.nodes.get("task-timing").kind,"SegmentedTabs");
+  assert.equal(setup.nodes.get("task-timing").props.fill,true);
   assert.deepEqual(plain(setup.nodes.get("task-timing").props.items),[{id:"once",label:"Once"},{id:"every",label:"Repeat"},{id:"weekly",label:"Weekly"}]);
   assert.equal(setup.nodes.get("task-project").kind,"SelectField");
   assert.equal(setup.nodes.get("task-model").kind,"ModelPopup");assert.equal(setup.nodes.get("task-model").props.selected,null);

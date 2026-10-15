@@ -90,7 +90,9 @@ for(const name of ['ssh','databases']) {
     assert.equal(setup.node('Checkbox',`${prefix}-sharing-one`).checkedValue,true);
     assert.equal(setup.node('Checkbox',`${prefix}-sharing-two`).checkedValue,false);
     assert.equal(setup.nodes.filter(node=>node.type==='Field').length,forms.reduce((count,form)=>count+form.nodes.length,0));
-    assert.ok(setup.nodes.some(node=>node.type==='SegmentedTabs'&&node.id.endsWith('-7')));
+    const tabs=setup.nodes.filter(node=>node.type==='SegmentedTabs'&&node.id.endsWith('-7'));
+    assert.equal(tabs.length,name==='ssh'?1:2);
+    assert.ok(tabs.every(tab=>tab.props.fill===true));
   });
   test(`${name} sharing retains selections across scope changes and boolean toggles`,async()=>{
     const setup=await fixture(name);setup.render();

@@ -113,7 +113,7 @@ export function render(view) {
       .child(new Field().label(text.name).child(TextField.new(editing.name,{disabled})))
       .child(new Field().label(text.prompt).child(TextField.new(editing.prompt,{disabled})))
       .child(new Field().label(text.schedule).child(SegmentedTabs.new("task-timing",{selected:editing.kind,
-        items:[{id:"once",label:text.once},{id:"every",label:text.every},{id:"weekly",label:text.weekly}],disabled})))
+        items:[{id:"once",label:text.once},{id:"every",label:text.every},{id:"weekly",label:text.weekly}],disabled,fill:true})))
       .children(editing.kind === "weekly" ? [
         new Field().label(text.weekdays).child(div().h_flex().flex_wrap().gap_2()
           .children([1,2,3,4,5,6,7].map(day => Toggle.new(`task-weekday-${day}`,{

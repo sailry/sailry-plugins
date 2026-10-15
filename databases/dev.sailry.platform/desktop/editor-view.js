@@ -43,10 +43,10 @@ export function editor(view) {
     })));
   }
   const engine=SegmentedTabs.new(`db-engine-${view.dialog}`,{
-    selected:owner.engine,disabled:locked,items:['sqlite','mysql','postgres'].map(id=>({id,label:text[`db_${id}`]})),
+    selected:owner.engine,disabled:locked,fill:true,items:['sqlite','mysql','postgres'].map(id=>({id,label:text[`db_${id}`]})),
   });
   const transport=SegmentedTabs.new(`db-transport-${view.dialog}`,{
-    selected:owner.method,disabled:locked,items:['tcp','socket','ssh'].map(id=>({id,label:text[`db_transport_${id}`]})),
+    selected:owner.method,disabled:locked,fill:true,items:['tcp','socket','ssh'].map(id=>({id,label:text[`db_transport_${id}`]})),
   });
   return div().id('db-editor').v_flex().gap_4().w_full().child(engine).children(network?[transport]:[]).child(form)
     .child(sharing(view,owner)).child(new VForm().child(new Field().child(new Checkbox('db-read-only').text_sm()

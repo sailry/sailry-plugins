@@ -17,7 +17,7 @@ export class Repository {
   constructor(api, notify = () => {}, report = () => {}) {
     this.api = api; this.notify = notify; this.report = report;
     this.connected = true; this.status = null; this.branches = null; this.loading = false;
-    this.error = null; this.pending = null; this.followUp = null;
+    this.error = null; this.readCode = null; this.pending = null; this.followUp = null;
     this.message = ''; this.amend = false; this.amendDraft = null; this.options = defaults(); this.commitOpen = false;
     this.view = 'changes'; this.history = null; this.historyLoading = false;
     this.tabs = []; this.selected = null; this.documents = new Map();
@@ -33,6 +33,7 @@ export class Repository {
   revisions() { return {expected_index:this.status.index_revision,expected_head:this.status.head,expected_branch:this.status.branch}; }
 
   refresh(review = false) {
+    this.readCode = null;
     if (this.closed || !this.connected || this.pending?.busy) return Promise.resolve(false);
     const previous = this.refreshing;
     const current = {sequence:++this.read,review:review || !!(previous?.active && previous.sequence === this.read - 1 && previous.review),active:true,promise:null};
@@ -66,8 +67,10 @@ export class Repository {
       if (document) await this.open(document.request,false);
       if (this.view === 'history') await this.loadHistory();
       return !this.closed && sequence === this.read ? true : this.latest(sequence);
-    } catch (_) {
-      if (sequence === this.read && !this.closed) { this.error = 'git_read_failed'; this.report(this.error); }
+    } catch (error) {
+      if (sequence === this.read && !this.closed) {
+        this.error = 'git_read_failed'; this.readCode = this.api.faultCode(error.message ?? String(error)); this.report(this.error);
+      }
       return this.latest(sequence);
     } finally {
       current.active = false;
