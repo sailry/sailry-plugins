@@ -3,7 +3,7 @@ import {View, div} from 'gpui-kit';
 import {Button, Spinner} from 'gpui-component';
 import {context, theme} from 'sailry';
 import {readBrowserSettings, setBrowserPersistent, listBrowserProfiles, importBrowserProfile,
-  SettingsGroup, Modal, modal_closed, IconButton, Toggle, nextControlEvent,toast} from 'sailry/ui';
+  SettingsGroup, Modal, modal_closed, Toggle, nextControlEvent,toast} from 'sailry/ui';
 import {messages, errorKey, imported} from './locales.js';
 
 function row(id, label, description, control) {
@@ -28,9 +28,7 @@ export default class Settings extends View {
     cx.spawn(async cx => {
       try { while (true) {
         const event = await nextControlEvent();
-        if (event.id === 'browser-profiles-close') {
-          this.profiles = null; cx.notify();
-        } else if (event.id === 'browser-retain-data') this.persist(event.value,cx);
+        if (event.id === 'browser-retain-data') this.persist(event.value,cx);
       } } catch (_) { /* Closing settings releases its controls. */ }
     });
   }
@@ -83,11 +81,9 @@ export default class Settings extends View {
         .child(row('browser_data_local',text.browser_data_local,text.browser_data_description,
           Toggle.new('browser-retain-data',{label:text.browser_data_local,checked:state.persistent,disabled})))] : [])
       .children(!state.supported ? [div().id('browser-import-unavailable').text_sm().child(text.browser_import_unavailable)] : [])
-      .child(Modal.new('browser-profiles-dialog',{open:!!this.profiles})
-        .children(this.profiles ? [div().id('browser-profile-picker').v_flex().w(Math.min(380,window.viewport_size().width - 88)).gap_3()
-          .child(div().h_flex().items_center().gap_3()
-            .child(div().flex_1().text_lg().font_semibold().child(text.browser_choose_profile))
-            .child(IconButton.new('browser-profiles-close',{icon:'close',label:text.close})))
+      .child(Modal.new('browser-profiles-dialog',{open:!!this.profiles,form:true,
+        title:this.profiles ? text.browser_choose_profile : '',width:428})
+        .children(this.profiles ? [div().id('browser-profile-picker').v_flex().gap_3()
           .child(div().id('browser-profiles').v_flex().max_h_80().overflow_y_scroll().gap_1()
             .children(this.profiles.map((profile,index) => new Button(`browser-profile-${index}`).ghost().w_full().justify_start()
               .label(profile.name).disabled(!state.enabled || this.busy && this.importing!==profile.id)

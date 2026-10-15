@@ -115,9 +115,15 @@ function navigation(view) {
 
 export function render(view) {
   const {text}=view,current=view.profile(),profile=view.home?null:current,opened=!!view.editor||!!view.confirmation;
-  const form=view.editor?{form:true,title:text[view.editor.original.revision?'db_edit':'db_new'],width:560}:{};
+  const form=view.editor?{form:true,title:text[view.editor.original.revision?'db_edit':'db_new'],width:560}
+    :view.confirmation?{form:true,title:text[view.confirmation.label],width:568}:{};
   const editorBody=view.editor?div().v_flex().gap_4().child(editor(view))
     .children(view.pending?[feedback(view,true)]:[]):null;
+  const confirmationBody=view.confirmation?div().id('db-confirm').v_flex().gap_3()
+    .child(div().whitespace_normal().text_sm().child(view.confirmation.text)):null;
+  const confirmationFooter=view.confirmation?div().h_flex().justify_end().gap_2()
+    .child(new Button('db-confirm-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
+    .child(new Button('db-confirm-submit').danger().label(text[view.confirmation.label]).disabled(view.locked()).on_click((_,cx)=>view.confirm(cx))):null;
   const connecting=!opened&&(!!view.pending&&!view.pending.request.unknown&&view.pending.request.command?.kind==='check_database'||profile&&view.catalog.loading.size&&!view.catalog.names.length);
   return div().size_full().min_h_0()
     .child(Header.new('database-header',{content:JSON.stringify({title:text.database,
@@ -128,10 +134,6 @@ export function render(view) {
       div().relative().size_full().min_h_0().child(content(view)).children(connecting?[Loading.new('db-connecting')]:[]),
       profile?div().id('db-assistant-panel').size_full().min_h_0().child(Conversation.new(`database-assistant-${view.opened}`,{assistant:'database',resource:{kind:'database',id:view.opened},heading:text.connection_assistant})):div(),
       navigation(view)
-    ])).child(picker(view)).child(Modal.new(`db-dialog-${view.dialog}`,{open:opened,...form}).children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[
-    div().id('db-confirm').v_flex().w(Math.min(520,window.viewport_size().width-80)).gap_3()
-      .child(div().text_lg().font_semibold().child(text[view.confirmation.label])).child(div().whitespace_normal().text_sm().child(view.confirmation.text))
-      .child(div().h_flex().justify_end().gap_2().child(new Button('db-confirm-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-        .child(new Button('db-confirm-submit').danger().label(text[view.confirmation.label]).disabled(view.locked()).on_click((_,cx)=>view.confirm(cx))))
-  ]:[]));
+    ])).child(picker(view)).child(Modal.new(`db-dialog-${view.dialog}`,{open:opened,...form})
+      .children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[confirmationBody,confirmationFooter]:[]));
 }

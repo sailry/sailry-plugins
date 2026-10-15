@@ -92,9 +92,17 @@ test('draft mode chooses the modal title',()=>{
   const setup=fixture(),owner={kind:'edit',token:'dialog',creating:true,readOnly:false,request:null,
     fields:{key:'key',name:'name',turns:'turns',instructions:'instructions'},models:[],fixed:false,model:null};
   setup.view.text=messages('en');setup.view.dialog=owner;setup.render();
-  assert.equal(setup.nodes.get('role-editor').items[0].items[0],'Add subagent');
+  let modal=setup.nodes.get('dialog');
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Add subagent',width:648});
+  assert.deepEqual(modal.items.map(item=>item.selector),['role-editor',null]);
   owner.creating=false;setup.render();
-  assert.equal(setup.nodes.get('role-editor').items[0].items[0],'Edit subagent');
+  modal=setup.nodes.get('dialog');
+  assert.equal(modal.props.title,'Edit subagent');
+  setup.view.dialog={kind:'remove',token:'remove-dialog',original:{name:'Retained role'},pending:false,request:null};
+  setup.render();modal=setup.nodes.get('remove-dialog');
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Delete',width:448});
+  assert.deepEqual(modal.items.map(item=>item.selector),['role-removal',null]);
+  assert.equal(modal.items[0].items[0].items[0].includes('Retained role'),true);
 });
 
 test('readonly editing reuses Checkbox and locks uncertain drafts',()=>{

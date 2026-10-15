@@ -8,6 +8,7 @@ const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',
 const element = new Proxy({}, {get:() => () => element});
 let picker;
 let checkbox;
+let modal;
 // The pinned component-shell contract exposes semantic size and boolean changes.
 class Checkbox {
   constructor(id) {this.id=id;checkbox=this;}
@@ -20,11 +21,17 @@ class Checkbox {
 const {render} = vm.runInNewContext(`${source}\n({render})`, {
   div:() => element,
   Button:class {constructor(){return element;}},
+  Field:class {constructor(){return element;}},
+  Form:class {constructor(){return element;}},
   Checkbox,
   TextField:{new:() => element},
   window:{viewport_size:() => ({width:800,height:600})},
   Picker:{new:(_,props) => {picker=props;return element;}},
-  Modal:{new:() => element},
+  Modal:{new:(_,props) => {
+    modal={props,items:[]};
+    return new Proxy(modal,{get:(target,key) => key==='child' ? child=>{target.items.push(child);return element;}
+      : key==='children' ? children=>{target.items.push(...children);return element;} : target[key]});
+  }},
 });
 
 test('picker descriptors always encode disabled as a boolean', () => {
@@ -55,5 +62,17 @@ test('managed checkbox preserves readonly state', () => {
     render({model:{dialog:owner},text:key => key});assert.equal(checkbox.readonly,true);
     checkbox.change(false,{notify:()=>{assert.fail('readonly control notified');}});
     assert.equal(owner.include_changes,true);
+  }
+});
+
+test('ordinary worktree dialogs use modal titles and body footer slots',()=>{
+  for(const [owner,title,width] of [
+    [{kind:'create',token:'create',pending:false,uncertain:false,fields:{revision:'revision',branch:'branch',path:'path'}},'worktree_create',488],
+    [{kind:'managed',token:'managed',pending:false,request:null,status:{},fields:{branch:'branch'},include_changes:false,fork:true},'location_fork',448],
+    [{kind:'remove',token:'remove',pending:false,request:null,entry:{path:'/retained'}},'worktree_remove',448],
+  ]) {
+    render({model:{dialog:owner},text:key=>key});
+    assert.deepEqual({...modal.props},{open:true,form:true,title,width});
+    assert.equal(modal.items.length,2);
   }
 });

@@ -316,7 +316,7 @@ test("host scope retains public task capabilities and localized tab copy", async
   const extension = manifest.extensions["dev.sailry.platform"];
   assert.equal(extension.scope, "host");
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.0");
+  assert.equal(manifest.version, "0.1.3");
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);
   assert.equal(extension.tools.length,1);
   assert.deepEqual(extension.tools[0].contexts,["workspace","plugin"]);
@@ -338,4 +338,9 @@ test("the editor uses the shared modal title, body, footer and close guard", () 
   const dialog=setup.nodes.get("task-dialog-0");
   assert.deepEqual(plain(dialog.props),{open:true,dismissable:false,form:true,title:"New task",width:560});
   assert.deepEqual(dialog.items.map(item=>item.kind),["editor","footer"]);
+  setup.view.busy=false;setup.view.editing=null;setup.view.deleting={id:"retained",revision:"2",name:"Retained task"};setup.render();
+  const confirmation=setup.nodes.get("task-dialog-0");
+  assert.deepEqual(plain(confirmation.props),{open:true,dismissable:true,form:true,title:setup.view.text.deleteTitle,width:528});
+  assert.deepEqual(confirmation.items.map(item=>item.selector),["task-delete-confirmation",null]);
+  assert.equal(confirmation.items[0].items[0].items[0],"Retained task");
 });

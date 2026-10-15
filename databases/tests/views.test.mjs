@@ -145,6 +145,19 @@ for(const packageName of ['databases','ssh']) {
       assert.equal('pt_4' in modal.nodes[0].style,false,'native form owns body top padding');
     }
   });
+
+  test(`${packageName} confirmations use native titled form body and footer slots`,async()=>{
+    const setup=await fixture(packageName),owner=view(packageName,profiles);
+    owner.confirmation={label:'settings_delete',text:'Delete the retained connection'};owner.dialog=8;
+    setup.functions.render(owner);
+    const modal=setup.nodes.get(`${prefix}-dialog-8`);
+    assert.deepEqual(plain(modal.props),{open:true,form:true,title:'settings_delete',width:packageName==='databases'?568:528});
+    assert.equal(modal.nodes.length,2);
+    assert.equal(modal.nodes[0].selector,`${prefix}-confirm`);
+    assert.equal(modal.nodes[1].nodes.length,2);
+    assert.equal(modal.nodes[0].nodes.includes('Delete the retained connection'),false);
+    assert.equal(modal.nodes[0].nodes[0].nodes[0],'Delete the retained connection');
+  });
 }
 
 test('database catalog failures retain trees and header refresh without duplicate retry',async()=>{
@@ -174,6 +187,22 @@ test('SSH transfer, trust, and command dialogs use native titled form slots',asy
     assert.equal('pt_4' in modal.nodes[0].style,false);
     assert.ok(setup.nodes.has({transfer:'ssh-transfer-editor',trust:'ssh-host-key',command:'ssh-command'}[kind]));
     assert.ok(setup.buttons.has({transfer:'ssh-upload',trust:'ssh-trust',command:'ssh-run'}[kind]));
+  }
+});
+
+test('SSH file editors use localized modal titles and separate form slots',async()=>{
+  for(const [action,title] of [['rename','files_rename'],['new_file','files_new_file'],['new_directory','files_new_directory']]) {
+    const setup=await fixture('ssh'),owner=view('ssh',profiles);
+    owner.dialog=6;owner.fileEdit={action,input:`${action}-input`};
+    setup.functions.render(owner);
+    const modal=setup.nodes.get('ssh-dialog-6');
+    assert.deepEqual(plain(modal.props),{open:true,form:true,title,width:408});
+    assert.equal(modal.nodes.length,2);
+    assert.equal(modal.nodes[0].selector,'ssh-file-editor');
+    assert.equal(modal.nodes[0].nodes[0].selector,`${action}-input`);
+    assert.equal('w' in modal.nodes[0].style,false,'native form owns the width');
+    assert.ok(setup.buttons.has('ssh-file-cancel'));
+    assert.ok(setup.buttons.has('ssh-file-submit'));
   }
 });
 

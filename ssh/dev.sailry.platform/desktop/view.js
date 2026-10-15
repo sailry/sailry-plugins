@@ -61,7 +61,7 @@ function transferFooter(view){const{text,transfer:value}=view;return div().h_fle
       .child(new Button('ssh-transfer-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
       .child(new Button('ssh-download').label(text.ssh_download).disabled(view.locked()||!value.worktree).on_click((_,cx)=>view.transferFile('download',cx)))
       .child(new Button('ssh-upload').primary().label(text.ssh_upload).disabled(view.locked()||!value.worktree).on_click((_,cx)=>view.transferFile('upload',cx)));}
-function titled(title,body,footer){return {props:{form:true,title,width:560},children:[body,footer]};}
+function titled(title,body,footer,width=560){return {props:{form:true,title,width},children:[body,footer]};}
 function dialog(view){const{text}=view;if(view.outcome?.kind==='host_key_required')return titled(text.ssh_trust_title,
   div().v_flex().gap_4().child(div().id('ssh-host-key').v_flex().gap_2()
     .child(div().text_color(theme().colors[view.outcome.changed?'destructive':'foreground']).child(text[view.outcome.changed?'ssh_key_changed':'ssh_key_unknown']))
@@ -69,15 +69,17 @@ function dialog(view){const{text}=view;if(view.outcome?.kind==='host_key_require
     .children(view.pending?[feedback(view,true)]:[]),
   div().h_flex().justify_end().gap_2().child(new Button('ssh-trust-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
     .child(new Button('ssh-trust').primary().label(text.ssh_trust).disabled(view.locked()).on_click((_,cx)=>view.trust(cx))));
-  if(view.confirmation)return {props:{},children:[div().id('ssh-confirm').v_flex().w(480).gap_3().child(div().text_lg().font_semibold().child(text[view.confirmation.label]))
-    .child(div().whitespace_normal().text_sm().child(view.confirmation.text)).child(div().h_flex().justify_end().gap_2()
+  if(view.confirmation)return titled(text[view.confirmation.label],
+    div().id('ssh-confirm').v_flex().gap_3().child(div().whitespace_normal().text_sm().child(view.confirmation.text)),
+    div().h_flex().justify_end().gap_2()
       .child(new Button('ssh-confirm-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-      .child(new Button('ssh-confirm-submit').danger().label(text[view.confirmation.label]).disabled(view.locked()).on_click((_,cx)=>view.confirm(cx))))]};
+      .child(new Button('ssh-confirm-submit').danger().label(text[view.confirmation.label]).disabled(view.locked()).on_click((_,cx)=>view.confirm(cx))),528);
   if(view.editor)return titled(text[view.editor.original.revision?'ssh_edit':'ssh_new'],
     div().v_flex().gap_4().child(editor(view)).children(view.pending?[feedback(view,true)]:[]),editorFooter(view));
-  if(view.fileEdit)return {props:{},children:[div().id('ssh-file-editor').v_flex().w(360).gap_3().child(TextField.new(view.fileEdit.input,{disabled:view.locked()}))
-    .child(div().h_flex().justify_end().gap_2().child(new Button('ssh-file-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-      .child(new Button('ssh-file-submit').primary().label(text.settings_save).disabled(view.locked()).on_click((_,cx)=>view.submitFile(cx))))]};
+  if(view.fileEdit)return titled(text[{rename:'files_rename',new_file:'files_new_file',new_directory:'files_new_directory'}[view.fileEdit.action]],
+    div().id('ssh-file-editor').v_flex().gap_3().child(TextField.new(view.fileEdit.input,{disabled:view.locked()})),
+    div().h_flex().justify_end().gap_2().child(new Button('ssh-file-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
+      .child(new Button('ssh-file-submit').primary().label(text.settings_save).disabled(view.locked()).on_click((_,cx)=>view.submitFile(cx))),408);
   if(view.transfer)return titled(text.ssh_transfer,transfer(view),transferFooter(view));
   if(view.commandOpen)return titled(text.ssh_run,div().id('ssh-command').v_flex().gap_4()
     .child(TextField.new(view.command,{disabled:view.locked()})).children(view.pending||view.outcome?.kind==='completed'?[feedback(view,true)]:[]),

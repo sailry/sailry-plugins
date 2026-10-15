@@ -91,6 +91,29 @@ test('main workspace starts its changes panel at 320 pixels', async () => {
   assert.equal(workspace.props.navigation,'none');
 });
 
+test('branch creation uses the modal title without exposing its captured start',()=>{
+  const {dialogs}=vm.runInNewContext(`${source}\n({dialogs})`,{
+    div:()=>element('div'),theme:()=>({colors:{muted_foreground:'#999'}}),
+    Picker:{new:(id,props)=>element('picker',{id,...props})},
+    Modal:{new:(id,props)=>element('modal',{id,...props})},
+    TextField:{new:(id,props)=>element('field',{id,...props})},
+    Button:class {constructor(id){return element('button',{id});}},
+  });
+  const dialog={id:4,form:'branch',title:'git_new_branch',input:'branch-name',base:'main',
+    commit:'02265059abcdef',busy:false};
+  const view={text:{git_new_branch:'New branch',git_branch_base:'Starting point',git_branch_name:'Branch name',
+    git_create_branch:'Create',settings_cancel:'Cancel',git_no_matches:'No matches'},
+    actions:{dialog,picker:null,close(){},submit(){}},run(){}};
+  const modal=descendants(dialogs(view)).find(node=>node.kind==='modal');
+  assert.deepEqual({...modal.props},{id:'git-dialog-4',open:true,form:true,title:'New branch',width:468});
+  assert.equal(modal.items.length,2);
+  const values=descendants(modal).flatMap(node=>node.items.filter(item=>typeof item==='string'));
+  assert.equal(values.includes('Starting point'),false);
+  assert.equal(values.includes('main'),false);
+  assert.equal(values.some(value=>value.includes('02265059')),false);
+  assert.ok(values.includes('Branch name'));
+});
+
 test('tree leaves encode an empty child array for the native descriptor', () => {
   const entry = {path:'src/main.rs',conflicted:false,untracked:false,
     staged:null,unstaged:'modified',diff:{additions:1,deletions:0}};

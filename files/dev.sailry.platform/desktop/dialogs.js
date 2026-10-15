@@ -15,17 +15,16 @@ export function mutation(view) {
     : operation?.kind === 'trash' ? 'files_trash' : 'files_create';
   const detail = operation?.paths.length > 1 ? text.files_trash_confirm_many.replace('%{count}',String(operation.paths.length))
     : text.files_trash_confirm.replace('%{name}',operation?.paths[0]?.split('/').at(-1) ?? '');
-  return Modal.new(`files-entry-${editing?.id ?? 0}`,{open:!!editing}).children(editing ? [
-    div().id('file-entry-dialog').v_flex().w(Math.min(420,window.viewport_size().width - 48)).gap_3()
-      .child(div().text_lg().font_semibold().child(text[title]))
+  return Modal.new(`files-entry-${editing?.id ?? 0}`,{open:!!editing,form:true,title:editing ? text[title] : '',width:468}).children(editing ? [
+    div().id('file-entry-dialog').v_flex().gap_3()
       .children(operation.kind === 'trash' ? [div().text_sm().child(detail)]
         : [div().id(operation.kind === 'rename' ? 'file-rename-name' : 'file-create-name')
-          .child(TextField.new(editing.input,{disabled:operation.busy || !!operation.pending}))])
-      .child(div().h_flex().justify_end().gap_2().mt_3()
-        .child(new Button('file-entry-cancel').label(text.settings_cancel).on_click((_,cx) => view.closeEdit(cx)))
-        .child((operation.kind === 'trash' ? new Button('file-entry-confirm').danger()
-          : new Button('file-entry-confirm').primary()).label(text[action]).disabled(operation.busy)
-          .loading(operation.busy).on_click((_,cx) => view.submit(cx))))
+          .child(TextField.new(editing.input,{disabled:operation.busy || !!operation.pending}))]),
+    div().h_flex().justify_end().gap_2()
+      .child(new Button('file-entry-cancel').label(text.settings_cancel).on_click((_,cx) => view.closeEdit(cx)))
+      .child((operation.kind === 'trash' ? new Button('file-entry-confirm').danger()
+        : new Button('file-entry-confirm').primary()).label(text[action]).disabled(operation.busy)
+        .loading(operation.busy).on_click((_,cx) => view.submit(cx)))
   ] : []);
 }
 
@@ -45,9 +44,8 @@ export function transfer(view) {
   const label = action === 'check' ? 'files_check_result' : action === 'replace' ? 'files_upload_replace'
     : value?.stage === 'failed' ? 'files_upload_retry' : value?.kind === 'move' ? 'files_move'
     : value?.kind === 'upload' ? 'files_upload' : 'files_paste';
-  return Modal.new(`files-transfer-${value?.id ?? 'closed'}`,{open:!!value}).children(value ? [
-    div().id('file-transfer-dialog').v_flex().w(Math.min(460,window.viewport_size().width - 48)).gap_3()
-      .child(div().text_lg().font_semibold().child(text[title]))
+  return Modal.new(`files-transfer-${value?.id ?? 'closed'}`,{open:!!value,form:true,title:value ? text[title] : '',width:508}).children(value ? [
+    div().id('file-transfer-dialog').v_flex().gap_3()
       .children(entry ? [
         div().v_flex().gap_1().text_sm().child(div().text_color(colors.muted_foreground).child(text.files_paste_source))
           .child(div().whitespace_normal().child(value.source_label)),
@@ -64,11 +62,11 @@ export function transfer(view) {
       .children(showProgress ? [new Progress('file-transfer-progress').accessibility_label(text[title])
         .loading(progress === null).value(progress ?? 0)] : [])
       .children(key && !['failed','uncertain','done','cancelled'].includes(value.stage) ? [div().id(`file-transfer-status-${value.stage}`).text_sm()
-        .text_color(value.error || value.stage === 'uncertain' ? colors.destructive : colors.muted_foreground).child(text[key])] : [])
-      .child(div().h_flex().justify_end().gap_2().mt_3()
-        .child(new Button('file-transfer-close').label(value.can_cancel ? text.settings_cancel : text.close)
-          .on_click((_,cx) => view.run(cx => transfers.close(cx),cx)))
-        .children(action ? [new Button('file-transfer-confirm').primary().label(text[label]).disabled(transfers.busy)
-          .on_click((_,cx) => view.transfer(action,cx))] : []))
+        .text_color(value.error || value.stage === 'uncertain' ? colors.destructive : colors.muted_foreground).child(text[key])] : []),
+    div().h_flex().justify_end().gap_2()
+      .child(new Button('file-transfer-close').label(value.can_cancel ? text.settings_cancel : text.close)
+        .on_click((_,cx) => view.run(cx => transfers.close(cx),cx)))
+      .children(action ? [new Button('file-transfer-confirm').primary().label(text[label]).disabled(transfers.busy)
+        .on_click((_,cx) => view.transfer(action,cx))] : [])
   ] : []);
 }

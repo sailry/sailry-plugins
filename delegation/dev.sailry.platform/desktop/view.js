@@ -54,24 +54,21 @@ function editor(view,owner) {
         items:['review','research','implement'].map(key => choice(owner,key,text[`role_preset_${key}`],false))})))
     .child(new Form().child(new Field().label_indent(false)
       .child(div().id('role-instructions').child(TextField.new(owner.fields.instructions,props)))));
-  return div().id('role-editor').v_flex().w(Math.min(600,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(text[owner.creating ? 'role_create' : 'role_editor']))
+  return div().id('role-editor').v_flex().gap_4()
     .child(div().id('role-editor-scroll').v_flex().min_h_0().max_h(Math.max(160,window.viewport_size().height-230))
-      .overflow_y_scroll().p_1().gap_4().child(form).child(instructions))
-    .child(div().h_flex().justify_end().gap_2()
-      .child(button('role-cancel',text.settings_cancel,(_,cx) => view.close(cx)))
-      .child(button('role-save',text[owner.request ? 'role_retry' : 'role_save'],(_,cx) => view.save(cx),
-        owner.pending || !view.connected,true)));
+      .overflow_y_scroll().p_1().gap_4().child(form).child(instructions));
 }
 function removal(view,owner) {
   const text = view.text;
-  return div().id('role-removal').v_flex().w(Math.min(400,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(text.settings_delete))
-    .child(div().text_sm().child(text.role_remove_live.replace('%{name}',owner.original.name)))
-    .child(div().h_flex().justify_end().gap_2()
-      .child(button('role-delete-cancel',text.settings_cancel,(_,cx) => view.close(cx)))
-      .child(button('role-delete-confirm',text[owner.request ? 'role_retry' : 'settings_delete'],
-        (_,cx) => view.save(cx),owner.pending || !view.connected,true)));
+  return div().id('role-removal').v_flex().gap_4()
+    .child(div().text_sm().child(text.role_remove_live.replace('%{name}',owner.original.name)));
+}
+function footer(view,owner) {
+  const text = view.text, removal = owner.kind !== 'edit';
+  return div().h_flex().justify_end().gap_2()
+    .child(button(removal ? 'role-delete-cancel' : 'role-cancel',text.settings_cancel,(_,cx) => view.close(cx)))
+    .child(button(removal ? 'role-delete-confirm' : 'role-save',text[owner.request ? 'role_retry' : removal ? 'settings_delete' : 'role_save'],
+      (_,cx) => view.save(cx),owner.pending || !view.connected,true));
 }
 export function render(view) {
   const text = view.text, disabled = !view.ready || !view.connected;
@@ -84,8 +81,10 @@ export function render(view) {
       .child(div().h_flex().flex_shrink(0).gap_2()
         .child(IconButton.new(`role-edit-${role.id}`,{icon:'settings-2',label:text.settings_edit,disabled}))
         .child(IconButton.new(`role-delete-${role.id}`,{icon:'circle-x',label:text.settings_delete,disabled})))));
-  let modal = Modal.new(view.dialog?.token ?? 'role-dialog',{open:!!view.dialog});
-  if (view.dialog) modal = modal.child(view.dialog.kind === 'edit' ? editor(view,view.dialog) : removal(view,view.dialog));
+  const owner = view.dialog, editing = owner?.kind === 'edit';
+  const title = editing ? text[owner.creating ? 'role_create' : 'role_editor'] : owner ? text.settings_delete : '';
+  const modal = Modal.new(owner?.token ?? 'role-dialog',{open:!!owner,form:true,title,width:editing ? 648 : 448})
+    .children(owner ? [editing ? editor(view,owner) : removal(view,owner),footer(view,owner)] : []);
   return div().id('role-settings').v_flex().gap_6()
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
       .child(div().h_flex().gap_2().flex_wrap()

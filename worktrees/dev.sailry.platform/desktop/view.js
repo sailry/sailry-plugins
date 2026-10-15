@@ -23,27 +23,20 @@ function create(view,owner) {
     return new Field().label(view.text(label)).required(true).child(input);
   }));
   const content = div().v_flex().max_h(Math.max(120,window.viewport_size().height-200)).overflow_y_scroll().child(form);
-  return div().id('live-worktree-form').v_flex().w(Math.min(440,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(view.text('worktree_create')))
-    .child(content)
-    .child(footer(view,owner,'live-worktree-submit','live-worktree-cancel'));
+  return div().id('live-worktree-form').v_flex().gap_4().child(content);
 }
 function managed(view,owner) {
   const readonly = owner.pending || !!owner.request;
-  return div().id('location-create-form').v_flex().w(Math.min(400,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(view.text(owner.fork ? 'location_fork' : 'location_create')))
+  return div().id('location-create-form').v_flex().gap_4()
     .child(div().id(owner.pending || !owner.status ? 'location-branch-loading' : 'location-branch-name')
       .child(TextField.new(owner.fields.branch,{readonly})))
     .child(div().id('location-copy-changes').child(new Checkbox('location-copy-changes').size('small')
       .label(view.text('location_copy_changes')).checked(owner.include_changes).disabled(readonly)
-      .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}})))
-    .child(footer(view,owner,'location-create-submit','location-cancel'));
+      .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}})));
 }
 function removal(view,owner) {
-  return div().id('worktree-remove-form').v_flex().w(Math.min(400,window.viewport_size().width-88)).gap_4()
-    .child(div().text_lg().font_semibold().child(view.text('worktree_remove')))
-    .child(div().text_sm().child(view.text('worktree_remove_named').replace('%{name}',owner.entry.path)))
-    .child(footer(view,owner,'worktree-remove-confirm','worktree-remove-cancel'));
+  return div().id('worktree-remove-form').v_flex().gap_4()
+    .child(div().text_sm().child(view.text('worktree_remove_named').replace('%{name}',owner.entry.path)));
 }
 export function render(view) {
   const owner = view.model.dialog;
@@ -54,7 +47,13 @@ export function render(view) {
       const {action,...props} = choice;
       return {...props,disabled:!!(owner.pending || choice.disabled),value:{token:owner.token,choice}};
     }) : []});
-  let modal = Modal.new(owner?.token ?? 'worktree-dialog',{open:!!owner && !picking});
-  if (owner && !picking) modal = modal.child(owner.kind === 'create' ? create(view,owner) : owner.kind === 'managed' ? managed(view,owner) : removal(view,owner));
+  const title = !owner ? '' : owner.kind === 'create' ? view.text('worktree_create') : owner.kind === 'managed'
+    ? view.text(owner.fork ? 'location_fork' : 'location_create') : view.text('worktree_remove');
+  const modal = Modal.new(owner?.token ?? 'worktree-dialog',{open:!!owner && !picking,form:true,title,
+    width:owner?.kind === 'create' ? 488 : 448}).children(owner && !picking ? [
+      owner.kind === 'create' ? create(view,owner) : owner.kind === 'managed' ? managed(view,owner) : removal(view,owner),
+      footer(view,owner,owner.kind === 'create' ? 'live-worktree-submit' : owner.kind === 'managed' ? 'location-create-submit' : 'worktree-remove-confirm',
+        owner.kind === 'create' ? 'live-worktree-cancel' : owner.kind === 'managed' ? 'location-cancel' : 'worktree-remove-cancel')
+    ] : []);
   return div().id('worktrees-controller').child(picker).child(modal);
 }
