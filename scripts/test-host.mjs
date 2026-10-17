@@ -11,8 +11,17 @@ export function runtimeTest(name, run) {
 }
 
 export function execute(input) {
+  return invoke(input, []);
+}
+
+/** Validates raw JSON Schema offline, not a provider's normalized declaration. */
+export function validateSchema(schema, values) {
+  return invoke({schema, values}, ['--validate-schema']).valid;
+}
+
+function invoke(input, args) {
   if (!binary) throw new Error('Production test host is unavailable; use --runtime-host');
-  const output = execFileSync(binary, [], {
+  const output = execFileSync(binary, args, {
     input: JSON.stringify(input), encoding: 'utf8', timeout: 65_000, maxBuffer: 16 * 1024 * 1024,
   });
   const result = JSON.parse(output);
