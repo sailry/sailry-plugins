@@ -52,7 +52,7 @@ test('declares scoped registration and a package settings page', () => {
   const extension = manifest.extensions['dev.sailry.platform'];
   assert.deepEqual(extension.registration, {provider:'feishu',client_id:'app_id',client_secret:'app_secret',
     tenant_scopes:['docx:document:readonly','docs:document.content:read','docs:document.comment:read']});
-  assert.equal(manifest.version, '0.1.1');
+  assert.equal(manifest.version, '0.1.2');
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.deepEqual(extension.desktop.resources, [extension.settings_page.entry,'dev.sailry.platform/desktop/locales.js']);
 });
@@ -73,6 +73,8 @@ function page(locale = 'en') {
   }});
   const control = kind => ({new:(id,props) => ({kind,id,props})});
   const scope = {View:class {},div:node,context:()=>JSON.stringify({locale}),
+    theme:()=>({colors:{muted_foreground:'muted'}}),
+    InfoAlert:class {constructor(id,message){return node().id(id).child(message);}},
     readSettings:async()=>{++reads; if(failure) throw new Error('read failed');
       return {values:{app_id:'cli_saved'},configured:['app_secret']};},
     nextRegistration:()=>new Promise(resolve=>registrations.push(resolve)),

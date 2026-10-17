@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "feishu",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Documents and comments",
   "homepage": "https://github.com/larksuite/lark-samples/tree/main/mcp_quick_remote_demo",
   "extensions": {

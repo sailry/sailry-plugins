@@ -1,5 +1,6 @@
 import {View, div} from 'gpui-kit';
-import {context} from 'sailry';
+import {InfoAlert} from 'gpui-component';
+import {context, theme} from 'sailry';
 import {readSettings, nextChange} from 'sailry/sdk';
 import {RegistrationButton, RegistrationQR, nextRegistration} from 'sailry/registration';
 import {ConfigurationButton} from 'sailry/forms';
@@ -83,16 +84,16 @@ export default class Settings extends View {
         action:'open',label:text.open,disabled:busy
       })] : []);
     return div().id('feishu-settings').v_flex().gap_4()
-      .child(SettingsGroup.new('feishu-application',{title:text.application})
-        .child(div().v_flex().gap_3().py_3()
-          .children(status ? [div().id('feishu-status').text_sm().child(status)] : [])
-          .children(pending ? [div().v_flex().gap_2()
-            .child(div().text_sm().child(text.scan))
-            .child(RegistrationQR.new('feishu-qr'))] : [])
-          .child(controls)
-          .child(div().text_sm().child(text.sharing))
-          .child(ConfigurationButton.new('feishu-manual',{
-            label:text.manual,disabled:busy
-          }))));
+      .child(SettingsGroup.new('feishu-application',{title:text.application,header_action:true})
+        .child(controls)
+        .child(div().id('feishu-existing-app').h_flex().w_full().items_center().py_3().gap_4().text_sm()
+          .child(div().flex_1().min_w_0().v_flex().gap_1().child(text.manual)
+            .children(status ? [div().id('feishu-status').text_color(theme().colors.muted_foreground).child(status)] : []))
+          .child(div().h_flex().flex_shrink(0).justify_end()
+            .child(ConfigurationButton.new('feishu-manual',{label:text.open,disabled:busy}))))
+        .children(pending ? [div().id('feishu-registration').h_flex().w_full().items_center().py_3().gap_4().flex_wrap()
+          .child(div().flex_1().min_w_0().text_sm().child(text.scan))
+          .child(RegistrationQR.new('feishu-qr'))] : []))
+      .child(new InfoAlert('feishu-sharing',text.sharing).size('small'));
   }
 }
