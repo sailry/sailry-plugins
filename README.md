@@ -84,6 +84,19 @@ without executing plugin initialization. Behavior tests include controllers,
 host handlers, games and localized UI contracts; real Node integration remains
 in the application repository.
 
+For production QuickJS and SDK contract cases, select a prebuilt application
+test host explicitly:
+
+```sh
+python3 scripts/test.py --runtime-host /path/to/plugin-test-host
+```
+
+Package tests import `scripts/test-host.mjs` and own their inputs and assertions.
+The helper loads declared host modules and supplies explicit typed service
+replies; it does not start a Node, access a profile, or prove UI or transport
+behavior. Without `--runtime-host`, these cases are reported as skipped rather
+than falling back to a mock. Ordinary package tests keep using the same runner.
+
 Keep function and test names concise. Files, modules and classes supply context;
 do not repeat their names as prefixes or add groups just to shorten labels.
 The shared naming check allows seven semantic words in identifiers and twelve
