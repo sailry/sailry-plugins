@@ -12,7 +12,7 @@ export async function fixture() {
   const records = new Map(), requests = new Map(), receipts = new Map();
   const schedules = new Map(), handlers = new Map();
   const prepared = [], queries = [], catalogReads = [], scans = [];
-  const notifications = [];
+  const notifications = [], jobs = [], results = new Map();
   let state = null, catalog = {projects:[{id:project,name:"Current"},{id:foreign,name:"Other"}],worktrees:[]};
   const get = key => clone(records.get(key) ?? {key,present:false,value:null,revision:"0"});
   const seed = (value, revision = "1") => records.set(`reminder/${value.id}`,
@@ -78,7 +78,17 @@ export async function fixture() {
           try { receipts.set(request,{Ok:{data:apply(command).data}}); }
           catch (error) { receipts.set(request,{Err:{code:error.code,message:error.message}}); }
         } else {
-          const name = command.data.action.kind;
+          const name = command.data.action.kind, input = command.data.action.data;
+          if (name === "list_jobs") {
+            const start = input.before === null ? 0 : jobs.findIndex(job => job.id === input.before) + 1;
+            const page = jobs.slice(start, start + input.limit);
+            receipts.set(request,{Ok:{data:{data:{jobs:clone(page),next_before:start + input.limit < jobs.length ? page.at(-1).id : null}}}});
+            return clone(receipts.get(request));
+          }
+          if (name === "read_result") {
+            receipts.set(request,{Ok:{data:{data:clone(results.get(input.id) ?? {kind:"pending"})}}});
+            return clone(receipts.get(request));
+          }
           if (!["list_schedules","list_handlers"].includes(name)) throw new Error("Unsupported dispatch query");
           const values = name === "list_schedules" ? schedules : handlers;
           receipts.set(request,{Ok:{data:{data:clone([...values.values()])}}});
@@ -104,6 +114,6 @@ export async function fixture() {
   await main.evaluate();
   const namespace = name => cache.get(new URL(name,new URL("../dev.sailry.platform/host/",import.meta.url)).href).namespace;
   return {main:main.namespace,records:namespace("records.js"),mutations:namespace("mutations.js"),
-    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,notifications,
+    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,notifications,jobs,results,
     get catalog() { return clone(catalog); },set catalog(value) {catalog=clone(value);},get state() {return clone(state);} };
 }

@@ -199,3 +199,21 @@ test("dispatch conflicts leave reminder and schedule changes atomic", async () =
   assert.equal(setup.schedules.size,1); assert.equal(setup.schedules.get(id(1)).revision,1);
   assert.equal(setup.handlers.size,0);
 });
+
+test("history scans job pages for one reminder and omits skipped callbacks", async () => {
+  const setup = await fixture(), handler = id(1);
+  const job = (name, owner, status) => ({id:name, handler:owner, status, created_ms:1, started_ms:1, finished_ms:2, error:null});
+  for (let index = 0; index < 120; index++) setup.jobs.push(job(`other-${index}`, id(2), "completed"));
+  setup.jobs.push(job("delivered", handler, "completed"), job("skipped", handler, "completed"), job("failed", handler, "failed"));
+  setup.jobs.splice(10, 0, job("queued", handler, "queued"));
+  setup.results.set("delivered", {kind:"completed", data:{Ok:{kind:"plugin_result", data:{delivered:true}}}});
+  setup.results.set("skipped", {kind:"completed", data:{Ok:{kind:"plugin_result", data:{skipped:true}}}});
+  const page = clone(await setup.main.history({handler}));
+  assert.deepEqual(page.Ok.items.map(item => item.id), ["queued", "delivered", "failed"]);
+  const actions = setup.queries.map(query => query.data.action);
+  assert.deepEqual(actions.filter(action => action.kind === "list_jobs").map(action => action.data),
+    [{before:null,limit:100},{before:"other-98",limit:100}]);
+  assert.deepEqual(actions.filter(action => action.kind === "read_result").map(action => action.data.id), ["delivered", "skipped"]);
+  assert.equal(setup.prepared.length, 0);
+  assert.equal(clone(await setup.main.history({handler:"not-an-id"})).Err.code, "invalid_request");
+});

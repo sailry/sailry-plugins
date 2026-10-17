@@ -22,11 +22,12 @@ async function fixture() {
       const command=requests[Number(id)];
       if(command?.kind==="resolve_plugin_model")return {Ok:{kind:"session_config",data:{...config}}};
       if(command?.data?.action.kind==="list_jobs") return {Ok:{data:{data:pages.get(command.data.action.data.before)??{jobs:[],next_before:null}}}};
+      if(command?.data?.action.kind==="read_result") return {Ok:{data:{data:{kind:"completed",data:{Ok:{kind:"queued_turn",data:{session:`session-${command.data.action.data.id}`,id:"turn"}}}}}}};
       if(command?.kind==="dispatch")return {Ok:{data:{data:[]}}};
       return {Ok:{data:[{data:{revision:"1"}}]}};
     },forgetRequest(){},
   };
-  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,run,states})`,runtime);
+  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,run,states,history})`,runtime);
   const input={id:"00000000-0000-0000-0000-000000000002",revision:"0",name:"Review",prompt:"Read the project",
     queue:"default",enabled:false,project:null,worktree:null,config:null,timing:{kind:"once",data:{at_ms:Date.now()+300000}}};
   return {api,input,config,values,pages,requests,transactions};
@@ -49,19 +50,33 @@ test("management lists tasks without a queue settings lookup",async()=>{
 test("native states span job pages and prioritize active runs over later completions",async()=>{
   const setup=await fixture();
   setup.pages.set(null,{jobs:[
-    {handler:"repeat",status:"completed"},{handler:"finished",status:"failed"},
+    {handler:"repeat",status:"completed",started_ms:3},{handler:"finished",status:"failed",started_ms:4},
     {handler:"queued",status:"completed"},{handler:"unstarted",status:"queued"},
   ],next_before:21});
   setup.pages.set(21,{jobs:[
-    {handler:"repeat",status:"running"},{handler:"finished",status:"completed"},
+    {handler:"repeat",status:"running",started_ms:2},{handler:"finished",status:"completed"},
     {handler:"queued",status:"queued"},
   ],next_before:10});
   setup.pages.set(10,{jobs:[{handler:"repeat",status:"queued"}],next_before:null});
   assert.deepEqual(JSON.parse(JSON.stringify(await setup.api.states())),
-    {repeat:"running",finished:"failed",queued:"queued",unstarted:"queued"});
+    {repeat:{status:"running",started_ms:2},finished:{status:"failed",started_ms:4},
+      queued:{status:"queued",started_ms:null},unstarted:{status:"queued",started_ms:null}});
   assert.deepEqual(JSON.parse(JSON.stringify(setup.requests.map(command=>command.data.action.data))),
     [{before:null,limit:100},{before:21,limit:100},{before:10,limit:100}]);
   assert.equal(setup.transactions.length,0);
+});
+test("task history scans native pages for one handler's runs",async()=>{
+  const setup=await fixture(),job=(id,handler)=>({id,handler,status:"completed",event:{payload:{name:"Review"}}});
+  setup.pages.set(null,{jobs:[job("a1","a"),job("b1","b")],next_before:21});
+  setup.pages.set(21,{jobs:[job("b2","b"),job("a2","a")],next_before:10});
+  setup.pages.set(10,{jobs:[job("a3","a")],next_before:null});
+  const page=JSON.parse(JSON.stringify(await setup.api.history({before:null,handler:"a",limit:2})));
+  assert.deepEqual(page.Ok.items.map(item=>[item.job.id,item.session]),[["a1","session-a1"],["a2","session-a2"]]);
+  assert.equal(page.Ok.next_before,10);
+  const reads=setup.requests.map(command=>command.data.action).filter(action=>action.kind==="read_result").map(action=>action.data.id);
+  assert.deepEqual(reads,["a1","a2"]);
+  const rest=JSON.parse(JSON.stringify(await setup.api.history({before:10,handler:"a",limit:2})));
+  assert.deepEqual(rest.Ok.items.map(item=>item.job.id),["a3"]);assert.equal(rest.Ok.next_before,null);
 });
 test("new handlers capture Node-validated configuration without exporting or choosing defaults",async()=>{
   const setup=await fixture(),requested={...setup.config,effort:"low"};setup.input.config=requested;

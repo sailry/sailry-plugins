@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scheduled-tasks",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Run tasks on a schedule",
   "extensions": {
     "dev.sailry.platform": {
@@ -97,8 +97,8 @@
       }],
       "desktop": {
         "entry":"dev.sailry.platform/desktop/main.js",
-        "resources":["dev.sailry.platform/desktop/main.js", "dev.sailry.platform/desktop/editor.js", "dev.sailry.platform/desktop/view.js", "dev.sailry.platform/desktop/locales.js", "dev.sailry.platform/host/management.js", "dev.sailry.platform/host/records.js", "dev.sailry.platform/host/dispatch.js", "dev.sailry.platform/host/mutations.js"],
-        "navigation_options":{"pinned":true,"order":200},
+        "resources":["dev.sailry.platform/desktop/main.js", "dev.sailry.platform/desktop/editor.js", "dev.sailry.platform/desktop/view.js", "dev.sailry.platform/desktop/details.js", "dev.sailry.platform/desktop/schedule.js", "dev.sailry.platform/desktop/locales.js", "dev.sailry.platform/host/management.js", "dev.sailry.platform/host/records.js", "dev.sailry.platform/host/dispatch.js", "dev.sailry.platform/host/mutations.js"],
+        "navigation_options":{"pinned":true,"details":true,"order":200},
         "navigation":{"label":"Scheduled tasks", "locales":{"zh-CN":"定时任务"}, "icon":"reicon:time/calendar"}
       }
     }

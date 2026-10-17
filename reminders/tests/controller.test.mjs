@@ -36,7 +36,8 @@ test("all loads pending and completed records across real page continuations", a
   const view = new Reminders(), cx = {notify() {},spawn:task=>tasks.push(task)};
   view.init({},cx);
   assert.equal(view.loaded,false);
-  assert.equal(view.completed,null);
+  assert.equal(view.showCompleted,true);
+  assert.equal(view.panel,null);
   const draft = {draft:{title:"Unsaved",message:"Keep the draft"}};
   view.editing=draft;view.pending="original-request";view.error="unknown";
   view.refresh(cx);
@@ -52,4 +53,29 @@ test("all loads pending and completed records across real page continuations", a
   assert.equal(view.pending,"original-request");
   assert.equal(view.error,"unknown");
   assert.ok(view.items.every(item=>item.message==="Keep this note"));
+});
+
+test("a data refresh loads deliveries only for the open reminder", async () => {
+  const items = [{id:"a",project:null,title:"A",message:"",completed:false,due_ms:null,notified_ms:null,revision:"1"},
+    {id:"b",project:null,title:"B",message:"",completed:false,due_ms:null,notified_ms:null,revision:"1"}];
+  const requests = [], tasks = [];
+  const Reminders = vm.runInNewContext(`${source}\nReminders`, {
+    View:class {},messages,context:() => JSON.stringify({locale:"en"}),showWorkspaceDetails() {},
+    page:async () => ({items:plain(items),after:null}),
+    history:async input => { requests.push(plain(input)); return {Ok:{items:[{id:"j1",handler:input.handler,status:"completed"}]}}; },
+    readProjectCatalog:async() => ({projects:[],worktrees:[]}),
+  });
+  const view = new Reminders(), cx = {notify() {},spawn:task=>tasks.push(task)};
+  view.init({},cx);
+  view.refresh(cx); await tasks.at(-1)(cx);
+  assert.deepEqual(requests, []);
+  assert.equal(view.historyLoaded, false);
+  view.control({id:"reminder-records-b"}, cx); await tasks.at(-1)(cx);
+  assert.deepEqual(requests, [{handler:"b"}]);
+  assert.deepEqual(plain(view.panel), {reminder:"b",tab:"records"});
+  assert.equal(view.historyId, "b");
+  assert.equal(view.historyLoaded, true);
+  assert.deepEqual(plain(view.history.map(job => job.id)), ["j1"]);
+  items.pop(); view.refresh(cx); await tasks.at(-1)(cx);
+  assert.equal(view.panel, null);
 });

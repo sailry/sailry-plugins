@@ -1,18 +1,21 @@
 import { View } from "gpui-kit";
 import { context } from "sailry";
 import { prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog } from "sailry/sdk";
-import { modal_closed,nextControlEvent,toast } from "sailry/ui";
+import { modal_closed,nextControlEvent,showWorkspaceDetails,toast } from "sailry/ui";
 import { messages } from "./locales.js";
 import { editor, release, value } from "./editor.js";
 import { render } from "./view.js";
 import {page} from "../host/records.js";
+import {history} from "../host/schedules.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
+function unwrap(result) { if (result.Err) throw result.Err; return result.Ok; }
 export default class Reminders extends View {
   init(_props, cx) {
     this.text = messages(JSON.parse(context()).locale);
-    this.items = []; this.completed = null; this.loading = false; this.loaded = false; this.dirty = false;
+    this.items = []; this.showCompleted = true; this.loading = false; this.loaded = false; this.dirty = false;
     this.catalog = {projects:[],worktrees:[]}; this.projectFilter = "all";
+    this.panel = null; this.history = []; this.historyId = null; this.historyLoaded = false;
     this.busy = false; this.pending = null; this.error = null;
     this.editing = null; this.deleting = null; this.dialogId = 0;
     cx.spawn(async cx => {
@@ -48,9 +51,14 @@ export default class Reminders extends View {
             const batch = await page({after});
             items.push(...batch.items); after = batch.after;
           } while (after !== null);
-          items.sort((a, b) => (a.due_ms ?? Number.MAX_SAFE_INTEGER) - (b.due_ms ?? Number.MAX_SAFE_INTEGER)
-            || a.title.localeCompare(b.title));
+          // Deliveries belong to the reminder open in the details panel only.
+          const reminder = this.panel?.reminder ?? null;
+          const jobs = reminder === null ? [] : unwrap(await history({handler:reminder})).items;
           this.catalog = await readProjectCatalog(); this.items = items; this.loaded = true;
+          if (this.panel && !items.some(item => item.id === this.panel.reminder)) this.panel = null;
+          if (reminder === (this.panel?.reminder ?? null)) {
+            this.history = jobs; this.historyId = reminder; this.historyLoaded = reminder !== null;
+          }
           if (this.error === "loadFailed") this.error = null;
           cx.notify();
         } while (this.dirty);
@@ -62,6 +70,9 @@ export default class Reminders extends View {
     return id === null ? this.text.noProject : this.catalog.projects.find(project => project.id === id)?.name ?? this.text.unavailableProject;
   }
   control(event, cx) {
+    if (this.panel && this.panelControl(event, cx)) return;
+    const inspected = this.items.find(item => event.id === `reminder-details-${item.id}` || event.id === `reminder-records-${item.id}`);
+    if (inspected) return this.inspect(inspected, event.id.startsWith("reminder-details-") ? "details" : "records", cx);
     const item = this.items.find(item => event.id === `reminder-complete-${item.id}`);
     if (item) {
       if (!this.busy && !this.pending && typeof event.value === "boolean") this.perform("save", {...item, completed:event.value}, cx);
@@ -88,6 +99,21 @@ export default class Reminders extends View {
       else return;
     } else return;
     cx.notify();
+  }
+  // Returns true when the event belongs to the open details panel.
+  panelControl(event, cx) {
+    if (event.id === "reminder-panel-tabs") {
+      if (["details","records"].includes(event.value)) { this.panel.tab = event.value; cx.notify(); }
+    } else if (event.id === "reminder-panel-close") { this.panel = null; cx.notify(); }
+    else return false;
+    return true;
+  }
+  inspect(item, tab, cx) {
+    if (this.panel?.reminder !== item.id) {
+      this.history = []; this.historyId = null; this.historyLoaded = false;
+      this.panel = {reminder:item.id, tab}; this.refresh(cx);
+    } else this.panel.tab = tab;
+    showWorkspaceDetails(); cx.notify();
   }
   report(key) { this.error=key;toast({id:'reminders-error',message:this.text[key],kind:'error'}); }
   edit(item, cx) {
@@ -129,5 +155,5 @@ export default class Reminders extends View {
       finally { this.busy = false;if(this.error)this.report(this.error);cx.notify(); }
     });
   }
-  render(cx) { return render(this); }
+  render(cx) { return render(this, cx); }
 }

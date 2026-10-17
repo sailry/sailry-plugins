@@ -1,21 +1,36 @@
 import { div } from "gpui-kit";
-import { Button, Tab, TabBar } from "gpui-component";
+import { Button, Icon } from "gpui-component";
 import { theme } from "sailry";
-import { CardColumn, CardList, CardRow, CardSummary, IconButton, Modal, SelectField, SettingsPage, Toggle } from "sailry/ui";
+import { CardColumn, CardList, CardRow, CardSummary, IconButton, Modal, SelectField, SettingsPage, Toggle, Workspace } from "sailry/ui";
 import { render as editor } from "./editor.js";
+import { details, overdue, reminderStatus, statusTag, DETAIL_WIDTH } from "./details.js";
+import { when } from "./time.js";
 
-function card(view, item) {
-  const {text} = view, disabled = view.busy || !!view.pending;
-  const date = item.due_ms === null ? "" : new Date(item.due_ms).toLocaleString();
-  const row = CardRow.new(`reminder-card-${item.id}`, {row_id:`reminder-row-${item.id}`});
+// Earlier due times first, so overdue reminders lead upcoming ones; untimed reminders follow.
+export function order(items) {
+  return [...items].sort((a, b) => (a.due_ms ?? Number.MAX_SAFE_INTEGER) - (b.due_ms ?? Number.MAX_SAFE_INTEGER)
+    || a.title.localeCompare(b.title));
+}
+function card(view, item, now) {
+  const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
+  const open = panel?.reminder === item.id ? panel.tab : null, late = overdue(item, now);
+  // CardRow has no selected state; a ring border marks the reminder shown in the details panel.
+  const row = CardRow.new(`reminder-card-${item.id}`, {row_id:`reminder-row-${item.id}`})
+    .rounded_lg().border_1().border_color(open ? colors.ring : "#00000000");
   if (item.completed) row.line_through();
   return row
     .child(CardSummary.new(`reminder-summary-${item.id}`, {title:item.title,subtitle:view.projectName(item.project),icon:"icons/folder.svg"})
       .child(Toggle.new(`reminder-complete-${item.id}`, {variant:"checkbox", label:`${text.complete}: ${item.title}`,
         checked:item.completed, disabled})))
     .child(CardColumn.new(`reminder-time-${item.id}`, {variant:"wide_metadata"})
-      .child([date,item.notified_ms === null ? "" : text.notified].filter(Boolean).join(" · ")))
+      .child(div().h_flex().w_full().min_w_0().items_center().justify_end().gap_2()
+        .child(div().id(`reminder-when-${item.id}`).min_w_0().truncate().text_xs()
+          .text_color(late ? colors.destructive : colors.muted_foreground)
+          .child(item.due_ms === null ? text.noTime : when(item.due_ms, now, text)))
+        .children(late ? [statusTag(reminderStatus(text, item, now), `reminder-state-${item.id}`)] : [])))
     .child(CardColumn.new(`reminder-actions-${item.id}`, {variant:"actions"})
+      .child(IconButton.new(`reminder-details-${item.id}`, {icon:"info",label:text.details,selected:open === "details"}))
+      .child(IconButton.new(`reminder-records-${item.id}`, {icon:"reicon:time/clock",label:text.records,selected:open === "records"}))
       .child(IconButton.new(`reminder-edit-${item.id}`, {icon:"reicon:newicons/edit",label:text.edit,disabled}))
       .child(IconButton.new(`reminder-delete-${item.id}`, {icon:"reicon:ui/trash2",label:text.remove,disabled})));
 }
@@ -40,26 +55,39 @@ function projectFilter(view) {
     selected:view.projectFilter ?? "none", items:[{id:"all",label:text.allProjects}, {id:"none",label:text.noProject},
       ...Array.from(projects, ([id,label]) => ({id,label}))]});
 }
-export function render(view) {
-  const {text} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
-  const items = view.items.filter(item => (view.completed === null || item.completed === view.completed)
-    && (view.projectFilter === "all" || item.project === view.projectFilter));
+function completedGroup(view, items, now) {
+  const colors = theme().colors, expanded = view.showCompleted;
+  return div().id("reminders-completed").v_flex().gap_2().w_full()
+    .child(div().h_flex().child(new Button("reminders-completed-toggle").ghost().size("small")
+      .child(div().h_flex().items_center().gap_1p5()
+        .child(new Icon(expanded ? "icons/chevron-down.svg" : "icons/chevron-right.svg").size("small"))
+        .child(div().child(view.text.completed))
+        .child(div().text_color(colors.muted_foreground).child(String(items.length))))
+      .on_click((_, cx) => { view.showCompleted = !view.showCompleted; cx.notify(); })))
+    .children(expanded ? [CardList.new("reminders-done", {loaded:true})
+      .children(items.map(item => card(view, item, now)))] : []);
+}
+export function render(view, cx) {
+  const {text} = view, colors = theme().colors, disabled = view.busy || !!view.pending, now = Date.now();
+  const items = order(view.items.filter(item => view.projectFilter === "all" || item.project === view.projectFilter));
+  const open = items.filter(item => !item.completed), done = items.filter(item => item.completed);
   const body = SettingsPage.new("reminders", {title:text.pageTitle, description:text.description})
     .child(div().id("reminders-toolbar").h_flex().items_center().justify_between().gap_3().flex_wrap()
-      .child(div().id("reminders-filters").h_flex().items_center().gap_3().min_w_0().flex_1().flex_wrap()
-        .child(new TabBar("reminders-filter").variant("segmented").selected_index(view.completed === null ? 0 : view.completed ? 2 : 1)
-          .child(new Tab().label(text.all)).child(new Tab().label(text.pending)).child(new Tab().label(text.completed))
-          .on_change((index, cx) => { view.completed = [null,false,true][index]; cx.notify(); }))
-        .child(div().w_48().max_w_full().child(projectFilter(view))))
+      .child(div().w_48().max_w_full().child(projectFilter(view)))
       .child(new Button("reminder-create").primary().label(text.create).disabled(disabled)
         .on_click((_, cx) => view.edit(null, cx))))
     .children(!view.editing && !view.deleting && !view.busy && view.pending ? [new Button("reminder-retry").label(text.retry)
       .disabled(view.busy).on_click((_, cx) => view.perform(null, null, cx)),
       new Button("reminder-dismiss").label(text.cancel).disabled(view.busy).on_click((_, cx) => view.close(cx))] : [])
-    .child(CardList.new("reminders-items",{loaded:view.loaded,empty_icon:"bell",empty_label:text.empty})
-      .children(items.map(item => card(view, item))));
+    .children(open.length || !done.length ? [CardList.new("reminders-items", {loaded:view.loaded,empty_icon:"bell",empty_label:text.empty})
+      .children(open.map(item => card(view, item, now)))] : [])
+    .children(done.length ? [completedGroup(view, done, now)] : []);
+  const panel = details(view, cx);
   return div().id("reminders-page").size_full().v_flex().min_h_0().min_w_0()
-    .text_color(colors.foreground).child(body)
+    .text_color(colors.foreground)
+    .child(Workspace.new("reminders-workspace", {has_details:!!panel, details_label:text.details,
+      default_details_width:DETAIL_WIDTH, min_details_width:320, navigation:"none"})
+      .children([body, ...(panel ? [panel] : [])]))
     .child(Modal.new(`reminder-dialog-${view.dialogId}`, {open:!!(view.editing || view.deleting), dismissable:!view.busy,
       form:!!(view.editing || view.deleting), title:view.editing ? view.editing.draft.id ? text.edit : text.create
         : view.deleting ? text.deleteTitle : "", width:view.deleting ? 528 : 480})
