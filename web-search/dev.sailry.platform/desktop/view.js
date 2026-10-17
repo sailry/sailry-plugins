@@ -38,7 +38,8 @@ function editor(view) {
   }
   return modal.child(div().id('search-editor').child(form))
     .child(div().h_flex().justify_end().gap_2()
-      .child(button('search-editor-reload',text.search_reload,(_,cx)=>view.reloadEditor(cx),locked))
+      .children(view.saved?.revision!==owner.settings.revision
+        ? [button('search-editor-reload',text.search_reload,(_,cx)=>view.reloadEditor(cx),locked)] : [])
       .child(button('search-editor-cancel',text.settings_cancel,(_,cx)=>view.close(cx),locked))
       .child(button('search-editor-save',text[view.request?'search_retry':'settings_save'],(_,cx)=>view.saveEditor(cx),view.loading||view.pending)));
 }

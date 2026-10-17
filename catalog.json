@@ -12178,7 +12178,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
