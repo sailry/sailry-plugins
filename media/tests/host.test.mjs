@@ -1,3 +1,4 @@
+import {runtimeTest, validateSchema} from '../../scripts/test-host.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
@@ -25,10 +26,13 @@ test('three tools preserve schemas, descriptions and operation declarations', ()
   assert.deepEqual(extension.tools.map(tool => tool.name),expected.map(([name]) => name));
   for (const [name,handler,keys] of expected) {
     const tool = extension.tools.find(tool => tool.name === name);
-    assert.deepEqual(tool.handler.parameters,{
-      type:'object',properties:Object.fromEntries(keys.map(key => [key,{type:'string'}])),
-      required:['prompt'],additionalProperties:false
-    });
+    const parameters = tool.handler.parameters;
+    assert.equal(parameters.type,'object');
+    assert.equal(parameters.additionalProperties,false);
+    assert.deepEqual(parameters.required,['prompt']);
+    assert.deepEqual(Object.keys(parameters.properties),keys);
+    for (const field of Object.values(parameters.properties)) assert.equal(field.type,'string');
+    assert.equal(parameters.allOf === undefined,handler !== 'inspect');
     assert.equal(tool.handler.operation,`media.${handler}`);
     assert.equal(tool.handler.name,handler);
     assert.equal(tool.handler.result,'result');
@@ -111,4 +115,16 @@ test('image display reads the original prompt and published path', () => {
   assert.equal(host.image({prompt}).prompt,prompt);
   const data = {path:'assets/generated/image.png',job:null,usage:{total_tokens:12}};
   assert.equal(host.result({output:{kind:'media',data}}),data);
+});
+
+runtimeTest('inspection schema requires exactly one image source', () => {
+  const schema = extension.tools.find(tool => tool.name === 'inspect_image').handler.parameters;
+  const prompt = 'Describe this image';
+  assert.deepEqual(validateSchema(schema,[
+    {prompt,path:'image.png'},
+    {prompt,attachment:'captured'},
+    {prompt},
+    {prompt,path:'image.png',attachment:'captured'},
+    {prompt,path:'image.png',file_name:'output.png'},
+  ]),[true,true,false,false,false]);
 });
