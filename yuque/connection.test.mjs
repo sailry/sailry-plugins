@@ -1,3 +1,4 @@
+import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -46,4 +47,34 @@ test('provides localized official credential guidance', () => {
   for (const locale of Object.values(schema['x-sailry-locales']))
     assert.ok(locale.description.includes("https://www.yuque.com/settings/tokens"));
   assert.equal(schema.properties.token.default, undefined);
+});
+
+const targets = [
+  {args:{action:'search',query:'guide'},required:['query']},
+  {args:{action:'repos',user:'owner'},required:['user']},
+  {args:{action:'docs',repo:'owner/book'},required:['repo']},
+  {args:{action:'toc',repo:'owner/book'},required:['repo']},
+  {args:{action:'doc',repo:'owner/book',id:'document'},required:['repo','id']},
+];
+test('action targets reach the handler with their required fields', () => {
+  const request = adapter();
+  for (const {args,required} of targets) {
+    assert.equal(request({step:0,arguments:args}).call.operation,'http.request');
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      assert.throws(() => request({step:0,arguments:incomplete}), `${args.action}: ${field}`);
+    }
+  }
+});
+
+runtimeTest('schema requires the target fields for each action', () => {
+  const values = [{}, {action:'unknown'}], expected = [false,false];
+  for (const {args,required} of targets) {
+    values.push(args); expected.push(true);
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      values.push(incomplete); expected.push(false);
+    }
+  }
+  assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
 });

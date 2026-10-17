@@ -12981,7 +12981,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "yuque",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Knowledge bases and documents",
         "homepage": "https://github.com/yuque/yuque-mcp-server",
         "extensions": {
@@ -13062,11 +13062,13 @@
                           "docs",
                           "doc",
                           "toc"
-                        ]
+                        ],
+                        "description": "search requires query; repos requires user; docs and toc require repo; doc requires repo and id."
                       },
                       "query": {
                         "type": "string",
-                        "maxLength": 4096
+                        "maxLength": 4096,
+                        "description": "Required for search."
                       },
                       "type": {
                         "enum": [
@@ -13076,15 +13078,18 @@
                       },
                       "user": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for repos."
                       },
                       "repo": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for docs, doc or toc; repository ID or owner/slug."
                       },
                       "id": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for doc; copy the document ID from docs."
                       },
                       "page": {
                         "type": "integer",
@@ -13096,7 +13101,87 @@
                         "minimum": 0,
                         "maximum": 1000000
                       }
-                    }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "search"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "query"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "repos"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "user"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "docs",
+                                "doc",
+                                "toc"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "repo"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "doc"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "id"
+                          ]
+                        }
+                      }
+                    ]
                   }
                 },
                 "display": {
