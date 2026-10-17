@@ -1,5 +1,5 @@
 import {context, getValue, readSession} from 'sailry/sdk';
-import {clone, equal, fail, identifier, limits, size} from './policy.js';
+import {clone, fail, identifier, limits, size} from './policy.js';
 
 export const key = (id, suffix) => `review/${identifier(id)}/${suffix}`;
 export async function identity() {
@@ -29,9 +29,12 @@ export async function head(id, actor) {
       || !['open','complete'].includes(value.status) || !Array.isArray(value.pages)
       || !Array.isArray(value.findings) || !Array.isArray(value.reviewed_groups)
       || !Array.isArray(value.receipts)) fail('Review storage is incompatible', 'invalid_request');
-  if (actor.worktree !== value.worktree || !equal(actor.package, value.package)
+  if (actor.worktree !== value.worktree
       || (actor.session !== value.creator && actor.parent !== value.creator)) {
-    fail('Review belongs to another session or package revision', 'permission_denied');
+    fail('Review belongs to another session or worktree', 'permission_denied');
+  }
+  if (actor.package.name !== value.package?.name) {
+    fail('Review belongs to another package', 'permission_denied');
   }
   return {record:current, value:clone(value)};
 }

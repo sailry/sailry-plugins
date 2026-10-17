@@ -155,3 +155,67 @@ test('oversized whole groups are never sampled', async () => {
   assert.equal(result.isError,true);
   assert.match(result.error.message,/complete group exceeds the task budget/);
 });
+
+
+test('package upgrades continue the original frozen review', async () => {
+  const current = await fixture([file('first/main.rs'),file('second/main.rs'),file('third/main.rs')]);
+  initialize(current);
+  const creator = current.captured.session;
+  const scope = await current.invoke('scope',{});
+  const original = plain(current.values.get(`review/${scope.review_id}/head`).value);
+  const initial = scope.groups[0];
+  current.actor(uuid(99),creator);
+  const initialFiles = scope.files.filter(file => file.group === initial.id);
+  const accepted = await current.invoke('complete',receipt({...scope,files:initialFiles,groups:[initial]},
+    {finalize:false}));
+  assert.equal(accepted.status,'open');
+  current.actor(creator);
+  const priorReceipt = plain([...current.values].filter(([key]) => key.includes('/receipt/')));
+  current.captured.package.digest = 'digest-b';
+  current.captured.package.settings_revision = '1';
+  const before = plain([...current.values]);
+  const resumed = await current.invoke('scope',{review_id:scope.review_id});
+  assert.equal(resumed.review_id,scope.review_id);
+  assert.deepEqual(resumed.snapshot,scope.snapshot);
+  assert.deepEqual(resumed.files,scope.files);
+  assert.deepEqual(resumed.reviewed_groups,[initial.id]);
+  assert.deepEqual(plain([...current.values]),before);
+
+  const git = await current.module('git');
+  for (const [index,group] of scope.groups.slice(1).entries()) {
+    const output = await current.delegate({review_id:scope.review_id,
+      groups:[group.id],record_receipt:true});
+    const capture = captured(output.task);
+    assert.equal(capture.review_id,scope.review_id);
+    assert.deepEqual(capture.snapshot,scope.snapshot);
+    assert.deepEqual(capture.groups,[group]);
+    assert.deepEqual(capture.files,scope.files.filter(file => file.group === group.id));
+    current.actor(uuid(100+index),creator);
+    const child = await current.invoke('scope',{review_id:capture.review_id});
+    assert.deepEqual(child.snapshot,capture.snapshot);
+    for (const file of capture.files) {
+      const start = current.calls.length;
+      const patch = await git.change(current.captured.worktree,capture.snapshot,file,true);
+      assert.equal(patch.metadata_revision,file.metadata_revision);
+      assert.equal(patch.revision,file.revision);
+      for (const call of current.calls.slice(start)) {
+        assert.deepEqual(call.data.snapshot,capture.snapshot);
+        assert.equal(call.data.expected_metadata_revision,file.metadata_revision);
+        assert.equal(call.data.expected_revision,file.revision);
+      }
+    }
+    const receiptInput = receipt(capture,{finalize:false});
+    assert.equal((await current.invoke('complete',{...receiptInput,finalize:true})).error.code,'permission_denied');
+    assert.equal((await current.invoke('complete',receiptInput)).status,'open');
+    current.actor(creator);
+  }
+  const completed = await current.invoke('complete',receipt(scope,
+    {reviewed_files:[],reviewed_groups:[]}));
+  assert.equal(completed.status,'complete');
+  assert.equal(completed.reviewed_files,scope.files.length);
+  assert.deepEqual(completed.reviewed_groups,scope.groups.map(group => group.id));
+  const head = current.values.get(`review/${scope.review_id}/head`).value;
+  assert.deepEqual(head.package,original.package);
+  assert.deepEqual(head.snapshot,original.snapshot);
+  for (const [key,value] of priorReceipt) assert.deepEqual(plain(current.values.get(key)),value);
+});

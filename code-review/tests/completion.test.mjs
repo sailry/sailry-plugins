@@ -102,7 +102,7 @@ test('children cover groups and creator finalizes the union', async () => {
   assert.equal((await fixtureData.invoke('finding',finding(scope))).error.code,'conflict');
 });
 
-test('unrelated sessions grandchildren and package drift cannot write', async () => {
+test('unrelated sessions grandchildren and package identities cannot write', async () => {
   const fixtureData = await fixture();
   const creator = fixtureData.captured.session;
   const scope = await fixtureData.invoke('scope',{});
@@ -113,7 +113,7 @@ test('unrelated sessions grandchildren and package drift cannot write', async ()
     assert.equal(result.error.code,'permission_denied');
   }
   fixtureData.actor(creator);
-  fixtureData.captured.package.settings_revision = '1';
+  fixtureData.values.get(`review/${scope.review_id}/head`).value.package.name = 'another-package';
   assert.equal((await fixtureData.invoke('complete',receipt(scope))).error.code,'permission_denied');
 });
 
