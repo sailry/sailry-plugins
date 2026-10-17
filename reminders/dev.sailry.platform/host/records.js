@@ -62,6 +62,9 @@ export async function commit(operations) {
 }
 export async function page(input = {}, scope) {
   if (scope !== undefined) project(scope);
+  if (input.completed !== undefined && typeof input.completed !== "boolean") {
+    throw fault("invalid_request", "Invalid reminder completion filter");
+  }
   let after = input.after ?? null;
   if (after !== null) key(typeof after === "string" && after.startsWith("reminder/") ? after.slice(9) : "");
   const items = [];
@@ -70,7 +73,8 @@ export async function page(input = {}, scope) {
     const batch = await listKeys("reminder/", after, 32);
     for (const name of batch.keys) {
       const id = name.slice(9), entry = await read(id);
-      if (entry.present && (scope === undefined || entry.value.project === scope)) {
+      if (entry.present && (scope === undefined || entry.value.project === scope)
+          && (input.completed === undefined || entry.value.completed === input.completed)) {
         const item = {...stored(entry.value, id), revision:entry.revision};
         const length = bytes(JSON.stringify(item));
         if (items.length && size + length > 128 * 1024) return {items, after};

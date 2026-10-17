@@ -120,6 +120,59 @@ test("list pages contain at most 32 matching entries and honor the continuation"
   assert.equal(new Set([...first.items,...second.items].map(value => value.id)).size,45);
 });
 
+test("completion filters retain matching pagination and project isolation", async () => {
+  const setup = await fixture(); await start(setup);
+  for (let index=1;index<=180;index++) setup.seed(item(index,{
+    completed:index%2 === 0, project:index%5 === 0 ? foreign : project,
+  }));
+  for (const completed of [false,true]) {
+    const expected = Array.from({length:180},(_,index)=>index+1)
+      .filter(index=>(index%2 === 0) === completed && index%5 !== 0).map(id);
+    const collected = [];
+    let after = null;
+    do {
+      const previous = after;
+      const result = (await call(setup,{action:"list",completed,after})).result;
+      assert.ok(result.items.length<=32);
+      assert.ok(result.items.every(value=>value.completed===completed && value.project===project));
+      collected.push(...result.items.map(value=>value.id));
+      after = result.after;
+      assert.ok(after===null || previous===null || after>previous);
+    } while (after!==null);
+    assert.deepEqual(collected,expected);
+  }
+  assert.ok(setup.scans.every(scan=>scan.limit===32));
+});
+
+test("completion filters preserve empty continuation and byte bounds", async () => {
+  const setup = await fixture(); await start(setup);
+  for (let index=1;index<=170;index++) setup.seed(item(index,{completed:index<=140}));
+  const empty = (await call(setup,{action:"list",completed:false})).result;
+  assert.equal(empty.items.length,0);
+  assert.equal(empty.after,`reminder/${id(128)}`);
+  assert.equal(setup.scans.length,4);
+  const remaining = (await call(setup,{action:"list",completed:false,after:empty.after})).result;
+  assert.equal(remaining.items.length,30);
+  assert.equal(remaining.after,null);
+  for (let index=1;index<=170;index++) setup.seed(item(index,{message:"x".repeat(4096),completed:true}));
+  const first = (await call(setup,{action:"list",completed:true})).result;
+  assert.ok(first.items.length>0 && first.items.length<32);
+  assert.ok(first.items.reduce((sum,value)=>sum+Buffer.byteLength(JSON.stringify(value)),0)<=128*1024);
+  assert.equal(first.after,`reminder/${first.items.at(-1).id}`);
+  const next = (await call(setup,{action:"list",completed:true,after:first.after})).result;
+  assert.equal(next.items[0].id,id(first.items.length+1));
+});
+
+test("invalid completion filters fail before storage access", async () => {
+  const setup = await fixture(); await start(setup);
+  for (const completed of [null,0,"false",[],{}]) {
+    const result = (await call(setup,{action:"list",completed})).result;
+    assert.equal(result.error.code,"invalid_request");
+  }
+  assert.equal(setup.scans.length,0);
+  assert.equal(setup.prepared.length,0);
+});
+
 test("create uses a stable canonical call ID and one atomic scheduled transaction", async () => {
   const setup = await fixture(); await start(setup);
   const args = {action:"create",title:"Follow up",message:"Check result",due_ms:Date.now()+300000};

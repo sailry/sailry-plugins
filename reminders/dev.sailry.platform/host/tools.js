@@ -8,7 +8,7 @@ export function initialize({project:scope, tools}) {
   return {instruction:"", tools:scope === null ? [] : tools};
 }
 function argumentsFor(value) {
-  const fields = {list:["after"], create:["title","message","completed","due_ms"],
+  const fields = {list:["after","completed"], create:["title","message","completed","due_ms"],
     update:["id","revision","title","message","completed","due_ms"], delete:["id","revision"]};
   if (!value || typeof value !== "object" || Array.isArray(value) || !Object.hasOwn(fields, value.action)
       || Object.keys(value).some(key => key !== "action" && !fields[value.action].includes(key))) {
