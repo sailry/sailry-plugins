@@ -1,3 +1,4 @@
+import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync} from 'node:fs';
@@ -13,7 +14,7 @@ const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.st
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.1');
+  assert.equal(manifest.version, '0.1.2');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);
@@ -81,4 +82,31 @@ test('preserves errors without retry or private response bodies', () => {
   for (const reply of [outcome([]),outcome({}),{data:{status:200,body:'invalid'}},outcome({nodes:[]})]) {
     assert.equal(read({step:1,arguments:{action:'nodes'},outcome:reply}).result.isError, true);
   }
+});
+
+const targets = [
+  {args:{action:'file',file_key:'file-key'},required:['file_key']},
+  {args:{action:'nodes',file_key:'file-key',ids:['1:2']},required:['file_key','ids']},
+];
+test('action targets reach the handler with their required fields', () => {
+  for (const {args,required} of targets) {
+    assert.equal(read({step:0,arguments:args}).call.operation,'http.request');
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      assert.throws(() => read({step:0,arguments:incomplete}), `${args.action}: ${field}`);
+    }
+  }
+});
+
+runtimeTest('schema requires the target fields for each action', () => {
+  const values = [{}, {action:'unknown'}], expected = [false,false];
+  for (const {args,required} of targets) {
+    values.push(args); expected.push(true);
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      values.push(incomplete); expected.push(false);
+    }
+  }
+  values.push({action:'file',file_key:'file-key',ids:['1:2']}); expected.push(false);
+  assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
 });

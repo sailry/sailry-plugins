@@ -5027,7 +5027,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "figma",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Design context",
         "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
         "extensions": {
@@ -5091,7 +5091,8 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 1024
-                        }
+                        },
+                        "description": "Required for nodes; omit for file. Copy node IDs from the selected file."
                       },
                       "version": {
                         "type": "string",
@@ -5103,7 +5104,35 @@
                         "minimum": 1,
                         "maximum": 100
                       }
-                    }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "nodes"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "ids"
+                          ]
+                        },
+                        "else": {
+                          "not": {
+                            "required": [
+                              "ids"
+                            ]
+                          }
+                        }
+                      }
+                    ]
                   }
                 },
                 "display": {
