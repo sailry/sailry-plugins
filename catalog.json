@@ -12478,7 +12478,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "wecom",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Workplace services",
         "homepage": "https://github.com/WecomTeam/wecom-cli",
         "extensions": {
@@ -12557,12 +12557,14 @@
                           "discover",
                           "describe",
                           "invoke"
-                        ]
+                        ],
+                        "description": "describe requires service. invoke requires service, method and payload from its freshly described schema. discover needs no target."
                       },
                       "service": {
                         "type": "string",
                         "minLength": 1,
-                        "maxLength": 128
+                        "maxLength": 128,
+                        "description": "Required for describe or invoke; copy the service name from discovery."
                       },
                       "method": {
                         "type": "array",
@@ -12572,13 +12574,57 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 128
-                        }
+                        },
+                        "description": "Required for invoke; resource names followed by the method name."
                       },
                       "payload": {
                         "type": "object",
-                        "maxProperties": 64
+                        "maxProperties": 64,
+                        "description": "Required for invoke; arguments matching that freshly described method."
                       }
-                    }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "describe",
+                                "invoke"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "service"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "invoke"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "method",
+                            "payload"
+                          ]
+                        }
+                      }
+                    ]
                   }
                 },
                 "display": {
