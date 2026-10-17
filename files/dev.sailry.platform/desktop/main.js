@@ -5,7 +5,7 @@ import {createText, readText, releaseText, setText, focusText, nextTextEvent} fr
 import {Workspace, workspaceMode, FilePreview, fileResource, inspectFilePath, openFileImage, toast, Modal, ActionScope, closePanel,
   nextControlEvent, nextNavigationTabEvent, nextMenuEvent, nextTreeEvent,
   nextContextMenuEvent, modal_closed, canInsertFileReferences} from 'sailry/ui';
-import {openSystem} from 'sailry/file-transfers';
+import {openSystem, systemFileManager} from 'sailry/file-transfers';
 import {faultCode} from 'sailry/sdk';
 import {refreshDocuments} from 'sailry/documents';
 import {Documents} from './documents.js';
@@ -25,6 +25,7 @@ export default class Files extends View {
     if (this.resource) return;
     this.mode = workspaceMode();
     this.text = messages(JSON.parse(context()).locale);
+    this.fileManager = systemFileManager();
     this.documents = new Documents(error => this.documentError(error));
     this.explorer = new Explorer(key => this.report(key));
     this.transfers = new Transfers((key,kind) => this.report(key,kind),value => this.transferDraft(value),this.text);

@@ -1,6 +1,6 @@
 // Menu snapshots keep the original file targets when selection changes.
 import {writeClipboard, insertFileReferences} from 'sailry/ui';
-import {openSystem} from 'sailry/file-transfers';
+import {openSystem, revealSystem} from 'sailry/file-transfers';
 
 export class Actions {
   constructor(view) { this.view = view; this.entries = new Map(); this.ids = new Map(); this.treeMenus = new Map(); }
@@ -58,6 +58,12 @@ export class Actions {
           files:paths.map(path => ({path,directory:explorer.entry(path)?.kind === 'directory'}))},this.view.canInsert),
         this.separator());
       if (paths.length === 1) {
+        if (this.view.fileManager?.available) {
+          const platform = this.view.fileManager.platform;
+          const key = platform === 'macos' ? 'files_reveal_finder'
+            : platform === 'windows' ? 'files_reveal_explorer' : 'files_reveal_manager';
+          items.push(this.item('reveal_system',key,target,enabled));
+        }
         items.push(this.item('rename','files_rename',target,enabled));
         if (explorer.entry(paths[0])?.kind === 'file') items.push(this.item('download','files_download',target,enabled));
       }
@@ -90,6 +96,10 @@ export class Actions {
       case 'upload': return view.transfers.upload(target.directory,cx);
       case 'download': return view.transfers.download(target.paths[0],cx);
       case 'open_system': for (const path of target.paths) await openSystem(path); return;
+      case 'reveal_system':
+        try { await revealSystem(target.paths[0]); }
+        catch (_) { view.report('files_reveal_failed'); }
+        return;
       case 'copy_path': writeClipboard(target.paths.join('\n')); return;
       case 'insert': await insertFileReferences(target.files); return;
     }

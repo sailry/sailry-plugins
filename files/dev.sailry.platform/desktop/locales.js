@@ -140,6 +140,10 @@ const en = {
   "files_remote_directory": "A remote folder cannot open locally",
   "files_remote_path": "This path is outside the remote workspace",
   "files_open_system": "Open",
+  "files_reveal_finder": "Show in Finder",
+  "files_reveal_explorer": "Show in Explorer",
+  "files_reveal_manager": "Show in file manager",
+  "files_reveal_failed": "Could not show the item",
   "workspace_native_menu_unavailable": "Native menus are unavailable",
   "plugins_disconnected": "Disconnected",
   "form_filename_hint": "File name"
@@ -286,6 +290,10 @@ const zh = {
   "files_remote_directory": "远程目录无法在本机打开",
   "files_remote_path": "此路径不在远程工作区内",
   "files_open_system": "打开",
+  "files_reveal_finder": "在访达中显示",
+  "files_reveal_explorer": "在资源管理器中显示",
+  "files_reveal_manager": "在文件管理器中显示",
+  "files_reveal_failed": "无法显示此项目",
   "settings_confirm": "确认",
   "refresh": "刷新"
 };

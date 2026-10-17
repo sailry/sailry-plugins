@@ -104,7 +104,8 @@ test('native events and asynchronous document actions use the spawned context', 
   const record = (kind,cx) => { assert.equal(cx,ambient); calls.push(kind); };
   const Files = vm.runInNewContext(`${source}\nFiles`,{
     View:class {},fileResource:() => null,workspaceMode:() => 'main',context:() => '{"locale":"en"}',
-    messages:() => ({}),canInsertFileReferences:async () => false,next_change:stopped,
+    messages:() => ({}),systemFileManager:() => ({available:false}),
+    canInsertFileReferences:async () => false,next_change:stopped,
     nextControlEvent:event({id:'files_find'}),
     nextNavigationTabEvent:event({bar:'file-tabs',id:'draft',kind:'close'}),
     nextMenuEvent:event({id:'new-file'}),nextContextMenuEvent:stopped,

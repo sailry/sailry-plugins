@@ -3,11 +3,14 @@ import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const source = (await Promise.all(['actions','explorer'].map(name =>
+const source = (await Promise.all(['actions','explorer','locales'].map(name =>
   readFile(new URL(`../dev.sailry.platform/desktop/${name}.js`,import.meta.url),'utf8'))))
   .map(value => value.replace(/^import .*;\n/gm,'').replace(/^export /gm,''))
   .join('\n');
-const {Actions,Explorer} = vm.runInNewContext(`${source}\n({Actions,Explorer})`);
+const revealed = [];
+const {Actions,Explorer,messages} = vm.runInNewContext(`${source}\n({Actions,Explorer,messages})`,{
+  revealSystem:async path => { revealed.push(path); },
+});
 const plain = value => JSON.parse(JSON.stringify(value));
 
 function fixture(count = 3) {
@@ -90,4 +93,37 @@ test('menu refresh follows access and clipboard state', () => {
   actions.prepareTree();
   assert.equal(item(actions,'file-0.txt','paste').enabled,false);
   assert.equal(item(actions,'file-0.txt','trash').enabled,false);
+});
+
+test('native reveal follows local single-item availability', () => {
+  const {view,actions} = fixture();
+  view.text = messages('en');
+  const reveal = () => actions.tree('file-0.txt',[])
+    .find(item => actions.entries.get(item.id)?.action === 'reveal_system');
+  view.fileManager = {available:false,platform:'macos'};
+  assert.equal(reveal(),undefined);
+  for (const [platform,label] of [['macos','Show in Finder'],['windows','Show in Explorer'],['linux','Show in file manager']]) {
+    view.fileManager = {available:true,platform};
+    assert.equal(reveal().label,label);
+  }
+  view.fileManager.platform = 'macos';
+  view.text = messages('zh-CN');
+  assert.equal(reveal().label,'在访达中显示');
+  view.explorer.select('file-0.txt');
+  view.explorer.select('file-1.txt',{additive:true});
+  const multiple = actions.tree('file-0.txt',view.explorer.paths());
+  assert.equal(multiple.some(item => actions.entries.get(item.id)?.action === 'reveal_system'),false);
+  view.explorer.connected = false;
+  assert.equal(reveal().enabled,false);
+});
+
+test('native reveal retains the original selected item', async () => {
+  const {view,actions} = fixture();
+  view.fileManager = {available:true,platform:'macos'};
+  actions.prepareTree();
+  const captured = item(actions,'file-0.txt','reveal_system').id;
+  view.explorer.select('file-1.txt');
+  actions.prepareTree();
+  await actions.invoke(captured,{});
+  assert.equal(revealed.at(-1),'file-0.txt');
 });
