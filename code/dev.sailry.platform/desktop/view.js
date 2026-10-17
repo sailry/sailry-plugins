@@ -98,7 +98,7 @@ export function render(view) {
           checked:view.saved?.editor_enabled ?? false,disabled:view.busy()})))
       .child(row('settings-row-code_rules_updated',text.code_rules_updated,view.rules?.retrieved ?? '')))
     .child(div().v_flex().gap_4()
-      .child(div().id('code-server-toolbar').w(220).child(SegmentedTabs.new('code-tabs',{selected:view.tab,
+      .child(div().id('code-server-toolbar').h_flex().child(SegmentedTabs.new('code-tabs',{selected:view.tab,
         items:[{id:'installed',label:text.code_installed},{id:'available',label:text.code_not_installed}]})))
       .child(SettingsGroup.new('code_languages',{heading:false}).children(items.length ? items.map(item=>server(view,item))
         : view.ready ? [EmptyState.new('code-empty',{icon:'cpu',variant:'list',label:text[view.tab==='installed'
