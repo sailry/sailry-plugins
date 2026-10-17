@@ -188,7 +188,7 @@ export function details(view) {
       .child(IconButton.new('git-branch-menu',{icon:'network',label:repo.status?.branch ?? view.text.git_branches,show_label:true,dropdown_caret:true,disabled:!repo.branches}).max_w_full().justify_start())
       .child(div().flex_1()).child(Menu.new('git-actions',{label:view.text.git_actions,icon:'ellipsis',disabled:!repo.status || !repo.branches,items:view.menus.root()}))
       .child(IconButton.new('git-refresh',{icon:'rotate-cw',label:view.text.git_refresh})))
-    .child(div().px_2().pt_2().pb_1().child(SegmentedTabs.new('git-views',{selected:repo.view,
+    .child(div().px_2().pt_2().pb_1().child(SegmentedTabs.new('git-views',{selected:repo.view,fill:true,
       items:[{id:'changes',label:view.text.git_view_changes},{id:'history',label:view.text.git_view_history}]})))
     .children(repo.view === 'changes' ? [toolbar(view)] : [])
     .child(repo.view === 'changes' ? changes(view) : history(view))
