@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "google-workspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mail, calendars and Drive files",
   "homepage": "https://developers.google.com/workspace",
   "extensions": {
@@ -84,7 +84,8 @@
                     "files",
                     "file",
                     "export_doc"
-                  ]
+                  ],
+                  "description": "message, event, file and export_doc require id. List actions do not."
                 },
                 "query": {
                   "type": "string",
@@ -93,7 +94,8 @@
                 "id": {
                   "type": "string",
                   "minLength": 1,
-                  "maxLength": 1024
+                  "maxLength": 1024,
+                  "description": "Required for message, event, file or export_doc; copy the ID from a list result."
                 },
                 "calendar": {
                   "type": "string",
@@ -114,7 +116,31 @@
                 "time_max": {
                   "type": "string"
                 }
-              }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "action": {
+                        "enum": [
+                          "message",
+                          "event",
+                          "file",
+                          "export_doc"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ]
+                  },
+                  "then": {
+                    "required": [
+                      "id"
+                    ]
+                  }
+                }
+              ]
             }
           },
           "display": {
