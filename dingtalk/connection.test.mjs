@@ -1,3 +1,4 @@
+import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -64,4 +65,33 @@ test('preserves failures without replaying uncertain effects',async()=>{
   assert.equal(result.result.isError,true); assert.equal(result.call,undefined);
   assert.equal(JSON.stringify(result).includes('private error body'),false);
  }
+});
+
+const targets = [
+  {args:{action:'workspaces'},required:[]},
+  {args:{action:'nodes',parent:'root'},required:['parent']},
+  {args:{action:'node',id:'node'},required:['id']},
+  {args:{action:'files',space:'space',parent:'folder'},required:['space','parent']},
+];
+test('action targets reach the handler with their required fields', async () => {
+  const request = adapter();
+  for (const {args,required} of targets) {
+    assert.equal((await request({step:0,arguments:args})).call.operation,'http.request');
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      await assert.rejects(request({step:0,arguments:incomplete}), `${args.action}: ${field}`);
+    }
+  }
+});
+
+runtimeTest('schema requires the target fields for each action', () => {
+  const values = [{}, {action:'unknown'}], expected = [false,false];
+  for (const {args,required} of targets) {
+    values.push(args); expected.push(true);
+    for (const field of required) {
+      const incomplete = {...args}; delete incomplete[field];
+      values.push(incomplete); expected.push(false);
+    }
+  }
+  assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
 });

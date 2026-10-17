@@ -3258,7 +3258,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "dingtalk",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Knowledge spaces and files",
         "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
         "extensions": {
@@ -3338,23 +3338,28 @@
                           "nodes",
                           "node",
                           "files"
-                        ]
+                        ],
+                        "description": "nodes requires parent; node requires id; files requires space and parent. workspaces needs no target."
                       },
                       "operator": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Operator ID; omit only when configured in this Node."
                       },
                       "id": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for node."
                       },
                       "space": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for files."
                       },
                       "parent": {
                         "type": "string",
-                        "maxLength": 1024
+                        "maxLength": 1024,
+                        "description": "Required for nodes or files; copy the corresponding parent ID."
                       },
                       "cursor": {
                         "type": "string",
@@ -3365,7 +3370,67 @@
                         "minimum": 1,
                         "maximum": 100
                       }
-                    }
+                    },
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "nodes"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "parent"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "node"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "id"
+                          ]
+                        }
+                      },
+                      {
+                        "if": {
+                          "properties": {
+                            "action": {
+                              "enum": [
+                                "files"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "action"
+                          ]
+                        },
+                        "then": {
+                          "required": [
+                            "space",
+                            "parent"
+                          ]
+                        }
+                      }
+                    ]
                   }
                 },
                 "display": {
