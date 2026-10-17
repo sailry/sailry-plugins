@@ -11,12 +11,20 @@ const source = [await read("schedule.js"), await read("details.js"), await read(
 const controller = await read("main.js");
 const schedule = vm.runInNewContext(`${await read("schedule.js")}\n({upcoming,streak,ribbon,weeklyOffset})`);
 const effortKey = value => typeof value === "string" ? value : String(value.budget);
+const effortLabel = vm.runInNewContext(`${await read("details.js")}\neffortLabel`, {effortKey});
 const task = (id, extra = {}) => ({id, name:`Task ${id}`, prompt:"Keep this task", revision:"2", project:"project", worktree:null,
   queue:"default", enabled:true, next_ms:null, status:null, started_ms:null,
   config:{provider:"provider", model:"explicit", effort:"high"},
   timing:{kind:"weekly", data:{timezone:"Asia/Shanghai", weekdays:[1,3], hour:9, minute:0}}, ...extra});
 const run = (id, handler, status, extra = {}) => ({name:`Task ${handler}`, session:null, turn:null,
   job:{id, handler, status, created_ms:Date.now() - 60000, started_ms:Date.now() - 60000, ...extra}});
+
+test("model effort labels preserve raw identifiers and budgets", () => {
+  for (const [effort, label] of [["high","high"], ["xhigh","xhigh"], [{budget:2048},"2048"],
+    ["default",""], [null,""], [undefined,""]]) {
+    assert.equal(effortLabel(effort),label);
+  }
+});
 
 function fixture() {
   const nodes = new Map(), calls = [], cx = {notify() {}, theme:() => ({typography:{mono:"mono"}})};
@@ -167,6 +175,7 @@ test("status tags map native state to tone beside a muted time", () => {
     assert.equal(tag.kind, "Tag");
     assert.deepEqual(texts(tag), [label]);
     assert.deepEqual(tag.style.variant, [variant]);
+    assert.deepEqual(tag.style.size, ["large"]);
     assert.equal("outline" in tag.style, label === "Paused");
     assert.equal(setup.nodes.has("task-time-row"), !!time);
     if (typeof time === "string") assert.deepEqual(texts(setup.nodes.get("task-time-row")), [time]);
@@ -290,7 +299,9 @@ test("details show the failure streak, facts, prompt copy and recent runs", () =
   assert.deepEqual(texts(setup.nodes.get("task-plan-hero")), ["09:00"]);
   assert.equal(setup.nodes.get("task-plan-days").items.length, 7);
   assert.deepEqual(texts(setup.nodes.get("task-plan-timezone")), ["Timezone", "Asia/Shanghai"]);
-  assert.deepEqual(texts(setup.nodes.get("task-fact-model")), ["Model", "explicit", "Strength High"]);
+  assert.deepEqual(texts(setup.nodes.get("task-fact-model")), ["Model", "explicit high"]);
+  assert.equal(setup.nodes.get("task-panel-project").items[0].kind, "Icon");
+  assert.deepEqual(texts(setup.nodes.get("task-panel-project")), ["Project"]);
   assert.deepEqual(texts(setup.nodes.get("task-fact-worktree")), ["Worktree", "Main worktree"]);
   assert.deepEqual(texts(setup.nodes.get("task-fact-status")), ["Status", "Enabled"]);
   assert.ok(texts(setup.nodes.get("task-fact-last")).includes("Failed"));
@@ -373,7 +384,7 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.4");
+  assert.equal(manifest.version, "0.1.5");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);

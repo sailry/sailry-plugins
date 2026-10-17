@@ -315,7 +315,7 @@ test("desktop navigation and project tool share the host package without contrac
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.3");
+  assert.equal(manifest.version, "0.1.4");
   assert.equal(extension.desktop.navigation_options.details, true);
   assert.ok(extension.host.handlers.includes("history"));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);
@@ -429,8 +429,10 @@ test("panel headers place the status tag after the title without actions", () =>
   assert.deepEqual(summary.items[0].items.map(child => child.selector ?? texts(child)[0]), ["Reminder a", "reminder-panel-status"]);
   assert.equal(summary.items[0].style.justify_between, undefined);
   assert.equal(setup.nodes.get("reminder-panel-status").items[0].items[0], "Overdue");
+  assert.deepEqual(plain(setup.nodes.get("reminder-panel-status").items[0].style.size), ["large"]);
   assert.deepEqual(texts(setup.nodes.get("reminder-panel-project")), ["Current"]);
   assert.equal(setup.nodes.get("reminder-panel-project").items[0].kind, "Icon");
+  assert.equal(setup.nodes.get("reminder-fact-project").items[1].items[0].kind, "Icon");
   const nodes = node => node?.items ? [node, ...node.items.flatMap(nodes)] : [];
   assert.deepEqual(nodes(setup.nodes.get("reminder-panel")).filter(node => ["IconButton", "Button"].includes(node.kind))
     .map(node => node.selector), ["reminder-panel-close"]);

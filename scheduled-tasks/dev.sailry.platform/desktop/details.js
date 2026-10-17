@@ -27,7 +27,7 @@ export function taskStatus(text, item) {
 }
 export function statusTag(view, item, id) {
   const {label, tone} = taskStatus(view.text, item);
-  const tag = new Tag().variant(["danger", "info", "success"].includes(tone) ? tone : "secondary").size("small").rounded_full();
+  const tag = new Tag().variant(["danger", "info", "success"].includes(tone) ? tone : "secondary").size("large").rounded_full();
   return div().id(id).flex_none().child((tone === "muted" ? tag.outline() : tag).child(label));
 }
 function cell(id, label, value, font, first) {
@@ -83,19 +83,19 @@ function plan(view, item, now, font) {
   return card.child(div().h_flex().border_t_1().border_color(colors.border)
     .children(cells.map(([key, label, value], index) => cell(`task-plan-${key}`, label, value, font, index === 0))));
 }
-function fact(id, label, value, note, dot) {
+function fact(id, label, value, note, dot, icon) {
   const colors = theme().colors;
   return div().id(id).h_flex().items_center().gap_3().min_h(30).text_sm()
     .child(div().w(72).flex_none().text_color(colors.muted_foreground).child(label))
     .child(div().flex_1().min_w_0().h_flex().items_center().gap_1p5()
       .children(dot ? [div().size(8).flex_none().rounded_full().bg(dot)] : [])
+      .children(icon ? [new Icon(icon).size("small")] : [])
       .child(div().min_w_0().truncate().child(value))
       .children(note ? [div().flex_none().text_xs().text_color(colors.muted_foreground).child(note)] : []));
 }
-export function effortLabel(text, effort) {
+export function effortLabel(effort) {
   if (effort === undefined || effort === null || effort === "default") return "";
-  const key = effortKey(effort);
-  return text[`effort_${key}`] ?? (typeof effort === "string" ? key : `${key} ${text.tokens}`);
+  return effortKey(effort);
 }
 function facts(view, item, runs, now) {
   const {text} = view, colors = theme().colors, next = upcoming(item, now, 1)[0], last = runs[0];
@@ -104,15 +104,15 @@ function facts(view, item, runs, now) {
       item.enabled && next !== undefined ? relative(next, now, text) : "", null),
     fact("task-fact-last", text.lastRun, last ? when(last.job.started_ms ?? last.job.created_ms, now, text) : text.neverRun,
       last ? runLabel(text, last.job.status) : "", last ? runColor(last.job.status, colors) : null),
-    fact("task-fact-project", text.project, view.projectName(item.project), "", null),
+    fact("task-fact-project", text.project, view.projectName(item.project), "", null, "icons/folder.svg"),
   ];
   if (item.project) {
     const tree = item.worktree ? view.catalog.worktrees.find(tree => tree.id === item.worktree)?.path ?? text.unavailable : text.mainWorktree;
     rows.push(fact("task-fact-worktree", text.worktree, tree, "", null));
   }
   if (item.config) {
-    const effort = effortLabel(text, item.config.effort);
-    rows.push(fact("task-fact-model", text.model, item.config.model, effort ? `${text.strength} ${effort}` : "", null));
+    const effort = effortLabel(item.config.effort);
+    rows.push(fact("task-fact-model", text.model, `${item.config.model}${effort ? ` ${effort}` : ""}`, "", null));
   }
   rows.push(fact("task-fact-status", text.status, item.enabled ? text.enabled : text.paused, "",
     item.enabled ? colors.success : colors.muted_foreground));
@@ -223,10 +223,11 @@ export function details(view, cx) {
     .child(div().h_flex().items_center().gap_2().min_w_0()
       .child(div().min_w_0().truncate().text_base().font_semibold().child(item.name))
       .child(statusTag(view, item, "task-panel-status")))
-    .child(div().h_flex().items_center().gap_1p5().min_w_0().text_xs().text_color(colors.muted_foreground)
+    .child(div().h_flex().items_center().gap_3().min_w_0().text_xs().text_color(colors.muted_foreground)
       .child(div().flex_none().font_family(font).child(summary(item, now, text)))
-      .child(div().flex_none().child("·"))
-      .child(div().min_w_0().truncate().child(view.projectName(item.project))));
+      .child(div().id("task-panel-project").h_flex().items_center().gap_1p5().min_w_0()
+        .child(new Icon("icons/folder.svg").size("small"))
+        .child(div().min_w_0().truncate().child(view.projectName(item.project)))));
   return div().id("task-panel").v_flex().size_full().min_w_0().min_h_0()
     .child(header)
     .child(div().id("task-panel-body").flex_1().min_h_0().v_flex().overflow_y_scrollbar()

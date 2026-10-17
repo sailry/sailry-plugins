@@ -10308,7 +10308,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -10771,7 +10771,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {

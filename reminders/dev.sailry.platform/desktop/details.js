@@ -15,7 +15,7 @@ export function reminderStatus(text, item, now) {
   return {label:text.pending, tone:"warning"};
 }
 export function statusTag(status, id) {
-  return div().id(id).flex_none().child(new Tag().variant(status.tone).size("small").rounded_full().child(status.label));
+  return div().id(id).flex_none().child(new Tag().variant(status.tone).size("large").rounded_full().child(status.label));
 }
 export function deliveryColor(status, colors) {
   return {completed:colors.success, failed:colors.destructive, running:colors.info, queued:colors.info,
@@ -43,12 +43,13 @@ function due(view, item, now, font) {
   return div().id("reminder-due").h_flex().items_center().gap_3().p_3().rounded_lg().border_1().border_color(colors.border)
     .bg(colors.muted).child(tile).child(div().flex_1().min_w_0().v_flex().gap_1().children(lines));
 }
-function fact(id, label, value, note, dot) {
+function fact(id, label, value, note, dot, icon) {
   const colors = theme().colors;
   return div().id(id).h_flex().items_center().gap_3().min_h(30).text_sm()
     .child(div().w(72).flex_none().text_color(colors.muted_foreground).child(label))
     .child(div().flex_1().min_w_0().h_flex().items_center().gap_1p5()
       .children(dot ? [div().size(8).flex_none().rounded_full().bg(dot)] : [])
+      .children(icon ? [new Icon(icon).size("small")] : [])
       .child(div().min_w_0().truncate().child(value))
       .children(note ? [div().flex_none().text_xs().text_color(colors.muted_foreground).child(note)] : []));
 }
@@ -60,7 +61,7 @@ function facts(view, item, now) {
     .child(fact("reminder-fact-status", text.status, item.completed ? text.completed : text.pending, "",
       item.completed ? colors.success : colors.warning))
     .child(fact("reminder-fact-notice", text.reminder, notice[0], notice[1], notice[2]))
-    .child(fact("reminder-fact-project", text.project, view.projectName(item.project), "", null));
+    .child(fact("reminder-fact-project", text.project, view.projectName(item.project), "", null, "icons/folder.svg"));
 }
 function overview(view, item, now, font) {
   const {text} = view, colors = theme().colors;
