@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {EmptyState,SettingsGroup,IconButton,Appearance,AppearancePicker,Menu,Modal,Loading} from 'sailry/ui';
+import {EmptyState,SettingsGroup,IconButton,AppearancePicker,Menu,Modal,Loading} from 'sailry/ui';
 import {efforts} from './draft.js';
 
 function button(id,label,action,disabled = false,primary = false) {
@@ -75,7 +75,6 @@ export function render(view) {
   const rows = view.roles.map(role => div().id(`role-${role.id}`).w_full().text_sm().py_3()
     .child(div().h_flex().w_full().gap_3()
       .child(div().flex_1().min_w_0().h_flex().gap_2()
-        .child(Appearance.new(`role-icon-${role.id}`,{value:role.appearance ?? {icon:'ai',color:'none'}}))
         .child(div().v_flex().min_w_0().gap_1().child(div().truncate().child(role.name))
           .child(div().text_sm().text_color(theme().colors.muted_foreground).truncate().child(role.key))))
       .child(div().h_flex().flex_shrink(0).gap_2()

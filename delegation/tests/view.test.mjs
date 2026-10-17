@@ -23,7 +23,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField','Loading']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','AppearancePicker','Menu','Modal','TextField','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},
@@ -128,11 +128,11 @@ test('readonly copy exists in every supported locale',()=>{
   }
 });
 
-test('populated roles retain native appearance and action targets without an empty state',()=>{
+test('populated roles retain action targets without decorative icons',()=>{
   const setup=fixture(),appearance={icon:'code',color:'blue'};
   setup.view.roles=[{id:'retained',name:'Retained role',key:'review',appearance}];setup.render();
   assert.equal(setup.nodes.has('role-empty'),false);
-  assert.deepEqual(plain(setup.nodes.get('role-icon-retained').props),{value:appearance});
+  assert.equal(setup.nodes.has('role-icon-retained'),false);
   assert.deepEqual(plain(setup.nodes.get('role-edit-retained').props),{icon:'settings-2',label:'Edit',disabled:false});
   assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'circle-x',label:'Delete',disabled:false});
   setup.view.loading=true;setup.render();
