@@ -13,7 +13,7 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   const captured = {session:uuid(1),worktree,turn:uuid(3),package:{name:'code-review',digest:'digest-a',settings_revision:'0'}};
   const sessions = new Map([[captured.session,{id:captured.session,worktree:captured.worktree}]]);
   const values = new Map(), calls = [], requests = new Map();
-  let sequence = 10, currentCall = uuid(sequence), metadata = 'inventory:1';
+  let sequence = 10, currentCall = uuid(sequence), metadata = 'inventory:1', turnState = null;
   let data = files.map(plain), head = 'a'.repeat(40);
   const committed = new Map();
   const scoped = snapshot => snapshot.target.kind === 'worktree' ? data : committed.get(JSON.stringify(snapshot.target));
@@ -58,6 +58,8 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   const sdk = {
     context:() => plain(captured), callId:() => currentCall,
     readSession:async () => plain(sessions.get(captured.session)),
+    readTurnState:() => plain(turnState),
+    stageTurnState:value => { turnState = plain(value); },
     getValue:async key => plain(values.get(key) ?? {key,revision:'0',value:null,present:false}),
     prepareRequest:command => { calls.push(plain(command)); const id = `request-${requests.size}`; requests.set(id,plain(command)); return id; },
     completeRequest:async id => plain(native(requests.get(id))),
@@ -104,6 +106,8 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
     return plain(response.result);
   }
   return {values,calls,captured,sessions,start,finish,commit,
+    initialize:input => plain(entry.namespace.initialize(plain(input))),
+    delegate:async input => plain(await entry.namespace.delegate(plain(input))),
     invoke:async (name,args) => finish(await start(name,args)),
     actor(id,parent = null,scope = worktree) {
       captured.session = id;

@@ -47,16 +47,19 @@ test('generated metadata preserves rule order and original hashes', async () => 
 test('mutating tools declare atomic storage flows', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.1');
+  assert.equal(manifest.version,'0.1.3');
   assert.equal(extension.api_version,'v1');
-  assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','report_finding','review_complete']);
+  assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','report_finding','review_complete','delegate_review']);
   assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');
   assert.equal(extension.tools.find(tool=>tool.name==='report_finding').presentation,'details');
-  for (const tool of extension.tools) {
+  for (const tool of extension.tools.filter(tool => tool.name !== 'delegate_review')) {
     assert.notEqual(tool.handler.read_only,true);
     assert.deepEqual(tool.handler.flow.operations,['storage.transaction']);
   }
   assert.ok(extension.actions.includes('storage.write'));
+  assert.ok(extension.actions.includes('agents.delegate'));
+  assert.equal(extension.tools.find(tool => tool.name === 'delegate_review').handler.operation,'agents.delegate');
+  assert.deepEqual(extension.host.turn,{initialize:'initialize'});
   assert.ok(extension.instructions.includes('unavailable in Plan mode'));
   const git = JSON.parse(await readFile(new URL('../../git/plugin.json',import.meta.url),'utf8'));
   const native = git.extensions['dev.sailry.platform'].tools
@@ -82,4 +85,9 @@ test('skill maps each file to patch arguments', async () => {
   assert.match(extension.instructions,/omit snapshot\/path on later reads/);
   assert.match(extension.tools.find(tool => tool.name === 'review_scope').description,
     /snapshot\.metadata_revision identifies the inventory, not an individual file/);
+  assert.match(text,/the unchanged snapshot/);
+  assert.match(text,/each file's metadata and strong revision/);
+  assert.match(text,/`record_receipt:true` rejects Plan turns, read-only roles/);
+  assert.match(text,/parent must independently verify every assigned file/);
+  assert.match(extension.instructions,/Do not ask a read-only child to submit private review records/);
 });

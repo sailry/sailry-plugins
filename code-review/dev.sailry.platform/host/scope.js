@@ -42,7 +42,8 @@ export async function prepare(input, actor) {
     const current = await head(args.review_id, actor);
     return {result:await page(current.value,args.offset,args.limit)};
   }
-  if (args.offset !== undefined || args.limit !== undefined) fail('Paging requires a review identifier');
+  if (args.offset !== undefined) fail('offset requires an existing review_id');
+  const limit = integer(args.limit === undefined ? limits.page : args.limit, 'review page limit', 1, limits.page);
   const id = identifier(callId());
   if ((await record(key(id,'head'))).present) fail('Review scope already exists', 'conflict');
   const target = args.target ?? {kind:'worktree',data:{scope:'all'}};
@@ -73,6 +74,6 @@ export async function prepare(input, actor) {
     package:clone(actor.package),snapshot:listed.snapshot,status:'open',pages:stored.pages,
     counts:{files:files.length,groups:groups.length,skipped:skipped.length},
     findings:[],reviewed_groups:[],receipts:[]};
-  const output = await page(value,0,limits.page,{rows,files,groups,skipped});
+  const output = await page(value,0,limit,{rows,files,groups,skipped});
   return transaction([write(key(id,'head'),value),...stored.operations],output);
 }

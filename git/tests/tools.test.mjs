@@ -34,13 +34,13 @@ test('arguments cannot inject project or execution commands', () => {
 });
 
 test('show and blame preserve literal paths and immutable continuation', () => {
-  assert.deepEqual(show({}), {worktree:null,revision:'HEAD',path:null,offset:0,limit:200});
+  assert.deepEqual(show({}), {worktree:null,revision:'HEAD',path:null,offset:0,limit:2000});
   assert.deepEqual(show({path:'-quoted[1].rs',revision:'HEAD~1',offset:8,limit:2}),
     {worktree:null,revision:'HEAD~1',path:'-quoted[1].rs',offset:8,limit:2});
   assert.deepEqual(blame({path:'资料.rs'}),
     {worktree:null,revision:null,path:'资料.rs',offset:0,limit:200});
   for (const handler of [show,blame]) {
-    for (const args of [{path:'file',offset:-1},{path:'file',limit:501},
+    for (const args of [{path:'file',offset:-1},{path:'file',limit:handler === show ? 2001 : 501},
       {path:'file',offset:Number.MAX_SAFE_INTEGER},{path:'file',project:'outside'},
       {path:'file',revision:3},{path:2}]) {
       assert.equal(handler(args).isError,true);
@@ -48,6 +48,25 @@ test('show and blame preserve literal paths and immutable continuation', () => {
   }
   assert.equal(show({offset:1}).isError,true);
   assert.equal(blame({}).isError,true);
+});
+
+test('invalid page sizes report bounds without adjusting arguments', async () => {
+  for (const handler of [show,blame]) {
+    const maximum = handler === show ? 2000 : 500;
+    const args = {path:'apps/desktop/src/sidebar.rs',revision:'HEAD',offset:0,limit:maximum+1};
+    const error = handler(args);
+    assert.equal(error.isError,true);
+    assert.equal(error.error.code,'invalid_request');
+    assert.match(error.error.message,new RegExp(`limit.*1 and ${maximum}.*returned next`));
+    assert.equal(args.limit,maximum+1);
+    assert.match(handler({path:'file',offset:-1}).error.message,/offset.*non-negative/);
+  }
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === 'git_show');
+  assert.equal(declaration.handler.parameters.properties.limit.maximum,2000);
+  assert.match(declaration.handler.parameters.properties.limit.description,/returned next offset/);
+  assert.deepEqual(show({path:'apps/desktop/src/sidebar.rs',revision:'HEAD',offset:0,limit:1200}),
+    {worktree:null,path:'apps/desktop/src/sidebar.rs',revision:'HEAD',offset:0,limit:1200});
 });
 
 test('change inventory keeps frozen cursors and explicit target alternatives', () => {
@@ -85,7 +104,7 @@ test('file change descriptions distinguish captured revision fields', async () =
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
   const tool = extension.tools.find(tool => tool.name === 'read_git_change');
-  assert.equal(manifest.version,'0.1.5');
+  assert.equal(manifest.version,'0.1.6');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(tool.handler.parameters.required,['snapshot','path','expected_metadata_revision']);
   assert.match(tool.description,/Every request requires the unchanged snapshot/);

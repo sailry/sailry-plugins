@@ -6,6 +6,38 @@ const skipped = ['.env','.npmrc','.netrc','.pypirc','.ssh/id_rsa','credentials/t
   'cert/server.key','node_modules/lib/main.js','target/debug/app.rs','generated/types.ts','src/schema.pb.go',
   'assets/app.min.js','Cargo.lock'];
 
+test('initial page limit preserves complete frozen coverage', async () => {
+  const source = [file('src/first.rs'),file('src/second.rs'),file('src/third.rs')];
+  const fixtureData = await fixture(source);
+  const scope = await fixtureData.invoke('scope',{limit:1});
+  assert.equal(scope.counts.files,3);
+  assert.equal(scope.files.length,1);
+  assert.equal(scope.next,1);
+  assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,3);
+  assert.equal((await fixtureData.invoke('complete',receipt(scope))).isError,true);
+  const complete = {...scope,files:[...scope.files],groups:[],skipped:[],findings:[]};
+  let next = scope.next;
+  while (next !== null) {
+    const page = await fixtureData.invoke('scope',{review_id:scope.review_id,offset:next,limit:1});
+    assert.deepEqual(page.snapshot,scope.snapshot);
+    for (const kind of ['files','groups','skipped','findings']) complete[kind].push(...page[kind]);
+    next = page.next;
+  }
+  assert.deepEqual(complete.files.map(value => value.path),source.map(value => value.path));
+  assert.ok(complete.files.every(value => value.revision && value.metadata_revision));
+  assert.equal((await fixtureData.invoke('complete',receipt(complete))).status,'complete');
+});
+
+test('creation rejects invalid pagination before reading resources', async () => {
+  for (const input of [{limit:0},{limit:101},{limit:null},{offset:0,limit:1}]) {
+    const fixtureData = await fixture();
+    const result = await fixtureData.invoke('scope',input);
+    assert.equal(result.isError,true);
+    assert.equal(fixtureData.values.size,0);
+    assert.equal(fixtureData.calls.length,0);
+  }
+});
+
 test('inventory finishes before eligible reads', async () => {
   const source = Array.from({length:15},(_,index) => file(`src/file-${index}.rs`));
   const fixtureData = await fixture([...source,...skipped.map(path => file(path)),

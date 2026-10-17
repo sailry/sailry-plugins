@@ -226,10 +226,9 @@ export default class Files extends View {
     if (this.resource) return FilePreview.new('file-preview');
     return ActionScope.new('files-actions',{close:'files-close-current'}).children([
       div().id('files-panel').v_flex().size_full().min_h_0().min_w_0()
-      .child(this.mode === 'embedded' && !this.documents.current() ? explorerView(this)
-        : div().v_flex().size_full().min_h_0().min_w_0()
+      .child(div().v_flex().size_full().min_h_0().min_w_0()
           .children(this.mode === 'main' ? [documentView.header(this)] : [])
-          .child(div().flex_1().min_h_0().min_w_0().child(Workspace.new('files-workspace',{navigation:'none',default_details_width:320,min_details_width:260,details_label:this.text.file_tree})
+          .child(div().flex_1().min_h_0().min_w_0().child(Workspace.new('files-workspace',{navigation:'none',has_content:this.mode !== 'embedded' || !!this.documents.current(),default_details_width:320,min_details_width:260,details_label:this.text.file_tree})
             .children([this.mode === 'embedded'
               ? div().v_flex().size_full().min_h_0().min_w_0().child(documentView.header(this))
                 .child(div().flex_1().min_h_0().min_w_0().child(documentView.content(this)))

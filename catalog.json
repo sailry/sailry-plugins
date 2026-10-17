@@ -1368,7 +1368,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.1",
+        "version": "0.1.3",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -1378,7 +1378,8 @@
               "git.read",
               "conversation.read",
               "storage.read",
-              "storage.write"
+              "storage.write",
+              "agents.delegate"
             ],
             "display": {
               "label": "Code review",
@@ -1393,7 +1394,7 @@
                 "zh-CN": "审查代码变更与拉取请求"
               }
             },
-            "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. For every read_git_change request, pass scope.snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision from the selected scope.files entry. Never substitute scope.snapshot.metadata_revision for a file's metadata revision or omit snapshot/path on later reads. Check argument mappings before treating a failed patch read as a changed worktree; only actual target or file changes require a new review. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
+            "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code turn and a writable, tool-capable captured role; omit role for a new child inheriting the current Code turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. For every read_git_change request, pass scope.snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision from the selected scope.files entry. Never substitute scope.snapshot.metadata_revision for a file's metadata revision or omit snapshot/path on later reads. Check argument mappings before treating a failed patch read as a changed worktree; only actual target or file changes require a new review. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
             "storage": {
               "collections": [
                 {
@@ -1436,13 +1437,19 @@
                 "dev.sailry.platform/host/scope.js",
                 "dev.sailry.platform/host/findings.js",
                 "dev.sailry.platform/host/complete.js",
-                "dev.sailry.platform/host/locales.js"
+                "dev.sailry.platform/host/locales.js",
+                "dev.sailry.platform/host/delegation.js"
               ],
               "handlers": [
                 "scope",
                 "finding",
-                "complete"
-              ]
+                "complete",
+                "initialize",
+                "delegate"
+              ],
+              "turn": {
+                "initialize": "initialize"
+              }
             },
             "tools": [
               {
@@ -1451,7 +1458,7 @@
                   "workspace"
                 ],
                 "presentation": "details",
-                "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Read each file with read_git_change using the returned snapshot, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision; snapshot.metadata_revision identifies the inventory, not an individual file. Omit target for worktree all. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
+                "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Read each file with read_git_change using the returned snapshot, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision; snapshot.metadata_revision identifies the inventory, not an individual file. Omit target for worktree all. limit bounds only the returned page, including the first creation response; the entire eligible scope is always frozen. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
                 "handler": {
                   "name": "scope",
                   "flow": {
@@ -1561,12 +1568,14 @@
                       },
                       "offset": {
                         "type": "integer",
-                        "minimum": 0
+                        "minimum": 0,
+                        "description": "Row offset for an existing review_id only; use the returned next value."
                       },
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 100,
+                        "description": "Maximum returned rows, from 1 to 100; allowed when creating the complete frozen scope or reading an existing page."
                       }
                     },
                     "required": [],
@@ -1747,6 +1756,79 @@
                     "zh-CN": "完成审查"
                   },
                   "icon": "reicon:it/code"
+                }
+              },
+              {
+                "name": "delegate_review",
+                "contexts": [
+                  "workspace"
+                ],
+                "presentation": "details",
+                "description": "Delegate complete frozen review groups to a new direct child. The package supplies the unchanged snapshot, inventory metadata revision, every file metadata/strong revision and selected rules; do not hand-write captures. Set record_receipt=true only for an authorized Code turn and writable, tool-capable captured role. Omit role to inherit this Code turn rather than guessing a role. Evidence-only delegation is explicit and never records coverage. A group is never sampled to fit the task budget. Existing children and roles are not changed.",
+                "handler": {
+                  "name": "delegate",
+                  "operation": "agents.delegate",
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "review_id",
+                      "groups",
+                      "record_receipt"
+                    ],
+                    "properties": {
+                      "review_id": {
+                        "type": "string",
+                        "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                      },
+                      "groups": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 256,
+                        "uniqueItems": true,
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        }
+                      },
+                      "record_receipt": {
+                        "type": "boolean",
+                        "description": "Require a formal receipt, or explicitly gather evidence only"
+                      },
+                      "role": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Omit for a new child inheriting this Code turn; named roles retain their captured mode and model",
+                        "default": null
+                      },
+                      "background": {
+                        "type": "boolean"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    }
+                  }
+                },
+                "display": {
+                  "label": "Delegate review",
+                  "locales": {
+                    "zh-CN": "委托审查"
+                  },
+                  "icon": "reicon:users/users2",
+                  "input": {
+                    "summary": {
+                      "path": "/title"
+                    },
+                    "context": {
+                      "path": "/role"
+                    }
+                  }
                 }
               }
             ]
@@ -2168,7 +2250,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "context7",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Current library documentation through the official Context7 MCP service",
         "homepage": "https://context7.com",
         "extensions": {
@@ -2212,7 +2294,8 @@
                   "icon": "reicon:newicons/book-square"
                 }
               }
-            ]
+            ],
+            "settings_schema": "dev.sailry.platform/settings.json"
           }
         }
       }
@@ -5081,7 +5164,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6680,7 +6763,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -7532,7 +7615,7 @@
               {
                 "name": "git_show",
                 "presentation": "details",
-                "description": "Read a commit patch, or a UTF-8 file at a commit without changing the checkout. revision defaults to HEAD; omit path for the bounded commit patch. For file pages offset is a zero-based line offset and limit defaults to 200, at most 500. Text includes one-based line numbers. Use the returned immutable commit and next offset for continuation. Pages are bounded to 48 KiB and files to 32 MiB; truncation and an incomplete line are explicit. Binary files return a binary marker. Select only registered worktrees in this session project.",
+                "description": "Read a commit patch, or a UTF-8 file at a commit without changing the checkout. revision defaults to HEAD; omit path for the bounded commit patch. For file pages offset is a zero-based line offset and limit defaults to 2000, at most 2000. Text includes one-based line numbers. Use the returned immutable commit and next offset for continuation. Pages are bounded to 48 KiB and files to 32 MiB; truncation and an incomplete line are explicit. Binary files return a binary marker. Select only registered worktrees in this session project.",
                 "contexts": [
                   "workspace"
                 ],
@@ -7567,8 +7650,9 @@
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 500,
-                        "default": 200
+                        "maximum": 2000,
+                        "default": 2000,
+                        "description": "Lines per page, from 1 to 2000. The 48 KiB output budget can end a page earlier; continue with the returned next offset and immutable commit."
                       }
                     },
                     "required": [],
@@ -7630,7 +7714,8 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 500,
-                        "default": 200
+                        "default": 200,
+                        "description": "Lines per page, from 1 to 500. Continue with the returned next offset and unchanged captured revisions; do not increase the page limit."
                       }
                     },
                     "required": [
@@ -8121,7 +8206,8 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 500,
-                        "default": 200
+                        "default": 200,
+                        "description": "Lines per page, from 1 to 500. Continue with the returned next offset and unchanged captured revisions; do not increase the page limit."
                       }
                     },
                     "required": [

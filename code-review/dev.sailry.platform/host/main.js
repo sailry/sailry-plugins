@@ -3,6 +3,8 @@ import {committed, identity} from './records.js';
 import {prepare as scopeRequest} from './scope.js';
 import {prepare as findingRequest} from './findings.js';
 import {prepare as completionRequest, display} from './complete.js';
+import {prepare as delegationRequest} from './delegation.js';
+export {initialize} from './delegation.js';
 
 function flow(prepare, present = value => value) {
   return async ({arguments:input,step,state,outcome}) => {
@@ -16,3 +18,8 @@ function flow(prepare, present = value => value) {
 export const scope = flow(scopeRequest);
 export const finding = flow(findingRequest);
 export const complete = flow(completionRequest,display);
+
+export async function delegate(input) {
+  try { return await delegationRequest(input); }
+  catch (error) { return result(error); }
+}

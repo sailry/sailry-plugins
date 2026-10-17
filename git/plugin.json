@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -853,7 +853,7 @@
         {
           "name": "git_show",
           "presentation": "details",
-          "description": "Read a commit patch, or a UTF-8 file at a commit without changing the checkout. revision defaults to HEAD; omit path for the bounded commit patch. For file pages offset is a zero-based line offset and limit defaults to 200, at most 500. Text includes one-based line numbers. Use the returned immutable commit and next offset for continuation. Pages are bounded to 48 KiB and files to 32 MiB; truncation and an incomplete line are explicit. Binary files return a binary marker. Select only registered worktrees in this session project.",
+          "description": "Read a commit patch, or a UTF-8 file at a commit without changing the checkout. revision defaults to HEAD; omit path for the bounded commit patch. For file pages offset is a zero-based line offset and limit defaults to 2000, at most 2000. Text includes one-based line numbers. Use the returned immutable commit and next offset for continuation. Pages are bounded to 48 KiB and files to 32 MiB; truncation and an incomplete line are explicit. Binary files return a binary marker. Select only registered worktrees in this session project.",
           "contexts": [
             "workspace"
           ],
@@ -888,8 +888,9 @@
                 "limit": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 500,
-                  "default": 200
+                  "maximum": 2000,
+                  "default": 2000,
+                  "description": "Lines per page, from 1 to 2000. The 48 KiB output budget can end a page earlier; continue with the returned next offset and immutable commit."
                 }
               },
               "required": [],
@@ -951,7 +952,8 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 500,
-                  "default": 200
+                  "default": 200,
+                  "description": "Lines per page, from 1 to 500. Continue with the returned next offset and unchanged captured revisions; do not increase the page limit."
                 }
               },
               "required": [
@@ -1442,7 +1444,8 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 500,
-                  "default": 200
+                  "default": 200,
+                  "description": "Lines per page, from 1 to 500. Continue with the returned next offset and unchanged captured revisions; do not increase the page limit."
                 }
               },
               "required": [

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "context7",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Current library documentation through the official Context7 MCP service",
   "homepage": "https://context7.com",
   "extensions": {
@@ -11,12 +11,16 @@
       "actions": [],
       "display": {
         "label": "Context7",
-        "locales": {"zh-CN": "Context7"},
+        "locales": {
+          "zh-CN": "Context7"
+        },
         "icon": "reicon:newicons/book-square"
       },
       "description": {
         "label": "Current library documentation",
-        "locales": {"zh-CN": "查询最新库文档"}
+        "locales": {
+          "zh-CN": "查询最新库文档"
+        }
       },
       "tools": [
         {
@@ -24,7 +28,9 @@
           "server": "context7",
           "display": {
             "label": "Find library",
-            "locales": {"zh-CN": "查找库"},
+            "locales": {
+              "zh-CN": "查找库"
+            },
             "icon": "reicon:ui/magnifier"
           }
         },
@@ -33,11 +39,14 @@
           "server": "context7",
           "display": {
             "label": "Read documentation",
-            "locales": {"zh-CN": "查询文档"},
+            "locales": {
+              "zh-CN": "查询文档"
+            },
             "icon": "reicon:newicons/book-square"
           }
         }
-      ]
+      ],
+      "settings_schema": "dev.sailry.platform/settings.json"
     }
   }
 }

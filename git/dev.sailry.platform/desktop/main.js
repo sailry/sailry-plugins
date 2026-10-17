@@ -169,9 +169,8 @@ export default class Git extends View {
       ['git-commit-action','git-amend-action','git-fetch-action','git-pull-action','git-pull-rebase-action','git-push-action']
         .reduce((scope,id) => scope.on_action(id,(_event,cx) => this.control(id,cx)),div().v_flex().size_full().min_w_0().min_h_0().key_context(this.shortcutContext))
         .children([
-      div().v_flex().size_full().min_h_0().min_w_0().child(this.mode === 'embedded' && !this.repo.selected ? views.details(this)
-        : div().v_flex().size_full().min_h_0().min_w_0().children(this.mode === 'main' ? [views.header(this)] : [])
-          .child(div().flex_1().min_h_0().min_w_0().child(Workspace.new('git-workspace',{navigation:'none',default_details_width:320,min_details_width:260})
+      div().v_flex().size_full().min_h_0().min_w_0().child(div().v_flex().size_full().min_h_0().min_w_0().children(this.mode === 'main' ? [views.header(this)] : [])
+          .child(div().flex_1().min_h_0().min_w_0().child(Workspace.new('git-workspace',{navigation:'none',has_content:this.mode !== 'embedded' || !!this.repo.selected,default_details_width:320,min_details_width:260})
             .children([this.mode === 'embedded'
               ? div().v_flex().size_full().min_h_0().min_w_0().child(views.header(this))
                 .child(div().flex_1().min_h_0().min_w_0().child(views.content(this,cx)))
