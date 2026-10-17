@@ -7,16 +7,16 @@ export async function projects() { return result(() => readProjectCatalog()); }
 export async function list(input) {
   return result(() => listing(input));
 }
-// Read native job state independently of the Records tab's visible page count.
+// Read native job state independently of the visible record pages.
 export async function states() {
   const states = new Map();
   let before = null;
   do {
     const page = await query("list_jobs",{before,limit:100});
     for (const job of page.jobs) {
-      if (!states.has(job.handler) || job.status === "running"
-          || (job.status === "queued" && states.get(job.handler) !== "running")) {
-        states.set(job.handler,job.status);
+      const known = states.get(job.handler)?.status;
+      if (!known || job.status === "running" || (job.status === "queued" && known !== "running")) {
+        states.set(job.handler,{status:job.status,started_ms:job.started_ms ?? null});
       }
     }
     before = page.next_before;
@@ -55,16 +55,23 @@ export async function stop(input) {
     return receipt.Ok.data;
   });
 }
+// A handler filter scans whole native pages until it has a page of that task's runs.
 export async function history(input = {}) {
   return result(async () => {
-    const page = await query("list_jobs",{before:input.before ?? null,limit:input.limit ?? 32});
+    const limit = input.limit ?? 32, handler = input.handler ?? null;
     const items = [];
-    for (const job of page.jobs) {
-      const receipt = await query("read_result",{id:job.id});
-      const output = receipt.kind === "completed" ? receipt.data.Ok : null;
-      const turn = output?.kind === "queued_turn" ? output.data : null;
-      items.push({job,name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null});
-    }
-    return {items,next_before:page.next_before};
+    let before = input.before ?? null;
+    do {
+      const page = await query("list_jobs",{before,limit:handler === null ? limit : 100});
+      for (const job of page.jobs) {
+        if (handler !== null && job.handler !== handler) continue;
+        const receipt = await query("read_result",{id:job.id});
+        const output = receipt.kind === "completed" ? receipt.data.Ok : null;
+        const turn = output?.kind === "queued_turn" ? output.data : null;
+        items.push({job,name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null});
+      }
+      before = page.next_before;
+    } while (handler !== null && items.length < limit && before !== null);
+    return {items,next_before:before};
   });
 }

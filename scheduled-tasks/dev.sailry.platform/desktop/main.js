@@ -1,7 +1,7 @@
 import {View} from "gpui-kit";
 import {context} from "sailry";
 import {prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog, listModels, resolveSessionModel} from "sailry/sdk";
-import {modal_closed,nextControlEvent,toast} from "sailry/ui";
+import {modal_closed,nextControlEvent,openSession,showWorkspaceDetails,toast,writeClipboard} from "sailry/ui";
 import {list, history, states} from "../host/management.js";
 import {messages} from "./locales.js";
 import {editor, release, value, effortKey, setTiming} from "./editor.js";
@@ -12,7 +12,8 @@ function unwrap(result) { if (result.Err) throw result.Err; return result.Ok; }
 export default class ScheduledTasks extends View {
   init(_props, cx) {
     this.text = messages(JSON.parse(context()).locale);
-    this.items = []; this.history = []; this.pages = 1; this.more = false; this.tab = 0;
+    this.items = []; this.history = []; this.pages = 1; this.more = false; this.projectFilter = "all";
+    this.panel = null; this.historyTask = null; this.historyLoaded = false;
     this.catalog = {projects:[],worktrees:[]}; this.loading = false; this.loaded = false; this.dirty = false;
     this.models = []; this.modelsError = false;
     this.busy = false; this.pending = null; this.error = null;
@@ -45,16 +46,21 @@ export default class ScheduledTasks extends View {
           const page = unwrap(await list({after}));
           items.push(...page.items); after = page.after;
         } while (after !== null);
-        const runs = []; let before = null;
-        for (let index = 0; index < this.pages; index++) {
-          const page = unwrap(await history({before}));
+        // Records belong to the task open in the details panel only.
+        const task = this.panel?.task ?? null, runs = []; let before = null;
+        if (task !== null) for (let index = 0; index < this.pages; index++) {
+          const page = unwrap(await history({before,handler:task}));
           runs.push(...page.items); before = page.next_before;
           if (before === null) break;
         }
         const status = items.length ? await states() : {};
         this.catalog = await readProjectCatalog();
-        this.items = items.map(item => ({...item,status:status[item.id] ?? null}));
-        this.history = runs; this.more = before !== null; this.loaded = true;
+        this.items = items.map(item => ({...item,status:status[item.id]?.status ?? null,started_ms:status[item.id]?.started_ms ?? null}));
+        if (this.panel && !this.items.some(item => item.id === this.panel.task)) this.panel = null;
+        if (task === (this.panel?.task ?? null)) {
+          this.history = runs; this.historyTask = task; this.historyLoaded = task !== null; this.more = before !== null;
+        }
+        this.loaded = true;
         if (this.error === "loadFailed") this.error = null;
         try { this.models = (await listModels()).models.filter(model => model.kind === "provider"); this.modelsError = false; }
         catch (_) { this.modelsError = true; this.report("modelsFailed"); }
@@ -68,8 +74,11 @@ export default class ScheduledTasks extends View {
     return id ? this.catalog.projects.find(project => project.id === id)?.name ?? this.text.unavailable : this.text.noProject;
   }
   control(event,cx) {
-    const item = this.items.find(item => ["enabled","run","edit","delete"].some(action => event.id === `task-${action}-${item.id}`));
+    if (this.panelControl(event,cx)) return;
+    const item = this.items.find(item => ["enabled","run","details","records","edit","delete"].some(action => event.id === `task-${action}-${item.id}`));
     if (item) {
+      if (event.id === `task-details-${item.id}`) return this.inspect(item,"details",cx);
+      if (event.id === `task-records-${item.id}`) return this.inspect(item,"records",cx);
       if (this.busy || this.pending) return;
       if (event.id === `task-enabled-${item.id}` && typeof event.value === "boolean") this.perform("save", {...item,enabled:event.value},cx);
       else if (event.id === `task-run-${item.id}`) this.perform("run", {id:item.id},cx);
@@ -103,6 +112,44 @@ export default class ScheduledTasks extends View {
       return this.selectModel(editing.model,effort,cx);
     } else return;
     cx.notify();
+  }
+  // Returns true when the event belongs to the list filter or the details panel.
+  panelControl(event,cx) {
+    if (event.id === "tasks-project-filter") {
+      if (event.value === "all") this.projectFilter = "all";
+      else if (event.value === "none") this.projectFilter = null;
+      else if (this.catalog.projects.some(project => project.id === event.value)
+          || this.items.some(item => item.project === event.value)) this.projectFilter = event.value;
+      cx.notify(); return true;
+    }
+    const panel = this.panel, task = panel && this.items.find(item => item.id === panel.task);
+    if (!task) return false;
+    if (event.id === "task-panel-tabs") {
+      if (["details","records"].includes(event.value)) { panel.tab = event.value; cx.notify(); }
+    } else if (event.id === "task-panel-close") { this.panel = null; cx.notify(); }
+    else if (event.id === "task-records-more") {
+      if (event.value === "load" && this.more && !this.loading) { this.pages++; this.refresh(cx); }
+    } else if (event.id === "task-prompt-copy") {
+      writeClipboard(task.prompt); toast({id:"scheduled-tasks-copy",message:this.text.copied,kind:"info"});
+    } else if (event.id === "task-failure-open") {
+      const failed = this.history.find(run => run.job.handler === task.id);
+      if (failed?.session) openSession(failed.session);
+    } else {
+      const run = this.history.find(run => event.id === `task-open-${run.job.id}` || event.id === `task-stop-${run.job.id}`);
+      if (!run) return false;
+      if (event.id === `task-open-${run.job.id}`) { if (run.session) openSession(run.session); }
+      else if (!this.busy && !this.pending && (run.job.status === "queued" || (run.job.status === "running" && run.turn))) {
+        this.perform(run.job.status === "queued" ? "cancel" : "stop",{id:run.job.id},cx);
+      }
+    }
+    return true;
+  }
+  inspect(item,tab,cx) {
+    if (this.panel?.task !== item.id) {
+      this.history = []; this.historyTask = null; this.historyLoaded = false; this.pages = 1; this.more = false;
+      this.panel = {task:item.id,tab}; this.refresh(cx);
+    } else this.panel.tab = tab;
+    showWorkspaceDetails(); cx.notify();
   }
   selectModel(model,effort,cx) {
     const editing = this.editing;
@@ -160,5 +207,5 @@ export default class ScheduledTasks extends View {
       finally { this.busy = false;if(this.error)this.report(this.error);cx.notify(); }
     });
   }
-  render(cx) { return render(this); }
+  render(cx) { return render(this,cx); }
 }
