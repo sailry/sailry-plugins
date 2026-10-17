@@ -1,8 +1,9 @@
 import { context, prepareRequest, completeRequest, forgetRequest } from "sailry/sdk";
-import { fault } from "./records.js";
+import { fault, key, result } from "./records.js";
 
-async function query(kind) {
-  const id = prepareRequest({kind:"dispatch", data:{package:context().package, action:{kind}}});
+async function query(kind, data) {
+  const action = data === undefined ? {kind} : {kind, data};
+  const id = prepareRequest({kind:"dispatch", data:{package:context().package, action}});
   const result = await completeRequest(id);
   forgetRequest(id);
   if (result.Err) throw fault(result.Err.code, result.Err.message);
@@ -45,4 +46,27 @@ export async function removal(id) {
     ...(schedule ? [dispatch("remove_schedule", {id,expected_revision:exact(schedule.revision)})] : []),
     ...(handler ? [dispatch("remove_handler", {name:id,expected_revision:exact(handler.revision)})] : []),
   ];
+}
+// Native notification jobs for one reminder, newest first. Callbacks that skipped a
+// stale schedule delivered nothing and are omitted.
+export async function history(input = {}) {
+  return result(async () => {
+    const handler = input.handler;
+    key(handler);
+    const items = [];
+    let before = null;
+    do {
+      const page = await query("list_jobs", {before, limit:100});
+      for (const job of page.jobs) {
+        if (job.handler !== handler) continue;
+        if (job.status === "completed") {
+          const receipt = await query("read_result", {id:job.id});
+          if (receipt?.kind === "completed" && receipt.data?.Ok?.data?.skipped === true) continue;
+        }
+        items.push(job);
+      }
+      before = page.next_before;
+    } while (before !== null);
+    return {items};
+  });
 }

@@ -10308,7 +10308,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -10410,6 +10410,7 @@
                 "save",
                 "remove",
                 "notify",
+                "history",
                 "initialize",
                 "reminders"
               ],
@@ -10682,14 +10683,18 @@
               "entry": "dev.sailry.platform/desktop/main.js",
               "navigation_options": {
                 "pinned": true,
+                "details": true,
                 "order": 300
               },
               "resources": [
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/editor.js",
                 "dev.sailry.platform/desktop/view.js",
+                "dev.sailry.platform/desktop/details.js",
+                "dev.sailry.platform/desktop/time.js",
                 "dev.sailry.platform/desktop/locales.js",
-                "dev.sailry.platform/host/records.js"
+                "dev.sailry.platform/host/records.js",
+                "dev.sailry.platform/host/schedules.js"
               ],
               "navigation": {
                 "label": "Reminders",

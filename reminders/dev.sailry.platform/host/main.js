@@ -2,6 +2,7 @@ import { key, read, revision, commit, page, result } from "./records.js";
 import {saveOperations, removeOperations} from "./mutations.js";
 import {presentation} from "./locales.js";
 export {initialize, reminders} from "./tools.js";
+export {history} from "./schedules.js";
 
 export async function list(input) { return result(() => page(input ?? {})); }
 export async function save(input) {
