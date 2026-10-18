@@ -1,6 +1,5 @@
 export const limits = Object.freeze({page:100,
-  value:256*1024, shard:128*1024, transaction:2*1024*1024, output:128*1024,
-  patch:4*1024*1024});
+  value:256*1024, shard:128*1024, transaction:2*1024*1024, output:128*1024});
 
 export function fail(message, code = 'invalid_request', details) {
   const error = new Error(message);

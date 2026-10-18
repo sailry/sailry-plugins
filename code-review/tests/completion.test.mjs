@@ -51,22 +51,22 @@ test('invalid duplicate and partial receipts are rejected', async () => {
   assert.deepEqual(head.reviewed_groups,[]);
 });
 
-test('strong changes invalidate finalization despite stable metadata', async () => {
+test('captured content survives changes despite stable metadata', async () => {
   const fixtureData = await fixture();
   const scope = await fixtureData.invoke('scope',{});
   fixtureData.change(scope.files[0].path,{revision:'external edit with restored metadata'});
   const result = await fixtureData.invoke('complete',receipt(scope));
-  assert.equal(result.error.code,'revision_conflict');
-  assert.equal(fixtureData.values.get(`review/${scope.review_id}/head`).value.status,'open');
+  assert.equal(result.status,'complete');
+  assert.equal(fixtureData.values.get(`review/${scope.review_id}/head`).value.status,'complete');
 });
 
-test('frozen inventory rejects new working paths', async () => {
+test('published inventory survives unrelated working paths', async () => {
   const fixtureData = await fixture();
   const scope = await fixtureData.invoke('scope',{});
   fixtureData.metadata('inventory:changed');
   const result = await fixtureData.invoke('complete',receipt(scope));
-  assert.equal(result.error.code,'revision_conflict');
-  assert.equal(fixtureData.values.get(`review/${scope.review_id}/head`).value.status,'open');
+  assert.equal(result.status,'complete');
+  assert.equal(fixtureData.values.get(`review/${scope.review_id}/head`).value.status,'complete');
 });
 
 test('commit finalization never resolves moving refs again', async () => {

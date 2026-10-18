@@ -1,5 +1,5 @@
 import {prepareRequest, completeRequest, forgetRequest} from 'sailry/sdk';
-import {equal, fail, limits, path, revision, size} from './policy.js';
+import {equal, fail, path, revision} from './policy.js';
 
 async function read(kind, data, expected) {
   const request = prepareRequest({kind, data});
@@ -12,7 +12,6 @@ async function read(kind, data, expected) {
 }
 export async function inventory(worktree, target, snapshot = null) {
   const entries = [], seen = new Set();
-  let total = 2;
   let cursor = snapshot ? {snapshot, after_path:null} : null;
   let frozen = snapshot;
   for (;;) {
@@ -29,10 +28,6 @@ export async function inventory(worktree, target, snapshot = null) {
       if (seen.has(entry.path)) fail('Git inventory contains duplicate paths', 'internal');
       seen.add(entry.path);
       entries.push(entry);
-      total += size(entry)+1;
-      if (total > limits.transaction) {
-        fail('Review inventory exceeds the bounded scope budget');
-      }
     }
     if (page.exhausted) {
       if (page.next != null) fail('Invalid Git inventory cursor', 'internal');
@@ -43,8 +38,8 @@ export async function inventory(worktree, target, snapshot = null) {
     cursor = page.next;
   }
 }
-export async function change(worktree, snapshot, file, all = false) {
-  let offset = 0, frozen = file.revision ?? null, total = 0;
+export async function change(worktree, snapshot, file, all = false, visit = null) {
+  let offset = 0, frozen = file.revision ?? null;
   const lines = [];
   for (;;) {
     const page = await read('read_git_change', {worktree, snapshot, path:file.path,
@@ -69,14 +64,33 @@ export async function change(worktree, snapshot, file, all = false) {
           || (line.kind !== 'added' && (!Number.isSafeInteger(line.old_line) || line.old_line < 1))) {
         fail('Invalid mapped Git line', 'internal');
       }
-      lines.push(line);
-      total += size(line);
-      if (total > limits.patch) fail('Review evidence exceeds the bounded diff budget');
+      if (!visit) lines.push(line);
     }
+    if (visit) await visit(page);
     if (page.next == null) return {...page, lines, revision:frozen};
     if (!Number.isSafeInteger(page.next) || page.next !== offset + page.lines.length || page.next <= offset) {
       fail('Invalid Git diff cursor', 'internal');
     }
     offset = page.next;
+  }
+}
+
+export async function context(worktree,snapshot,file,side,visit) {
+  let offset=0;
+  for (;;) {
+    const page=await read('read_git_context',{worktree,snapshot,path:file.path,
+      expected_metadata_revision:file.metadata_revision,expected_revision:file.revision,
+      side,offset,limit:500},'git_context');
+    if (!equal(page.snapshot,snapshot) || page.path !== file.path || page.side !== side
+        || page.metadata_revision !== file.metadata_revision || page.revision !== file.revision
+        || page.offset !== offset || typeof page.text !== 'string') fail('Reviewed context changed','revision_conflict');
+    if (page.binary || page.skip_reason) fail('Complete review context is unavailable');
+    const count=(page.text.match(/[^\n]*\n|[^\n]+$/g) ?? []).length;
+    if (page.next != null && (!Number.isSafeInteger(page.next) || page.next !== offset+count || page.next <= offset)) {
+      fail('Invalid Git context cursor','internal');
+    }
+    await visit(page);
+    if (page.next == null) return;
+    offset=page.next;
   }
 }

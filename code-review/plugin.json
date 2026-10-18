@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -27,7 +27,7 @@
           "zh-CN": "审查代码变更与拉取请求"
         }
       },
-      "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code turn and a writable, tool-capable captured role; omit role for a new child inheriting the current Code turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. For every read_git_change request, pass scope.snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision from the selected scope.files entry. Never substitute scope.snapshot.metadata_revision for a file's metadata revision or omit snapshot/path on later reads. Check argument mappings before treating a failed patch read as a changed worktree; only actual target or file changes require a new review. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
+      "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code turn and a writable, tool-capable captured role; omit role for a new child inheriting the current Code turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. Use read_review_change with review_id, path and part diff/old/new for every captured patch and full changed-file context page. Do not substitute live Git or file reads for captured evidence. Later worktree edits, unrelated paths, HEAD or index changes do not invalidate a published review. A new scope captures the new state; older metadata-only reviews remain readable but cannot fabricate missing content. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. Creating scopes, recording findings and submitting receipts write private review records and require Code mode. read_review_change is read-only and remains available for evidence gathering in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
       "storage": {
         "collections": [
           {
@@ -48,7 +48,9 @@
                     "head",
                     "scope",
                     "finding",
-                    "receipt"
+                    "receipt",
+                    "capture",
+                    "content"
                   ]
                 }
               }
@@ -71,18 +73,24 @@
           "dev.sailry.platform/host/findings.js",
           "dev.sailry.platform/host/complete.js",
           "dev.sailry.platform/host/locales.js",
-          "dev.sailry.platform/host/delegation.js"
+          "dev.sailry.platform/host/delegation.js",
+          "dev.sailry.platform/host/capture.js",
+          "dev.sailry.platform/host/content.js"
         ],
         "handlers": [
           "scope",
           "finding",
           "complete",
           "initialize",
-          "delegate"
+          "delegate",
+          "read"
         ],
         "turn": {
           "initialize": "initialize"
-        }
+        },
+        "read_only": [
+          "read"
+        ]
       },
       "tools": [
         {
@@ -91,14 +99,9 @@
             "workspace"
           ],
           "presentation": "details",
-          "description": "Create an immutable review of the current worktree or an explicit commit/range. Metadata inventory is exhausted and credential, dependency, generated, lock and build paths are skipped before patch reads. Eligible files receive strong revisions, rule paths/SHA-256 and groups. Read each file with read_git_change using the returned snapshot, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision; snapshot.metadata_revision identifies the inventory, not an individual file. Omit target for worktree all. limit bounds only the returned page, including the first creation response; the entire eligible scope is always frozen. To page an existing review pass review_id with offset/limit; follow next until null. Pages combine files, groups, skipped paths and findings in that order; a page is partial evidence. Scope limits are explicit errors, never sampled completion.",
+          "description": "Capture every eligible mapped diff and full old/new changed-file context before publishing an immutable review. Inventory and strong revisions are checked throughout capture and again before publication. Later repository changes do not invalidate published content. Read it with read_review_change, never live Git or readFile. Binary or unsupported files have explicit skips. Omit target for worktree all; use review_id with offset/limit to page an existing review. Follow next until null; limit bounds the response, never samples the captured scope. Incomplete capture fails without publishing; a fresh invocation in the same session can capture again.",
           "handler": {
             "name": "scope",
-            "flow": {
-              "operations": [
-                "storage.transaction"
-              ]
-            },
             "parameters": {
               "type": "object",
               "properties": {
@@ -220,12 +223,65 @@
           }
         },
         {
+          "name": "read_review_change",
+          "contexts": [
+            "workspace"
+          ],
+          "presentation": "details",
+          "description": "Read immutable captured review content using review_id and scoped path. part diff returns mapped changed/context lines; old or new returns the complete captured source side, preserving CR/LF and a missing final newline. Offset and next count mapped rows for diff or source lines for old/new. Follow next until null. No live Git or file read occurs. Metadata-only older reviews cannot provide missing bytes; create a new scope without discarding the old review.",
+          "handler": {
+            "name": "read",
+            "read_only": true,
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "review_id",
+                "path"
+              ],
+              "properties": {
+                "review_id": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "part": {
+                  "enum": [
+                    "diff",
+                    "old",
+                    "new"
+                  ],
+                  "default": "diff"
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Read review change",
+            "locales": {
+              "zh-CN": "读取审查变更"
+            },
+            "icon": "reicon:it/code"
+          }
+        },
+        {
           "name": "report_finding",
           "contexts": [
             "workspace"
           ],
           "presentation": "details",
-          "description": "Record one demonstrated P0-P3 finding in an open review. Pass the scoped path and strong revision, side new for added lines or old for deleted lines, and a complete source-line snippet with LF separators (one trailing LF allowed). The snippet must uniquely match mapped diff lines on that side and contain a changed line; context-only or ambiguous snippets fail. A unique match corrects a mistaken line number. State the trigger and consequence in explanation and concrete supporting evidence; confidence or agreement is not evidence. A stale revision requires a new review.",
+          "description": "Record one demonstrated P0-P3 finding in an open review. Pass the scoped path and strong revision, side new for added lines or old for deleted lines, and a complete source-line snippet with LF separators (one trailing LF allowed). The snippet must uniquely match mapped diff lines on that side and contain a changed line; context-only or ambiguous snippets fail. A unique match corrects a mistaken line number. State the trigger and consequence in explanation and concrete supporting evidence; confidence or agreement is not evidence. Use the captured revision, not the current worktree revision. Snippets are matched only against stored mapped diff content.",
           "handler": {
             "name": "finding",
             "flow": {
@@ -312,7 +368,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it rechecks frozen inventory and every eligible strong revision. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
+          "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it validates the complete stored snapshot, never the changing worktree. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
           "handler": {
             "name": "complete",
             "flow": {

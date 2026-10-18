@@ -1,5 +1,5 @@
 import {callId} from 'sailry/sdk';
-import {change, inventory} from './git.js';
+import {verify} from './content.js';
 import {fail, fields, identifier, limits, path, revision, size} from './policy.js';
 import {head, key, manifest, open, shards, transaction, write} from './records.js';
 import {completion} from './locales.js';
@@ -68,11 +68,9 @@ export async function prepare(input, actor) {
   if (args.finalize && (pending.counts.files || pending.counts.groups)) {
     fail('Review coverage is incomplete','invalid_request',pending);
   }
-  if (args.finalize) await inventory(actor.worktree,null,current.value.snapshot);
   for (const file of scope.files) {
     if (!args.finalize && !incoming.files.has(file.path)) continue;
-    const latest = await change(actor.worktree,current.value.snapshot,file);
-    if (latest.binary || latest.skip_reason) fail('Reviewed file changed','revision_conflict');
+    await verify(current.value,file);
   }
   const operations = [];
   current.value.reviewed_groups = scope.groups.map(group => group.id).filter(id => covered.has(id));

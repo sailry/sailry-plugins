@@ -21,21 +21,11 @@ Read repository instructions applicable to the eligible paths. Read `rules/index
 
 ## Review every group
 
-Read each eligible patch with the Git plugin's `read_git_change` tool. For each `file` in `scope.files`, use this mapping:
+Read every captured diff page with `read_review_change({review_id:scope.review_id,path:file.path,part:"diff",offset:0})`. Follow the exact `next` until null. Use `part:"old"` or `part:"new"` for the complete captured changed-file context on that side; these pages preserve original CR/LF and a missing final newline. Never use live Git or `readFile` to verify captured changed-file content. The snapshot covers the selected diffs and their source context, not the entire repository.
 
-```javascript
-read_git_change({
-  snapshot: scope.snapshot,
-  path: file.path,
-  expected_metadata_revision: file.metadata_revision,
-  expected_revision: file.revision,
-  offset: 0
-})
-```
+Capture checks inventory and strong revisions before publication. If it fails or is interrupted, the review remains unpublished; invoke `review_scope` afresh in the same session. Published content remains authoritative after selected or unrelated files, HEAD or index change. To review the later state, create a separate scope. Older metadata-only scopes and receipts remain intact, but missing content is unavailable and must not be replaced with a fresh live read.
 
-`scope.snapshot.metadata_revision` identifies the whole inventory, not the selected file. Never use it as `expected_metadata_revision`. Every request, including a retry or continuation, includes the unchanged `scope.snapshot` and `file.path`. Follow every diff page using its `next` offset and the same file revisions. If a patch read fails, check these argument mappings first; missing or incorrectly mapped arguments do not establish a worktree change. Correct the arguments without replacing the captured scope. Actual target or file changes require a fresh review.
-
-Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read relevant surrounding source, callers and existing tests with available read-only tools when a finding needs them; keep those reads within the task and current permissions.
+Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read saved old/new context for changed files. Relevant unchanged callers or tests outside the capture may be read within current permissions, but label these as live evidence rather than part of the immutable snapshot.
 
 Groups always keep source/test or source/header counterparts and locale variants together, and add directory peers only while a group stays within ten files. When delegating, call `delegate_review({review_id,groups:[id],record_receipt:true,role})` for complete disjoint groups. Omit `role` for a new child inheriting this authorized Code turn and model; use a named role only when its captured mode and tools fit the assignment. The package reads the authoritative frozen scope and supplies the unchanged snapshot, each file's metadata and strong revision, and selected rules. Do not compose these captures manually or reuse an old child. The creator alone delegates; a complete group that exceeds the task budget requires a smaller authorized review target, not partial coverage.
 
@@ -56,9 +46,9 @@ Before calling `report_finding`, search the diff and surrounding code for anythi
 
 Call `report_finding` for each established issue with `review_id`, exact scoped `path` and `revision`, severity `P0`–`P3`, concise title, trigger/consequence explanation and concrete supporting evidence. Include `side:"new"` for added lines or `side:"old"` for deleted lines, a one-based suggested `line`, and a snippet of complete source lines joined by LF (one final LF is allowed). Preserve source whitespace. The snippet must uniquely match the mapped diff on that side and contain a changed line. Context-only, absent or ambiguous snippets fail; a unique match corrects a mistaken suggested line. Use the returned canonical line when citing the finding.
 
-Submit `review_complete` with explicit `reviewed_files:[{path,revision}]`, `reviewed_groups:[id]` and `finalize:false` after fully reviewing complete groups, even if they yielded zero findings. If context compaction, turn or budget limits, or read failures kept you from reading every diff page of every file in a group, do not submit that group; report it as uncovered. Unknown, duplicate, stale or partial group receipts fail. Already accepted groups must not be resubmitted. Failures include bounded remaining coverage; use scope pages for the full inventory. A failed transaction cannot continue writing; after `revision_conflict`, invoke the tool afresh and reread scope before deciding whether to retry. Actual target or file changes require a fresh review, rather than reusing stale receipts.
+Submit `review_complete` with explicit `reviewed_files:[{path,revision}]`, `reviewed_groups:[id]` and `finalize:false` after fully reviewing complete groups, even if they yielded zero findings. If context compaction, turn or budget limits, or read failures kept you from reading every diff page of every file in a group, do not submit that group; report it as uncovered. Unknown, duplicate, stale or partial group receipts fail. Already accepted groups must not be resubmitted. Failures include bounded remaining coverage; use scope pages for the full inventory. A failed transaction cannot continue writing; after `revision_conflict`, invoke the tool afresh and reread scope before deciding whether to retry. Later repository changes do not invalidate stored evidence or accepted receipts.
 
-The creator uses `finalize:true` only after stored and incoming receipts cover every eligible file and group. If children already submitted all coverage, pass empty receipt arrays. Finalization rechecks the entire frozen metadata inventory and every eligible strong file revision. Skipped credential paths are checked only as metadata. Success proves explicit recorded coverage and revision checks, not that tests ran or that the project is correct or safe.
+The creator uses `finalize:true` only after stored and incoming receipts cover every eligible file and group. If children already submitted all coverage, pass empty receipt arrays. Finalization validates the complete stored diff and context. It does not reread the worktree. Skipped credential paths contain metadata only. Success proves explicit recorded coverage and captured-content validation, not that tests ran or that the project is correct or safe.
 
 ## Deliver findings
 

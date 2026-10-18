@@ -44,15 +44,15 @@ test('generated metadata preserves rule order and original hashes', async () => 
   }
 });
 
-test('mutating tools declare atomic storage flows', async () => {
+test('tools declare captured storage ownership', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.6');
+  assert.equal(manifest.version,'0.1.7');
   assert.equal(extension.api_version,'v1');
-  assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','report_finding','review_complete','delegate_review']);
+  assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','read_review_change','report_finding','review_complete','delegate_review']);
   assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');
   assert.equal(extension.tools.find(tool=>tool.name==='report_finding').presentation,'details');
-  for (const tool of extension.tools.filter(tool => tool.name !== 'delegate_review')) {
+  for (const tool of extension.tools.filter(tool => ['report_finding','review_complete'].includes(tool.name))) {
     assert.notEqual(tool.handler.read_only,true);
     assert.deepEqual(tool.handler.flow.operations,['storage.transaction']);
   }
@@ -60,34 +60,21 @@ test('mutating tools declare atomic storage flows', async () => {
   assert.ok(extension.actions.includes('agents.delegate'));
   assert.equal(extension.tools.find(tool => tool.name === 'delegate_review').handler.operation,'agents.delegate');
   assert.deepEqual(extension.host.turn,{initialize:'initialize'});
-  assert.ok(extension.instructions.includes('unavailable in Plan mode'));
-  const git = JSON.parse(await readFile(new URL('../../git/plugin.json',import.meta.url),'utf8'));
-  const native = git.extensions['dev.sailry.platform'].tools
-    .find(tool => tool.handler?.operation === 'git.change');
-  assert.equal(native.name,'read_git_change');
-  const skill = await readFile(new URL('SKILL.md',new URL('../skills/code-review/',import.meta.url)),'utf8');
-  assert.ok(skill.includes('`read_git_change`'));
-  assert.ok(!skill.includes('`git_change`'));
+  const scope = extension.tools.find(tool=>tool.name==='review_scope');
+  assert.equal(scope.handler.flow,undefined);
+  assert.notEqual(scope.handler.read_only,true);
+  assert.equal(extension.tools.find(tool=>tool.name==='read_review_change').handler.read_only,true);
+  assert.ok(extension.storage.collections[0].schema.properties.kind.enum.includes('content'));
+
 });
 
-test('skill maps each file to patch arguments', async () => {
+test('skill reads stored patches and source context', async () => {
   const text = await readFile(new URL('SKILL.md',skill),'utf8');
-  assert.match(text,/snapshot: scope\.snapshot/);
-  assert.match(text,/path: file\.path/);
-  assert.match(text,/expected_metadata_revision: file\.metadata_revision/);
-  assert.match(text,/expected_revision: file\.revision/);
-  assert.match(text,/Never use it as `expected_metadata_revision`/);
-  assert.match(text,/Every request, including a retry or continuation/);
-  assert.match(text,/Correct the arguments without replacing the captured scope/);
-  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  const extension = manifest.extensions['dev.sailry.platform'];
-  assert.match(extension.instructions,/file\.metadata_revision as expected_metadata_revision/);
-  assert.match(extension.instructions,/omit snapshot\/path on later reads/);
-  assert.match(extension.tools.find(tool => tool.name === 'review_scope').description,
-    /snapshot\.metadata_revision identifies the inventory, not an individual file/);
-  assert.match(text,/the unchanged snapshot/);
-  assert.match(text,/each file's metadata and strong revision/);
+  assert.match(text,/read_review_change/);
+  assert.match(text,/part:\"old\"/);
+  assert.match(text,/part:\"new\"/);
+  assert.match(text,/Never use live Git/);
+  assert.match(text,/Older metadata-only scopes and receipts remain intact/);
   assert.match(text,/`record_receipt:true` rejects Plan turns, read-only roles/);
   assert.match(text,/parent must independently verify every assigned file/);
-  assert.match(extension.instructions,/Do not ask a read-only child to submit private review records/);
 });

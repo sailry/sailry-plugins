@@ -12,14 +12,21 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   const worktree = uuid(2);
   const captured = {session:uuid(1),worktree,turn:uuid(3),package:{name:'code-review',digest:'digest-a',settings_revision:'0'}};
   const sessions = new Map([[captured.session,{id:captured.session,worktree:captured.worktree}]]);
-  const values = new Map(), calls = [], requests = new Map();
+  const values = options.values ?? new Map(), calls = [], requests = new Map();
+  const turns=new Map([[captured.turn,'running']]);
   let sequence = 10, currentCall = uuid(sequence), metadata = 'inventory:1', turnState = null;
   let data = files.map(plain), head = 'a'.repeat(40);
   const committed = new Map();
   const scoped = snapshot => snapshot.target.kind === 'worktree' ? data : committed.get(JSON.stringify(snapshot.target));
   function fail(message, code = 'invalid_request') { return {Err:{code,message}}; }
   function native(command) {
+    const intercepted=options.command?.(command,{commit,values,data,captured});
+    if (intercepted) return intercepted;
     const args = command.data;
+    if (command.kind === 'plugin_transaction') {
+      const outcome=commit(args.operations);
+      return outcome.isError ? {Err:outcome.error} : {Ok:outcome};
+    }
     if (command.kind === 'list_git_changes') {
       let snapshot = args.cursor?.snapshot;
       if (!snapshot) {
@@ -41,7 +48,7 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
       return {Ok:{kind:'git_changes',data:{snapshot,entries,next:exhausted ? null : {snapshot,after_path:entries.at(-1).path},
         exhausted:options.incomplete ? false : exhausted,omitted_paths:options.incomplete ? 1 : 0}}};
     }
-    if (command.kind !== 'read_git_change') throw new Error('Unexpected or mutating SDK command');
+    if (!['read_git_change','read_git_context'].includes(command.kind)) throw new Error('Unexpected SDK command');
     if (args.snapshot.target.kind === 'worktree' && args.snapshot.metadata_revision !== metadata) return fail('Inventory changed','revision_conflict');
     const source = scoped(args.snapshot).find(file => file.path === args.path);
     if (!source) return fail('File absent','not_found');
@@ -49,6 +56,17 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
       return fail('File changed','revision_conflict');
     }
     const skipped = source.binary || source.skip_reason;
+    if (command.kind === 'read_git_context') {
+      const text=source[`${args.side}_text`] ?? source.lines
+        .filter(line => line[args.side === 'new' ? 'new_line' : 'old_line'] != null)
+        .map(line => line.text+'\n').join('');
+      const rows=text.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+      const page=rows.slice(args.offset,args.offset+args.limit);
+      return {Ok:{kind:'git_context',data:{snapshot:args.snapshot,path:source.path,old_path:source.old_path ?? null,
+        metadata_revision:source.metadata_revision,revision:source.revision,side:args.side,offset:args.offset,
+        next:args.offset+page.length === rows.length ? null : args.offset+page.length,
+        text:skipped ? '' : page.join(''),binary:source.binary ?? false,skip_reason:source.skip_reason ?? null}}};
+    }
     const lines = skipped ? [] : source.lines.slice(args.offset,args.offset+args.limit);
     const next = skipped || args.offset+lines.length === source.lines.length ? null : args.offset+lines.length;
     return {Ok:{kind:'git_change',data:{snapshot:args.snapshot,path:source.path,old_path:source.old_path ?? null,
@@ -58,10 +76,17 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   const sdk = {
     context:() => plain(captured), callId:() => currentCall,
     readSession:async () => plain(sessions.get(captured.session)),
+    readTurn:async turn => ({run:{turn,session:captured.session,worktree:captured.worktree,status:turns.get(turn) ?? 'completed'}}),
+    listKeys:async (prefix,after,limit) => {
+      const all=[...values.values()].filter(row => row.present && row.key.startsWith(prefix) && (after === null || row.key > after)).map(row => row.key).sort();
+      const keys=all.slice(0,limit);
+      return {keys,after:all.length > keys.length ? keys.at(-1) : null};
+    },
     readTurnState:() => plain(turnState),
     stageTurnState:value => { turnState = plain(value); },
     getValue:async key => plain(values.get(key) ?? {key,revision:'0',value:null,present:false}),
     prepareRequest:command => { calls.push(plain(command)); const id = `request-${requests.size}`; requests.set(id,plain(command)); return id; },
+    prepareTransaction:operations => sdk.prepareRequest({kind:'plugin_transaction',data:{operations}}),
     completeRequest:async id => plain(native(requests.get(id))),
     forgetRequest:id => requests.delete(id),
   };
@@ -81,7 +106,8 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   await entry.evaluate();
   async function start(name,args) {
     currentCall = uuid(++sequence);
-    const response = await entry.namespace[name]({arguments:plain(args),step:0,state:null,outcome:null});
+    const response = name === 'scope' ? {result:await entry.namespace.scope(plain(args))}
+      : await entry.namespace[name]({arguments:plain(args),step:0,state:null,outcome:null});
     return {name,args:plain(args),response:plain(response)};
   }
   function commit(operations) {
@@ -91,9 +117,10 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
     }
     const output = [];
     for (const operation of operations) {
-      if (operation.kind !== 'write') throw new Error('Unexpected transaction operation');
+      if (!['write','remove'].includes(operation.kind)) throw new Error('Unexpected transaction operation');
       const {key,value,expected_revision} = operation.data;
-      const stored = {key,value:plain(value),revision:(BigInt(expected_revision)+1n).toString(),present:true};
+      const stored = {key,value:operation.kind === 'write' ? plain(value) : null,
+        revision:(BigInt(expected_revision)+1n).toString(),present:operation.kind === 'write'};
       values.set(key,stored);
       output.push({kind:'plugin_value',data:plain(stored)});
     }
@@ -108,6 +135,9 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   return {values,calls,captured,sessions,start,finish,commit,
     initialize:input => plain(entry.namespace.initialize(plain(input))),
     delegate:async input => plain(await entry.namespace.delegate(plain(input))),
+    read:async input => plain(await entry.namespace.read(plain(input))),
+    terminal:turn => turns.set(turn,'completed'),
+    add:value => data.push(plain(value)),
     invoke:async (name,args) => finish(await start(name,args)),
     actor(id,parent = null,scope = worktree) {
       captured.session = id;

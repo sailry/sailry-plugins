@@ -28,15 +28,15 @@ runtimeTest('production SDK denies formal delegation in Plan', async () => {
 });
 
 
-runtimeTest('production SDK resumes an older package review', async () => {
-  const input = await packageInput(directory,'delegate',{}, {policy: {...policy,
+async function stored(handler) {
+  const input = await packageInput(directory,handler,{}, {policy: {...policy,
     turn: {mode:'code',roles:[],recording:true}}});
   input.context.surface = 'workspace';
   const session = input.context.session, worktree = input.context.worktree;
   const review = '00000000-0000-4000-8000-000000000004';
   const snapshot = {target:{kind:'worktree',data:{scope:'all',head:'a'.repeat(40),index_revision:'index:1'}},
     metadata_revision:'b'.repeat(64)};
-  const file = {path:'src/main.rs',old_path:null,kind:'modified',group:'group-1',
+  const file = {content:{diff:{start:0,count:1},old:{start:1,count:1},new:{start:2,count:1}},path:'src/main.rs',old_path:null,kind:'modified',group:'group-1',
     metadata_revision:'c'.repeat(64),revision:'d'.repeat(64),
     rule:{path:'rules/default.md',sha256:'e'.repeat(64)}};
   const group = {id:'group-1',files:[file.path]};
@@ -50,6 +50,12 @@ runtimeTest('production SDK resumes an older package review', async () => {
       mode:'code',permission:'ask',credential:null},roles:{profiles:[],providers:[]}};
   const entry = (key,value) => ({key,revision:1,present:true,value});
   const read = (command,kind,data) => ({command,response:{Ok:{kind,data}}});
+  return {input,review,snapshot,file,group,head,sessionData,entry,read};
+}
+
+runtimeTest('production SDK resumes a captured package review', async () => {
+  const {input,review,snapshot,file,group,head,sessionData,entry,read}=await stored('delegate');
+  const {session}=input.context;
   input.input = {review_id:review,groups:[group.id],record_receipt:true};
   input.replies = [
     read({kind:'read_session',data:{session}},'session',sessionData),
@@ -68,4 +74,25 @@ runtimeTest('production SDK resumes an older package review', async () => {
   assert.equal(output.calls.length,3);
   for (const call of output.calls) assert.deepEqual(call.plugin,input.context);
   assert.notEqual(input.context.package.digest,head.package.digest);
+});
+
+runtimeTest('production SDK reads captured source without Git',async()=>{
+  const {input,review,file,group,head,sessionData,entry,read}=await stored('read');
+  const {session}=input.context;
+  input.input={review_id:review,path:file.path,part:'new'};
+  input.policy.read_only=true;
+  input.replies=[
+    read({kind:'read_session',data:{session}},'session',sessionData),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/head`}},'plugin_value',entry(`review/${review}/head`,head)),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/scope/0`}},'plugin_value',entry(`review/${review}/scope/0`,
+      {v:1,kind:'scope',capture:review,rows:[{kind:'file',value:file},{kind:'group',value:group}]})),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/data/2`}},'plugin_value',entry(`review/${review}/data/2`,
+      {v:1,kind:'content',capture:review,path:file.path,part:'new',revision:file.revision,
+        offset:0,next:null,text:'captured();\r\nlast_without_newline'})),
+  ];
+  const output=execute(input);
+  assert.equal(output.result.Ok.text,'captured();\r\nlast_without_newline');
+  assert.equal(output.result.Ok.next,null);
+  assert.equal(output.result.Ok.revision,file.revision);
+  assert.deepEqual(output.calls.map(call=>call.command.kind),['read_session','read_plugin_value','read_plugin_value','read_plugin_value']);
 });

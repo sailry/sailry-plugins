@@ -13,7 +13,7 @@ test('initial page limit preserves complete frozen coverage', async () => {
   assert.equal(scope.counts.files,3);
   assert.equal(scope.files.length,1);
   assert.equal(scope.next,1);
-  assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,3);
+  assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,6);
   assert.equal((await fixtureData.invoke('complete',receipt(scope))).isError,true);
   const complete = {...scope,files:[...scope.files],groups:[],skipped:[],findings:[]};
   let next = scope.next;
@@ -33,7 +33,7 @@ test('creation rejects invalid pagination before reading resources', async () =>
     const fixtureData = await fixture();
     const result = await fixtureData.invoke('scope',input);
     assert.equal(result.isError,true);
-    assert.equal(fixtureData.values.size,0);
+    assert.equal([...fixtureData.values.values()].filter(value => value.present).length,0);
     assert.equal(fixtureData.calls.length,0);
   }
 });
@@ -46,9 +46,10 @@ test('inventory finishes before eligible reads', async () => {
   assert.equal(scope.counts.files,15);
   assert.equal(scope.counts.skipped,skipped.length+550);
   assert.deepEqual(scope.groups.map(group => group.files.length),[10,5]);
-  const first = fixtureData.calls.findIndex(call => call.kind === 'read_git_change');
+  const gitCalls=fixtureData.calls.filter(call => call.kind !== 'plugin_transaction');
+  const first = gitCalls.findIndex(call => call.kind === 'read_git_change');
   assert.equal(first,3);
-  assert.ok(fixtureData.calls.slice(0,first).every(call => call.kind === 'list_git_changes'));
+  assert.ok(gitCalls.slice(0,first).every(call => call.kind === 'list_git_changes'));
   const reads = fixtureData.calls.filter(call => call.kind === 'read_git_change').map(call => call.data.path);
   assert.deepEqual(new Set(reads),new Set(source.map(file => file.path)));
   const visible = [...scope.skipped];
@@ -123,7 +124,7 @@ test('incomplete inventory never persists', async () => {
   const fixtureData = await fixture([file('src/main.rs')],{incomplete:true});
   const result = await fixtureData.invoke('scope',{});
   assert.equal(result.isError,true);
-  assert.equal(fixtureData.values.size,0);
+  assert.equal([...fixtureData.values.values()].filter(value => value.present).length,0);
   assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,0);
 });
 
@@ -144,14 +145,18 @@ test('large scopes retain all files across bounded output pages', async () => {
   assert.equal((await current.invoke('complete',receipt(scope))).status,'complete');
 });
 
-test('creation failure preserves original flow outcome', async () => {
-  const fixtureData = await fixture();
-  const pending = await fixtureData.start('scope',{});
-  const error = {isError:true,error:{code:'permission_denied',message:'Declined'}};
-  assert.deepEqual(await fixtureData.finish(pending,error),error);
-  assert.equal(fixtureData.values.size,0);
+test('creation failures never publish a scope', async () => {
+  let declined=false;
+  const fixtureData = await fixture(undefined,{command(command) {
+    if (command.kind === 'plugin_transaction' && !declined) {
+      declined=true;
+      return {Err:{code:'permission_denied',message:'Declined'}};
+    }
+  }});
+  const error = await fixtureData.invoke('scope',{});
+  assert.equal(error.error.code,'permission_denied');
+  assert.equal([...fixtureData.values.values()].filter(value => value.present).length,0);
 });
-
 
 test('source test conventions retain project ownership', async () => {
   const fixtureData = await fixture(['java/src/main/java/example/Service.java',
@@ -168,7 +173,7 @@ test('oversized Unicode groups never persist', async () => {
   const fixtureData = await fixture(source);
   const scope = await fixtureData.invoke('scope',{});
   assert.equal(scope.isError,true);
-  assert.equal(fixtureData.values.size,0);
+  assert.equal([...fixtureData.values.values()].filter(value => value.present).length,0);
 });
 
 

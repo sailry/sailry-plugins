@@ -30,11 +30,12 @@ test('absent ambiguous and context-only anchors fail', async () => {
   const duplicate = [...lines,{kind:'added',old_line:null,new_line:10,text:'return changed();'}];
   const fixtureData = await fixture([file('src/main.js',{lines:duplicate})]);
   const scope = await fixtureData.invoke('scope',{});
+  const before=fixtureData.values.size;
   for (const snippet of ['missing();','return changed();','if (ready) {']) {
     const result = await fixtureData.invoke('finding',finding(scope,{snippet}));
     assert.equal(result.isError,true);
   }
-  assert.equal(fixtureData.values.size,2);
+  assert.equal(fixtureData.values.size,before);
 });
 
 test('scoped files revisions and evidence are mandatory', async () => {
@@ -46,7 +47,7 @@ test('scoped files revisions and evidence are mandatory', async () => {
   }
   fixtureData.change(scope.files[0].path,{revision:'updated'});
   const result = await fixtureData.invoke('finding',finding(scope));
-  assert.equal(result.error.code,'revision_conflict');
+  assert.equal(result.finding.revision,scope.files[0].revision);
 });
 
 test('anchoring exhausts mapped pages under one strong revision', async () => {
@@ -55,7 +56,7 @@ test('anchoring exhausts mapped pages under one strong revision', async () => {
   const scope = await fixtureData.invoke('scope',{});
   const result = await fixtureData.invoke('finding',finding(scope,{snippet:'changed_1099();',line:1}));
   assert.equal(result.finding.line,1100);
-  const pages = fixtureData.calls.filter(call => call.kind === 'read_git_change').slice(1);
-  assert.deepEqual(pages.map(page => page.data.offset),[0,500,1000]);
-  assert.ok(pages.every(page => page.data.expected_revision === scope.files[0].revision));
+  const pages = fixtureData.calls.filter(call => call.kind === 'read_git_change');
+  assert.deepEqual(pages.map(page => page.data.offset),[0,500,1000,0]);
+  assert.ok(pages.slice(1).every(page => page.data.expected_revision === scope.files[0].revision));
 });

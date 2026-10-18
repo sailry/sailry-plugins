@@ -1,6 +1,7 @@
 import {readTurnState, stageTurnState} from 'sailry/sdk';
 import {clone, fail, fields, identifier, limits, revision, size, text} from './policy.js';
 import {head, identity, manifest, open} from './records.js';
+import {available} from './content.js';
 
 const receiptTools = ['review_scope', 'report_finding', 'review_complete'];
 const inputs = ['review_id', 'groups', 'record_receipt', 'role', 'title', 'background'];
@@ -58,6 +59,7 @@ function capture(value, scope, selected, recording) {
   if (!value.snapshot?.target) fail('Frozen snapshot metadata is incomplete', 'internal');
   revision(value.snapshot.metadata_revision);
   for (const file of files) {
+    available(file);
     revision(file.metadata_revision);
     revision(file.revision);
     if (!file.rule?.path || !file.rule.sha256) fail('Frozen review rules are incomplete', 'internal');
@@ -73,8 +75,8 @@ function task(value) {
   const instructions = [
     'Review only the complete groups in this frozen capture. A review does not authorize edits, commits or publication.',
     'Load code-review:code-review. Load each file.rule.path with read_skill_resource and use its supplied rule SHA-256.',
-    'For read_git_change pass snapshot unchanged, file.path, file.metadata_revision as expected_metadata_revision and file.revision as expected_revision. Follow every next page without changing these fields.',
-    'Do not replace a snapshot, omit revisions or substitute snapshot.metadata_revision for a file metadata revision. Stop and report an actual revision conflict; missing tools are not permission to widen access.',
+    'Use read_review_change with review_id and each assigned path. Read every diff page and the saved old/new full context as needed, following next until null. These are the captured source bytes; do not verify them against live readFile or Git.',
+    'Later repository edits do not invalidate this capture. Missing captured content is an error, never permission to substitute live source or widen access.',
     purpose,
     'Frozen review capture:',
     JSON.stringify(value),

@@ -4,6 +4,7 @@ import {prepare as scopeRequest} from './scope.js';
 import {prepare as findingRequest} from './findings.js';
 import {prepare as completionRequest, display} from './complete.js';
 import {prepare as delegationRequest} from './delegation.js';
+import {read as content} from './content.js';
 export {initialize} from './delegation.js';
 
 function flow(prepare, present = value => value) {
@@ -15,11 +16,19 @@ function flow(prepare, present = value => value) {
     } catch (error) { return {result:result(error)}; }
   };
 }
-export const scope = flow(scopeRequest);
+export async function scope(input) {
+  try { return await scopeRequest(input,await identity()); }
+  catch (error) { return result(error); }
+}
 export const finding = flow(findingRequest);
 export const complete = flow(completionRequest,display);
 
 export async function delegate(input) {
   try { return await delegationRequest(input); }
+  catch (error) { return result(error); }
+}
+
+export async function read(input) {
+  try { return await content(input); }
   catch (error) { return result(error); }
 }
