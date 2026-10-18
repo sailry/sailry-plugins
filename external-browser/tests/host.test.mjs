@@ -30,13 +30,13 @@ test('all browser tools dispatch through their declared approval group', () => {
 });
 
 test('wait accepts fractional durations and rejects invalid values before execution', () => {
-  for (const seconds of [0, 0.25, 30]) {
+  for (const seconds of [0, 0.25, 30, 31, 60]) {
     assert.deepEqual(host.wait({seconds}), {action:'wait', arguments:{seconds}});
   }
-  for (const seconds of [undefined, null, true, '1', -0.01, 30.01, NaN, Infinity, -Infinity]) {
+  for (const seconds of [undefined, null, true, '1', -0.01, NaN, Infinity, -Infinity]) {
     assert.deepEqual(host.wait({seconds}), {
       isError:true,
-      error:{code:'invalid_request',message:'browser wait must be between 0 and 30 seconds'}
+      error:{code:'invalid_request',message:'browser wait seconds must be finite and non-negative'}
     });
   }
   for (const args of [undefined, null, [], '', 0, false]) {
@@ -49,7 +49,7 @@ test('results retain Node ownership, artifacts, truncation and special output sh
     {execution_node:'node-a',result:{text:'<script>literal content</script>\n页面 🙂'},truncated:false},
     {execution_node:'node-a',result:{artifact:'.generated/browser-image.png'},truncated:true},
     {execution_node:'node-a',closed:true},
-    {execution_node:'node-a',files:[{name:'download.bin',size:10}],limit:128},
+    {execution_node:'node-a',files:[{name:'download.bin',size:10}],truncated:false},
     {execution_node:'node-a',path:'.generated/browser-download.bin'}
   ]) {
     const output = {kind:'external_browser',data};
@@ -62,4 +62,10 @@ test('settings retain the existing navigation without a desktop renderer', () =>
   assert.equal(extension.settings_page.navigation.label, 'External Browser');
   assert.equal(extension.settings_page.entry, undefined);
   assert.equal(extension.desktop, undefined);
+});
+
+test('wait declarations preserve requested durations and cancellation semantics',()=>{
+  const wait=extension.tools.find(tool=>tool.handler.name==='wait');
+  assert.equal(wait.handler.parameters.properties.seconds.maximum,undefined);
+  assert.match(wait.handler.parameters.properties.seconds.description,/deadline or cancellation/);
 });

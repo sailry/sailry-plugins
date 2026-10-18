@@ -3494,7 +3494,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "external-browser",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3947,7 +3947,7 @@
                     "properties": {
                       "seconds": {
                         "type": "number",
-                        "description": "Number of seconds to wait (max: 30)"
+                        "description": "Number of seconds to wait; execution can be interrupted by the Node deadline or cancellation"
                       }
                     },
                     "required": [

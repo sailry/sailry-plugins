@@ -6,8 +6,8 @@ function prepare(action, args) {
   if (!args || typeof args !== 'object' || Array.isArray(args)) {
     return {isError:true,error:{code:'invalid_request',message:'Browser arguments must be an object'}};
   }
-  if (action === 'wait' && (!Number.isFinite(args.seconds) || args.seconds < 0 || args.seconds > 30)) {
-    return {isError:true,error:{code:'invalid_request',message:'browser wait must be between 0 and 30 seconds'}};
+  if (action === 'wait' && (!Number.isFinite(args.seconds) || args.seconds < 0)) {
+    return {isError:true,error:{code:'invalid_request',message:'browser wait seconds must be finite and non-negative'}};
   }
   // The Node owns URL validation, confined files, driver access and session lifetime.
   return {action, arguments:args};
