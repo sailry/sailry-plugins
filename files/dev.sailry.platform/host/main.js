@@ -28,8 +28,8 @@ export function list(args) {
 export function read(args) {
   if (!object(args,['path','offset','limit']) || typeof args.path !== 'string') return invalid();
   const {offset = 0,limit = 200} = args;
-  if (!Number.isSafeInteger(offset) || offset < 0 ||
-      !Number.isSafeInteger(limit) || limit < 1 || limit > 2000) return invalid();
+  if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
+  if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
   return {path:args.path,offset,limit};
 }
 
@@ -48,7 +48,7 @@ export function edit(args) {
   if (args.edits !== undefined) {
     if (args.old_text !== undefined || args.new_text !== undefined) return invalid('Use either edits or old_text and new_text');
     if (args.replace_all !== undefined && args.replace_all !== false) return invalid('Set replace_all on each edits entry');
-    if (!Array.isArray(args.edits) || args.edits.length < 1 || args.edits.length > 128) return invalid('edits must contain 1 to 128 entries');
+    if (!Array.isArray(args.edits) || args.edits.length < 1) return invalid('edits must be a nonempty array');
     let error;
     args.edits.some((change,index) => {
       const field = `edits[${index}]`;
@@ -91,23 +91,29 @@ export function mkdir(args) {
 
 export function find(args) {
   if (!object(args,['globs','path','limit','offset']) || !Array.isArray(args.globs) || args.globs.length < 1 ||
-      args.globs.length > 64 || args.globs.some(glob => typeof glob !== 'string' || !glob || glob.length > 4096)) return invalid();
+      args.globs.some(glob => typeof glob !== 'string' || !glob)) return invalid();
   const {path = '',limit = 500,offset = 0} = args;
-  if (typeof path !== 'string' || !Number.isSafeInteger(limit) || limit < 1 || limit > 500 ||
-      !Number.isSafeInteger(offset) || offset < 0) return invalid();
+  if (typeof path !== 'string') return invalid('path must be a string');
+  if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
+  if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
   return {globs:args.globs,path:path === '.' ? '' : path,limit,offset};
 }
 
 export function search(args) {
-  if (!object(args,['query','regex','case_sensitive','globs','path','mode','context','type','limit','offset','multiline'])) return invalid();
+  if (!object(args,['query','regex','case_sensitive','globs','path','mode','context','type','limit','offset','multiline'])) {
+    return invalid('Expected search arguments with supported fields');
+  }
   const {query,regex = false,case_sensitive = false,globs = [],path = '',mode = 'content',context = 0,
     type = null,limit = 200,offset = 0,multiline = false} = args;
-  if (typeof query !== 'string' || !query || query.length > 4096 || typeof regex !== 'boolean' ||
-      typeof case_sensitive !== 'boolean' || !Array.isArray(globs) || globs.length > 64 ||
-      globs.some(glob => typeof glob !== 'string' || glob.length > 4096) || typeof path !== 'string' ||
-      !['content','files','count'].includes(mode) || !Number.isSafeInteger(context) || context < 0 || context > 5 ||
-      (type !== null && typeof type !== 'string') || !Number.isSafeInteger(limit) || limit < 1 || limit > 200 ||
-      !Number.isSafeInteger(offset) || offset < 0 || typeof multiline !== 'boolean') return invalid();
+  if (typeof query !== 'string' || !query) return invalid('query must be a nonempty string');
+  if (!Number.isSafeInteger(context) || context < 0) return invalid('context must be a non-negative safe integer');
+  if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
+  if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
+  if (typeof regex !== 'boolean' ||
+      typeof case_sensitive !== 'boolean' || !Array.isArray(globs) ||
+      globs.some(glob => typeof glob !== 'string') || typeof path !== 'string' ||
+      !['content','files','count'].includes(mode) ||
+      (type !== null && typeof type !== 'string') || typeof multiline !== 'boolean') return invalid();
   return {query,regex,case_sensitive,globs,path:path === '.' ? '' : path,mode,context,type,limit,offset,multiline};
 }
 
@@ -122,13 +128,14 @@ export function office(args) {
 export function notebook_read(args) {
   if (!object(args,['path','offset','limit']) || typeof args.path !== 'string') return invalid();
   const {offset = 0,limit = 20} = args;
-  if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100) return invalid();
+  if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
+  if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
   return {path:args.path,offset,limit};
 }
 
 export function notebook_edit(args) {
   if (!object(args,['path','expected_revision','edits']) || typeof args.path !== 'string' ||
-      !current(args.expected_revision) || !Array.isArray(args.edits) || args.edits.length < 1 || args.edits.length > 100) return invalid();
+      !current(args.expected_revision) || !Array.isArray(args.edits) || args.edits.length < 1) return invalid();
   for (const edit of args.edits) {
     const keys = edit?.kind === 'insert' ? ['kind','index','cell_type','source'] :
       edit?.kind === 'replace' ? ['kind','index','source'] : ['kind','index'];

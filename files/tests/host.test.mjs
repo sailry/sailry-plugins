@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
+import {cases} from './parameters.mjs';
 
 const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
@@ -94,8 +95,8 @@ test('search defaults keep original expressions and globs without interpreting t
   const schema = tool('search_files').handler.parameters;
   assert.deepEqual(schema.required,['query']);
   assert.equal(schema.properties.query.minLength,1);
-  assert.equal(schema.properties.globs.maxItems,64);
-  assert.equal(schema.properties.globs.items.maxLength,4096);
+  assert.equal(schema.properties.globs.maxItems,undefined);
+  assert.equal(schema.properties.globs.items.maxLength,undefined);
   assert.deepEqual(plain(host.search({query:' needle\n'})),{
     query:' needle\n',regex:false,case_sensitive:false,globs:[],path:'',mode:'content',context:0,type:null,limit:200,offset:0,multiline:false,
   });
@@ -137,7 +138,7 @@ test('invalid argument shapes fail before requesting an operation', () => {
   }
   const invalid = {
     list:[{path:null},{cursor:[]},{cursor:{revision:'r',directory:'yes',name:'n'}},{cursor:{revision:'r',directory:true}},{cursor:{revision:'r',directory:true,name:'n',worktree:'foreign'}}],
-    read:[{}, {path:4},{path:'a',offset:-1},{path:'a',limit:0},{path:'a',limit:2001},{path:'a',offset:1.5}],
+    read:[{}, {path:4},{path:'a',offset:-1},{path:'a',limit:0},{path:'a',limit:Number.MAX_SAFE_INTEGER+1},{path:'a',offset:1.5}],
     edit:[{}, {path:'a',old_text:'',new_text:'y',expected_revision:'a'.repeat(64)},{path:'a',old_text:'x',new_text:'y',expected_revision:null}],
     remove:[{}, {path:'a',expected_revision:null},{path:'a',expected_revision:'old'}],
     move:[{}, {path:'a',expected_revision:'a'.repeat(64)},{path:'a',destination:1,expected_revision:'a'.repeat(64)}],
@@ -197,7 +198,7 @@ test('line pages retain offsets and exact edit fragments', () => {
   assert.deepEqual(plain(host.find({globs:['**/*.rs','src/**/mod.rs']})),{globs:['**/*.rs','src/**/mod.rs'],path:'',limit:500,offset:0});
   assert.equal(tool('find_files').handler.operation,'files.find');
   assert.equal(tool('read_file').handler.parameters.properties.offset.minimum,0);
-  assert.equal(tool('read_file').handler.parameters.properties.limit.maximum,2000);
+  assert.equal(tool('read_file').handler.parameters.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
   assert.deepEqual(tool('read_file').display.output.notices[0].when.any,[
     {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
     {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
@@ -218,7 +219,7 @@ test('batch edits preserve atomic arguments and enforce exclusive forms', () => 
   });
   for (const shape of [
     {edits,old_text:'first',new_text:'changed'}, {edits,old_text:'first'}, {edits,new_text:'changed'},
-    {edits,replace_all:true}, {edits:[]}, {edits:null}, {edits:Array(129).fill(edits[0])},
+    {edits,replace_all:true}, {edits:[]}, {edits:null},
     {edits:[{old_text:'',new_text:'changed'}]}, {edits:[{old_text:'first',new_text:'changed',replace_all:1}]},
     {edits:[{old_text:'first',new_text:'changed',path:'other.txt'}]},
   ]) {
@@ -226,7 +227,7 @@ test('batch edits preserve atomic arguments and enforce exclusive forms', () => 
     assert.equal(result.error.code,'invalid_request',JSON.stringify(shape));
   }
   const schema = tool('edit_file').handler.parameters;
-  assert.equal(schema.properties.edits.maxItems,128);
+  assert.equal(schema.properties.edits.maxItems,undefined);
   assert.equal(schema.properties.edits.items.additionalProperties,false);
   assert.deepEqual(schema.properties.edits.items.required,['old_text','new_text']);
   assert.equal(schema.oneOf.length,2);
@@ -252,9 +253,8 @@ test('edit diagnostics identify fields without echoing content', () => {
     [{...valid,replace_all:privateValue},'replace_all must be a boolean'],
     [{...valid,edits:[change]},'Use either edits or old_text and new_text'],
     [{...batch,edits:[change],replace_all:true},'Set replace_all on each edits entry'],
-    [{...batch,edits:null},'edits must contain 1 to 128 entries'],
-    [{...batch,edits:[]},'edits must contain 1 to 128 entries'],
-    [{...batch,edits:Array(129).fill(change)},'edits must contain 1 to 128 entries'],
+    [{...batch,edits:null},'edits must be a nonempty array'],
+    [{...batch,edits:[]},'edits must be a nonempty array'],
     [{...batch,edits:[change,{...change,[privateValue]:privateValue}]},'edits[1] must contain supported edit fields'],
     [{...batch,edits:[change,{...change,old_text:''}]},'edits[1].old_text must be a nonempty string'],
     [{...batch,edits:[change,{...change,new_text:42}]},'edits[1].new_text must be a string'],
@@ -294,20 +294,35 @@ test('scoped search modes and discovery pages preserve arguments', () => {
   });
   const schema = tool('search_files').handler.parameters;
   assert.deepEqual(schema.properties.mode.enum,['content','files','count']);
-  assert.equal(schema.properties.context.maximum,5);
-  assert.equal(schema.properties.limit.maximum,200);
-  assert.equal(tool('find_files').handler.parameters.properties.limit.maximum,500);
+  assert.equal(schema.properties.context.maximum,Number.MAX_SAFE_INTEGER);
+  assert.equal(schema.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
+  assert.equal(tool('find_files').handler.parameters.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
   assert.match(tool('search_files').description,/ripgrep/);
   assert.match(tool('search_files').description,/Partial|Incomplete/);
   for (const args of [
-    {query:'x',mode:'all'}, {query:'x',context:6}, {query:'x',context:-1}, {query:'x',context:1.5},
-    {query:'x',limit:201}, {query:'x',limit:0}, {query:'x',offset:-1}, {query:'x',offset:1.5},
+    {query:'x',mode:'all'}, {query:'x',context:-1}, {query:'x',context:1.5},
+    {query:'x',limit:0}, {query:'x',offset:-1}, {query:'x',offset:1.5},
     {query:'x',multiline:'yes'}, {query:'x',type:1}, {query:'x',path:null}, {query:''},
   ]) assert.equal(host.search(args).error.code,'invalid_request');
   for (const args of [
-    {globs:['*'],path:null}, {globs:['*'],limit:0}, {globs:['*'],limit:501},
+    {globs:['*'],path:null}, {globs:['*'],limit:0},
     {globs:['*'],offset:-1}, {globs:['*'],offset:0.5},
   ]) assert.equal(host.find(args).error.code,'invalid_request');
+});
+
+test('search context and page requests retain caller intent', () => {
+  for (const entry of cases()) {
+    const args = structuredClone(entry.input), original = structuredClone(args);
+    const output = plain(host[entry.handler](args));
+    assert.deepEqual(args,original);
+    if (entry.valid) assert.deepEqual(output,entry.expected);
+    else {
+      assert.equal(output.isError,true);
+      assert.equal(output.error.code,'invalid_request');
+      if (entry.message) assert.equal(output.error.message,entry.message);
+      assert.ok(!output.error.message.includes('private fixture'));
+    }
+  }
 });
 
 
@@ -322,7 +337,8 @@ test('notebook handlers preserve original indices and exact cell sources', () =>
     {kind:'insert',index:0,cell_type:'javascript',source:''},{kind:'replace',index:0,source:'bad\0'}]) {
     assert.equal(host.notebook_edit({...input,edits:[change]}).isError,true);
   }
-  assert.equal(host.notebook_read({path:'report.ipynb',limit:101}).isError,true);
-  assert.equal(tool('edit_notebook').handler.parameters.properties.edits.maxItems,100);
+  assert.deepEqual(plain(host.notebook_read({path:'report.ipynb',limit:101})),
+    {path:'report.ipynb',offset:0,limit:101});
+  assert.equal(tool('edit_notebook').handler.parameters.properties.edits.maxItems,undefined);
   assert.match(tool('edit_notebook').description,/retains the cell ID, metadata and saved outputs/);
 });

@@ -5258,7 +5258,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -5525,7 +5525,7 @@
               {
                 "name": "read_file",
                 "presentation": "summary",
-                "description": "Read UTF-8 lines from files up to 64 MiB in the session worktree. offset is zero-based and defaults to 0; limit defaults to 200 (maximum 2000). Each page is bounded to 128 KiB. Results include one-based line numbers, the full file revision and next_offset for another page. Keep the returned line text exactly, including newlines, when preparing edit_file. A page is partial evidence; do not treat it as the whole file.",
+                "description": "Read UTF-8 lines from files up to 64 MiB in the session worktree. offset is zero-based and defaults to 0; limit defaults to 200; responses return at most 2000 lines. Each page is bounded to 128 KiB. Results include one-based line numbers, the full file revision and next_offset for another page. Keep the returned line text exactly, including newlines, when preparing edit_file. A page is partial evidence; do not treat it as the whole file.",
                 "handler": {
                   "name": "read",
                   "operation": "files.read",
@@ -5539,13 +5539,15 @@
                       "offset": {
                         "type": "integer",
                         "minimum": 0,
-                        "default": 0
+                        "default": 0,
+                        "maximum": 9007199254740991
                       },
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 2000,
-                        "default": 200
+                        "maximum": 9007199254740991,
+                        "default": 200,
+                        "description": "Requested rows; each response has an independent output budget and may return a continuation"
                       }
                     },
                     "required": [
@@ -5816,7 +5818,6 @@
                       "edits": {
                         "type": "array",
                         "minItems": 1,
-                        "maxItems": 128,
                         "items": {
                           "type": "object",
                           "properties": {
@@ -6168,7 +6169,7 @@
               {
                 "name": "find_files",
                 "presentation": "summary",
-                "description": "Find regular file paths by worktree-relative globs within path (default root), respecting .gitignore and never following symlinks. * does not cross /; **/* includes root and nested files. For the N most recently modified files, use globs=[\"**/*\"] and limit=N. Results are newest first, with a stable path order for equal modification times. limit defaults to 500 (maximum 500); request next_offset for another page. Partial scans have no continuation: narrow path before retrying. No shell approval is needed.",
+                "description": "Find regular file paths by worktree-relative globs within path (default root), respecting .gitignore and never following symlinks. * does not cross /; **/* includes root and nested files. For the N most recently modified files, use globs=[\"**/*\"] and limit=N. Results are newest first, with a stable path order for equal modification times. limit defaults to 500; responses return at most 500 paths; request next_offset for another page. Partial scans have no continuation: narrow path before retrying. No shell approval is needed.",
                 "handler": {
                   "name": "find",
                   "operation": "files.find",
@@ -6178,11 +6179,9 @@
                       "globs": {
                         "type": "array",
                         "minItems": 1,
-                        "maxItems": 64,
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 4096
+                          "minLength": 1
                         }
                       },
                       "path": {
@@ -6193,13 +6192,15 @@
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 500,
-                        "default": 500
+                        "maximum": 9007199254740991,
+                        "default": 500,
+                        "description": "Requested rows; each response has an independent output budget and may return a continuation"
                       },
                       "offset": {
                         "type": "integer",
                         "minimum": 0,
-                        "default": 0
+                        "default": 0,
+                        "maximum": 9007199254740991
                       }
                     },
                     "required": [
@@ -6291,7 +6292,7 @@
               {
                 "name": "search_files",
                 "presentation": "summary",
-                "description": "Search UTF-8 files with embedded ripgrep matching within path (a file or directory, default worktree root), respecting .gitignore and never following symlinks. mode selects content rows (default), matching file paths, or matching line counts. In content rows, matched=true identifies matching lines; matched=false identifies neighboring context lines. context adds up to 5 lines before and after each match; type uses ripgrep language names such as rust, js, and python. multiline permits matches across newlines. limit defaults to 200 (maximum 200); content limits include context rows. Use next_offset for another complete-scan page. Scans have a 20-second deadline and a 64 MiB per-file bound; diagnostics identify skipped large files or incomplete scans. Incomplete scans have no continuation: narrow path before retrying. Lines longer than 16 KiB are explicitly marked truncated. No shell approval is needed.",
+                "description": "Search UTF-8 files with embedded ripgrep matching within path (a file or directory, default worktree root), respecting .gitignore and never following symlinks. mode selects content rows (default), matching file paths, or matching line counts. In content rows, matched=true identifies matching lines; matched=false identifies neighboring context lines. context requests lines before and after each match; type uses ripgrep language names such as rust, js, and python. multiline permits matches across newlines. limit defaults to 200; responses return at most 200 rows, including context rows. Use next_offset for another complete-scan page. Scans have a 20-second deadline and a 64 MiB per-file bound; diagnostics identify skipped large files or incomplete scans. Incomplete scans have no continuation: narrow path before retrying. Lines longer than 16 KiB are explicitly marked truncated. No shell approval is needed.",
                 "handler": {
                   "name": "search",
                   "operation": "files.search",
@@ -6313,10 +6314,8 @@
                       },
                       "globs": {
                         "type": "array",
-                        "maxItems": 64,
                         "items": {
-                          "type": "string",
-                          "maxLength": 4096
+                          "type": "string"
                         },
                         "default": []
                       },
@@ -6328,13 +6327,15 @@
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 200,
-                        "default": 200
+                        "maximum": 9007199254740991,
+                        "default": 200,
+                        "description": "Requested rows; each response has an independent output budget and may return a continuation"
                       },
                       "offset": {
                         "type": "integer",
                         "minimum": 0,
-                        "default": 0
+                        "default": 0,
+                        "maximum": 9007199254740991
                       },
                       "mode": {
                         "type": "string",
@@ -6348,7 +6349,7 @@
                       "context": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 5,
+                        "maximum": 9007199254740991,
                         "default": 0
                       },
                       "type": {
@@ -6624,13 +6625,15 @@
                       "offset": {
                         "type": "integer",
                         "minimum": 0,
-                        "default": 0
+                        "default": 0,
+                        "maximum": 9007199254740991
                       },
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 100,
-                        "default": 20
+                        "maximum": 9007199254740991,
+                        "default": 20,
+                        "description": "Requested rows; each response has an independent output budget and may return a continuation"
                       }
                     },
                     "required": [
@@ -6673,7 +6676,6 @@
                       "edits": {
                         "type": "array",
                         "minItems": 1,
-                        "maxItems": 100,
                         "items": {
                           "oneOf": [
                             {
@@ -6687,8 +6689,7 @@
                                   "minimum": 0
                                 },
                                 "source": {
-                                  "type": "string",
-                                  "maxLength": 524288
+                                  "type": "string"
                                 }
                               },
                               "required": [
@@ -6717,8 +6718,7 @@
                                   ]
                                 },
                                 "source": {
-                                  "type": "string",
-                                  "maxLength": 524288
+                                  "type": "string"
                                 }
                               },
                               "required": [
