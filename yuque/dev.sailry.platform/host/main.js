@@ -1,5 +1,5 @@
-function text(value, name, limit = 4096) {
-  if (typeof value !== 'string' || !value.length || value.length > limit || /[\u0000-\u001f]/.test(value))
+function text(value, name) {
+  if (typeof value !== 'string' || !value.length || /[\u0000-\u001f]/.test(value))
     throw new Error(`Invalid ${name}`);
   return value;
 }
@@ -7,7 +7,7 @@ function encoded(value) {
   return encodeURIComponent(value).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
 }
 function id(value, name = 'identifier') {
-  const segment = text(value, name, 1024);
+  const segment = text(value, name);
   if (segment === '.' || segment === '..') throw new Error(`Invalid ${name}`);
   return encoded(segment);
 }
@@ -15,8 +15,8 @@ function query(values) {
   return Object.entries(values).filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encoded(key)}=${encoded(String(value))}`).join('&');
 }
-function limit(value = 50) {
-  if (!Number.isInteger(value) || value < 1 || value > 100) throw new Error('Invalid page size');
+function index(value, minimum, name) {
+  if (!Number.isSafeInteger(value) || value < minimum) throw new Error(`${name} must be a safe integer at least ${minimum}`);
   return value;
 }
 function failure(message, status = null) {
@@ -38,7 +38,7 @@ function call(url, credential, state = null) {
     headers:{Accept:'application/json'},body:null,credential,timeout_ms:30000}},state};
 }
 function repository(value) {
-  const parts = text(value, 'repository', 1024).split('/');
+  const parts = text(value, 'repository').split('/');
   if (parts.length > 2 || parts.some(part => !part || part === '.' || part === '..'))
     throw new Error('Invalid repository');
   return parts.map(part => id(part)).join('/');
@@ -50,8 +50,8 @@ export function request(input) {
     switch (args.action) {
       case 'search':
         if (args.type !== undefined && !['doc','repo'].includes(args.type)) throw new Error('Invalid search type');
-        path = `/search?${query({q:text(args.query, 'query'),type:args.type ?? 'doc',page:args.page ?? 1})}`; break;
-      case 'repos': path = `/users/${id(args.user, 'user')}/repos?${query({offset:args.offset ?? 0})}`; break;
+        path = `/search?${query({q:text(args.query, 'query'),type:args.type ?? 'doc',page:index(args.page ?? 1,1,'page')})}`; break;
+      case 'repos': path = `/users/${id(args.user, 'user')}/repos?${query({offset:index(args.offset ?? 0,0,'offset')})}`; break;
       case 'docs': path = `/repos/${repository(args.repo)}/docs`; break;
       case 'doc': path = `/repos/${repository(args.repo)}/docs/${id(args.id)}?raw=1`; break;
       case 'toc': path = `/repos/${repository(args.repo)}/toc`; break;
