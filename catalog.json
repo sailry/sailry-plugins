@@ -3258,7 +3258,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "dingtalk",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Knowledge spaces and files",
         "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
         "extensions": {
@@ -3343,32 +3343,28 @@
                       },
                       "operator": {
                         "type": "string",
-                        "maxLength": 1024,
                         "description": "Operator ID; omit only when configured in this Node."
                       },
                       "id": {
                         "type": "string",
-                        "maxLength": 1024,
                         "description": "Required for node."
                       },
                       "space": {
                         "type": "string",
-                        "maxLength": 1024,
                         "description": "Required for files."
                       },
                       "parent": {
                         "type": "string",
-                        "maxLength": 1024,
                         "description": "Required for nodes or files; copy the corresponding parent ID."
                       },
                       "cursor": {
-                        "type": "string",
-                        "maxLength": 4096
+                        "type": "string"
                       },
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 9007199254740991,
+                        "description": "Requested results; endpoint page budgets apply. Continue with next; pagination reports the requested limit and actual page size."
                       }
                     },
                     "allOf": [
