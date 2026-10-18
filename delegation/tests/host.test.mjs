@@ -109,7 +109,7 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
 });
 
-test('background guidance keeps waiting explicit',async()=>{
+test('background guidance does not imply result collection',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const tools = manifest.extensions['dev.sailry.platform'].tools;
   for(const name of ['spawn_agent','guide_agent']) {
@@ -120,12 +120,12 @@ test('background guidance keeps waiting explicit',async()=>{
   const spawn = tools.find(tool => tool.name === 'spawn_agent');
   assert.match(spawn.description,/use it for results this turn needs and verify them before relying on them/);
   assert.match(spawn.description,/Set background to true only when the user asks or long-running work is not needed this turn/);
-  assert.match(spawn.description,/never claim their results were integrated/);
+  assert.match(spawn.description,/never claim its results were integrated/);
   const guide = tools.find(tool => tool.name === 'guide_agent');
   assert.match(guide.description,/queued guidance receipt, not the child's final result/);
   const wait = tools.find(tool => tool.name === 'wait_agent');
-  assert.match(wait.description,/Only use this tool when the user explicitly requests waiting or result collection/);
-  assert.match(wait.description,/guiding background work alone does not request waiting/);
+  assert.match(wait.description,/Use it when the user requests waiting or result collection/);
+  assert.match(wait.description,/Guiding background work alone does not request waiting/);
   assert.match(wait.description,/resume waiting only if the user still requests it/);
   assert.doesNotMatch(wait.description,/wait again after guiding the child/);
 });
