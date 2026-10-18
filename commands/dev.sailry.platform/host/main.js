@@ -14,13 +14,13 @@ export function run(args) {
     return invalid('Invalid command arguments');
   const { command, access = 'workspace', description = null, cwd = '', timeout_ms = 120000, background = false, pty = false, attachments = [] } = args;
   if (!['workspace', 'unrestricted'].includes(access) || typeof command !== 'string' || typeof cwd !== 'string' || typeof background !== 'boolean' || typeof pty !== 'boolean' || (pty && !background) ||
-      !Number.isSafeInteger(timeout_ms) || timeout_ms < 1 || timeout_ms > 900000 ||
-      !Array.isArray(attachments) || attachments.length > 8 || attachments.some(id => typeof id !== 'string') ||
+      !Number.isSafeInteger(timeout_ms) || timeout_ms < 1 ||
+      !Array.isArray(attachments) || attachments.some(id => typeof id !== 'string') ||
       new Set(attachments).size !== attachments.length) {
     return invalid('Invalid command arguments');
   }
   if (description !== null && (typeof description !== 'string' || !description.trim() ||
-      [...description].length > 2000 || description.includes('\0'))) return invalid('Invalid command description');
+      description.includes('\0'))) return invalid('Invalid command description');
   return { command, description, cwd, timeout_ms, background, pty, attachments, access };
 }
 

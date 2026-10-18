@@ -53,8 +53,8 @@ test('description preserves command and optional metadata', () => {
     {command,description,cwd:'',timeout_ms:120000,background:false,pty:false,attachments:[],access:'workspace'});
   assert.equal(run({command}).description,null);
   assert.equal(run({command,description:null}).description,null);
-  assert.equal(run({command,description:'🙂'.repeat(2000)}).isError,undefined);
-  for (const description of ['', ' \n ', 7, 'a\0b', '🙂'.repeat(2001)]) {
+  assert.equal(run({command,description:'🙂'.repeat(2001)}).isError,undefined);
+  for (const description of ['', ' \n ', 7, 'a\0b']) {
     assert.equal(run({command,description}).isError,true);
   }
 });
@@ -90,4 +90,15 @@ test('input preserves bytes and validates its bound', () => {
   assert.equal(run({command:'true',access:'unrestricted'}).access, 'unrestricted');
   for (const access of [null, '', true, 'full', {}, []])
     assert.equal(run({command:'true',access}).isError, true);
+});
+
+test('large commands retain all requested inputs',()=>{
+  const command='echo '.repeat(14000),description='Purpose '.repeat(400);
+  const attachments=Array.from({length:9},(_,index)=>`attachment-${index}`);
+  const result=run({command,description,timeout_ms:900001,attachments});
+  assert.equal(result.command,command);
+  assert.equal(result.description,description);
+  assert.equal(result.timeout_ms,900001);
+  assert.deepEqual(result.attachments,attachments);
+  assert.equal(run({command,timeout_ms:Number.MAX_SAFE_INTEGER+1}).isError,true);
 });
