@@ -1,4 +1,4 @@
-import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
+import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -69,4 +69,53 @@ runtimeTest('schema requires the target fields for each action', () => {
     }
   }
   assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
+});
+
+const largeCases = [
+  ...[['messages','maxResults',500],['events','maxResults',2500],['files','pageSize',1000]].map(([action,field,size]) => ({
+    arguments:{action,query:'q'.repeat(4097),cursor:'c'.repeat(4097),limit:3001},
+    check:prepared => {
+      const url = new URL(prepared.call.arguments.url);
+      assert.equal(url.searchParams.get(field),String(size));
+      assert.equal(url.searchParams.get('q'),'q'.repeat(4097));
+      assert.equal(url.searchParams.get('pageToken'),'c'.repeat(4097));
+      assert.deepEqual(plain(prepared.state.pagination),{requested_limit:3001,page_size:size});
+    }})),
+  {arguments:{action:'event',id:'i'.repeat(1025),calendar:'c'.repeat(1025)},
+    check:prepared => assert.equal(new URL(prepared.call.arguments.url).pathname,
+      `/calendar/v3/calendars/${'c'.repeat(1025)}/events/${'i'.repeat(1025)}`)},
+];
+const invalidCases = [0,-1,1.5,null,Number.MAX_SAFE_INTEGER+1].map(limit => ({action:'messages',limit}));
+
+test('larger requests preserve source values and endpoint budgets', async () => {
+  const run = adapter();
+  for (const entry of largeCases) {
+    const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
+    const prepared = plain(await run({step:entry.step ?? 0,arguments:arguments_,outcome:entry.outcome}));
+    assert.deepEqual(arguments_,original);
+    entry.check(prepared);
+    assert.equal(prepared.call.operation,'http.request');
+    if (prepared.state?.pagination) {
+      const page = plain(await run({step:1,arguments:arguments_,state:prepared.state,
+        outcome:outcome({nextPageToken:'next'})}));
+      assert.deepEqual(page.result.pagination,prepared.state.pagination);
+      assert.equal(page.result.next,'next');
+      assert.equal(page.call,undefined);
+    }
+  }
+});
+
+runtimeTest('larger requests reach the production adapter unchanged', async () => {
+  const schema = extension.tools[0].handler.parameters;
+  assert.deepEqual(validateSchema(schema,[...largeCases.map(entry => entry.arguments),...invalidCases]),
+    [...largeCases.map(() => true),...invalidCases.map(() => false)]);
+  for (const entry of largeCases) {
+    const input = await packageInput(new URL('./',import.meta.url),'request',
+      {step:entry.step ?? 0,arguments:entry.arguments,outcome:entry.outcome});
+
+    const output = execute(input);
+    assert.equal(output.result.Err,undefined);
+    entry.check(output.result.Ok);
+    assert.equal(output.calls.length,0);
+  }
 });
