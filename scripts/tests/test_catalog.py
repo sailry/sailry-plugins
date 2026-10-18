@@ -31,8 +31,23 @@ class Catalog(unittest.TestCase):
                 }},
             })
             self.assertEqual(catalog.catalog(root), {
-                "version": 1, "packages": [{"id": "sample", "manifest": data}],
+                "version": 1, "packages": [{"id": "sample", "manifest": data,
+                                          "provides_models": False, "permissions": []}],
             })
+
+    def test_derives_model_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = manifest(root, "sample", extensions={
+                "dev.sailry.platform": {
+                    "model_providers": [{"id": "models"}],
+                    "actions": ["models.provide", "credentials.inspect"],
+                },
+            })
+            entry = catalog.catalog(root)["packages"][0]
+            self.assertEqual(entry["manifest"], data)
+            self.assertTrue(entry["provides_models"])
+            self.assertEqual(entry["permissions"], ["models.provide", "credentials.inspect"])
 
     def test_orders_packages(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -164,7 +164,12 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "artifacts.read",
+        "artifacts.write"
+      ]
     },
     {
       "id": "browser",
@@ -932,7 +937,12 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "browser.read",
+        "browser.control"
+      ]
     },
     {
       "id": "city-trader",
@@ -1106,7 +1116,13 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate",
+        "storage.read",
+        "storage.write"
+      ]
     },
     {
       "id": "code",
@@ -1361,7 +1377,14 @@
             "enabled_service": "language"
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "code.read",
+        "code.manage",
+        "code.settings.read",
+        "code.settings.write"
+      ]
     },
     {
       "id": "code-review",
@@ -1816,7 +1839,15 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "git.read",
+        "conversation.read",
+        "storage.read",
+        "storage.write",
+        "agents.delegate"
+      ]
     },
     {
       "id": "commands",
@@ -2174,7 +2205,14 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "process.read",
+        "process.control",
+        "terminals.read",
+        "terminals.control"
+      ]
     },
     {
       "id": "computer",
@@ -2223,7 +2261,12 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "computer.read",
+        "computer.control"
+      ]
     },
     {
       "id": "context7",
@@ -2278,7 +2321,9 @@
             "settings_schema": "dev.sailry.platform/settings.json"
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "databases",
@@ -2756,7 +2801,17 @@
             "instructions": "Use database_connections to inspect saved profiles and their revisions. When no profiles are returned, create a connection without connection or expected_revision; do not reuse IDs from earlier conversation history. When asked to add or edit a connection, use database_save_connection; never request passwords. SQLite needs no credentials and its returned ID can be used in this turn. Saving a connection does not create its file. For a requested new SQLite database, save the connection with read_only=false and use database_execute for the authorized schema write; missing parent directories are created automatically. Explicit writable connection checks can also initialize a missing SQLite file. Do not write an empty file as a workaround or silently change a read-only connection. If credentials_required is true, ask the user to fill the protected settings field."
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "databases.read",
+        "databases.control",
+        "databases.manage",
+        "conversation.read",
+        "conversation.control",
+        "projects.read",
+        "ssh.read"
+      ]
     },
     {
       "id": "delegation",
@@ -3227,7 +3282,14 @@
           }
         },
         "description": "Delegate tasks to subagents"
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "agents.delegate",
+        "roles.read",
+        "roles.write",
+        "models.read"
+      ]
     },
     {
       "id": "dingtalk",
@@ -3425,7 +3487,11 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
     },
     {
       "id": "doudizhu",
@@ -3487,7 +3553,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "external-browser",
@@ -4973,7 +5043,12 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "external_browser.read",
+        "external_browser.control"
+      ]
     },
     {
       "id": "feishu",
@@ -5057,7 +5132,9 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "figma",
@@ -5219,7 +5296,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
     },
     {
       "id": "files",
@@ -6818,7 +6899,14 @@
             "instructions": "Use read_file to capture the current revision before editing, moving or deleting a file. For several changes in one file, send one edit_file edits array; every match is located in the original content and the batch is saved once. Use replace_all only when every occurrence should change. Keep exact whitespace and line endings. A conflict requires reading the current file before retrying. Use create_directory and move_file for workspace file organization; delete_file moves regular files to Trash. These tools never replace an existing move destination or delete a directory. For file discovery and content search, use find_files and search_files rather than running shell commands. Scope path first, honor next_offset, and treat partial scans as incomplete: narrow path instead of claiming offset can advance an interrupted scan."
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "files.read",
+        "files.write",
+        "models.read",
+        "models.install"
+      ]
     },
     {
       "id": "git",
@@ -8392,7 +8480,15 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "git.read",
+        "git.write",
+        "worktrees.read",
+        "files.read",
+        "conversation.control"
+      ]
     },
     {
       "id": "github",
@@ -8425,7 +8521,9 @@
             "credential_source": "github_cli"
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "goals",
@@ -8791,7 +8889,14 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "storage.read",
+        "storage.write",
+        "conversation.read",
+        "conversation.control"
+      ]
     },
     {
       "id": "gomoku",
@@ -8849,7 +8954,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "google-workspace",
@@ -9027,7 +9136,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
     },
     {
       "id": "liars-dice",
@@ -9085,7 +9198,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "linear",
@@ -9134,7 +9251,9 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "media",
@@ -9344,7 +9463,15 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "media.inspect",
+        "media.image",
+        "media.video",
+        "media.settings.read",
+        "media.settings.write"
+      ]
     },
     {
       "id": "memory",
@@ -9874,7 +10001,13 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "storage.read",
+        "storage.write",
+        "projects.read"
+      ]
     },
     {
       "id": "microsoft-365",
@@ -10080,7 +10213,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
     },
     {
       "id": "notion",
@@ -10220,7 +10357,9 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "office",
@@ -10249,7 +10388,9 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "plugin-builder",
@@ -10278,7 +10419,9 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "poker",
@@ -10338,7 +10481,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "progress",
@@ -10464,7 +10611,11 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "activity.read"
+      ]
     },
     {
       "id": "reminders",
@@ -10869,7 +11020,15 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "storage.read",
+        "storage.write",
+        "dispatch.manage",
+        "notifications.publish",
+        "projects.read"
+      ]
     },
     {
       "id": "reversi",
@@ -10927,7 +11086,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "scheduled-tasks",
@@ -11556,7 +11719,17 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "storage.read",
+        "storage.write",
+        "dispatch.manage",
+        "sessions.start",
+        "projects.read",
+        "models.read",
+        "conversation.read"
+      ]
     },
     {
       "id": "slack",
@@ -11606,7 +11779,9 @@
             "settings_schema": "dev.sailry.platform/settings.json"
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "ssh",
@@ -12092,7 +12267,16 @@
             "instructions": "Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "ssh.read",
+        "ssh.control",
+        "ssh.manage",
+        "conversation.read",
+        "conversation.control",
+        "projects.read"
+      ]
     },
     {
       "id": "statistics",
@@ -12231,7 +12415,12 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "usage.read",
+        "conversation.read"
+      ]
     },
     {
       "id": "task-plaza",
@@ -12292,7 +12481,13 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "activity.read",
+        "conversation.read",
+        "conversation.control"
+      ]
     },
     {
       "id": "tencent-docs",
@@ -12342,7 +12537,9 @@
             "settings_schema": "dev.sailry.platform/settings.json"
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": []
     },
     {
       "id": "web-search",
@@ -12455,7 +12652,13 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "web.read",
+        "web.settings.read",
+        "web.settings.write"
+      ]
     },
     {
       "id": "wecom",
@@ -12627,7 +12830,438 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
+    },
+    {
+      "id": "workbuddy",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "workbuddy",
+        "version": "0.1.0",
+        "description": "WorkBuddy model channels",
+        "homepage": "https://www.workbuddy.ai",
+        "license": "MIT",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "scope": "host",
+            "actions": [
+              "models.provide",
+              "models.authenticate",
+              "credentials.inspect"
+            ],
+            "display": {
+              "label": "WorkBuddy",
+              "locales": {
+                "zh-CN": "WorkBuddy",
+                "zh-TW": "WorkBuddy"
+              },
+              "icon": "reicon:communication/chat-3"
+            },
+            "model_providers": [
+              {
+                "id": "china",
+                "name": "WorkBuddy China",
+                "homepage": "https://www.codebuddy.cn",
+                "routes": [
+                  {
+                    "protocol": "plugin",
+                    "endpoint": "https://copilot.tencent.com",
+                    "region": "china"
+                  }
+                ],
+                "auth": {
+                  "kind": "plugin",
+                  "data": {
+                    "flow": "china"
+                  }
+                },
+                "adapter": "workbuddy",
+                "models": {
+                  "kind": "discover"
+                }
+              },
+              {
+                "id": "workbuddy-global",
+                "name": "WorkBuddy International",
+                "homepage": "https://www.workbuddy.ai",
+                "routes": [
+                  {
+                    "protocol": "plugin",
+                    "endpoint": "https://www.workbuddy.ai",
+                    "region": "global"
+                  }
+                ],
+                "auth": {
+                  "kind": "plugin",
+                  "data": {
+                    "flow": "workbuddy-global"
+                  }
+                },
+                "adapter": "workbuddy",
+                "models": {
+                  "kind": "discover"
+                }
+              },
+              {
+                "id": "codebuddy-global",
+                "name": "CodeBuddy International",
+                "homepage": "https://www.codebuddy.ai",
+                "routes": [
+                  {
+                    "protocol": "plugin",
+                    "endpoint": "https://www.codebuddy.ai",
+                    "region": "global"
+                  }
+                ],
+                "auth": {
+                  "kind": "plugin",
+                  "data": {
+                    "flow": "codebuddy-global"
+                  }
+                },
+                "adapter": "workbuddy",
+                "models": {
+                  "kind": "discover"
+                }
+              }
+            ],
+            "model_auth": [
+              {
+                "id": "china",
+                "display": {
+                  "label": "WorkBuddy China",
+                  "locales": {
+                    "zh-CN": "WorkBuddy China",
+                    "zh-TW": "WorkBuddy China"
+                  }
+                },
+                "flow": {
+                  "kind": "polling",
+                  "start": {
+                    "url": "https://www.codebuddy.cn/v2/plugin/auth/state",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "platform": "workbuddy"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {}
+                    }
+                  },
+                  "state": "/data/state",
+                  "verification_url": "/data/authUrl",
+                  "token": {
+                    "url": "https://www.codebuddy.cn/v2/plugin/auth/token",
+                    "method": "GET",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "state": "{state}"
+                    }
+                  },
+                  "success": {
+                    "pointer": "/code",
+                    "values": [
+                      0,
+                      200
+                    ]
+                  },
+                  "interval_ms": null
+                },
+                "token": {
+                  "access": "/access",
+                  "refresh": "/refresh",
+                  "expires_in": "/expires_in",
+                  "extra": {
+                    "domain": "/domain"
+                  }
+                },
+                "inject": [
+                  {
+                    "header": "Authorization",
+                    "template": "Bearer {access}"
+                  },
+                  {
+                    "header": "X-Domain",
+                    "template": "{extra.domain}"
+                  }
+                ],
+                "exchange": {
+                  "script": {
+                    "entry": "dev.sailry.platform/auth.js",
+                    "resources": [
+                      "dev.sailry.platform/auth.js"
+                    ]
+                  },
+                  "handler": "exchange"
+                },
+                "refresh": {
+                  "request": {
+                    "url": "https://copilot.tencent.com/v2/plugin/auth/token/refresh",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS",
+                      "X-Refresh-Token": "{refresh}",
+                      "X-Auth-Refresh-Source": "workbuddy"
+                    }
+                  },
+                  "token": {
+                    "access": "/access",
+                    "refresh": "/refresh",
+                    "expires_in": "/expires_in",
+                    "extra": {
+                      "domain": "/domain"
+                    }
+                  }
+                }
+              },
+              {
+                "id": "workbuddy-global",
+                "display": {
+                  "label": "WorkBuddy International",
+                  "locales": {
+                    "zh-CN": "WorkBuddy International",
+                    "zh-TW": "WorkBuddy International"
+                  }
+                },
+                "flow": {
+                  "kind": "polling",
+                  "start": {
+                    "url": "https://www.workbuddy.ai/v2/plugin/auth/state",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "platform": "workbuddy"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {}
+                    }
+                  },
+                  "state": "/data/state",
+                  "verification_url": "/data/authUrl",
+                  "token": {
+                    "url": "https://www.workbuddy.ai/v2/plugin/auth/token",
+                    "method": "GET",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "state": "{state}"
+                    }
+                  },
+                  "success": {
+                    "pointer": "/code",
+                    "values": [
+                      0,
+                      200
+                    ]
+                  },
+                  "interval_ms": null
+                },
+                "token": {
+                  "access": "/access",
+                  "refresh": "/refresh",
+                  "expires_in": "/expires_in",
+                  "extra": {
+                    "domain": "/domain"
+                  }
+                },
+                "inject": [
+                  {
+                    "header": "Authorization",
+                    "template": "Bearer {access}"
+                  },
+                  {
+                    "header": "X-Domain",
+                    "template": "{extra.domain}"
+                  }
+                ],
+                "exchange": {
+                  "script": {
+                    "entry": "dev.sailry.platform/auth.js",
+                    "resources": [
+                      "dev.sailry.platform/auth.js"
+                    ]
+                  },
+                  "handler": "exchange"
+                },
+                "refresh": {
+                  "request": {
+                    "url": "https://www.workbuddy.ai/v2/plugin/auth/token/refresh",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS",
+                      "X-Refresh-Token": "{refresh}",
+                      "X-Auth-Refresh-Source": "workbuddy"
+                    }
+                  },
+                  "token": {
+                    "access": "/access",
+                    "refresh": "/refresh",
+                    "expires_in": "/expires_in",
+                    "extra": {
+                      "domain": "/domain"
+                    }
+                  }
+                }
+              },
+              {
+                "id": "codebuddy-global",
+                "display": {
+                  "label": "CodeBuddy International",
+                  "locales": {
+                    "zh-CN": "CodeBuddy International",
+                    "zh-TW": "CodeBuddy International"
+                  }
+                },
+                "flow": {
+                  "kind": "polling",
+                  "start": {
+                    "url": "https://www.codebuddy.ai/v2/plugin/auth/state",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "platform": "workbuddy"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {}
+                    }
+                  },
+                  "state": "/data/state",
+                  "verification_url": "/data/authUrl",
+                  "token": {
+                    "url": "https://www.codebuddy.ai/v2/plugin/auth/token",
+                    "method": "GET",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS"
+                    },
+                    "query": {
+                      "state": "{state}"
+                    }
+                  },
+                  "success": {
+                    "pointer": "/code",
+                    "values": [
+                      0,
+                      200
+                    ]
+                  },
+                  "interval_ms": null
+                },
+                "token": {
+                  "access": "/access",
+                  "refresh": "/refresh",
+                  "expires_in": "/expires_in",
+                  "extra": {
+                    "domain": "/domain"
+                  }
+                },
+                "inject": [
+                  {
+                    "header": "Authorization",
+                    "template": "Bearer {access}"
+                  },
+                  {
+                    "header": "X-Domain",
+                    "template": "{extra.domain}"
+                  }
+                ],
+                "exchange": {
+                  "script": {
+                    "entry": "dev.sailry.platform/auth.js",
+                    "resources": [
+                      "dev.sailry.platform/auth.js"
+                    ]
+                  },
+                  "handler": "exchange"
+                },
+                "refresh": {
+                  "request": {
+                    "url": "https://www.codebuddy.ai/v2/plugin/auth/token/refresh",
+                    "method": "POST",
+                    "headers": {
+                      "User-Agent": "CLI/2.63.2 CodeBuddy/2.63.2",
+                      "X-Requested-With": "XMLHttpRequest",
+                      "X-Product": "SaaS",
+                      "X-Refresh-Token": "{refresh}",
+                      "X-Auth-Refresh-Source": "workbuddy"
+                    }
+                  },
+                  "token": {
+                    "access": "/access",
+                    "refresh": "/refresh",
+                    "expires_in": "/expires_in",
+                    "extra": {
+                      "domain": "/domain"
+                    }
+                  }
+                }
+              }
+            ],
+            "model_adapters": [
+              {
+                "id": "workbuddy",
+                "script": {
+                  "entry": "dev.sailry.platform/adapter.js",
+                  "resources": [
+                    "dev.sailry.platform/adapter.js"
+                  ]
+                },
+                "origins": [
+                  "https://copilot.tencent.com",
+                  "https://www.workbuddy.ai",
+                  "https://www.codebuddy.ai"
+                ],
+                "framing": "sse",
+                "schema_dialect": "open_ai",
+                "capabilities": {
+                  "vision": true,
+                  "tools": true,
+                  "reasoning": true
+                },
+                "discovery": true
+              }
+            ]
+          }
+        }
+      },
+      "provides_models": true,
+      "permissions": [
+        "models.provide",
+        "models.authenticate",
+        "credentials.inspect"
+      ]
     },
     {
       "id": "worktrees",
@@ -12896,7 +13530,14 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "worktrees.read",
+        "worktrees.write",
+        "git.read",
+        "conversation.control"
+      ]
     },
     {
       "id": "xiangqi",
@@ -12954,7 +13595,11 @@
             }
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.generate"
+      ]
     },
     {
       "id": "yuque",
@@ -13180,7 +13825,11 @@
             ]
           }
         }
-      }
+      },
+      "provides_models": false,
+      "permissions": [
+        "http.request"
+      ]
     }
   ]
 }

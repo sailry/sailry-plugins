@@ -1,0 +1,97 @@
+import assert from 'node:assert/strict';
+
+export const request = overrides => ({version:'v1',model:'fixture-model',endpoint:'https://copilot.tencent.com',
+  session:'fixture-session',system:'Preserve the task',messages:[{role:'user',parts:[{kind:'text',text:'A fixture task'}]}],
+  tools:[],tool_choice:{kind:'auto'},reasoning:{effort:'default',replay:false},stream:true,
+  max_output_tokens:4096,temperature:null,top_p:null,stop:[],options:{},...overrides});
+
+const event = document => ({event:null,data:JSON.stringify(document)});
+const prepared = output => {
+  assert.equal(output.method,'POST');
+  assert.equal(output.url,'https://copilot.tencent.com/v2/chat/completions');
+  assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
+  assert.equal(output.headers.Authorization,undefined);
+  assert.equal(output.headers['X-No-User-Id'],'1');
+  assert.equal(output.headers['X-No-Enterprise-Id'],'1');
+  assert.equal(output.headers.Origin,'https://www.codebuddy.cn');
+  assert.equal(output.headers['User-Agent'],'CLI/2.63.2 CodeBuddy/2.63.2');
+  const keys = ['X-Conversation-ID','X-Conversation-Request-ID','X-Conversation-Message-ID'];
+  for (const key of keys) assert.match(output.headers[key],/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.equal(new Set(keys.map(key=>output.headers[key])).size,3);
+  return JSON.parse(output.body);
+};
+
+export const cases = [
+  {name:'preserves the prepared request and private credential template',handler:'prepare',input:request(),check(output){
+    const body = prepared(output);
+    assert.equal(body.stream,true);
+    assert.equal(body.model,'fixture-model');
+    assert.equal(body.max_tokens,4096);
+    assert.deepEqual(body.messages,[{role:'system',content:'Preserve the task'},
+      {role:'user',content:[{type:'text',text:'A fixture task'}]}]);
+    assert.equal(body.reasoning_effort,undefined);
+  }},
+  {name:'keeps image reasoning tool calls and tool results',handler:'prepare',input:request({
+    messages:[{role:'user',parts:[{kind:'image',media_type:'image/png',data:{kind:'inline',data_base64:'ZmFrZQ=='}}]},
+      {role:'assistant',parts:[{kind:'reasoning',text:'public reasoning',replay:'opaque replay'},
+        {kind:'tool_call',id:'call-1',name:'inspect',arguments:{path:'fixture'}}]},
+      {role:'tool',call_id:'call-1',name:'inspect',is_error:false,parts:[{kind:'json',value:{ok:true}}]}],
+    tools:[{name:'inspect',description:'Inspect a fixture',parameters:{type:'object',properties:{path:{type:'string'}}}}],
+    tool_choice:{kind:'named',name:'inspect'},reasoning:{effort:'high',replay:true},
+  }),check(output){
+    const body = prepared(output);
+    assert.equal(body.messages[1].content[0].image_url.url,'data:image/png;base64,ZmFrZQ==');
+    assert.equal(body.messages[2].reasoning_content,'opaque replay');
+    assert.deepEqual(body.messages[2].tool_calls,[{id:'call-1',type:'function',function:{name:'inspect',arguments:'{"path":"fixture"}'}}]);
+    assert.deepEqual(body.messages[3],{role:'tool',tool_call_id:'call-1',content:'{"ok":true}'});
+    assert.equal(body.tools[0].function.name,'inspect');
+    assert.equal(body.tool_choice,'inspect');
+    assert.equal(body.reasoning_effort,'high');
+  }},
+  {name:'decodes streamed text reasoning tools usage and completion',handler:'decode',input:{state:null,done:true,status:200,
+    events:[event({choices:[{delta:{reasoning_content:'Inspect first',content:'Answer',tool_calls:[{index:0,id:'call-1',function:{name:'inspect',arguments:'{"path":'}}]}}]}),
+      event({choices:[{delta:{tool_calls:[{index:0,function:{arguments:'"fixture"}'}}]},finish_reason:'tool_calls'}],
+        usage:{prompt_tokens:24,completion_tokens:12,prompt_tokens_details:{cached_tokens:4},completion_tokens_details:{reasoning_tokens:3}}}),
+      {event:null,data:'[DONE]'}]},check(output){
+    assert.equal(output.state.finished,true);
+    assert.deepEqual(output.deltas.filter(delta=>delta.kind==='text'),[{kind:'text',text:'Answer'}]);
+    assert.deepEqual(output.deltas.filter(delta=>delta.kind==='reasoning'),[{kind:'reasoning',text:'Inspect first',replay:'Inspect first'}]);
+    assert.deepEqual(output.deltas.filter(delta=>delta.kind==='tool_call').map(delta=>delta.arguments_delta),['{"path":','"fixture"}']);
+    assert.deepEqual(output.deltas.filter(delta=>delta.kind==='usage'),[{kind:'usage',input_tokens:24,output_tokens:12,cached_input_tokens:4,reasoning_tokens:3}]);
+    assert.deepEqual(output.deltas.filter(delta=>delta.kind==='finish'),[{kind:'finish',reason:'tool_calls'}]);
+  }},
+  {name:'preserves declared quota failures without replay',handler:'classify',input:{status:403,body:'{"error":{"code":14018,"displayTips":"Fixture quota exhausted"}}'},check(output){
+    // HTTP permission semantics take precedence over a proprietary quota code.
+    assert.deepEqual(output,{class:'permission',message:'Fixture quota exhausted'});
+  }},
+  {name:'normalizes token fields only in the authentication script',script:'auth',handler:'exchange',input:{code:0,data:{AccessToken:'fixture-access',RefreshToken:'fixture-refresh',Domain:'fixture-domain',expires_in:3600}},check(output){
+    assert.deepEqual(output,{access:'fixture-access',refresh:'fixture-refresh',expires_in:3600,domain:'fixture-domain'});
+  }},
+  {name:'accepts rotated token responses without optional account fields',script:'auth',handler:'exchange',input:{code:200,data:{access_token:'fixture-rotated',expiresIn:1800}},check(output){
+    assert.deepEqual(output,{access:'fixture-rotated',expires_in:1800});
+  }},
+  {name:'prepares regional discovery without exposing credentials',handler:'prepare_discovery',input:{endpoint:'https://www.workbuddy.ai'},check(output){
+    assert.equal(output.url,'https://www.workbuddy.ai/v3/config');
+    assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.2');
+    assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
+    assert.equal(output.headers.Authorization,undefined);
+  }},
+  {name:'uses declared catalog limits capabilities and CLI roster',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:200,body:JSON.stringify({code:0,data:{
+    models:[{id:'hidden',name:'Hidden',maxInputTokens:8192,maxOutputTokens:1024},
+      {id:'selected',name:'Selected',maxInputTokens:128000,maxOutputTokens:8192,supportsToolCall:true,supportsImages:true,
+        disabledMultimodal:true,reasoning:{supportedEfforts:['low','high'],defaultEffort:'high'}},
+      {id:'disabled',disabled:true,maxInputTokens:8192,maxOutputTokens:1024}],
+    agents:[{name:'cli',models:['selected','disabled']}],
+  }})},check(output){
+    assert.deepEqual(output,{endpoint:'https://copilot.tencent.com',models:[{id:'selected',display_name:'Selected',context:128000,output:8192,
+      capabilities:{tools:true,vision:false,efforts:['low','high'],reasoning:true,default_effort:'high'}}]});
+  }},
+];
+
+export const invalid = [
+  {name:'rejects unsupported endpoints before HTTP',handler:'prepare',input:request({endpoint:'https://other.invalid'})},
+  {name:'rejects files instead of dropping message parts',handler:'prepare',input:request({messages:[{role:'user',parts:[{kind:'file',name:'fixture',media_type:'application/pdf',data_base64:'ZmFrZQ=='}]}]})},
+  {name:'rejects unfinished streams instead of reporting success',handler:'decode',input:{state:null,events:[event({choices:[{delta:{content:'Partial'}}]})],done:true}},
+  {name:'rejects incomplete private token responses',script:'auth',handler:'exchange',input:{data:{accessToken:'fixture-private-access'}}},
+  {name:'rejects failed discovery without inventing models',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:503,body:'{"code":0,"data":{"models":[]}}'}},
+];

@@ -15,7 +15,13 @@ def catalog(root=ROOT):
         name = data["name"]
         if name != manifest.parent.name:
             raise ValueError("Package name must match its directory")
-        packages.append({"id": name, "manifest": data})
+        extension = data.get("extensions", {}).get("dev.sailry.platform", {})
+        packages.append({
+            "id": name,
+            "manifest": data,
+            "provides_models": bool(extension.get("model_providers") or extension.get("model_adapters")),
+            "permissions": extension.get("actions", []),
+        })
     return {"version": 1, "packages": packages}
 
 

@@ -14,6 +14,11 @@ export function execute(input) {
   return invoke(input, []);
 }
 
+/** Runs the production pure translator without a Node, SDK or network. */
+export function translate(input) {
+  return invoke(input, ['--translation']);
+}
+
 /** Validates raw JSON Schema offline, not a provider's normalized declaration. */
 export function validateSchema(schema, values) {
   return invoke({schema, values}, ['--validate-schema']).valid;
@@ -54,4 +59,25 @@ export async function packageInput(directory, handler, input, overrides = {}) {
       session: '00000000-0000-4000-8000-000000000001',
       worktree: '00000000-0000-4000-8000-000000000002'},
     policy: null, ...overrides};
+}
+
+
+/** Loads an explicit pure script declaration; package tests own the handler and payload. */
+export async function translationInput(directory, script, handler, input) {
+  const root = await realpath(fileURLToPath(directory));
+  if (!script || typeof script.entry !== 'string') throw new Error('Package has no model translation entry');
+  const files = {};
+  for (const name of new Set([script.entry, ...(script.resources ?? [])])) {
+    if (typeof name !== 'string' || !name.startsWith('dev.sailry.platform/') || name.includes('\\') || path.isAbsolute(name)
+        || name.split('/').some(part => !part || part === '.' || part === '..')) {
+      throw new Error('Invalid model translation resource');
+    }
+    const filename = await realpath(path.join(root, name));
+    const relative = path.relative(root, filename);
+    if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+      throw new Error('Model translation resource escapes its package');
+    }
+    if (name.endsWith('.js') || name.endsWith('.mjs')) files[name] = await readFile(filename, 'utf8');
+  }
+  return {entry: script.entry, files, handler, input};
 }

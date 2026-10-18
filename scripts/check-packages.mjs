@@ -59,20 +59,48 @@ export function checkPackage(manifest) {
   for (const section of sections) distinct(section.resources ?? [], 'Resources');
   distinct(extension.host?.handlers ?? [], 'Host handlers');
   if (extension.tools) distinct(extension.tools.map(tool => tool.name), 'Tools');
+  for (const [key, label] of [['model_providers', 'Model providers'], ['model_auth', 'Model authentication'], ['model_adapters', 'Model adapters']]) {
+    distinct((extension[key] ?? []).map(item => item.id), label);
+  }
+  const pure = [
+    ...(extension.model_adapters ?? []).map(adapter => adapter.script),
+    ...(extension.model_auth ?? []).flatMap(auth => auth.exchange ? [auth.exchange.script] : []),
+  ];
+  if (pure.some(script => !script || typeof script.entry !== 'string')) throw new Error('Model translations must declare a script');
+  if (extension.model_adapters?.length && !extension.actions.includes('models.provide')) throw new Error('Model adapters require models.provide');
+  if (extension.model_auth?.length && !extension.actions.includes('models.authenticate')) throw new Error('Model authentication requires models.authenticate');
+  if (extension.model_auth?.some(auth => auth.exchange) && !extension.actions.includes('credentials.inspect')) throw new Error('Credential transformations require credentials.inspect');
+  const pureFiles = new Set(), pureScopes = [];
+  for (const script of pure) {
+    distinct(script.resources ?? [], 'Model resources');
+    const scope = new Set();
+    pureScopes.push(scope);
+    for (const value of [script.entry, ...(script.resources ?? [])]) {
+      if (!value.startsWith('dev.sailry.platform/')) throw new Error('Model translations must stay in their namespace');
+      const filename = resource(directory, value);
+      pureFiles.add(filename);
+      scope.add(filename);
+    }
+  }
   const declared = new Set(sections.flatMap(section => [
     ...(section.resources ?? []), ...['entry', 'ui_entry'].flatMap(key => section[key] ? [section[key]] : []),
   ]));
   const files = new Set([...declared].map(value => resource(directory, value)));
+  for (const filename of pureFiles) files.add(filename);
   for (const filename of files) {
     if (!filename.endsWith('.js') && !filename.endsWith('.mjs')) continue;
     for (const specifier of dependencies(readFileSync(filename, 'utf8'), filename)) {
       if (!specifier.startsWith('.')) {
-        if (!modules.has(specifier)) throw new Error(`Unsupported host module: ${specifier}`);
+        const supported = pureFiles.has(filename) ? specifier === 'sailry/adapter' : modules.has(specifier);
+        if (!supported) throw new Error(`Unsupported host module: ${specifier}`);
         continue;
       }
       const value = path.relative(directory, path.resolve(path.dirname(filename), specifier)).split(path.sep).join('/');
       const imported = resource(directory, value);
       if (!files.has(imported)) throw new Error(`Import is not a declared package resource: ${value}`);
+      if (pureScopes.some(scope => scope.has(filename) && !scope.has(imported))) {
+        throw new Error(`Import is not a declared model resource: ${value}`);
+      }
     }
   }
   return files.size;

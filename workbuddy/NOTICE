@@ -1,0 +1,12 @@
+WorkBuddy protocol translations reference the third-party project
+dingminhua/dsh-connect-workbuddy, version 4.8.1, commit
+aa87b71a2dc59f056a52c90b9411f2b70e8c18a1:
+https://github.com/dingminhua/dsh-connect-workbuddy
+Copyright (c) 2026 LaoDing. MIT License, reproduced in LICENSE.
+
+The Sailry implementation adapts the request, token-field and model-catalog
+rules in src/upstream.ts and src/oauth.ts. It does not include that project's
+pi-ai integration, HTTP shim, credential scanner, account pool, billing,
+DSML recovery parser, or their source files and runtimes.
+
+This package is not an official DSH or Tencent integration.

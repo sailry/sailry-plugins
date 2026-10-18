@@ -118,3 +118,43 @@ test('repository packages and examples accept valid version increments', t => {
     writeFileSync(filename, JSON.stringify(data));
   }
 });
+
+
+test('model translations stay pure and preserve declared resources', t => {
+  const script = {entry: 'dev.sailry.platform/adapter.js', resources: ['dev.sailry.platform/helper.js']};
+  const {directory, manifest} = fixture(t, {
+    actions: ['models.provide', 'models.authenticate', 'credentials.inspect'],
+    model_providers: [{id: 'sample'}],
+    model_adapters: [{id: 'sample', script}],
+    model_auth: [{id: 'login', exchange: {script, handler: 'exchange'}}],
+  });
+  mkdirSync(path.join(directory, 'dev.sailry.platform'));
+  writeFileSync(path.join(directory, script.entry), "import './helper.js'; import {version} from 'sailry/adapter'; export const prepare = () => ({version});");
+  writeFileSync(path.join(directory, script.resources[0]), 'export const value = 1;');
+  assert.equal(checkPackage(manifest), 2);
+  writeFileSync(path.join(directory, script.resources[0]), "import * as sdk from 'sailry/sdk'; export const value = sdk;");
+  assert.throws(() => checkPackage(manifest), /Unsupported host module/);
+});
+
+test('model declarations require explicit actions and confined scripts', t => {
+  const script = {entry: 'dev.sailry.platform/main.js', resources: []};
+  const {directory, manifest, data} = fixture(t, {model_adapters: [{id: 'sample', script}]});
+  mkdirSync(path.join(directory, 'dev.sailry.platform'));
+  writeFileSync(path.join(directory, script.entry), 'export const prepare = () => ({});');
+  assert.throws(() => checkPackage(manifest), /models.provide/);
+  const extension = data.extensions['dev.sailry.platform'];
+  extension.actions = ['models.provide'];
+  extension.model_adapters.push({id: 'sample', script});
+  writeFileSync(manifest, JSON.stringify(data));
+  assert.throws(() => checkPackage(manifest), /distinct/);
+  extension.model_adapters = [{id: 'sample', script: {entry: '../escape.js'}}];
+  writeFileSync(manifest, JSON.stringify(data));
+  assert.throws(() => checkPackage(manifest), /namespace/);
+  extension.model_adapters = [];
+  extension.model_auth = [{id: 'login', exchange: {script, handler: 'exchange'}}];
+  writeFileSync(manifest, JSON.stringify(data));
+  assert.throws(() => checkPackage(manifest), /models.authenticate/);
+  extension.actions.push('models.authenticate');
+  writeFileSync(manifest, JSON.stringify(data));
+  assert.throws(() => checkPackage(manifest), /credentials.inspect/);
+});
