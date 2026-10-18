@@ -12881,7 +12881,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -12900,7 +12900,7 @@
                 "zh-CN": "WorkBuddy",
                 "zh-TW": "WorkBuddy"
               },
-              "icon": "reicon:communication/chat-3"
+              "icon": "reicon:messages/chat"
             },
             "model_providers": [
               {
