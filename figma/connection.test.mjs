@@ -1,4 +1,4 @@
-import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
+import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync} from 'node:fs';
@@ -14,7 +14,7 @@ const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.st
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.2');
+  assert.equal(manifest.version, '0.1.3');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);
@@ -54,7 +54,7 @@ test('reads exact files and nodes with bounded parameters', () => {
     {action:'nodes',file_key:'file-key',ids:[]}, {action:'nodes',file_key:'file-key',ids:['1:2','1:2']},
     {action:'nodes',file_key:'file-key',ids:['1,2']}, {action:'nodes',file_key:'file-key',ids:['1\n2']},
     {action:'file',file_key:'file-key',version:9007199254740993},
-    ...[0,101,1.5,null].map(depth => ({action:'file',file_key:'file-key',depth})),
+    ...[0,1.5,null].map(depth => ({action:'file',file_key:'file-key',depth})),
   ]) assert.throws(() => read({step:0, arguments:args}));
 });
 
@@ -109,4 +109,47 @@ runtimeTest('schema requires the target fields for each action', () => {
   }
   values.push({action:'file',file_key:'file-key',ids:['1:2']}); expected.push(false);
   assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
+});
+
+const largeCases = [
+  {arguments:{action:'file',file_key:'k'.repeat(129),version:'v'.repeat(129),depth:101},
+    check:prepared => {
+      const url = new URL(prepared.call.arguments.url);
+      assert.equal(url.pathname,`/v1/files/${'k'.repeat(129)}`);
+      assert.equal(url.searchParams.get('version'),'v'.repeat(129));
+      assert.equal(url.searchParams.get('depth'),'101');
+    }},
+  {arguments:{action:'nodes',file_key:'file',ids:Array.from({length:101},(_,index) => `1:${index}`)},
+    check:prepared => assert.equal(new URL(prepared.call.arguments.url).searchParams.get('ids'),
+      Array.from({length:101},(_,index) => `1:${index}`).join(','))},
+  {arguments:{action:'nodes',file_key:'file',ids:['n'.repeat(1025)]},
+    check:prepared => assert.equal(new URL(prepared.call.arguments.url).searchParams.get('ids'),'n'.repeat(1025))},
+];
+const invalidCases = [{action:'file',file_key:'file',depth:1.5},
+  {action:'file',file_key:'file',depth:Number.MAX_SAFE_INTEGER+1}];
+
+test('larger requests preserve source values and endpoint budgets', async () => {
+  const run = read;
+  for (const entry of largeCases) {
+    const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
+    const prepared = plain(await run({step:entry.step ?? 0,arguments:arguments_,outcome:entry.outcome}));
+    assert.deepEqual(arguments_,original);
+    entry.check(prepared);
+    assert.equal(prepared.call.operation,'http.request');
+  }
+});
+
+runtimeTest('larger requests reach the production adapter unchanged', async () => {
+  const schema = extension.tools[0].handler.parameters;
+  assert.deepEqual(validateSchema(schema,[...largeCases.map(entry => entry.arguments),...invalidCases]),
+    [...largeCases.map(() => true),...invalidCases.map(() => false)]);
+  for (const entry of largeCases) {
+    const input = await packageInput(new URL('./',import.meta.url),'read',
+      {step:entry.step ?? 0,arguments:entry.arguments,outcome:entry.outcome});
+
+    const output = execute(input);
+    assert.equal(output.result.Err,undefined);
+    entry.check(output.result.Ok);
+    assert.equal(output.calls.length,0);
+  }
 });

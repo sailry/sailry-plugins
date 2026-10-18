@@ -1,7 +1,7 @@
 const origin = 'https://api.figma.com';
 
 function segment(value, name) {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(value))
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+$/.test(value))
     throw new Error(`Invalid ${name}`);
   return value;
 }
@@ -12,15 +12,15 @@ function parameters(args) {
   if (!['file','nodes'].includes(args.action)) throw new Error('Unknown Figma action');
   const values = [];
   if (args.action === 'nodes') {
-    if (!Array.isArray(args.ids) || !args.ids.length || args.ids.length > 100
+    if (!Array.isArray(args.ids) || !args.ids.length
         || new Set(args.ids).size !== args.ids.length
-        || args.ids.some(id => typeof id !== 'string' || !id.length || id.length > 1024
+        || args.ids.some(id => typeof id !== 'string' || !id.length
           || /[\u0000-\u0020,]/.test(id))) throw new Error('Invalid node IDs');
     values.push(['ids', args.ids.join(',')]);
   } else if (args.ids !== undefined) throw new Error('Node IDs require the nodes action');
   if (args.version !== undefined) values.push(['version', segment(args.version, 'version')]);
   if (args.depth !== undefined) {
-    if (!Number.isInteger(args.depth) || args.depth < 1 || args.depth > 100)
+    if (!Number.isSafeInteger(args.depth) || args.depth < 1)
       throw new Error('Invalid depth');
     values.push(['depth', String(args.depth)]);
   }
