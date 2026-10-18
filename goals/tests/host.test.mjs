@@ -9,8 +9,9 @@ const value={id:'goal-id',description:'Finish the requested work',state:'active'
 test('continuation markers remain localized package declarations',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
+  assert.deepEqual(manifest.extensions['dev.sailry.platform'].host.read_only,['read']);
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.2');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+  assert.equal(manifest.version,'0.1.3');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;
@@ -171,4 +172,12 @@ test('long descriptions retain their complete contents',async()=>{
   const description='Long goal '.repeat(1000).trim();
   await api.create({description});
   assert.equal(current().value.description,description);
+});
+
+test('cancelled history pauses reads without writing',async()=>{
+  const {api,history,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  assert.equal((await api.read()).goal.state,'active');
+  history.page.runs[0].status='cancelled';
+  assert.equal((await api.read()).goal.state,'paused');
+  assert.equal(requests.length,0);
 });

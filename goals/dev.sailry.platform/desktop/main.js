@@ -1,6 +1,6 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
-import {nextChange,prepareRequest,completeRequest,forgetRequest,faultCode,publishContributions,nextContributionEvent} from 'sailry/sdk';
+import {nextChange,nextConversation,prepareRequest,completeRequest,forgetRequest,faultCode,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import {readComposer,nextComposerChange,toast} from 'sailry/ui';
 import {messages} from './locales.js';
 import {render} from './view.js';
@@ -13,12 +13,15 @@ export default class Goals extends View {
     this.publish(); this.refresh(cx);
     cx.spawn(async cx=>{
       try {while(true) {
-        this.accept(await nextComposerChange(this.state.cursor)); this.publish(); cx.notify();
+        const previous=this.state;
+        this.accept(await nextComposerChange(previous.cursor));
+        if (this.state.session!==previous.session || this.state.connected!==previous.connected || this.state.busy!==previous.busy) {this.refresh(cx);this.observeConversation(cx);}
+        this.publish(); cx.notify();
       }} catch (_) {}
     });
     cx.spawn(async cx=>{
       let cursor='';
-      try {while(true) {const change=await nextChange(cursor);cursor=change.cursor;this.refresh(cx);}}
+      try {while(true) {const change=await nextChange(cursor,'package');cursor=change.cursor;this.refresh(cx);this.observeConversation(cx);}}
       catch (_) {}
     });
     cx.spawn(async cx=>{
@@ -29,6 +32,22 @@ export default class Goals extends View {
         }
         this.publish(event);cx.notify();
       }} catch (_) {}
+    });
+    this.observeConversation(cx);
+  }
+  observeConversation(cx) {
+    if (this.watching || !this.scope.session || this.scope.session!==this.state.session || !this.state.connected) return;
+    this.watching=true;
+    cx.spawn(async cx=>{
+      let cursor='',runs=null;
+      try {while(true) {
+        const change=await nextConversation(cursor);cursor=change.cursor;
+        const page=change.view.snapshot?.page;
+        if (!page || page.session!==this.scope.session || page.session!==this.state.session) continue;
+        const next=JSON.stringify(page.runs.map(run=>[run.turn,run.status]));
+        if (next!==runs) {runs=next;this.refresh(cx);}
+      }} catch (_) {}
+      finally {this.watching=false;}
     });
   }
   accept(state) {
@@ -56,7 +75,7 @@ export default class Goals extends View {
     cx.spawn(async cx=>{
       try {do {
         this.dirty=false;
-        const id=prepareRequest({kind:'call_plugin',data:{handler:'read',input:{}}});
+        const id=prepareRequest({kind:'read_plugin_callback',data:{handler:'read',input:{}}});
         let result;
         try {result=await completeRequest(id);}
         finally {forgetRequest(id);}

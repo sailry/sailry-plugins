@@ -15,9 +15,20 @@ async function fixture() {
     hold:false,held:[],failure:null,readFailure:null};
   const prepared=[],completed=[],forgotten=[],contributions=[],notices=[],jobs=[];
   const never=()=>new Promise(()=>{});
+  const listeners={change:null,composer:null,conversation:null},ready={},scopes=[];
+  const next=kind=>{ready[kind]?.();return new Promise(resolve=>{listeners[kind]=resolve;});};
+  async function emit(kind,value) {
+    assert.ok(listeners[kind]);
+    const first=jobs.length;
+    const accepted=new Promise(resolve=>{ready[kind]=resolve;});
+    const resolve=listeners[kind];listeners[kind]=null;resolve(value);
+    await accepted;delete ready[kind];
+    if(!host.hold) await Promise.all(jobs.slice(first));
+  }
   const modules=new Map(),context=vm.createContext({});
   const sdk={
-    nextChange:never,nextContributionEvent:never,
+    nextChange:(_cursor,scope)=>{scopes.push(scope);return next('change');},
+    nextConversation:()=>next('conversation'),nextContributionEvent:never,
     publishContributions:value=>contributions.push(plain(value)),
     prepareRequest:request=>{
       if (prepared.length-forgotten.length>=16) throw new Error('Host request capacity exceeded');
@@ -29,7 +40,7 @@ async function fixture() {
       if(request.data.handler==='read') {
         if(host.readFailure instanceof Error) throw host.readFailure;
         if(host.readFailure) return {Err:{code:host.readFailure,message:'Read failed'}};
-        const result={Ok:{data:{goal:plain(host.goal)}}};
+        const result={Ok:{data:{goal:plain(host.goal && {...host.goal,state:host.displayState ?? host.goal.state})}}};
         return host.hold ? new Promise(resolve=>host.held.push(()=>resolve(result))) : result;
       }
       assert.equal(request.data.handler,'control');
@@ -46,11 +57,11 @@ async function fixture() {
   const exports={
     'gpui-kit':{View:class{}},
     'gpui-component':{Button:function(id){return element(id);}},
-    sailry:{context:()=>JSON.stringify({locale:'en',package:{name:'goals'}})},
+    sailry:{context:()=>JSON.stringify({locale:'en',session:'session',package:{name:'goals'}})},
     'sailry/sdk':sdk,
     'sailry/ui':{StatusList:{new:element},
       readComposer:()=>({session:'session',connected:true,readonly:false,busy:false,mode:'code',cursor:'1'}),
-      nextComposerChange:never,toast:value=>{
+      nextComposerChange:()=>next('composer'),toast:value=>{
         if(!['info','error'].includes(value.kind)) throw new TypeError('Unsupported notification kind');
         notices.push(plain(value));
       }},
@@ -76,7 +87,7 @@ async function fixture() {
     await jobs[first];
     if(!host.hold) await jobs.at(-1);
   }
-  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices};
+  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices,emit,scopes};
 }
 
 test('successful controls use supported notifications',async()=>{
@@ -237,4 +248,46 @@ test('failed reads release capacity and preserve current goal',async()=>{
   await setup.perform('pause');
   assert.equal(setup.host.goal.state,'paused');
   assert.equal(setup.view.pending,null);
+});
+
+test('reads stay nondurable while controls retain admission',async()=>{
+  const setup=await fixture();
+  assert.equal(setup.prepared[0].kind,'read_plugin_callback');
+  assert.deepEqual(setup.scopes,['package']);
+  await setup.emit('composer',{...setup.view.state,cursor:'2',draft:'changed',locale:'de'});
+  assert.equal(setup.prepared.length,1);
+  await setup.emit('composer',{...setup.view.state,cursor:'3',busy:true});
+  assert.equal(setup.prepared.length,2);
+  setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
+  await setup.emit('change',{cursor:'package-1',connected:true,entry:'0'});
+  assert.equal(setup.view.goal.description,'Changed elsewhere');
+  assert.equal(setup.prepared.length,3);
+  assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
+  await setup.emit('composer',{...setup.view.state,cursor:'4',busy:false});
+  await setup.perform('pause');
+  const controls=setup.prepared.filter(request=>request.data.handler==='control');
+  assert.equal(controls.length,1);
+  assert.equal(controls[0].kind,'call_plugin');
+  assert.equal(setup.view.pending,null);
+});
+
+
+test('external stops refresh without storage changes',async()=>{
+  const setup=await fixture();
+  const change=(cursor,status,session='session',text='')=>({cursor,view:{snapshot:{page:{session,
+    runs:[{turn:'current-turn',status}],entries:[{text}]}}}});
+  await setup.emit('conversation',change('1','running'));
+  const before=setup.prepared.length;
+  await setup.emit('conversation',change('2','running','session','Streaming text'));
+  await setup.emit('conversation',change('3','cancelled','another-session'));
+  assert.equal(setup.prepared.length,before);
+  // A service-reduced stop from another controller need not write goal storage.
+  setup.host.displayState='paused';
+  await setup.emit('conversation',change('4','cancelled'));
+  assert.equal(setup.host.goal.state,'active');
+  assert.equal(setup.view.goal.state,'paused');
+  assert.equal(setup.prepared.length,before+1);
+  assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
+  await setup.emit('conversation',change('5','cancelled','session','Unrelated output'));
+  assert.equal(setup.prepared.length,before+1);
 });
