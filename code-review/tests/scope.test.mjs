@@ -29,7 +29,7 @@ test('initial page limit preserves complete frozen coverage', async () => {
 });
 
 test('creation rejects invalid pagination before reading resources', async () => {
-  for (const input of [{limit:0},{limit:101},{limit:null},{offset:0,limit:1}]) {
+  for (const input of [{limit:0},{limit:Number.MAX_SAFE_INTEGER+1},{limit:null},{offset:0,limit:1}]) {
     const fixtureData = await fixture();
     const result = await fixtureData.invoke('scope',input);
     assert.equal(result.isError,true);
@@ -120,14 +120,29 @@ test('binary and unsupported files return skip receipts', async () => {
   assert.equal((await fixtureData.invoke('complete',receipt(scope))).status,'complete');
 });
 
-test('incomplete inventory and oversized scope never persist', async () => {
-  for (const fixtureData of [await fixture([file('src/main.rs')],{incomplete:true}),
-    await fixture(Array.from({length:257},(_,index) => file(`src/${index}.rs`)))]) {
-    const result = await fixtureData.invoke('scope',{});
-    assert.equal(result.isError,true);
-    assert.equal(fixtureData.values.size,0);
-    assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,0);
+test('incomplete inventory never persists', async () => {
+  const fixtureData = await fixture([file('src/main.rs')],{incomplete:true});
+  const result = await fixtureData.invoke('scope',{});
+  assert.equal(result.isError,true);
+  assert.equal(fixtureData.values.size,0);
+  assert.equal(fixtureData.calls.filter(call => call.kind === 'read_git_change').length,0);
+});
+
+test('large scopes retain all files across bounded output pages', async () => {
+  const source = Array.from({length:257},(_,index) => file(`src/${index}.rs`));
+  const current = await fixture(source);
+  const first = await current.invoke('scope',{limit:1000});
+  assert.equal(first.counts.files,source.length);
+  assert.equal(first.files.length,100);
+  const scope = {...first,files:[...first.files],groups:[...first.groups]};
+  for (let next=first.next; next!==null;) {
+    const page=await current.invoke('scope',{review_id:first.review_id,offset:next,limit:1000});
+    assert.deepEqual(page.snapshot,first.snapshot);
+    assert.ok(page.files.length+page.groups.length+page.skipped.length+page.findings.length<=100);
+    scope.files.push(...page.files); scope.groups.push(...page.groups); next=page.next;
   }
+  assert.deepEqual(new Set(scope.files.map(value=>value.path)),new Set(source.map(value=>value.path)));
+  assert.equal((await current.invoke('complete',receipt(scope))).status,'complete');
 });
 
 test('creation failure preserves original flow outcome', async () => {

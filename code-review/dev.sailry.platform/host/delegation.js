@@ -9,12 +9,12 @@ function parameters(roles) {
   return {type:'object', additionalProperties:false,
     required:['review_id','groups','record_receipt'], properties:{
       review_id:{type:'string',pattern:'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$'},
-      groups:{type:'array',minItems:1,maxItems:limits.files,uniqueItems:true,
-        items:{type:'string',minLength:1,maxLength:80}},
+      groups:{type:'array',minItems:1,uniqueItems:true,
+        items:{type:'string',minLength:1}},
       record_receipt:{type:'boolean',description:'Require a formal receipt, or explicitly gather evidence only'},
       role:{type:['string','null'],enum:[...roles.map(role => role.key),null],default:null,
         description:'Omit for a new child inheriting this Code turn; named roles retain their captured mode and model'},
-      title:{type:'string',minLength:1,maxLength:80},
+      title:{type:'string',minLength:1},
       background:{type:'boolean'},
     }};
 }
@@ -44,7 +44,7 @@ function capability(args) {
 }
 
 function capture(value, scope, selected, recording) {
-  if (!Array.isArray(selected) || !selected.length || selected.length > limits.files
+  if (!Array.isArray(selected) || !selected.length
       || selected.some(group => typeof group !== 'string') || new Set(selected).size !== selected.length) {
     fail('Select distinct complete review groups');
   }
@@ -88,8 +88,8 @@ export async function prepare(input) {
   identifier(args.review_id);
   capability(args);
   if (args.title !== undefined) {
-    text(args.title,'review title',320);
-    if ([...args.title].length > 80 || /[\n\r]/.test(args.title)) fail('Invalid review title');
+    text(args.title,'review title');
+    if (/[\n\r]/.test(args.title)) fail('Invalid review title');
   }
   if (args.background !== undefined && typeof args.background !== 'boolean') fail('Invalid delegation background mode');
   const actor = await identity();

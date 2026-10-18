@@ -7,8 +7,8 @@ import {clone, fail, fields, identifier, integer, limits, size} from './policy.j
 import {head, key, manifest, record, shards, transaction, write} from './records.js';
 
 export async function page(value, offset = 0, limit = limits.page, content = null) {
-  integer(offset, 'review offset', 0, limits.inventory+limits.files*2+limits.findings);
-  integer(limit, 'review page limit', 1, limits.page);
+  integer(offset, 'review offset', 0, Number.MAX_SAFE_INTEGER);
+  integer(limit, 'review page limit', 1, Number.MAX_SAFE_INTEGER);
   const scope = content ?? await manifest(value);
   const total = scope.rows.length + value.findings.length;
   if (offset > total) fail('Review offset exceeds the scope');
@@ -16,7 +16,7 @@ export async function page(value, offset = 0, limit = limits.page, content = nul
     creator:value.creator, counts:{...value.counts,findings:value.findings.length},
     reviewed_groups:value.reviewed_groups, offset, next:null, files:[],groups:[],skipped:[],findings:[]};
   let next = offset;
-  for (; next < total && next-offset < limit; next++) {
+  for (; next < total && next-offset < Math.min(limit,limits.page); next++) {
     let row = scope.rows[next];
     if (!row) {
       const current = await record(key(value.id, `finding/${value.findings[next-scope.rows.length]}`));
@@ -43,7 +43,7 @@ export async function prepare(input, actor) {
     return {result:await page(current.value,args.offset,args.limit)};
   }
   if (args.offset !== undefined) fail('offset requires an existing review_id');
-  const limit = integer(args.limit === undefined ? limits.page : args.limit, 'review page limit', 1, limits.page);
+  const limit = integer(args.limit === undefined ? limits.page : args.limit, 'review page limit', 1, Number.MAX_SAFE_INTEGER);
   const id = identifier(callId());
   if ((await record(key(id,'head'))).present) fail('Review scope already exists', 'conflict');
   const target = args.target ?? {kind:'worktree',data:{scope:'all'}};
@@ -54,7 +54,6 @@ export async function prepare(input, actor) {
     if (reason) skipped.push({path:entry.path,reason});
     return !reason;
   });
-  if (eligible.length > limits.files) fail('Review scope exceeds the bounded file budget');
   for (const entry of eligible) {
     const current = await change(actor.worktree,listed.snapshot,entry);
     if (current.binary || current.skip_reason) {

@@ -26,8 +26,8 @@ function remaining(scope, covered) {
 }
 
 function receipt(args, scope, value) {
-  if (!Array.isArray(args.reviewed_files) || args.reviewed_files.length > limits.files
-      || !Array.isArray(args.reviewed_groups) || args.reviewed_groups.length > limits.files
+  if (!Array.isArray(args.reviewed_files)
+      || !Array.isArray(args.reviewed_groups)
       || typeof args.finalize !== 'boolean') fail('Invalid review receipt');
   const files = new Map(), groups = new Set();
   for (const file of args.reviewed_files) {
@@ -79,7 +79,6 @@ export async function prepare(input, actor) {
   if (incoming.groups.size) {
     const id = identifier(callId());
     if (current.value.receipts.includes(id)) fail('Receipt was already recorded','conflict');
-    if (current.value.receipts.length >= limits.files) fail('Review exceeds the bounded receipt budget');
     const rows = [...args.reviewed_files.map(value => ({kind:'file',value})),
       ...args.reviewed_groups.map(value => ({kind:'group',value})),{kind:'reporter',value:actor.session}];
     const stored = shards(args.review_id,`receipt/${id}`,'receipt',rows);

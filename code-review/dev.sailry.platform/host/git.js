@@ -30,7 +30,7 @@ export async function inventory(worktree, target, snapshot = null) {
       seen.add(entry.path);
       entries.push(entry);
       total += size(entry)+1;
-      if (entries.length > limits.inventory || total > limits.transaction) {
+      if (total > limits.transaction) {
         fail('Review inventory exceeds the bounded scope budget');
       }
     }
@@ -71,7 +71,7 @@ export async function change(worktree, snapshot, file, all = false) {
       }
       lines.push(line);
       total += size(line);
-      if (lines.length > limits.lines || total > limits.patch) fail('Review evidence exceeds the bounded diff budget');
+      if (total > limits.patch) fail('Review evidence exceeds the bounded diff budget');
     }
     if (page.next == null) return {...page, lines, revision:frozen};
     if (!Number.isSafeInteger(page.next) || page.next !== offset + page.lines.length || page.next <= offset) {

@@ -1,6 +1,6 @@
-export const limits = Object.freeze({files:256, inventory:8192, findings:256, page:100,
+export const limits = Object.freeze({page:100,
   value:256*1024, shard:128*1024, transaction:2*1024*1024, output:128*1024,
-  patch:4*1024*1024, lines:32768});
+  patch:4*1024*1024});
 
 export function fail(message, code = 'invalid_request', details) {
   const error = new Error(message);
@@ -25,9 +25,8 @@ export function fields(value, allowed, required = []) {
       || required.some(key => !Object.hasOwn(value, key))) fail('Invalid review arguments');
   return value;
 }
-export function text(value, label, maximum, minimum = 1) {
-  if (typeof value !== 'string' || value.includes('\0') || value.trim().length < minimum
-      || bytes(value) > maximum) fail(`Invalid ${label}`);
+export function text(value, label, minimum = 1) {
+  if (typeof value !== 'string' || value.includes('\0') || value.trim().length < minimum) fail(`Invalid ${label}`);
   return value;
 }
 export function integer(value, label, minimum, maximum) {
@@ -41,12 +40,12 @@ export function identifier(value) {
   return value;
 }
 export function path(value) {
-  if (typeof value !== 'string' || !value.length || value.includes('\0') || bytes(value) > 4096) fail('Invalid review path');
+  if (typeof value !== 'string' || !value.length || value.includes('\0')) fail('Invalid review path');
   if (value.startsWith('/') || value.includes('\\')
       || value.split('/').some(part => !part || part === '.' || part === '..')) fail('Invalid review path');
   return value;
 }
-export function revision(value) { return text(value, 'file revision', 256); }
+export function revision(value) { return text(value, 'file revision'); }
 export function result(error) {
   return {isError:true,error:{code:error.code ?? 'internal',message:error.message},
     ...(error.details ? {remaining:error.details} : {})};

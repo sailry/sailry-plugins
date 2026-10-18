@@ -29,14 +29,13 @@ export async function prepare(input, actor) {
   path(args.path);
   revision(args.revision);
   integer(args.line,'finding line',1,Number.MAX_SAFE_INTEGER);
-  text(args.snippet,'finding snippet',8192);
-  text(args.title,'finding title',240);
-  text(args.explanation,'finding explanation',8192);
-  text(args.evidence,'finding evidence',8192);
+  text(args.snippet,'finding snippet');
+  text(args.title,'finding title');
+  text(args.explanation,'finding explanation');
+  text(args.evidence,'finding evidence');
   if (!['P0','P1','P2','P3'].includes(args.severity)) fail('Invalid finding severity');
   const current = await head(args.review_id,actor);
   open(current.value);
-  if (current.value.findings.length >= limits.findings) fail('Review exceeds the bounded finding budget');
   const scope = await manifest(current.value);
   const file = scope.files.find(file => file.path === args.path);
   if (!file) fail('Finding file is outside the review scope');

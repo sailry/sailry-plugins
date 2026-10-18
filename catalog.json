@@ -1368,7 +1368,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -1511,8 +1511,7 @@
                                 "properties": {
                                   "revision": {
                                     "type": "string",
-                                    "minLength": 1,
-                                    "maxLength": 256
+                                    "minLength": 1
                                   }
                                 },
                                 "required": [
@@ -1538,13 +1537,11 @@
                                 "properties": {
                                   "base": {
                                     "type": "string",
-                                    "minLength": 1,
-                                    "maxLength": 256
+                                    "minLength": 1
                                   },
                                   "head": {
                                     "type": "string",
-                                    "minLength": 1,
-                                    "maxLength": 256
+                                    "minLength": 1
                                   }
                                 },
                                 "required": [
@@ -1574,7 +1571,6 @@
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 100,
                         "description": "Maximum returned rows, from 1 to 100; allowed when creating the complete frozen scope or reading an existing page."
                       }
                     },
@@ -1613,13 +1609,11 @@
                       },
                       "path": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 4096
+                        "minLength": 1
                       },
                       "revision": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 256
+                        "minLength": 1
                       },
                       "side": {
                         "enum": [
@@ -1633,8 +1627,7 @@
                       },
                       "snippet": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       },
                       "severity": {
                         "enum": [
@@ -1646,18 +1639,15 @@
                       },
                       "title": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 240
+                        "minLength": 1
                       },
                       "explanation": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       },
                       "evidence": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -1706,19 +1696,16 @@
                       },
                       "reviewed_files": {
                         "type": "array",
-                        "maxItems": 256,
                         "items": {
                           "type": "object",
                           "properties": {
                             "path": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 4096
+                              "minLength": 1
                             },
                             "revision": {
                               "type": "string",
-                              "minLength": 1,
-                              "maxLength": 256
+                              "minLength": 1
                             }
                           },
                           "required": [
@@ -1730,11 +1717,9 @@
                       },
                       "reviewed_groups": {
                         "type": "array",
-                        "maxItems": 256,
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 64
+                          "minLength": 1
                         }
                       },
                       "finalize": {
@@ -1784,12 +1769,10 @@
                       "groups": {
                         "type": "array",
                         "minItems": 1,
-                        "maxItems": 256,
                         "uniqueItems": true,
                         "items": {
                           "type": "string",
-                          "minLength": 1,
-                          "maxLength": 80
+                          "minLength": 1
                         }
                       },
                       "record_receipt": {
@@ -1809,8 +1792,7 @@
                       },
                       "title": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 80
+                        "minLength": 1
                       }
                     }
                   }
