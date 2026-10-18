@@ -85,6 +85,11 @@ export function render(view) {
   const modal = Modal.new(owner?.token ?? 'role-dialog',{open:!!owner,form:true,title,width:editing ? 648 : 448})
     .children(owner ? [editing ? editor(view,owner) : removal(view,owner),footer(view,owner)] : []);
   return div().id('role-settings').v_flex().gap_6()
+    .children(view.capacity ? [SettingsGroup.new('execution_settings',{title:text.execution_settings})
+      .child(new Form().child(new Field().label(text.child_concurrency)
+        .child(TextField.new(view.capacity.field,{readonly:view.capacity.locked()}))
+        .children(view.capacity.request ? [button('capacity-retry',text.role_retry,
+          (_,cx)=>view.capacity.save(cx),view.capacity.pending || !view.connected)] : [])))] : [])
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
       .child(div().h_flex().gap_2().flex_wrap()
         .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))

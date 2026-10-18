@@ -8,18 +8,21 @@ import {nextControlEvent,nextMenuEvent,modal_closed,toast,dismissToast} from 'sa
 import * as draft from './draft.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
+import {Capacity} from './capacity.js';
 
 export default class Settings extends View {
   init(_props,cx) {
     this.text = messages(JSON.parse(context()).locale);
     this.roles = []; this.models = []; this.ready = false; this.connected = true;
     this.loading = false; this.refresh = false; this.error = null; this.dialog = null; this.serial = 0;
+    this.capacity = new Capacity(this.text);
     this.load(cx);
     cx.spawn(async cx => {
       let cursor;
       try { while (true) {
         const event = await nextChange(cursor), first = cursor === undefined;
         cursor = event.cursor; this.connected = event.connected;
+        this.capacity.connected = event.connected;
         if (event.connected && !first) this.load(cx);
         cx.notify();
       } } catch (_) { /* The captured page owns this subscription. */ }
@@ -41,6 +44,7 @@ export default class Settings extends View {
     cx.spawn(async cx => {
       try { while (true) {
         const event = await nextTextEvent(), owner = this.dialog;
+        if (event.id === this.capacity.field) { this.capacity.input(event,cx); continue; }
         if (owner?.kind === 'edit' && !owner.request && Object.values(owner.fields).includes(event.id)
           && event.kind === 'change') { owner.error = null; cx.notify(); }
       } } catch (_) { /* Native fields are released with the draft. */ }
@@ -51,6 +55,7 @@ export default class Settings extends View {
     if (!this.connected) return;
     if (this.loading) { this.refresh = true; return; }
     this.loading = true;
+    this.capacity.load(cx);
     cx.spawn(async cx => {
       try {
         const [roles,models] = await Promise.all([listRoles(),listModels()]);

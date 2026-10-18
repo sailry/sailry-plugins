@@ -7,6 +7,8 @@ import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/settings.js',import.meta.url),'utf8'))
   .replace(/^import[\s\S]*?from '[^']+';\n/gm,'').replace('export default class ','class ');
+const capacitySource = (await readFile(new URL('../dev.sailry.platform/desktop/capacity.js',import.meta.url),'utf8'))
+  .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 const plain = value => JSON.parse(JSON.stringify(value));
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const deferred = () => { let finish; return {promise:new Promise(resolve => {finish = resolve;}),finish:value => finish(value)}; };
@@ -25,7 +27,8 @@ async function settings(options = {}) {
   const changes = events(), controls = events(), menus = events(), closes = events(), inputs = events();
   const prepared = [], calls = [], forgotten = [], notices = [], released = [], fields = new Map();
   let profiles = [plain(role)], models = [plain(model)], ids = 0;
-  const Type = vm.runInNewContext(`${source}\nSettings`,{
+  let settings = {package:{name:'fixture',digest:'captured',settings_revision:'1'},values:{child_concurrency:'8',retained:'value'}};
+  const bindings = {
     View:class {},context:() => '{"locale":"en"}',draft,messages,
     nextChange:changes.next,nextControlEvent:controls.next,nextMenuEvent:menus.next,
     modal_closed:closes.next,nextTextEvent:inputs.next,
@@ -37,18 +40,82 @@ async function settings(options = {}) {
     prepareRole:(role,revision) => {prepared.push(plain({kind:'edit',role,revision})); return `request-${prepared.length}`;},
     prepareRemoveRole:(id,revision) => {prepared.push({kind:'remove',id,revision}); return `request-${prepared.length}`;},
     completeRequest:async id => {calls.push(id); const value = prepared[Number(id.split('-')[1])-1];
-      return options.complete ? options.complete(id,value) : {Ok:{kind:value.kind === 'edit' ? 'role' : 'roles',data:{}}};},
-    faultCode:() => 'invalid_request'
-  });
+      if(options.complete) return options.complete(id,value);
+      if(value.kind === 'settings') {settings={...settings,package:{...settings.package,settings_revision:String(Number(settings.package.settings_revision)+1)},values:value.values};return {Ok:{kind:'plugin_settings',data:plain(settings)}};}
+      return {Ok:{kind:value.kind === 'edit' ? 'role' : 'roles',data:{}}};},
+    faultCode:message => message,
+    readSettings:async () => plain(settings),
+    prepareSettings:(values,edits,revision) => {prepared.push(plain({kind:'settings',values,edits,revision}));return `request-${prepared.length}`;}
+  };
+  bindings.Capacity = vm.runInNewContext(`${capacitySource}\nCapacity`,bindings);
+  const Type = vm.runInNewContext(`${source}\nSettings`,bindings);
   const cx = {notify() {},spawn(action) {return action(cx);}};
   const view = new Type(); view.init({},cx); await tick();
   return {view,cx,changes,controls,menus,closes,inputs,prepared,calls,forgotten,notices,released,fields,
     async act(action) {action(); await tick(); await tick();},
+    configuration(value) {settings=value;},
     catalog(roles,nextModels) {profiles = roles; if (nextModels) models = nextModels;},
     edit(field,value) {fields.set(view.dialog.fields[field],value);},
     choose(menu,value) {menus.send({menu,id:`${view.dialog.token}:${value}`});}
   };
 }
+
+test('capacity commits on blur and enter without losing other settings',async()=>{
+  const f=await settings(),capacity=f.view.capacity;
+  assert.equal(f.fields.get(capacity.field),'8');
+  for(const [kind,value] of [['blur','1'],['enter','18446744073709551615']]) {
+    const before=f.prepared.length;
+    f.fields.set(capacity.field,value);
+    await f.act(()=>f.inputs.send({id:capacity.field,kind:'change'}));
+    assert.equal(f.prepared.length,before);
+    await f.act(()=>f.inputs.send({id:capacity.field,kind}));
+    assert.equal(f.prepared.length,before+1);
+    assert.deepEqual(f.prepared.at(-1),{kind:'settings',values:{child_concurrency:value,retained:'value'},edits:{},revision:String(before+1)});
+    assert.equal(capacity.request,null);
+  }
+  assert.equal(f.prepared.length,2);
+  assert.equal(f.notices.filter(notice=>notice.kind==='success').length,2);
+});
+
+test('capacity rejects invalid integers before admission',async()=>{
+  const f=await settings(),capacity=f.view.capacity;
+  for(const value of ['0','-1','1.5','18446744073709551616','x','']) {
+    f.fields.set(capacity.field,value);
+    await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
+  }
+  assert.deepEqual(f.prepared,[]);
+  assert.equal(f.notices.length,6);
+  assert.equal(f.fields.get(capacity.field),'');
+});
+
+test('capacity recovers an uncertain save through the original receipt',async()=>{
+  let attempts=0;
+  const f=await settings({complete:async(_,value)=>++attempts===1
+    ? {Err:{code:'outcome_unknown'}}
+    : {Ok:{kind:'plugin_settings',data:{package:{settings_revision:'2'},values:value.values}}}});
+  const capacity=f.view.capacity;
+  f.fields.set(capacity.field,'2');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'enter'}));
+  assert.equal(capacity.locked(),true);
+  assert.equal(capacity.request,'request-1');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
+  assert.deepEqual(f.calls,['request-1','request-1']);
+  assert.equal(f.prepared.length,1);
+  assert.deepEqual(f.forgotten,['request-1']);
+  assert.equal(capacity.locked(),false);
+  assert.equal(f.fields.get(capacity.field),'2');
+});
+
+test('capacity conflicts retain drafts until another explicit commit',async()=>{
+  const f=await settings({complete:async()=>({Err:{code:'revision_conflict'}})}),capacity=f.view.capacity;
+  f.fields.set(capacity.field,'3');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'change'}));
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
+  assert.equal(f.fields.get(capacity.field),'3');
+  assert.equal(capacity.request,null);
+  assert.deepEqual(f.calls,['request-1']);
+  assert.equal(f.notices.at(-1).message,messages('en').role_conflict);
+});
 
 test('saves the complete captured draft without changing hidden fields or model choices',async () => {
   const f = await settings(); f.view.edit(f.view.roles[0],f.cx);

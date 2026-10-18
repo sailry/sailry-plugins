@@ -64,6 +64,18 @@ const titles = {
   ru:{role_create:'Добавить субагента',role_editor:'Изменить субагента'},
   'zh-TW':{role_create:'新增子代理',role_editor:'編輯子代理'}
 };
+const capacity = {
+  en:{execution_settings:'Execution',child_concurrency:'Concurrent subagents per conversation',capacity_invalid:'Enter a positive integer',settings_saved:'Saved'},
+  'zh-CN':{execution_settings:'执行',child_concurrency:'每个会话同时运行的子代理',capacity_invalid:'请输入正整数',settings_saved:'已保存'},
+  'zh-TW':{execution_settings:'執行',child_concurrency:'每個對話同時執行的子代理',capacity_invalid:'請輸入正整數',settings_saved:'已儲存'},
+  de:{execution_settings:'Ausführung',child_concurrency:'Gleichzeitige Unteragenten pro Unterhaltung',capacity_invalid:'Positive ganze Zahl eingeben',settings_saved:'Gespeichert'},
+  es:{execution_settings:'Ejecución',child_concurrency:'Subagentes simultáneos por conversación',capacity_invalid:'Introduce un entero positivo',settings_saved:'Guardado'},
+  fr:{execution_settings:'Exécution',child_concurrency:'Sous-agents simultanés par conversation',capacity_invalid:'Saisissez un entier positif',settings_saved:'Enregistré'},
+  ja:{execution_settings:'実行',child_concurrency:'会話ごとの同時実行サブエージェント数',capacity_invalid:'正の整数を入力してください',settings_saved:'保存しました'},
+  ko:{execution_settings:'실행',child_concurrency:'대화별 동시 실행 하위 에이전트',capacity_invalid:'양의 정수를 입력하세요',settings_saved:'저장됨'},
+  'pt-BR':{execution_settings:'Execução',child_concurrency:'Subagentes simultâneos por conversa',capacity_invalid:'Digite um inteiro positivo',settings_saved:'Salvo'},
+  ru:{execution_settings:'Выполнение',child_concurrency:'Одновременные субагенты на беседу',capacity_invalid:'Введите положительное целое число',settings_saved:'Сохранено'}
+};
 export function messages(locale) {
-  return {...en,...(locale === 'zh-CN' ? zh : {}),...(readOnly[locale] ? {role_read_only:readOnly[locale]} : {}),...(research[locale] ?? {}),...(titles[locale] ?? {})};
+  return {...en,...(locale === 'zh-CN' ? zh : {}),...(readOnly[locale] ? {role_read_only:readOnly[locale]} : {}),...(research[locale] ?? {}),...(titles[locale] ?? {}),...(capacity[locale] ?? capacity.en)};
 }

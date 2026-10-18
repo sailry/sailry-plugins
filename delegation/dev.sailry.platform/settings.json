@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "child_concurrency"
+  ],
+  "properties": {
+    "child_concurrency": {
+      "type": "string",
+      "title": "Concurrent subagents per conversation",
+      "default": "8",
+      "x-sailry-child-concurrency": true
+    }
+  },
+  "x-sailry-locales": {
+    "en": {
+      "child_concurrency": "Concurrent subagents per conversation"
+    },
+    "zh-CN": {
+      "child_concurrency": "每个会话同时运行的子代理"
+    },
+    "zh-TW": {
+      "child_concurrency": "每個對話同時執行的子代理"
+    },
+    "de": {
+      "child_concurrency": "Gleichzeitige Unteragenten pro Unterhaltung"
+    },
+    "es": {
+      "child_concurrency": "Subagentes simultáneos por conversación"
+    },
+    "fr": {
+      "child_concurrency": "Sous-agents simultanés par conversation"
+    },
+    "ja": {
+      "child_concurrency": "会話ごとの同時実行サブエージェント数"
+    },
+    "ko": {
+      "child_concurrency": "대화별 동시 실행 하위 에이전트"
+    },
+    "pt-BR": {
+      "child_concurrency": "Subagentes simultâneos por conversa"
+    },
+    "ru": {
+      "child_concurrency": "Одновременные субагенты на беседу"
+    }
+  }
+}

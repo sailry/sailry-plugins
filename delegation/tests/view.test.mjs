@@ -63,6 +63,25 @@ test('initial reads hide empty roles and retain retry',()=>{
   assert.equal(setup.nodes.has('role-loading'),false);
 });
 
+test('capacity recovery is visible only for retained receipts',()=>{
+  const setup=fixture();
+  setup.view.text=messages('en');
+  setup.view.capacity={field:'capacity',request:null,pending:false,locked:()=>true,
+    save:()=>setup.calls.push(['capacity-retry'])};
+  setup.render();
+  assert.equal(setup.nodes.has('capacity-retry'),false);
+  setup.view.capacity.request='original-request';setup.render();
+  const retry=setup.nodes.get('capacity-retry').items[0];
+  assert.deepEqual(plain(retry.style.label),['Retry']);
+  assert.deepEqual(plain(retry.style.disabled),[false]);
+  retry.on_click({},{});
+  assert.deepEqual(setup.calls,[['capacity-retry']]);
+  setup.view.capacity.pending=true;setup.render();
+  assert.deepEqual(plain(setup.nodes.get('capacity-retry').items[0].style.disabled),[true]);
+  setup.view.capacity.pending=false;setup.view.connected=false;setup.render();
+  assert.deepEqual(plain(setup.nodes.get('capacity-retry').items[0].style.disabled),[true]);
+});
+
 test('one add action preserves existing role edits',()=>{
   const setup=fixture();setup.view.text=messages('en');setup.render();
   assert.equal(setup.nodes.has('role-add-research'),false);

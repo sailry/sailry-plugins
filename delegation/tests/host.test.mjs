@@ -70,6 +70,10 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
   assert.match(tool.description,/new child inherits/);
+  assert.match(tool.description,/private worktree when no project is selected/);
+  for (const name of ['spawn_agent','guide_agent','wait_agent']) {
+    assert.deepEqual(manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === name).contexts ?? [],[]);
+  }
   assert.match(tool.description,/Choose a role listed in this tool when it fits/);
   assert.match(tool.description,/use its exact listed key and never invent a role/);
   assert.match(tool.description,/If no role fits or the roster is empty, omit role or use null/);
