@@ -2,7 +2,7 @@ const origin = 'https://qyapi.weixin.qq.com';
 const base = `${origin}/cli`;
 
 function text(value, name) {
-  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(value)) throw new Error(`Invalid ${name}`);
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+$/.test(value)) throw new Error(`Invalid ${name}`);
   return value;
 }
 function path(value) {
@@ -32,7 +32,7 @@ function response(outcome) {
   catch { return {error:failure('Invalid WeCom result')}; }
 }
 function method(schema, names) {
-  if (!Array.isArray(names) || !names.length || names.length > 8) throw new Error('Invalid method');
+  if (!Array.isArray(names) || !names.length) throw new Error('Invalid method');
   let resource = schema;
   for (const name of names.slice(0, -1)) resource = resource?.resources?.[text(name, 'resource')];
   const target = resource?.methods?.[text(names.at(-1), 'method')];

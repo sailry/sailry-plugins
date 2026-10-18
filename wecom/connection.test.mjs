@@ -1,4 +1,4 @@
-import {runtimeTest, validateSchema} from '../scripts/test-host.mjs';
+import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/test-host.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -101,4 +101,45 @@ runtimeTest('schema requires the target fields for each action', () => {
     }
   }
   assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,values),expected);
+});
+
+const deepMethod = [...Array.from({length:9},(_,index) => `resource_${index}`),'read'];
+const deepSchema = deepMethod.slice(0,-1).reduceRight((child,name) => ({resources:{[name]:child}}),
+  {methods:{read:{http_method:'GET',path:'/read'}}});
+const payload = Object.fromEntries(Array.from({length:65},(_,index) => [`field_${index}`,index]));
+const largeCases = [
+  {arguments:{action:'describe',service:'s'.repeat(129)},
+    check:prepared => assert.deepEqual(JSON.parse(prepared.call.arguments.body),{service:'s'.repeat(129)})},
+  {arguments:{action:'invoke',service:'docs',method:deepMethod,payload},step:1,outcome:outcome(deepSchema),
+    check:prepared => {
+      assert.equal(prepared.call.arguments.url,'https://qyapi.weixin.qq.com/cli/read');
+      assert.equal(prepared.call.arguments.body,JSON.stringify({payload:JSON.stringify(payload)}));
+    }},
+];
+const invalidCases = [{action:'invoke',service:'docs',method:[],payload:{}}];
+
+test('larger requests preserve source values and endpoint budgets', async () => {
+  const run = adapter();
+  for (const entry of largeCases) {
+    const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
+    const prepared = plain(await run({step:entry.step ?? 0,arguments:arguments_,outcome:entry.outcome}));
+    assert.deepEqual(arguments_,original);
+    entry.check(prepared);
+    assert.equal(prepared.call.operation,'http.request');
+  }
+});
+
+runtimeTest('larger requests reach the production adapter unchanged', async () => {
+  const schema = extension.tools[0].handler.parameters;
+  assert.deepEqual(validateSchema(schema,[...largeCases.map(entry => entry.arguments),...invalidCases]),
+    [...largeCases.map(() => true),...invalidCases.map(() => false)]);
+  for (const entry of largeCases) {
+    const input = await packageInput(new URL('./',import.meta.url),'requestFlow',
+      {step:entry.step ?? 0,arguments:entry.arguments,outcome:entry.outcome});
+
+    const output = execute(input);
+    assert.equal(output.result.Err,undefined);
+    entry.check(output.result.Ok);
+    assert.equal(output.calls.length,0);
+  }
 });
