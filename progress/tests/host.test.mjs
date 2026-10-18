@@ -18,10 +18,7 @@ test('a complete snapshot retains parallel work and literal descriptions', () =>
 test('invalid or oversized plans cannot become authoritative progress', () => {
   for (const args of [null,{}, {title:' ',steps:[step('Work')]},{title:null,steps:[]},
     {title:null,steps:[step('','completed')]},{title:null,steps:[step('Work','done')]},
-    {title:null,steps:Array.from({length:257},() => step('Work'))},
-    {title:null,steps:[step('界'.repeat(2731))]},
     {title:null,steps:Array.from({length:9},() => step('a'.repeat(8192)))},
-    {title:'a'.repeat(513),steps:[step('Work')]},
     {title:null,steps:[{...step('Work'),approved:true}]},
     {title:null,steps:[step('Work')],session:'other'}]) {
     assert.equal(update(args).error.code,'invalid_request');
@@ -29,9 +26,13 @@ test('invalid or oversized plans cannot become authoritative progress', () => {
   }
 });
 
-test('schema and execution preserve the original UTF-8 byte limits', () => {
+test('complete plans use the total UTF-8 budget', () => {
   assert.ok(update({title:'界'.repeat(170),steps:[step('😀'.repeat(2048))]}).progress);
-  assert.equal(update({title:'界'.repeat(171),steps:[step('Work')]}).isError,true);
+  for (const plan of [
+    {title:'界'.repeat(171),steps:[step('Work')]},
+    {title:null,steps:[step('界'.repeat(2731))]},
+    {title:'x'.repeat(513),steps:Array.from({length:257},() => step('Work'))},
+  ]) assert.deepEqual(plain(update(plan)),{progress:plan});
   assert.ok(update({title:null,steps:Array.from({length:8},() => step('a'.repeat(8192)))}).progress);
 });
 
@@ -44,5 +45,5 @@ test('the ordinary package uses canonical progress presentation without session 
   assert.equal(tool.handler.operation,undefined); assert.equal(tool.handler.name,'update');
   assert.match(extension.instructions,/Skip plans for direct questions and simple changes/);
   assert.match(extension.instructions,/complete current list with honest statuses/);
-  assert.equal(tool.handler.parameters.properties.steps.maxItems,256);
+  assert.equal(tool.handler.parameters.properties.steps.maxItems,undefined);
 });
