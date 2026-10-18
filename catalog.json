@@ -9909,7 +9909,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "microsoft-365",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Outlook and OneDrive",
         "homepage": "https://learn.microsoft.com/graph/overview",
         "extensions": {
@@ -9995,23 +9995,21 @@
                         "description": "message, event and file require id. events requires both time_min and time_max if either is supplied."
                       },
                       "query": {
-                        "type": "string",
-                        "maxLength": 4096
+                        "type": "string"
                       },
                       "id": {
                         "type": "string",
                         "minLength": 1,
-                        "maxLength": 1024,
                         "description": "Required for message, event or file; copy the ID from a list result."
                       },
                       "cursor": {
-                        "type": "string",
-                        "maxLength": 4096
+                        "type": "string"
                       },
                       "limit": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 100
+                        "maximum": 9007199254740991,
+                        "description": "Requested results; endpoint page budgets apply. Continue with next; pagination reports the requested limit and actual page size."
                       },
                       "time_min": {
                         "type": "string",

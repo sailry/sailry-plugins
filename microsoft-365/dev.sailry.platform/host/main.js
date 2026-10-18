@@ -1,5 +1,5 @@
-function text(value, name, limit = 4096) {
-  if (typeof value !== 'string' || !value.length || value.length > limit || /[\u0000-\u001f]/.test(value))
+function text(value, name) {
+  if (typeof value !== 'string' || !value.length || /[\u0000-\u001f]/.test(value))
     throw new Error(`Invalid ${name}`);
   return value;
 }
@@ -7,7 +7,7 @@ function encoded(value) {
   return encodeURIComponent(value).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
 }
 function id(value, name = 'identifier') {
-  const segment = text(value, name, 1024);
+  const segment = text(value, name);
   if (segment === '.' || segment === '..') throw new Error(`Invalid ${name}`);
   return encoded(segment);
 }
@@ -15,9 +15,9 @@ function query(values) {
   return Object.entries(values).filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${encoded(key)}=${encoded(String(value))}`).join('&');
 }
-function limit(value = 50) {
-  if (!Number.isInteger(value) || value < 1 || value > 100) throw new Error('Invalid page size');
-  return value;
+function limit(value = 50, maximum) {
+  if (!Number.isSafeInteger(value) || value < 1) throw new Error('limit must be a positive safe integer');
+  return {requested_limit:value,page_size:Math.min(value,maximum)};
 }
 function failure(message, status = null) {
   return {isError:true,error:{code:'unavailable',message},status};
@@ -40,7 +40,7 @@ function call(url, credential, state = null) {
 function next(value, path) {
   if (value === undefined || value === null || value === '') return null;
   const prefix = `https://graph.microsoft.com/v1.0${path}?`;
-  if (typeof value !== 'string' || value.length > 4096 || !value.startsWith(prefix)
+  if (typeof value !== 'string' || !value.startsWith(prefix)
       || /[\u0000-\u0020#]/.test(value)) throw new Error('Invalid Graph page cursor');
   return value;
 }
@@ -48,7 +48,11 @@ export function request(input) {
   const args = input.arguments ?? {};
   if (input.step === 0) {
     let path;
-    const values = {'$top':limit(args.limit)};
+    // Messages and calendarView support 1000; other lists use a local page budget.
+    // https://learn.microsoft.com/en-us/graph/api/user-list-messages
+    // https://learn.microsoft.com/en-us/graph/api/calendar-list-calendarview
+    const pagination = limit(args.limit,args.action === 'files' ? 200 : 1000);
+    const values = {'$top':pagination.page_size};
     switch (args.action) {
       case 'messages':
         path = '/me/messages'; values['$select'] = 'id,subject,from,receivedDateTime,bodyPreview,webLink';
@@ -68,11 +72,14 @@ export function request(input) {
       case 'file': return call(`https://graph.microsoft.com/v1.0/me/drive/items/${id(args.id)}`, 'token');
       default: throw new Error('Unknown Microsoft 365 action');
     }
-    const url = next(args.cursor, path) ?? `https://graph.microsoft.com/v1.0${path}?${query(values)}`;
-    return call(url, 'token', {path});
+    const cursor = next(args.cursor,path);
+    const url = cursor ?? `https://graph.microsoft.com/v1.0${path}?${query(values)}`;
+    // Continuations are opaque server URLs; do not rewrite their page size.
+    return call(url, 'token', {path,...(cursor ? {} : {pagination})});
   }
   const reply = response(input.outcome);
   if (reply.error) return {result:reply.error};
   const cursor = next(reply.value['@odata.nextLink'], input.state?.path);
-  return {result:{data:reply.value,next:cursor,partial:cursor !== null,untrusted:true}};
+  return {result:{data:reply.value,next:cursor,partial:cursor !== null,untrusted:true,
+    ...(input.state?.pagination ? {pagination:input.state.pagination} : {})}};
 }
