@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -204,7 +204,7 @@
                 "limit": {
                   "type": "integer",
                   "minimum": 1,
-                  "description": "Maximum returned rows, from 1 to 100; allowed when creating the complete frozen scope or reading an existing page."
+                  "description": "Requested rows; each response uses a 100-row output budget and returns next for remaining rows. Allowed when creating the complete frozen scope or reading an existing page."
                 }
               },
               "required": [],

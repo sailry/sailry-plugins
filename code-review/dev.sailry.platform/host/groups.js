@@ -22,13 +22,24 @@ function resource(path) {
   return parts.filter((part,index) => index <= position || !language.test(part)).join('/');
 }
 
+// Directory peers join a group only while it stays within this many files, so
+// large directories remain delegable in parallel. Counterparts and locale sets
+// are always kept together, even when they exceed the cap.
+export const peers = 10;
+
 export function groups(files) {
   const parent = files.map((_, index) => index);
+  const count = files.map(() => 1);
   const find = index => parent[index] === index ? index : (parent[index] = find(parent[index]));
-  const union = (left, right) => { parent[find(right)] = find(left); };
+  const union = (left, right) => {
+    const target = find(left), source = find(right);
+    if (target === source) return;
+    parent[source] = target;
+    count[target] += count[source];
+  };
   const ownership = new Map();
   for (let index = 0; index < files.length; index++) {
-    const file = files[index], keys = [`directory:${directory(file.path)}`, `counterpart:${counterpart(file.path)}`];
+    const file = files[index], keys = [`counterpart:${counterpart(file.path)}`];
     const translations = locale(file.path);
     if (translations) keys.push(`locale:${translations}`);
     const localized = resource(file.path);
@@ -36,6 +47,16 @@ export function groups(files) {
     for (const key of keys) {
       if (ownership.has(key)) union(ownership.get(key), index);
       else ownership.set(key, index);
+    }
+  }
+  const open = new Map();
+  for (let index = 0; index < files.length; index++) {
+    const key = directory(files[index].path);
+    const owner = open.get(key);
+    if (owner !== undefined && (find(owner) === find(index) || count[find(owner)] + count[find(index)] <= peers)) {
+      union(owner, index);
+    } else {
+      open.set(key, index);
     }
   }
   const components = new Map();
