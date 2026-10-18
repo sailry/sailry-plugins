@@ -10931,7 +10931,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -11042,8 +11042,8 @@
                                   },
                                   "interval_ms": {
                                     "type": "integer",
-                                    "minimum": 1000,
-                                    "maximum": 31536000000
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
                                   }
                                 }
                               }
@@ -11262,8 +11262,8 @@
                                   },
                                   "interval_ms": {
                                     "type": "integer",
-                                    "minimum": 1000,
-                                    "maximum": 31536000000
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
                                   }
                                 }
                               }

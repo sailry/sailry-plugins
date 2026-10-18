@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {fixture,id,plain} from "./store.mjs";
+import {runtimeTest,validateSchema} from "../../scripts/test-host.mjs";
 
 test("initialization captures the execution scope and explicit session config",async()=>{
   const setup=await fixture(), initialized=await setup.initialize();
@@ -150,4 +151,30 @@ test("invalid weekly fields fail before mutation preparation",async()=>{
     assert.equal(reply.result.error.code,"invalid_request");assert.equal(reply.call,undefined);
   }
   assert.equal(setup.values.size,0);assert.equal(setup.schedules.size,0);assert.equal(setup.handlers.size,0);
+});
+
+const intervals=[1,31_536_000_001,Number.MAX_SAFE_INTEGER];
+const invalidIntervals=[0,-1,1.5,Number.MAX_SAFE_INTEGER+1];
+test("recurring tasks preserve positive safe integer intervals",async()=>{
+  for(const interval_ms of [...intervals,...invalidIntervals]) {
+    const setup=await fixture(), timing={kind:"every",data:{anchor_ms:Date.now()+3_600_000,interval_ms}};
+    const reply=await setup.plan({action:"create",name:"Review",prompt:"Read",timing});
+    if(intervals.includes(interval_ms)) {
+      const schedule=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_schedule");
+      assert.deepEqual(plain(schedule.data.data.timing),timing);
+    } else {
+      assert.equal(reply.result.error.code,"invalid_request");assert.equal(reply.call,undefined);
+      assert.equal(setup.transactions.length,0);
+    }
+  }
+});
+runtimeTest("interval schemas agree with handler domains",async()=>{
+  const manifest=JSON.parse(await readFile(new URL("../plugin.json",import.meta.url),"utf8"));
+  const extension=manifest.extensions["dev.sailry.platform"];
+  const rows=[...intervals,...invalidIntervals].map(interval_ms=>({action:"create",name:"Review",prompt:"Read",
+    timing:{kind:"every",data:{anchor_ms:1000,interval_ms}}}));
+  const expected=[...intervals.map(()=>true),...invalidIntervals.map(()=>false)];
+  assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,rows),expected);
+  const schema=extension.storage.collections[0].schema.properties.timing;
+  assert.deepEqual(validateSchema(schema,rows.map(row=>row.timing)),expected);
 });

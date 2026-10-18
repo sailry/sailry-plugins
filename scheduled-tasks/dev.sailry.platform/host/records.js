@@ -45,7 +45,7 @@ export function timing(input, strict = false) {
   }
   const first = input.kind === "once" ? input.data.at_ms : input.data.anchor_ms;
   if (!Number.isSafeInteger(first) || first < 0 || (input.kind === "every"
-      && (!Number.isSafeInteger(input.data.interval_ms) || input.data.interval_ms < 1000 || input.data.interval_ms > 31536000000))) {
+      && (!Number.isSafeInteger(input.data.interval_ms) || input.data.interval_ms < 1))) {
     throw fault("invalid_request", "Invalid task timing");
   }
   return input;

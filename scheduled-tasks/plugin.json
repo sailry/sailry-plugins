@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scheduled-tasks",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Run tasks on a schedule",
   "extensions": {
     "dev.sailry.platform": {
@@ -25,7 +25,7 @@
                   "properties":{"at_ms":{"type":"integer","minimum":0,"maximum":9007199254740991}}}}},
               {"type":"object","required":["kind","data"],"properties":{
                 "kind":{"const":"every"},"data":{"type":"object","required":["anchor_ms","interval_ms"],
-                  "properties":{"anchor_ms":{"type":"integer","minimum":0,"maximum":9007199254740991},"interval_ms":{"type":"integer","minimum":1000,"maximum":31536000000}}}}},
+                  "properties":{"anchor_ms":{"type":"integer","minimum":0,"maximum":9007199254740991},"interval_ms":{"type":"integer","minimum":1,"maximum":9007199254740991}}}}},
               {"type":"object","required":["kind","data"],"properties":{
                 "kind":{"const":"weekly"},"data":{"type":"object","required":["timezone","weekdays","hour","minute"],
                   "properties":{"timezone":{"type":"string","minLength":1},"weekdays":{"type":"array","minItems":1,"maxItems":7,"uniqueItems":true,"items":{"type":"integer","minimum":1,"maximum":7}},
@@ -62,7 +62,7 @@
                     "properties":{"at_ms":{"type":"integer","minimum":0}}}}},
                 {"type":"object","additionalProperties":false,"required":["kind","data"],
                   "properties":{"kind":{"const":"every"},"data":{"type":"object","additionalProperties":false,"required":["anchor_ms","interval_ms"],
-                    "properties":{"anchor_ms":{"type":"integer","minimum":0},"interval_ms":{"type":"integer","minimum":1000,"maximum":31536000000}}}}},
+                    "properties":{"anchor_ms":{"type":"integer","minimum":0},"interval_ms":{"type":"integer","minimum":1,"maximum":9007199254740991}}}}},
                 {"type":"object","additionalProperties":false,"required":["kind","data"],
                   "properties":{"kind":{"const":"weekly"},"data":{"type":"object","additionalProperties":false,"required":["timezone","weekdays","hour","minute"],
                     "properties":{"timezone":{"type":"string","minLength":1},"weekdays":{"type":"array","minItems":1,"maxItems":7,"uniqueItems":true,"items":{"type":"integer","minimum":1,"maximum":7}},

@@ -9,6 +9,7 @@ function startOfDay(ms) { const date = new Date(ms); date.setHours(0, 0, 0, 0); 
 
 export function clock(ms, seconds = false) {
   const date = new Date(ms);
+  if (!Number.isFinite(date.getTime())) return "—";
   return `${pad(date.getHours())}:${pad(date.getMinutes())}${seconds ? `:${pad(date.getSeconds())}` : ""}`;
 }
 export function wallClock(hour, minute) { return `${pad(hour)}:${pad(minute)}`; }
@@ -61,6 +62,7 @@ export function tally(runs) {
 }
 
 export function dayLabel(ms, now, text) {
+  if (!Number.isFinite(new Date(ms).getTime())) return "—";
   const days = Math.round((startOfDay(ms) - startOfDay(now)) / DAY);
   if (days === 0) return text.today;
   if (days === -1) return text.yesterday;
@@ -68,8 +70,12 @@ export function dayLabel(ms, now, text) {
   const date = new Date(ms);
   return `${text.monthDay(date.getMonth() + 1, date.getDate())} ${text[`weekday${localWeekday(ms)}`]}`;
 }
-export function when(ms, now, text) { return `${dayLabel(ms, now, text)} ${clock(ms)}`; }
+export function when(ms, now, text) {
+  if (!Number.isFinite(new Date(ms).getTime())) return "—";
+  return `${dayLabel(ms, now, text)} ${clock(ms)}`;
+}
 export function relative(ms, now, text) {
+  if (!Number.isFinite(new Date(ms).getTime())) return "—";
   const days = Math.round((startOfDay(ms) - startOfDay(now)) / DAY);
   if (days >= 1) return text.inDays(days);
   const minutes = Math.max(1, Math.ceil((ms - now) / MINUTE));
@@ -79,7 +85,7 @@ export function interval(ms, text) {
   for (const [unit, size] of [["everyDays", DAY], ["everyHours", HOUR], ["everyMinutes", MINUTE]]) {
     if (ms % size === 0) return text[unit](ms / size);
   }
-  return text.everySeconds(Math.round(ms / 1000));
+  return text.everySeconds(ms / 1000);
 }
 export function summary(item, now, text) {
   const {kind, data} = item.timing;

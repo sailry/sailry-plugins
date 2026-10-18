@@ -70,9 +70,9 @@ export function value(editor) {
   if (editor.draft.revision === "0" && at <= Date.now()) throw new Error("invalidTime");
   let timing = {kind:"once",data:{at_ms:at}};
   if (editor.kind === "every") {
-    const seconds = Number(readText(editor.interval));
-    if (!Number.isFinite(seconds) || seconds < 1 || seconds > 31536000) throw new Error("invalidInterval");
-    timing = {kind:"every",data:{anchor_ms:at,interval_ms:Math.round(seconds * 1000)}};
+    const interval_ms = Math.round(Number(readText(editor.interval)) * 1000);
+    if (!Number.isSafeInteger(interval_ms) || interval_ms < 1) throw new Error("invalidInterval");
+    timing = {kind:"every",data:{anchor_ms:at,interval_ms}};
   }
   return {...editor.draft,name,prompt,timing};
 }

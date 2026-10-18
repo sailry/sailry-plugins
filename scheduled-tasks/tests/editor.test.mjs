@@ -219,3 +219,18 @@ test("save freezes the committed model before an uncertain request",async()=>{
   assert.equal(setup.requests.length,1);
   assert.equal(setup.requests[0].data.input.config.model,"explicit");
 });
+
+test("repeat editors preserve representable millisecond intervals",()=>{
+  const setup=fixture(),{view,api}=setup;
+  setup.texts.set(view.editing.name,"Review");setup.texts.set(view.editing.prompt,"Read");
+  view.editing.draft.config={...config};view.editing.model="provider/explicit";
+  view.editing.kind="every";
+  for(const [seconds,interval_ms] of [["0.001",1],["31536000.001",31_536_000_001],["9007199254740",9_007_199_254_740_000]]) {
+    setup.texts.set(view.editing.interval,seconds);
+    assert.equal(api.value(view.editing).timing.data.interval_ms,interval_ms);
+  }
+  for(const seconds of ["0","-1","Infinity","NaN","9007199254741"]) {
+    setup.texts.set(view.editing.interval,seconds);
+    assert.throws(()=>api.value(view.editing),/invalidInterval/);
+  }
+});

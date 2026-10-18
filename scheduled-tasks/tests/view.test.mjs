@@ -9,7 +9,7 @@ const read = async name => (await readFile(new URL(`../dev.sailry.platform/deskt
   .replace(/^import[\s\S]*?;\n/gm, "").replace(/^export default /gm, "").replace(/^export /gm, "");
 const source = [await read("schedule.js"), await read("details.js"), await read("view.js")].join("\n");
 const controller = await read("main.js");
-const schedule = vm.runInNewContext(`${await read("schedule.js")}\n({upcoming,streak,ribbon,weeklyOffset})`);
+const schedule = vm.runInNewContext(`${await read("schedule.js")}\n({upcoming,streak,ribbon,weeklyOffset,clock,dayLabel,when,relative,interval})`);
 const effortKey = value => typeof value === "string" ? value : String(value.budget);
 const effortLabel = vm.runInNewContext(`${await read("details.js")}\neffortLabel`, {effortKey});
 const task = (id, extra = {}) => ({id, name:`Task ${id}`, prompt:"Keep this task", revision:"2", project:"project", worktree:null,
@@ -384,7 +384,7 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.5");
+  assert.equal(manifest.version, "0.1.6");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);
@@ -405,4 +405,15 @@ test("the editor uses the shared modal title, body, footer and close guard", () 
   const confirmation = setup.nodes.get("task-dialog-0");
   assert.deepEqual(plain(confirmation.props), {open:true, dismissable:true, form:true, title:setup.view.text.deleteTitle, width:528});
   assert.equal(confirmation.items[0].items[0].items[0], "Retained task");
+});
+
+test("unrepresentable dates remain readable without changing schedule values",()=>{
+  const now=Date.UTC(2026,9,18), next=now+Number.MAX_SAFE_INTEGER;
+  const item={enabled:true,next_ms:next,timing:{kind:"every",data:{anchor_ms:now,interval_ms:Number.MAX_SAFE_INTEGER}}};
+  assert.equal(schedule.upcoming(item,now,1)[0],next);
+  const text=messages("en");
+  assert.equal(schedule.clock(next),"—");assert.equal(schedule.dayLabel(next,now,text),"—");
+  assert.equal(schedule.when(next,now,text),"—");assert.equal(schedule.relative(next,now,text),"—");
+  assert.equal(schedule.interval(1,text),"Every 0.001 s");
+  assert.notEqual(schedule.when(now,now,text),"—");
 });
