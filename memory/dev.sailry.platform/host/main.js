@@ -70,7 +70,7 @@ export const forget = protect(async input => {
 export const consolidate = protect(async input => {
   const value = argumentsFor(input,["id","expected_revision","title","body","sources"],["id","expected_revision","title","body","sources"]);
   const state = await enabled(true);
-  if (!Array.isArray(value.sources) || value.sources.length < 1 || value.sources.length > 16) fail("invalid consolidation arguments");
+  if (!Array.isArray(value.sources) || value.sources.length < 1) fail("invalid consolidation arguments");
   const entry = await readMemory(value.id,state.project);
   requireRead(state,value.id,value.expected_revision);
   for (const source of value.sources) {

@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fixture,entry,id,project} from './store.mjs';
-import {limits} from '../dev.sailry.platform/host/model.js';
 import {readFile} from 'node:fs/promises';
 
 const plain=value=>JSON.parse(JSON.stringify(value));
@@ -180,14 +179,15 @@ test('uses independent configuration revisions and revokes prepared writes throu
   await assert.rejects(f.sdk.completeRequest('missing'),()=>true).catch(()=>{});
 });
 
-test('separates active and archive capacity and preserves incompatible private data',async()=>{
+test('retains growing catalogs and preserves incompatible private data',async()=>{
   const f=await fixture();
-  f.seed(Array.from({length:limits.active},(_,index)=>entry(index,`Active constraint ${index}`)));
-  await assert.rejects(f.mutations.putOperations(entry(8000,'Excess active fact'),0),error=>error.code==='busy');
+  f.seed(Array.from({length:512},(_,index)=>entry(index,`Active constraint ${index}`)));
+  await commit(f,entry(8000,'Additional active fact'));
+  assert.equal(f.get('memory/catalog').value.active,513);
   const archived=await f.storage.readMemory(id(1));archived.summary.archived=true;
   await commit(f,archived,1);
-  await commit(f,entry(8000,'Available active slot'));
-  assert.equal(f.get('memory/catalog').value.active,512);
+  await commit(f,entry(8001,'Available active slot'));
+  assert.equal(f.get('memory/catalog').value.active,513);
   assert.equal(f.get('memory/catalog').value.archived,1);
   f.store('memory/catalog',{v:2,pages:{},active:0,archived:0,next:0});
   const original=f.get('memory/catalog');
@@ -195,9 +195,9 @@ test('separates active and archive capacity and preserves incompatible private d
   assert.deepEqual(f.get('memory/catalog'),original);
 });
 
-test('reviews a maximum active catalog within host SDK call capacity',async()=>{
+test('reviews a populated catalog within host SDK call capacity',async()=>{
   const f=await fixture();
-  f.seed(Array.from({length:limits.active},(_,index)=>entry(index,'Shared verified constraints')));
+  f.seed(Array.from({length:512},(_,index)=>entry(index,'Shared verified constraints')));
   const hints=await f.retrieval.reviewMemories({review_after_days:90},{project,all_projects:false});
   assert.equal(hints.length,512);
   const calls=f.reads.length+f.searches.length;
@@ -218,8 +218,8 @@ test('review rejects metadata edits made while body pages are being read',async(
 test('maximal consolidation and full catalogs respect operation, value, key and byte bounds',async()=>{
   const f=await fixture(), han=Array.from({length:2730},(_,index)=>String.fromCodePoint(0x4e00+index)).join('');
   const escaped='\u0001'.repeat(8191)+'a', title='"'.repeat(160);
-  const entries=Array.from({length:limits.active+limits.archived-16},(_,index)=>entry(index,index < 34 ? (index%2 ? '\u0001'.repeat(8190)+String(index).padStart(2,'0') : han+String(index).padStart(2,'0')) : 'Retained fact '+index,
-    {title,archived:index >= limits.active}));
+  const entries=Array.from({length:512+2048-16},(_,index)=>entry(index,index < 34 ? (index%2 ? '\u0001'.repeat(8190)+String(index).padStart(2,'0') : han+String(index).padStart(2,'0')) : 'Retained fact '+index,
+    {title,archived:index >= 512}));
   f.seed(entries);
   const target=await f.storage.readMemory(id(0));target.body=escaped;
   const sources=Array.from({length:16},(_,index)=>({id:id((index+1)*2),revision:1}));
@@ -228,9 +228,9 @@ test('maximal consolidation and full catalogs respect operation, value, key and 
   assert.ok(encoded < 1024*1024,`${encoded} bytes`);
   assert.ok(prepared.operations.every(operation=>Buffer.byteLength(JSON.stringify(operation.data.value)) <= 256*1024));
   assert.equal(f.mutations.memoryOutput(f.apply(prepared.operations)).data.length,17);
-  assert.equal(f.get('memory/catalog').value.archived,limits.archived);
-  f.seed(Array.from({length:limits.active+limits.archived},(_,index)=>entry(index,'\u0001'.repeat(8188)+String(index).padStart(4,'0'),
-    {title,archived:index >= limits.active})));
+  assert.equal(f.get('memory/catalog').value.archived,2048);
+  f.seed(Array.from({length:512+2048},(_,index)=>entry(index,'\u0001'.repeat(8188)+String(index).padStart(4,'0'),
+    {title,archived:index >= 512})));
   assert.equal([...f.records.values()].filter(value=>value.present).length,3841);
   assert.ok([...f.records.values()].filter(value=>value.present).reduce((sum,value)=>sum+Buffer.byteLength(JSON.stringify(value.value))
     +(f.indexes.has(value.key) ? Buffer.byteLength(JSON.stringify(f.indexes.get(value.key))) : 0),0) < 128*1024*1024);

@@ -1,12 +1,12 @@
 import {getValue} from 'sailry/sdk';
 import {indexed,metadata,body,page,entryKey,scopeTag,head} from './storage.js';
-import {limits,ordered} from './model.js';
+import {ordered} from './model.js';
 import {query as tokenize} from './tokenize.js';
 import {bytes,fail} from './policy.js';
 import {review} from './review.js';
 
 async function find({project,all_projects=false,archived=false,query,recall=false}) {
-  if (typeof query !== 'string' || bytes(query) > limits.query) fail('memory query is too long');
+  if (typeof query !== 'string') fail('invalid memory query');
   const all = [`state:${archived ? 'archived' : 'active'}`];
   const any = all_projects ? [] : recall ? Array.from(new Set([scopeTag(null),scopeTag(project)])) : [scopeTag(project)];
   if (/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(query.trim())) {

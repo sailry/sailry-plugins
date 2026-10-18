@@ -95,7 +95,7 @@ export async function removeOperations(id,expectedRevision,project) {
 }
 export async function mergeOperations(input,sources,project) {
   const entry = clone(validate(input));
-  if (entry.summary.archived || !Array.isArray(sources) || !sources.length || sources.length > limits.sources) fail('invalid memory consolidation');
+  if (entry.summary.archived || !Array.isArray(sources) || !sources.length) fail('invalid memory consolidation');
   const [current,target,now] = await Promise.all([head(),record(entry.summary.id,project),clock()]);
   await writable(project);
   const previous = metadata(target);

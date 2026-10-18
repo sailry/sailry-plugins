@@ -18,12 +18,14 @@ test('normalization changes only whitespace and case',()=>{
 });
 
 test('validates private entries before creating a new revision',()=>{
+  const large={...entry,summary:{...entry.summary,title:'t'.repeat(161)},body:'a'.repeat(8193)};
+  assert.deepEqual(next(large,1234).body,large.body);
   const saved=next(entry,1234);
   assert.equal(saved.summary.revision,1);
   assert.equal(saved.summary.updated_at_ms,1234);
   assert.equal(entry.summary.revision,0);
   for (const invalid of [
-    {...entry,body:' '},{...entry,body:'\0'},{...entry,body:'a'.repeat(8193)},
+    {...entry,body:' '},{...entry,body:'\0'},
     {...entry,summary:{...entry.summary,title:'Bad\u0085title'}},
     {...entry,summary:{...entry.summary,revision:1.5}},
     {...entry,summary:{...entry.summary,project:'elsewhere'}},
@@ -34,8 +36,8 @@ test('separates live archive capacity and rejects incompatible catalogs without 
   const head=catalog(null);
   assert.deepEqual(head,{v:1,pages:{},active:0,archived:0,next:0});
   assert.deepEqual(capacity({...head,active:512},[{before:{archived:false},after:{archived:true}}]),{active:511,archived:1});
-  assert.throws(()=>capacity({...head,active:512},[{before:null,after:{archived:false}}]),error=>error.code==='busy');
-  assert.throws(()=>capacity({...head,archived:2048},[{before:{archived:false},after:{archived:true}}]),error=>error.code==='busy');
+  assert.deepEqual(capacity({...head,active:512},[{before:null,after:{archived:false}}]),{active:513,archived:0});
+  assert.deepEqual(capacity({...head,active:1,archived:2048},[{before:{archived:false},after:{archived:true}}]),{active:0,archived:2049});
   for (const value of [{v:2},{...head,pages:{'1':3}},{...head,active:513},{...head,pages:{'1':1}}]) {
     const original=structuredClone(value);
     assert.throws(()=>catalog(value),/incompatible/);
