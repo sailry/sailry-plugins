@@ -35,7 +35,7 @@ test('research follows available search and page-reading capabilities', () => {
 });
 
 test('contributes packaged search settings and enable control', () => {
-  assert.equal(manifest.version, '0.1.2');
+  assert.equal(manifest.version, '0.1.3');
   assert.equal(extension.settings_page.native, undefined);
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.equal(extension.settings_page.enabled_control, true);
@@ -60,6 +60,7 @@ test('binds anonymous page reads beside native search', () => {
   assert.match(extension.tools[0].description, /100 documents/);
   assert.equal(extension.tools[1].name, 'web_search');
   assert.equal(extension.tools[1].operation, 'web.search');
-  assert.match(extension.tools[1].description, /five results by default and at most ten/);
+  assert.match(extension.tools[1].description, /five results by default/);
+  assert.match(extension.tools[1].description, /no continuation is exposed/);
   assert.equal(extension.tools[0].display.locales['zh-CN'], '读取网页');
 });
