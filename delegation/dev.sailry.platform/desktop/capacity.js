@@ -39,6 +39,16 @@ export class Capacity {
 
   input(event,cx) {
     if (event.kind === 'focus' && !this.saved) this.load(cx);
+    if (event.kind === 'increment' || event.kind === 'decrement') {
+      if (this.locked()) return;
+      try {
+        const value = BigInt(count(readText(this.field))) + (event.kind === 'increment' ? 1n : -1n);
+        if (value < 1n || value > 18446744073709551615n) return;
+        setText(this.field,value.toString()); this.dirty = true;
+        this.save(cx);
+      } catch (_) { this.fail('capacity_invalid'); }
+      return;
+    }
     if (event.kind === 'change' && !this.request) this.dirty = true;
     if (event.kind === 'blur' || event.kind === 'enter') this.save(cx);
   }

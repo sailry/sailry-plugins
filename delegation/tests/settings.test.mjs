@@ -88,6 +88,23 @@ test('capacity rejects invalid integers before admission',async()=>{
   assert.equal(f.fields.get(capacity.field),'');
 });
 
+test('capacity steps use exact integers and commit immediately',async()=>{
+  const f=await settings(),capacity=f.view.capacity;
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'increment'}));
+  assert.equal(f.fields.get(capacity.field),'9');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
+  assert.equal(f.fields.get(capacity.field),'8');
+  f.fields.set(capacity.field,'18446744073709551615');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
+  assert.equal(f.fields.get(capacity.field),'18446744073709551614');
+  const before=f.prepared.length;
+  f.fields.set(capacity.field,'18446744073709551615');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'increment'}));
+  f.fields.set(capacity.field,'1');
+  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
+  assert.equal(f.prepared.length,before);
+});
+
 test('capacity recovers an uncertain save through the original receipt',async()=>{
   let attempts=0;
   const f=await settings({complete:async(_,value)=>++attempts===1

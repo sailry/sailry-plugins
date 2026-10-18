@@ -23,10 +23,10 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','AppearancePicker','Menu','Modal','TextField','Loading']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','IconButton','AppearancePicker','Menu','Modal','TextField','NumberField','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),Button:function(id){return element('Button',id);},
+    div:()=>element(),asElement:value=>value,SettingItem:function(label){const value=element('SettingItem');value.props.label=label;value.content=child=>{value.items.push(child);return value;};return value;},Button:function(id){return element('Button',id);},
     Checkbox:function(id){return element('Checkbox',id);},
     Field:function(){return element('Field');},Form:function(){return element('Form');},...adapters,
     efforts:()=>[null],window:{viewport_size:()=>({width:1280,height:820})},
@@ -69,6 +69,12 @@ test('capacity recovery is visible only for retained receipts',()=>{
   setup.view.capacity={field:'capacity',request:null,pending:false,locked:()=>true,
     save:()=>setup.calls.push(['capacity-retry'])};
   setup.render();
+  const row=setup.nodes.get('execution_settings').items[0];
+  assert.equal(row.kind,'SettingItem');
+  assert.equal(row.props.label,setup.view.text.child_concurrency);
+  assert.deepEqual(plain(row.style.layout),['horizontal']);
+  assert.equal(setup.nodes.get('capacity').kind,'NumberField');
+  assert.deepEqual(plain(setup.nodes.get('capacity').props),{readonly:true,size:'small'});
   assert.equal(setup.nodes.has('capacity-retry'),false);
   setup.view.capacity.request='original-request';setup.render();
   const retry=setup.nodes.get('capacity-retry').items[0];

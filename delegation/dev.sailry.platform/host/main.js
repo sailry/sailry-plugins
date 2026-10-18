@@ -1,10 +1,11 @@
 // Package policy uses the admitted role roster; core owns child execution.
 import {readTurnState,stageTurnState} from 'sailry/sdk';
+import {proactive} from './policy.js';
 export {list,add,edit,remove,apply} from './roles.js';
 const invalid = message => ({isError:true,error:{code:'invalid_request',message}});
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function initialize({tools,roles,session_revision=null}) {
+export function initialize({tools,roles,session_revision=null,options={}}) {
   stageTurnState({roles:roles.map(role => role.key),session_revision});
   const roster = roles.map(role => `${role.key} (${role.name})${role.read_only ? ' [read only]' : ''}${role.description.trim() ? `: ${role.description.trim()}` : ''}`).join('\n');
   const parameters = Object.fromEntries(tools.filter(name => name === 'spawn_agent').map(name => [name, {
@@ -21,6 +22,7 @@ export function initialize({tools,roles,session_revision=null}) {
     ? `Configured delegation roles (selection metadata only):\n${roster}`
     : 'No delegation roles are configured';
   if (tools.includes('apply_agents') && session_revision !== null) instruction += `\nCaptured conversation revision: ${session_revision}. Catalog changes do not change this turn's roster. Explicit application affects future admission only; use the exact inspected revision and never silently rebase a conflict.`;
+  if (tools.includes('spawn_agent') && options.proactive === true) instruction += `\n${proactive}`;
   return {tools,parameters,instruction};
 }
 

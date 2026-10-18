@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
+import {proactive} from '../dev.sailry.platform/host/policy.js';
 const source = (await readFile(new URL('../dev.sailry.platform/host/main.js',import.meta.url),'utf8')).replace(/^import .*\n/gm,'').replace(/^export \{.*\n/gm,'').replace(/^export /gm,'');
 const plain = value => JSON.parse(JSON.stringify(value));
 function host(roles = []) {
   let state;
-  const functions = vm.runInNewContext(`${source}\n({initialize,prepare,result})`,{readTurnState:()=>state,stageTurnState:value=>state=value});
+  const functions = vm.runInNewContext(`${source}\n({initialize,prepare,result})`,{proactive,readTurnState:()=>state,stageTurnState:value=>state=value});
   const initialized = functions.initialize({tools:['spawn_agent'],roles});
   return {...functions,initialized};
 }
@@ -188,7 +189,7 @@ test('child controls preserve exact identity and explicit follow-up',async()=>{
 
 test('catalog tools keep their own schemas and captured roster',()=>{
   let state;
-  const functions = vm.runInNewContext(`${source}\n({initialize,prepare})`,{readTurnState:()=>state,stageTurnState:value=>state=value});
+  const functions = vm.runInNewContext(`${source}\n({initialize,prepare})`,{proactive,readTurnState:()=>state,stageTurnState:value=>state=value});
   const initialized = functions.initialize({tools:['spawn_agent','add_agent','apply_agents'],roles:[{key:'review',name:'Review',description:'Inspect'}],session_revision:'9007199254740993'});
   assert.deepEqual(Object.keys(initialized.parameters),['spawn_agent']);
   assert.deepEqual(plain(initialized.tools),['spawn_agent','add_agent','apply_agents']);
