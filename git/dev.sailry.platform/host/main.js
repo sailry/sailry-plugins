@@ -25,27 +25,27 @@ export function diff(args) {
 export function log(args) {
   if (!object(args,['worktree','limit','cursor']) || !target(args.worktree)) return invalid();
   const {limit = 20,cursor = null} = args;
-  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) return invalid();
+  if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
   if (cursor !== null && (!object(cursor,['head','offset']) ||
       typeof cursor.head !== 'string' || !/^[0-9a-fA-F]{40}$/.test(cursor.head) ||
       !Number.isSafeInteger(cursor.offset) || cursor.offset < 0)) return invalid();
   return {worktree:args.worktree ?? null,limit,cursor};
 }
 
-function page(args, maximum = 500) {
+function page(args) {
   const {offset = 0, limit = 200} = args;
   return Number.isSafeInteger(offset) && offset >= 0 &&
-    Number.isSafeInteger(limit) && limit >= 1 && limit <= maximum &&
+    Number.isSafeInteger(limit) && limit >= 1 &&
     Number.isSafeInteger(offset + limit);
 }
 
-function pageError(args, maximum = 500) {
+function pageError(args) {
   const {offset = 0, limit = 200} = args;
   if (!Number.isSafeInteger(offset) || offset < 0) {
     return invalid('offset must be a non-negative safe integer');
   }
-  if (!Number.isSafeInteger(limit) || limit < 1 || limit > maximum) {
-    return invalid(`limit must be an integer between 1 and ${maximum}; continue with the returned next offset`);
+  if (!Number.isSafeInteger(limit) || limit < 1) {
+    return invalid('limit must be a positive safe integer');
   }
   return invalid('offset + limit must be a safe integer');
 }
@@ -55,7 +55,7 @@ export function show(args) {
       (args.revision !== undefined && typeof args.revision !== 'string') ||
       (args.path !== undefined && args.path !== null && typeof args.path !== 'string')) return invalid();
   const {revision = 'HEAD', path = null, offset = 0, limit = 2000} = args;
-  if (!page({offset,limit},2000)) return pageError({offset,limit},2000);
+  if (!page({offset,limit})) return pageError({offset,limit});
   if (path === null && offset !== 0) return invalid();
   return {worktree:args.worktree ?? null,revision,path,offset,limit};
 }
