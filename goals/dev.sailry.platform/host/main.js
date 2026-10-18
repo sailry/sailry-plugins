@@ -38,7 +38,7 @@ function argumentsOf(args,keys) {
   if (!args || typeof args!=='object' || Array.isArray(args) || keys.some(key=>!Object.hasOwn(args,key)) || Object.keys(args).some(key=>!keys.includes(key))) throw new Error('Invalid goal arguments');
 }
 function description(value) {
-  if (typeof value!=='string' || !value.trim() || value.length>8192) throw new Error('Invalid goal description');
+  if (typeof value!=='string' || !value.trim()) throw new Error('Invalid goal description');
   return value.trim();
 }
 async function execute(id) {

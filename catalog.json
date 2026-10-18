@@ -8434,7 +8434,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8457,8 +8457,7 @@
                       },
                       "description": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       },
                       "state": {
                         "type": "string",
@@ -8544,8 +8543,7 @@
                     "properties": {
                       "description": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       }
                     },
                     "required": [
@@ -8595,8 +8593,7 @@
                     "properties": {
                       "description": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 8192
+                        "minLength": 1
                       },
                       "goal_id": {
                         "type": "string",
