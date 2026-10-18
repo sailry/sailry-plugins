@@ -79,8 +79,8 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
 });
 test('invalid titles, scopes and empty tasks never reach child admission',()=>{
   const policy = host(), base = {role:null,task:'Task'};
-  for(const args of [{...base,title:'a\nb'},{...base,title:'😀'.repeat(81)},{...base,task:' '},{...base,worktree:'../other'},{...base,session:'elsewhere'}]) assert.equal(policy.prepare(args).isError,true);
-  assert.equal(policy.prepare({...base,title:'😀'.repeat(80),worktree:'11111111-1111-4111-8111-111111111111'}).isError,undefined);
+  for(const args of [{...base,title:'a\nb'},{...base,task:' '},{...base,worktree:'../other'},{...base,session:'elsewhere'}]) assert.equal(policy.prepare(args).isError,true);
+  assert.equal(policy.prepare({...base,title:'😀'.repeat(81),worktree:'11111111-1111-4111-8111-111111111111'}).isError,undefined);
 });
 test('child outcomes remain authoritative, including literal failures',()=>{
   const policy = host(), failure = {error:{code:'outcome_unknown',message:'Literal error'},isError:true};

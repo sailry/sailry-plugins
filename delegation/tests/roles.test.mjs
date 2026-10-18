@@ -35,3 +35,9 @@ test('listing uses only the public catalog service',async()=>{
   assert.deepEqual(plain(await host(agents).list({})),{agents});
   assert.equal((await host(agents).list({session:'other'})).isError,true);
 });
+
+test('expanded rosters retain each selected reference',()=>{
+  const agents=Array.from({length:33},(_,index)=>({id:`role-${index}`,revision:'1'}));
+  const result=host().apply({agents,expected_session_revision:'4'});
+  assert.deepEqual(plain(result.roles),agents);
+});

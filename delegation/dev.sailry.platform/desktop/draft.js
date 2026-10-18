@@ -17,15 +17,6 @@ export function applyResearch(draft,name,description) {
   return {key:value.key,name:value.name,turns:String(value.max_turns),instructions:value.instructions};
 }
 
-function bytes(value) {
-  let length = 0;
-  for (const character of value) {
-    const point = character.codePointAt(0);
-    length += point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
-  }
-  return length;
-}
-
 export function catalog(value) {
   return value.models.filter(model => model.kind === 'provider').map(clone)
     .sort((left,right) => left.provider < right.provider ? -1 : left.provider > right.provider ? 1 : 0);
@@ -69,8 +60,8 @@ export function efforts(draft) {
 export function profile(draft,fields) {
   const key = fields.key.trim(), name = fields.name.trim(), turns = fields.turns.trim();
   const max_turns = turns === '' ? null : /^\+?\d+$/.test(turns) ? Number(turns) : NaN;
-  if (!/^[a-z](?:[a-z0-9_-]*[a-z0-9])?$/.test(key) || bytes(key) > 128
-    || name === '' || bytes(name) > 128 || bytes(fields.instructions) > 16*1024
+  if (!/^[a-z](?:[a-z0-9_-]*[a-z0-9])?$/.test(key)
+    || name === ''
     || max_turns !== null && (!Number.isInteger(max_turns) || max_turns < 1 || max_turns > 0xffffffff)
     || draft.fixed && draft.model === null) throw new Error('role_invalid');
   return {...clone(draft.original),key,name,appearance:clone(draft.appearance),

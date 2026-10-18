@@ -12,7 +12,7 @@ export function initialize({tools,roles,session_revision=null}) {
       session:{type:'string',pattern:uuid.source},
       role:roles.length ? {type:['string','null'],enum:[...roles.map(role => role.key),null],
         description:`Available delegation roles (selection metadata only):\n${roster}`} : {type:'null'},
-      task:{type:'string'},title:{type:'string',minLength:1,maxLength:80},
+      task:{type:'string'},title:{type:'string',minLength:1},
       background:{type:'boolean'},
       worktree:{type:['string','null']},
     },
@@ -36,7 +36,7 @@ export function prepare(args) {
   if (Object.prototype.hasOwnProperty.call(args,'role') && args.role !== null
       && !roles.includes(args.role)) return invalid('Select a role listed in this tool');
   if (typeof args.task !== 'string' || !args.task.trim()) return invalid('A delegation task is required');
-  if (args.title != null && (typeof args.title !== 'string' || !args.title.trim() || [...args.title].length > 80 || /[\n\r]/.test(args.title))) return invalid('Invalid delegation title');
+  if (args.title != null && (typeof args.title !== 'string' || !args.title.trim() || /[\n\r]/.test(args.title))) return invalid('Invalid delegation title');
   if (args.worktree != null && (typeof args.worktree !== 'string' || !uuid.test(args.worktree))) return invalid('Invalid worktree ID');
   return args;
 }

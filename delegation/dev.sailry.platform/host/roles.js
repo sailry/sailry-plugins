@@ -35,7 +35,7 @@ export function remove(input) {
 export function apply(input) {
   if (!valid(input,['agents','expected_session_revision'],['agents','expected_session_revision'])
     || !revision(input.expected_session_revision) || input.expected_session_revision === '0'
-    || !Array.isArray(input.agents) || input.agents.length > 32
+    || !Array.isArray(input.agents)
     || input.agents.some(role => !valid(role,['id','revision'],['id','revision']) || !revision(role.revision) || role.revision === '0')
     || new Set(input.agents.map(role => role.id)).size !== input.agents.length) return invalid('Use distinct agents and exact revisions');
   return {roles:input.agents,expected_revision:input.expected_session_revision};

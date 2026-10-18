@@ -2765,7 +2765,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2850,7 +2850,6 @@
                       },
                       "skills": {
                         "type": "array",
-                        "maxItems": 3,
                         "items": {
                           "type": "string"
                         }
@@ -2933,7 +2932,6 @@
                       },
                       "skills": {
                         "type": "array",
-                        "maxItems": 3,
                         "items": {
                           "type": "string"
                         }
@@ -3023,7 +3021,6 @@
                     "properties": {
                       "agents": {
                         "type": "array",
-                        "maxItems": 32,
                         "items": {
                           "type": "object",
                           "additionalProperties": false,
@@ -3092,8 +3089,7 @@
                       },
                       "title": {
                         "type": "string",
-                        "minLength": 1,
-                        "maxLength": 80
+                        "minLength": 1
                       },
                       "worktree": {
                         "type": [

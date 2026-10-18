@@ -75,15 +75,15 @@ test('research drafts inherit the model and bound read-only work',() => {
 
 test('validates exact keys, UTF-8 and u32 turn limits before command preparation',() => {
   const state = create(null,'new',[]);
-  for (const key of ['', 'UPPER', '-leading', 'trailing-', 'with space', 'x'.repeat(129)]) {
+  for (const key of ['', 'UPPER', '-leading', 'trailing-', 'with space']) {
     assert.throws(() => profile(state,{...fields,key}),/role_invalid/);
   }
   for (const turns of ['0','-1','1.5','4294967296','2x']) {
     assert.throws(() => profile(state,{...fields,turns}),/role_invalid/);
   }
   assert.equal(profile(state,{...fields,key:' a ',name:' Name ',turns:'+4294967295'}).max_turns,4294967295);
-  assert.throws(() => profile(state,{...fields,name:'界'.repeat(43)}),/role_invalid/);
-  assert.throws(() => profile(state,{...fields,instructions:'界'.repeat(5462)}),/role_invalid/);
+  assert.equal(profile(state,{...fields,key:'x'.repeat(129),name:'界'.repeat(43)}).key,'x'.repeat(129));
+  assert.equal(profile(state,{...fields,instructions:'界'.repeat(5462)}).instructions,'界'.repeat(5462));
   source(state,true); assert.throws(() => profile(state,fields),/role_invalid/);
 });
 
