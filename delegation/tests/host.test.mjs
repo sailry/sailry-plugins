@@ -134,7 +134,8 @@ test('admission receipts never imply child completion',()=>{
   const policy = host();
   const running = {session:'child',turn:'turn',status:'running'};
   const queued = {session:'child',turn:'guidance',recipient:'turn',status:'queued'};
-  for(const receipt of [running,queued]) {
+  const admitted = {session:'child',turn:'turn',status:'queued'};
+  for(const receipt of [running,queued,admitted]) {
     assert.deepEqual(plain(policy.result({output:receipt})),receipt);
     assert.deepEqual(plain(policy.result({output:{kind:'delegation',data:receipt}})),receipt);
   }
