@@ -24,3 +24,16 @@ test('a package cannot substitute the admitted project or source', () => {
   assert.equal(create({branch:'branch',expected_head:'head',expected_index:'index',source:'other'}).isError,true);
   assert.equal(remove({worktree:'tree',expected_head:'head',expected_branch:'branch',force:true}).isError,true);
 });
+
+test('removal guidance preserves unintegrated work and history', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools = manifest.extensions['dev.sailry.platform'].tools;
+  const remove = tools.find(tool => tool.name === 'remove_worktree').description;
+  assert.match(remove,/including ones with running or queued turns, cannot be removed/);
+  assert.match(remove,/Sessions that used it keep their history but cannot run new turns there/);
+  assert.match(remove,/stop and report conflicts to the user without resolving them automatically/);
+  assert.match(remove,/never discard work or session history/);
+  const create = tools.find(tool => tool.name === 'create_worktree').description;
+  assert.match(create,/remove its worktree when it has no changes and no new commits/);
+});

@@ -70,12 +70,12 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
   assert.match(tool.description,/new child inherits/);
-  assert.match(tool.description,/Choose a role from the roles listed in this tool when it fits the delegated task/);
+  assert.match(tool.description,/Choose a role listed in this tool when it fits/);
   assert.match(tool.description,/use its exact listed key and never invent a role/);
   assert.match(tool.description,/If no role fits or the roster is empty, omit role or use null/);
   assert.match(tool.description,/session ID and normally omit role/);
   assert.match(tool.description,/reuse an idle child/);
-  assert.match(tool.description,/retains its own history/);
+  assert.match(tool.description,/It keeps its history, role, model, worktree and settings/);
 });
 test('invalid titles, scopes and empty tasks never reach child admission',()=>{
   const policy = host(), base = {role:null,task:'Task'};
@@ -101,7 +101,9 @@ test('background mode retains synchronous default and exposes child control',asy
   assert.equal(spawn.handler.parameters.properties.background.type,'boolean');
   assert.match(spawn.description,/Use guide_agent for new directions/);
   assert.match(spawn.description,/child does not see this conversation/);
-  assert.match(spawn.description,/self-contained task with the goal, relevant paths, constraints and expected output/);
+  assert.match(spawn.description,/self-contained task with the goal, relevant paths, constraints, whether edits are allowed, and expected output with path:line evidence/);
+  assert.match(spawn.description,/do trivial lookups and tightly coupled steps yourself, and do not redo a child's work/);
+  assert.match(spawn.description,/create one with create_worktree and pass its ID/);
   assert.match(spawn.description,/disjoint files/);
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
@@ -112,10 +114,13 @@ test('background guidance keeps waiting explicit',async()=>{
   const tools = manifest.extensions['dev.sailry.platform'].tools;
   for(const name of ['spawn_agent','guide_agent']) {
     const description = tools.find(tool => tool.name === name).description;
-    assert.match(description,/Keep background work in the background/);
-    assert.match(description,/only call wait_agent when the user explicitly requests waiting or result collection/);
-    assert.doesNotMatch(description,/Wait for the child result before answering|wait_agent to collect its final result before answering/);
+    assert.doesNotMatch(description,/wait_agent/);
+    assert.doesNotMatch(description,/Wait for the child result before answering/);
   }
+  const spawn = tools.find(tool => tool.name === 'spawn_agent');
+  assert.match(spawn.description,/use it for results this turn needs and verify them before relying on them/);
+  assert.match(spawn.description,/Set background to true only when the user asks or long-running work is not needed this turn/);
+  assert.match(spawn.description,/never claim their results were integrated/);
   const guide = tools.find(tool => tool.name === 'guide_agent');
   assert.match(guide.description,/queued guidance receipt, not the child's final result/);
   const wait = tools.find(tool => tool.name === 'wait_agent');
@@ -155,6 +160,9 @@ test('comparison skill matches independent worktree implementations',async()=>{
   assert.match(skill,/user requests background execution instead, acknowledge admission and leave the children running/);
   assert.match(skill,/Guidance alone does not request foreground waiting/);
   assert.match(skill,/queued receipt without claiming the child has finished/);
+  assert.match(skill,/Remove a worktree that has no changes and no new commits/);
+  assert.match(skill,/stop and report conflicts to the user without resolving them automatically/);
+  assert.match(skill,/never discard work to make removal succeed/);
   assert.ok(!skill.includes('load_skill'));
 });
 
