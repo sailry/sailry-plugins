@@ -38,8 +38,8 @@ test('keeps command text, enforces target and timeout, and never accepts caller 
   const api=await fixture();api.initialize({tools,resources:true,connections});
   const command='printf "资料 🙂\\n"';
   assert.deepEqual(plain(api.run({connection:'a',command})),{connection:'a',command,timeout_ms:120000});
-  assert.equal(api.run({connection:'a',command,timeout_ms:900000}).timeout_ms,900000);
-  for(const args of [{connection:'b',command},{connection:'a',command,timeout_ms:0},{connection:'a',command,timeout_ms:900001},{connection:'a',command,password:'hidden'}]) assert.equal(api.run(args).isError,true);
+  assert.equal(api.run({connection:'a',command,timeout_ms:900001}).timeout_ms,900001);
+  for(const args of [{connection:'b',command},{connection:'a',command,timeout_ms:0},{connection:'a',command,password:'hidden'}]) assert.equal(api.run(args).isError,true);
 });
 
 test('prepares only explicit upload or download while preserving both path domains',async()=>{

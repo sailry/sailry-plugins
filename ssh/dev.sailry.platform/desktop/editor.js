@@ -13,7 +13,7 @@ export function prepare(editor,credential) {
   const port = /^\d+$/.test(portText) ? Number(portText) : NaN;
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('invalid port');
   const sharing = editor.sharing;
-  if (sharing !== null && sharing?.scope !== 'global' && !(sharing?.scope === 'projects' && Array.isArray(sharing.projects) && sharing.projects.length > 0 && sharing.projects.length <= 128 && new Set(sharing.projects).size === sharing.projects.length)) throw new Error('invalid sharing');
+  if (sharing !== null && sharing?.scope !== 'global' && !(sharing?.scope === 'projects' && Array.isArray(sharing.projects) && sharing.projects.length > 0 && new Set(sharing.projects).size === sharing.projects.length)) throw new Error('invalid sharing');
   if (editor.authentication === 'agent') throw new Error('unsupported authentication');
   if (editor.authentication === 'key_path' && !credential.file && (editor.original.revision === 0 || editor.original.authentication !== 'key_path')) throw new Error('key file required');
   const changed = editor.authentication === 'password' ? credential.password

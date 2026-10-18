@@ -25,7 +25,7 @@ export function parameters(name,profiles) {
   const required = ['connection'];
   if (name === 'ssh_run') {
     properties.command={type:'string'};
-    properties.timeout_ms={type:'integer',minimum:1,maximum:900000};
+    properties.timeout_ms={type:'integer',minimum:1,maximum:Number.MAX_SAFE_INTEGER};
     required.push('command');
   } else {
     properties.path={type:'string'};properties.remote_path={type:'string'};
