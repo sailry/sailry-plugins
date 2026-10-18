@@ -13,7 +13,7 @@ test('zero findings still require every file and group', async () => {
   const missing = await fixtureData.invoke('complete',receipt(scope,{reviewed_files:[],reviewed_groups:[]}));
   assert.equal(missing.isError,true);
   assert.equal(missing.remaining.counts.files,15);
-  assert.deepEqual(missing.remaining.groups,[scope.groups[0].id]);
+  assert.deepEqual(missing.remaining.groups,scope.groups.map(group => group.id));
   const result = await fixtureData.invoke('complete',receipt(scope));
   assert.equal(result.status,'complete');
   assert.equal(result.reviewed_files,15);

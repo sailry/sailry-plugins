@@ -45,8 +45,7 @@ test('inventory finishes before eligible reads', async () => {
   const scope = await fixtureData.invoke('scope',{});
   assert.equal(scope.counts.files,15);
   assert.equal(scope.counts.skipped,skipped.length+550);
-  assert.equal(scope.groups.length,1);
-  assert.equal(scope.groups[0].files.length,15);
+  assert.deepEqual(scope.groups.map(group => group.files.length),[10,5]);
   const first = fixtureData.calls.findIndex(call => call.kind === 'read_git_change');
   assert.equal(first,3);
   assert.ok(fixtureData.calls.slice(0,first).every(call => call.kind === 'list_git_changes'));
@@ -150,7 +149,7 @@ test('source test conventions retain project ownership', async () => {
 });
 
 test('oversized Unicode groups never persist', async () => {
-  const source = Array.from({length:100},(_,index) => file(`src/${index}-${'漢'.repeat(700)}.rs`));
+  const source = Array.from({length:100},(_,index) => file(`app/locales/${index}-${'漢'.repeat(700)}.json`));
   const fixtureData = await fixture(source);
   const scope = await fixtureData.invoke('scope',{});
   assert.equal(scope.isError,true);
