@@ -32,7 +32,7 @@ class Catalog(unittest.TestCase):
             })
             self.assertEqual(catalog.catalog(root), {
                 "version": 1, "packages": [{"id": "sample", "manifest": data,
-                                          "provides_models": False, "permissions": []}],
+                                          "provides_models": False, "permissions": []}], "skills": [],
             })
 
     def test_derives_model_summary(self):
@@ -61,6 +61,29 @@ class Catalog(unittest.TestCase):
                 [package["id"] for package in catalog.catalog(root)["packages"]],
                 ["first", "second"],
             )
+
+    def test_selects_exact_release_notes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample")
+            package = root / "sample"
+            (package / "CHANGELOG.md").write_text("## 2.0.0\n- Future\n\n## 1.10.0\n- Current\n\n## 1.9.0\n- Previous\n")
+            (package / "CHANGELOG.zh-CN.md").write_text("## 1.10.0\n- 本次变更\n", encoding="utf-8")
+            self.assertEqual(catalog.catalog(root)["packages"][0]["release_notes"],
+                             {"text": "- Current", "locales": {"zh-CN": "- 本次变更"}})
+            (package / "CHANGELOG.md").write_text("## 1.9.0\n- Previous\n")
+            self.assertNotIn("release_notes", catalog.catalog(root)["packages"][0])
+
+    def test_preserves_real_skill_frontmatter(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample")
+            skill = root / "sample" / "skills" / "research"
+            skill.mkdir(parents=True)
+            frontmatter = "---\nname: research\ndescription: Research a topic\nmetadata:\n  display-name.zh-CN: 研究\n---\n"
+            (skill / "SKILL.md").write_text(frontmatter + "Private body is not a catalog field\n", encoding="utf-8")
+            self.assertEqual(catalog.catalog(root)["skills"], [{"package": "sample",
+                "path": "skills/research/SKILL.md", "frontmatter": frontmatter}])
 
     def test_rejects_directory_mismatch(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -2,6 +2,16 @@
 name: workspace
 description: Use Tencent Docs tools for documents and sheets with the authorized account on the execution Node.
 metadata:
+  display-name.en: "Tencent Docs"
+  display-name.zh-CN: "腾讯文档"
+  display-name.zh-TW: "騰訊文件"
+  display-name.ja: "Tencent Docs"
+  display-name.ko: "Tencent Docs"
+  display-name.fr: "Tencent Docs"
+  display-name.de: "Tencent Docs"
+  display-name.es: "Tencent Docs"
+  display-name.pt-BR: "Tencent Docs"
+  display-name.ru: "Tencent Docs"
   display-name: Tencent Docs
 ---
 

@@ -2,6 +2,16 @@
 name: workspace
 description: Read outlook and onedrive through Microsoft 365's official API using the execution Node's configured credentials.
 metadata:
+  display-name.en: "Microsoft 365"
+  display-name.zh-CN: "Microsoft 365"
+  display-name.zh-TW: "Microsoft 365"
+  display-name.ja: "Microsoft 365"
+  display-name.ko: "Microsoft 365"
+  display-name.fr: "Microsoft 365"
+  display-name.de: "Microsoft 365"
+  display-name.es: "Microsoft 365"
+  display-name.pt-BR: "Microsoft 365"
+  display-name.ru: "Microsoft 365"
   display-name: Microsoft 365
 ---
 

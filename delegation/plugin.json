@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "delegation",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -11,8 +11,16 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "additionalProperties": false,
-        "required": ["proactive"],
-        "properties": {"proactive": {"type": "boolean", "default": false, "x-sailry-import": "delegation_proactive"}}
+        "required": [
+          "proactive"
+        ],
+        "properties": {
+          "proactive": {
+            "type": "boolean",
+            "default": false,
+            "x-sailry-import": "delegation_proactive"
+          }
+        }
       },
       "actions": [
         "agents.delegate",
@@ -48,34 +56,327 @@
       ],
       "tools": [
         {
-          "name":"list_agents","presentation":"details","contexts":["workspace"],
-          "description":"List public agent definitions and exact revisions in this execution Node's catalog. Catalog edits affect new conversations only until explicitly applied; they never rewrite this turn's roster or existing children. No provider configuration or credentials are returned.",
-          "handler":{"name":"list","read_only":true,"parameters":{"type":"object","additionalProperties":false,"properties":{}}},
-          "display":{"label":"List agents","locales":{"zh-CN":"列出代理"},"icon":"reicon:users/users2"}
+          "name": "list_agents",
+          "presentation": "details",
+          "contexts": [
+            "workspace"
+          ],
+          "description": "List public agent definitions and exact revisions in this execution Node's catalog. Catalog edits affect new conversations only until explicitly applied; they never rewrite this turn's roster or existing children. No provider configuration or credentials are returned.",
+          "handler": {
+            "name": "list",
+            "read_only": true,
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          },
+          "display": {
+            "label": "List agents",
+            "locales": {
+              "zh-CN": "列出代理",
+              "en": "List agents",
+              "zh-TW": "列出代理",
+              "ja": "エージェントを一覧表示",
+              "ko": "에이전트 목록",
+              "fr": "Lister les agents",
+              "de": "Agenten auflisten",
+              "es": "Listar agentes",
+              "pt-BR": "Listar agentes",
+              "ru": "Список агентов"
+            },
+            "icon": "reicon:users/users2"
+          }
         },
         {
-          "name":"add_agent","presentation":"details","contexts":["workspace"],
-          "description":"Add an agent definition to this execution Node's catalog. Use a unique lowercase key, display name and instructions. Optional model identifies an existing provider/model, never credentials. This does not change this conversation's roster; use apply_agents only when explicitly requested.",
-          "handler":{"name":"add","operation":"roles.save","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["key","name","instructions"],"properties":{"key":{"type":"string"},"name":{"type":"string"},"instructions":{"type":"string"},"description":{"type":"string"},"read_only":{"type":"boolean"},"model":{"type":["object","null"]},"max_turns":{"type":["integer","null"],"minimum":1},"skills":{"type":"array","items":{"type":"string"}},"appearance":{"type":["object","null"]}}}},
-          "display":{"label":"Add agent","locales":{"zh-CN":"添加代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/name"}}}
+          "name": "add_agent",
+          "presentation": "details",
+          "contexts": [
+            "workspace"
+          ],
+          "description": "Add an agent definition to this execution Node's catalog. Use a unique lowercase key, display name and instructions. Optional model identifies an existing provider/model, never credentials. This does not change this conversation's roster; use apply_agents only when explicitly requested.",
+          "handler": {
+            "name": "add",
+            "operation": "roles.save",
+            "result": "result",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "key",
+                "name",
+                "instructions"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "instructions": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "read_only": {
+                  "type": "boolean"
+                },
+                "model": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "max_turns": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "skills": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "appearance": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Add agent",
+            "locales": {
+              "zh-CN": "添加代理",
+              "en": "Add agent",
+              "zh-TW": "新增代理",
+              "ja": "エージェントを追加",
+              "ko": "에이전트 추가",
+              "fr": "Ajouter un agent",
+              "de": "Agent hinzufügen",
+              "es": "Añadir agente",
+              "pt-BR": "Adicionar agente",
+              "ru": "Добавить агента"
+            },
+            "icon": "reicon:users/users2",
+            "input": {
+              "summary": {
+                "path": "/name"
+              }
+            }
+          }
         },
         {
-          "name":"edit_agent","presentation":"details","contexts":["workspace"],
-          "description":"Edit one catalog agent using its exact ID and decimal-string revision from list_agents. Omitted fields are preserved; explicit null clears optional fields. Inspect conflicts instead of silently rebasing. Existing conversations, queued turns and children keep their captures until explicit application for future admission.",
-          "handler":{"name":"edit","operation":"roles.save","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["id","expected_revision"],"properties":{"id":{"type":"string"},"expected_revision":{"type":"string","pattern":"^[1-9][0-9]*$"},"key":{"type":"string"},"name":{"type":"string"},"instructions":{"type":"string"},"description":{"type":"string"},"read_only":{"type":"boolean"},"model":{"type":["object","null"]},"max_turns":{"type":["integer","null"],"minimum":1},"skills":{"type":"array","items":{"type":"string"}},"appearance":{"type":["object","null"]}}}},
-          "display":{"label":"Edit agent","locales":{"zh-CN":"编辑代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/id"}}}
+          "name": "edit_agent",
+          "presentation": "details",
+          "contexts": [
+            "workspace"
+          ],
+          "description": "Edit one catalog agent using its exact ID and decimal-string revision from list_agents. Omitted fields are preserved; explicit null clears optional fields. Inspect conflicts instead of silently rebasing. Existing conversations, queued turns and children keep their captures until explicit application for future admission.",
+          "handler": {
+            "name": "edit",
+            "operation": "roles.save",
+            "result": "result",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "expected_revision"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "expected_revision": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                },
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "instructions": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "read_only": {
+                  "type": "boolean"
+                },
+                "model": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "max_turns": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "skills": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "appearance": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Edit agent",
+            "locales": {
+              "zh-CN": "编辑代理",
+              "en": "Edit agent",
+              "zh-TW": "編輯代理",
+              "ja": "エージェントを編集",
+              "ko": "에이전트 편집",
+              "fr": "Modifier un agent",
+              "de": "Agent bearbeiten",
+              "es": "Editar agente",
+              "pt-BR": "Editar agente",
+              "ru": "Изменить агента"
+            },
+            "icon": "reicon:users/users2",
+            "input": {
+              "summary": {
+                "path": "/id"
+              }
+            }
+          }
         },
         {
-          "name":"delete_agent","presentation":"details","contexts":["workspace"],
-          "description":"Remove exactly one agent definition from this execution Node's catalog using its ID and decimal-string revision from list_agents. Confirm the user's intent before deletion. Existing conversations, queued turns and children retain their immutable definitions and history; this does not delete any conversation or automatically change its roster.",
-          "handler":{"name":"remove","operation":"roles.remove","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["id","expected_revision"],"properties":{"id":{"type":"string"},"expected_revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},
-          "display":{"label":"Delete agent","locales":{"zh-CN":"删除代理"},"icon":"reicon:users/users2","input":{"summary":{"path":"/id"}}}
+          "name": "delete_agent",
+          "presentation": "details",
+          "contexts": [
+            "workspace"
+          ],
+          "description": "Remove exactly one agent definition from this execution Node's catalog using its ID and decimal-string revision from list_agents. Confirm the user's intent before deletion. Existing conversations, queued turns and children retain their immutable definitions and history; this does not delete any conversation or automatically change its roster.",
+          "handler": {
+            "name": "remove",
+            "operation": "roles.remove",
+            "result": "result",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "expected_revision"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "expected_revision": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Delete agent",
+            "locales": {
+              "zh-CN": "删除代理",
+              "en": "Delete agent",
+              "zh-TW": "刪除代理",
+              "ja": "エージェントを削除",
+              "ko": "에이전트 삭제",
+              "fr": "Supprimer un agent",
+              "de": "Agent löschen",
+              "es": "Eliminar agente",
+              "pt-BR": "Excluir agente",
+              "ru": "Удалить агента"
+            },
+            "icon": "reicon:users/users2",
+            "input": {
+              "summary": {
+                "path": "/id"
+              }
+            }
+          }
         },
         {
-          "name":"apply_agents","presentation":"details","contexts":["workspace"],
-          "description":"Explicitly replace this conversation's selected agent roster for future turn admission only. Supply the complete desired list of catalog IDs with exact decimal-string revisions, and this conversation's exact expected_session_revision from initialization or a completed apply_agents receipt. An empty list clears future role selection. Never silently rebase conflicts. This running turn, already queued turns and existing children keep their immutable captures; this cannot target another conversation.",
-          "handler":{"name":"apply","operation":"roles.apply","result":"result","parameters":{"type":"object","additionalProperties":false,"required":["agents","expected_session_revision"],"properties":{"agents":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","revision"],"properties":{"id":{"type":"string"},"revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},"expected_session_revision":{"type":"string","pattern":"^[1-9][0-9]*$"}}}},
-          "display":{"label":"Apply agents","locales":{"zh-CN":"应用代理"},"icon":"reicon:users/users2"}
+          "name": "apply_agents",
+          "presentation": "details",
+          "contexts": [
+            "workspace"
+          ],
+          "description": "Explicitly replace this conversation's selected agent roster for future turn admission only. Supply the complete desired list of catalog IDs with exact decimal-string revisions, and this conversation's exact expected_session_revision from initialization or a completed apply_agents receipt. An empty list clears future role selection. Never silently rebase conflicts. This running turn, already queued turns and existing children keep their immutable captures; this cannot target another conversation.",
+          "handler": {
+            "name": "apply",
+            "operation": "roles.apply",
+            "result": "result",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "agents",
+                "expected_session_revision"
+              ],
+              "properties": {
+                "agents": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "revision"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "revision": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]*$"
+                      }
+                    }
+                  }
+                },
+                "expected_session_revision": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Apply agents",
+            "locales": {
+              "zh-CN": "应用代理",
+              "en": "Apply agents",
+              "zh-TW": "套用代理",
+              "ja": "エージェントを適用",
+              "ko": "에이전트 적용",
+              "fr": "Appliquer les agents",
+              "de": "Agenten anwenden",
+              "es": "Aplicar agentes",
+              "pt-BR": "Aplicar agentes",
+              "ru": "Применить агентов"
+            },
+            "icon": "reicon:users/users2"
+          }
         },
         {
           "name": "spawn_agent",
@@ -125,7 +426,16 @@
           "display": {
             "label": "Subagent",
             "locales": {
-              "zh-CN": "子代理"
+              "zh-CN": "子代理",
+              "en": "Subagent",
+              "zh-TW": "子代理",
+              "ja": "サブエージェント",
+              "ko": "하위 에이전트",
+              "fr": "Sous-agent",
+              "de": "Unteragent",
+              "es": "Subagente",
+              "pt-BR": "Subagente",
+              "ru": "Субагент"
             },
             "icon": "reicon:users/users2",
             "input": {
@@ -150,7 +460,16 @@
           "display": {
             "label": "Guide subagent",
             "locales": {
-              "zh-CN": "引导子代理"
+              "zh-CN": "引导子代理",
+              "en": "Guide subagent",
+              "zh-TW": "引導子代理",
+              "ja": "サブエージェントを指示",
+              "ko": "하위 에이전트 지시",
+              "fr": "Guider le sous-agent",
+              "de": "Unteragent anleiten",
+              "es": "Guiar subagente",
+              "pt-BR": "Orientar subagente",
+              "ru": "Направить субагента"
             },
             "icon": "reicon:users/users2",
             "input": {
@@ -173,7 +492,16 @@
           "display": {
             "label": "Wait for subagent",
             "locales": {
-              "zh-CN": "等待子代理"
+              "zh-CN": "等待子代理",
+              "en": "Wait for subagent",
+              "zh-TW": "等待子代理",
+              "ja": "サブエージェントを待機",
+              "ko": "하위 에이전트 대기",
+              "fr": "Attendre le sous-agent",
+              "de": "Auf Unteragent warten",
+              "es": "Esperar subagente",
+              "pt-BR": "Aguardar subagente",
+              "ru": "Ждать субагента"
             },
             "icon": "reicon:users/users2",
             "input": {
@@ -243,7 +571,9 @@
           "group": "ai",
           "order": 400
         }
-      }
+      },
+      "category": "automation",
+      "tint": "violet"
     }
   },
   "description": "Delegate tasks to subagents"

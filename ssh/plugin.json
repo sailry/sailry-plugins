@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -86,7 +86,16 @@
           "display": {
             "label": "Run SSH command",
             "locales": {
-              "zh-CN": "执行 SSH 命令"
+              "zh-CN": "执行 SSH 命令",
+              "zh-TW": "執行 SSH 命令",
+              "ja": "SSH コマンドを実行",
+              "ko": "SSH 명령 실행",
+              "fr": "Exécuter une commande SSH",
+              "de": "SSH-Befehl ausführen",
+              "es": "Ejecutar comando SSH",
+              "pt-BR": "Executar comando SSH",
+              "ru": "Выполнить команду SSH",
+              "en": "Run SSH command"
             },
             "icon": "reicon:it/terminal-square",
             "input": {
@@ -148,7 +157,16 @@
           "display": {
             "label": "Transfer SSH file",
             "locales": {
-              "zh-CN": "传输 SSH 文件"
+              "zh-CN": "传输 SSH 文件",
+              "zh-TW": "傳輸 SSH 檔案",
+              "ja": "SSH でファイルを転送",
+              "ko": "SSH 파일 전송",
+              "fr": "Transférer un fichier SSH",
+              "de": "SSH-Datei übertragen",
+              "es": "Transferir archivo SSH",
+              "pt-BR": "Transferir arquivo SSH",
+              "ru": "Передать файл по SSH",
+              "en": "Transfer SSH file"
             },
             "icon": "reicon:it/terminal-square",
             "input": {
@@ -185,7 +203,16 @@
           "display": {
             "label": "SSH connections",
             "locales": {
-              "zh-CN": "SSH 连接"
+              "zh-CN": "SSH 连接",
+              "zh-TW": "SSH 連線",
+              "ja": "SSH 接続",
+              "ko": "SSH 연결",
+              "fr": "Connexions SSH",
+              "de": "SSH-Verbindungen",
+              "es": "Conexiones SSH",
+              "pt-BR": "Conexões SSH",
+              "ru": "Подключения SSH",
+              "en": "SSH connections"
             },
             "icon": "reicon:it/terminal-square"
           }
@@ -251,10 +278,78 @@
                 },
                 "credential": {
                   "oneOf": [
-                    {"type":"object","properties":{"kind":{"const":"password"},"password":{"type":"string"}},"required":["kind","password"],"additionalProperties":false},
-                    {"type":"object","properties":{"kind":{"const":"private_key"},"key":{"type":"string"},"passphrase":{"type":["string","null"]}},"required":["kind","key"],"additionalProperties":false},
-                    {"type":"object","properties":{"kind":{"const":"key_path"},"path":{"type":"string"},"passphrase":{"type":["string","null"]}},"required":["kind","path"],"additionalProperties":false},
-                    {"type":"object","properties":{"kind":{"const":"agent"}},"required":["kind"],"additionalProperties":false}
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": "password"
+                        },
+                        "password": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "password"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": "private_key"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "passphrase": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "key"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": "key_path"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "passphrase": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "path"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": "agent"
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
                   ]
                 },
                 "key_path": {
@@ -300,8 +395,21 @@
                     },
                     "allOf": [
                       {
-                        "if": {"properties":{"authentication":{"enum":["password","private_key"]}}},
-                        "then": {"required":["credential"]}
+                        "if": {
+                          "properties": {
+                            "authentication": {
+                              "enum": [
+                                "password",
+                                "private_key"
+                              ]
+                            }
+                          }
+                        },
+                        "then": {
+                          "required": [
+                            "credential"
+                          ]
+                        }
                       },
                       {
                         "if": {
@@ -313,8 +421,16 @@
                         },
                         "then": {
                           "anyOf": [
-                            {"required":["credential"]},
-                            {"required":["key_path"]}
+                            {
+                              "required": [
+                                "credential"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "key_path"
+                              ]
+                            }
                           ]
                         }
                       }
@@ -327,7 +443,16 @@
           "display": {
             "label": "Save SSH connection",
             "locales": {
-              "zh-CN": "保存 SSH 连接"
+              "zh-CN": "保存 SSH 连接",
+              "zh-TW": "儲存 SSH 連線",
+              "ja": "SSH 接続を保存",
+              "ko": "SSH 연결 저장",
+              "fr": "Enregistrer la connexion SSH",
+              "de": "SSH-Verbindung speichern",
+              "es": "Guardar conexión SSH",
+              "pt-BR": "Salvar conexão SSH",
+              "ru": "Сохранить подключение SSH",
+              "en": "Save SSH connection"
             },
             "icon": "reicon:it/terminal-square",
             "input": {
@@ -388,7 +513,9 @@
           }
         ]
       },
-      "instructions": "Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
+      "instructions": "Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key.",
+      "category": "development",
+      "tint": "blue"
     }
   }
 }

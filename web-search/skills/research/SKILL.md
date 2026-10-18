@@ -1,6 +1,16 @@
 ---
 name: research
 metadata:
+  display-name.en: "Research"
+  display-name.zh-CN: "研究"
+  display-name.zh-TW: "研究"
+  display-name.ja: "調査"
+  display-name.ko: "조사"
+  display-name.fr: "Recherche"
+  display-name.de: "Recherche"
+  display-name.es: "Investigación"
+  display-name.pt-BR: "Pesquisa"
+  display-name.ru: "Исследование"
   display-name: Research
 description: Investigate multiple public sources to compare alternatives, synthesize evidence or answer a question requiring repeated search rounds.
 ---

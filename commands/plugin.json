@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -80,7 +80,16 @@
           "display": {
             "label": "Command",
             "locales": {
-              "zh-CN": "命令"
+              "zh-CN": "命令",
+              "zh-TW": "命令",
+              "ja": "コマンド",
+              "ko": "명령",
+              "fr": "Commande",
+              "de": "Befehl",
+              "es": "Comando",
+              "pt-BR": "Comando",
+              "ru": "Команда",
+              "en": "Command"
             },
             "icon": "reicon:it/terminal-square",
             "approval": [
@@ -149,7 +158,16 @@
           "display": {
             "label": "Read command",
             "locales": {
-              "zh-CN": "读取命令"
+              "zh-CN": "读取命令",
+              "zh-TW": "讀取命令",
+              "ja": "コマンドを読む",
+              "ko": "명령 읽기",
+              "fr": "Lire la commande",
+              "de": "Befehl lesen",
+              "es": "Leer comando",
+              "pt-BR": "Ler comando",
+              "ru": "Прочитать команду",
+              "en": "Read command"
             },
             "icon": "reicon:it/terminal-square"
           },
@@ -181,7 +199,16 @@
           "display": {
             "label": "Stop command",
             "locales": {
-              "zh-CN": "停止命令"
+              "zh-CN": "停止命令",
+              "zh-TW": "停止命令",
+              "ja": "コマンドを停止",
+              "ko": "명령 중지",
+              "fr": "Arrêter la commande",
+              "de": "Befehl stoppen",
+              "es": "Detener comando",
+              "pt-BR": "Parar comando",
+              "ru": "Остановить команду",
+              "en": "Stop command"
             },
             "icon": "reicon:it/terminal-square"
           },
@@ -210,7 +237,16 @@
           "display": {
             "label": "Write command",
             "locales": {
-              "zh-CN": "输入命令"
+              "zh-CN": "输入命令",
+              "zh-TW": "寫入命令",
+              "ja": "コマンドに入力",
+              "ko": "명령에 입력",
+              "fr": "Écrire dans la commande",
+              "de": "In Befehl schreiben",
+              "es": "Escribir en el comando",
+              "pt-BR": "Escrever no comando",
+              "ru": "Ввод в команду",
+              "en": "Write command"
             },
             "icon": "reicon:it/terminal-square"
           },
@@ -349,7 +385,9 @@
           "order": 20,
           "handler": "cli"
         }
-      ]
+      ],
+      "category": "development",
+      "tint": "teal"
     }
   }
 }

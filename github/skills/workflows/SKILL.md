@@ -2,6 +2,16 @@
 name: workflows
 description: Discover and read public GitHub projects without requiring a token, and use authenticated MCP tools for repository, issue, pull-request, review and Actions workflows. Use for hosted GitHub work, not local Git operations alone or a standalone security audit.
 metadata:
+  display-name.en: "GitHub"
+  display-name.zh-CN: "GitHub 工作流"
+  display-name.zh-TW: "GitHub 工作流程"
+  display-name.ja: "GitHub ワークフロー"
+  display-name.ko: "GitHub 워크플로"
+  display-name.fr: "Flux de travail GitHub"
+  display-name.de: "GitHub-Workflows"
+  display-name.es: "Flujos de GitHub"
+  display-name.pt-BR: "Fluxos do GitHub"
+  display-name.ru: "Рабочие процессы GitHub"
   display-name: GitHub
 ---
 

@@ -1,6 +1,16 @@
 ---
 name: excel
 metadata:
+  display-name.en: "Excel"
+  display-name.zh-CN: "Excel"
+  display-name.zh-TW: "Excel"
+  display-name.ja: "Excel"
+  display-name.ko: "Excel"
+  display-name.fr: "Excel"
+  display-name.de: "Excel"
+  display-name.es: "Excel"
+  display-name.pt-BR: "Excel"
+  display-name.ru: "Excel"
   display-name: Excel
 description: Create, analyze and edit Excel workbooks (.xlsx), formulas, formatting, charts, tables and validations.
 ---

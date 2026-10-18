@@ -1,6 +1,16 @@
 ---
 name: plugin-builder
 metadata:
+  display-name.en: "Plugin builder"
+  display-name.zh-CN: "插件开发"
+  display-name.zh-TW: "外掛程式開發"
+  display-name.ja: "プラグイン開発"
+  display-name.ko: "플러그인 개발"
+  display-name.fr: "Création de plugins"
+  display-name.de: "Plugin-Entwicklung"
+  display-name.es: "Creación de plugins"
+  display-name.pt-BR: "Criação de plugins"
+  display-name.ru: "Разработка плагинов"
   display-name: Plugin builder
 description: Create, extend and fix Sailry plugins - skills, agent tools, MCP servers, headless callbacks, desktop panels and composer controls - and prepare them for installation.
 ---

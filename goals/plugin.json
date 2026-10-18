@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "goals",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -122,7 +122,16 @@
           "display": {
             "label": "Create goal",
             "locales": {
-              "zh-CN": "创建目标"
+              "zh-CN": "创建目标",
+              "zh-TW": "建立目標",
+              "ja": "目標を作成",
+              "ko": "목표 만들기",
+              "fr": "Créer un objectif",
+              "de": "Ziel erstellen",
+              "es": "Crear objetivo",
+              "pt-BR": "Criar objetivo",
+              "ru": "Создать цель",
+              "en": "Create goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -144,7 +153,16 @@
           "display": {
             "label": "View goal",
             "locales": {
-              "zh-CN": "查看目标"
+              "zh-CN": "查看目标",
+              "zh-TW": "檢視目標",
+              "ja": "目標を見る",
+              "ko": "목표 보기",
+              "fr": "Voir l’objectif",
+              "de": "Ziel anzeigen",
+              "es": "Ver objetivo",
+              "pt-BR": "Ver objetivo",
+              "ru": "Показать цель",
+              "en": "View goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -192,7 +210,16 @@
           "display": {
             "label": "Update goal",
             "locales": {
-              "zh-CN": "更新目标"
+              "zh-CN": "更新目标",
+              "zh-TW": "更新目標",
+              "ja": "目標を更新",
+              "ko": "목표 업데이트",
+              "fr": "Modifier l’objectif",
+              "de": "Ziel aktualisieren",
+              "es": "Actualizar objetivo",
+              "pt-BR": "Atualizar objetivo",
+              "ru": "Обновить цель",
+              "en": "Update goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -225,7 +252,16 @@
           "display": {
             "label": "Resume goal",
             "locales": {
-              "zh-CN": "继续目标"
+              "zh-CN": "继续目标",
+              "zh-TW": "繼續目標",
+              "ja": "目標を再開",
+              "ko": "목표 재개",
+              "fr": "Reprendre l’objectif",
+              "de": "Ziel fortsetzen",
+              "es": "Reanudar objetivo",
+              "pt-BR": "Retomar objetivo",
+              "ru": "Продолжить цель",
+              "en": "Resume goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -258,7 +294,16 @@
           "display": {
             "label": "Pause goal",
             "locales": {
-              "zh-CN": "暂停目标"
+              "zh-CN": "暂停目标",
+              "zh-TW": "暫停目標",
+              "ja": "目標を一時停止",
+              "ko": "목표 일시중지",
+              "fr": "Suspendre l’objectif",
+              "de": "Ziel pausieren",
+              "es": "Pausar objetivo",
+              "pt-BR": "Pausar objetivo",
+              "ru": "Приостановить цель",
+              "en": "Pause goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -291,7 +336,16 @@
           "display": {
             "label": "Clear goal",
             "locales": {
-              "zh-CN": "清除目标"
+              "zh-CN": "清除目标",
+              "zh-TW": "清除目標",
+              "ja": "目標を消去",
+              "ko": "목표 지우기",
+              "fr": "Effacer l’objectif",
+              "de": "Ziel löschen",
+              "es": "Borrar objetivo",
+              "pt-BR": "Limpar objetivo",
+              "ru": "Очистить цель",
+              "en": "Clear goal"
             },
             "icon": "reicon:ui/target"
           }
@@ -357,7 +411,9 @@
           "pt-BR": "Continuar objetivo",
           "ru": "Продолжить цель"
         }
-      }
+      },
+      "category": "automation",
+      "tint": "amber"
     }
   }
 }

@@ -2,6 +2,16 @@
 name: workspace
 description: Read Figma REST file and node JSON using the execution Node's personal access token.
 metadata:
+  display-name.en: "Figma"
+  display-name.zh-CN: "Figma"
+  display-name.zh-TW: "Figma"
+  display-name.ja: "Figma"
+  display-name.ko: "Figma"
+  display-name.fr: "Figma"
+  display-name.de: "Figma"
+  display-name.es: "Figma"
+  display-name.pt-BR: "Figma"
+  display-name.ru: "Figma"
   display-name: Figma
 ---
 

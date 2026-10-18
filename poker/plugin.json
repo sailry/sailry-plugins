@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "poker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Play heads-up Texas Hold'em with an AI opponent",
   "extensions": {
     "dev.sailry.platform": {
@@ -51,7 +51,9 @@
           "zh-CN": "德州扑克"
         },
         "icon": "reicon:like/heart"
-      }
+      },
+      "category": "entertainment",
+      "tint": "teal"
     }
   }
 }

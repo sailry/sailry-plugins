@@ -1,6 +1,16 @@
 ---
 name: pdf
 metadata:
+  display-name.en: "PDF"
+  display-name.zh-CN: "PDF"
+  display-name.zh-TW: "PDF"
+  display-name.ja: "PDF"
+  display-name.ko: "PDF"
+  display-name.fr: "PDF"
+  display-name.de: "PDF"
+  display-name.es: "PDF"
+  display-name.pt-BR: "PDF"
+  display-name.ru: "PDF"
   display-name: PDF
 description: Read, generate, render and edit PDF documents, merge/split/rotate pages and fill form fields.
 ---

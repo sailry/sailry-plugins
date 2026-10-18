@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -217,7 +217,16 @@
           "display": {
             "label": "Review scope",
             "locales": {
-              "zh-CN": "审查范围"
+              "zh-CN": "审查范围",
+              "en": "Review scope",
+              "zh-TW": "審查範圍",
+              "ja": "レビュー範囲",
+              "ko": "검토 범위",
+              "fr": "Périmètre de révision",
+              "de": "Prüfumfang",
+              "es": "Alcance de revisión",
+              "pt-BR": "Escopo da revisão",
+              "ru": "Область проверки"
             },
             "icon": "reicon:it/code"
           }
@@ -270,7 +279,16 @@
           "display": {
             "label": "Read review change",
             "locales": {
-              "zh-CN": "读取审查变更"
+              "zh-CN": "读取审查变更",
+              "en": "Read review change",
+              "zh-TW": "讀取審查變更",
+              "ja": "レビュー変更を読む",
+              "ko": "검토 변경 읽기",
+              "fr": "Lire le changement examiné",
+              "de": "Geprüfte Änderung lesen",
+              "es": "Leer cambio revisado",
+              "pt-BR": "Ler alteração revisada",
+              "ru": "Читать проверяемое изменение"
             },
             "icon": "reicon:it/code"
           }
@@ -357,7 +375,16 @@
           "display": {
             "label": "Report finding",
             "locales": {
-              "zh-CN": "记录问题"
+              "zh-CN": "记录问题",
+              "en": "Report finding",
+              "zh-TW": "記錄問題",
+              "ja": "問題を記録",
+              "ko": "문제 기록",
+              "fr": "Signaler un problème",
+              "de": "Problem melden",
+              "es": "Informar hallazgo",
+              "pt-BR": "Relatar problema",
+              "ru": "Сообщить о проблеме"
             },
             "icon": "reicon:it/code"
           }
@@ -427,7 +454,16 @@
           "display": {
             "label": "Complete review",
             "locales": {
-              "zh-CN": "完成审查"
+              "zh-CN": "完成审查",
+              "en": "Complete review",
+              "zh-TW": "完成審查",
+              "ja": "レビューを完了",
+              "ko": "검토 완료",
+              "fr": "Terminer la révision",
+              "de": "Prüfung abschließen",
+              "es": "Completar revisión",
+              "pt-BR": "Concluir revisão",
+              "ru": "Завершить проверку"
             },
             "icon": "reicon:it/code"
           }
@@ -489,7 +525,16 @@
           "display": {
             "label": "Delegate review",
             "locales": {
-              "zh-CN": "委托审查"
+              "zh-CN": "委托审查",
+              "en": "Delegate review",
+              "zh-TW": "委派審查",
+              "ja": "レビューを委任",
+              "ko": "검토 위임",
+              "fr": "Déléguer la révision",
+              "de": "Prüfung delegieren",
+              "es": "Delegar revisión",
+              "pt-BR": "Delegar revisão",
+              "ru": "Делегировать проверку"
             },
             "icon": "reicon:users/users2",
             "input": {
@@ -502,7 +547,9 @@
             }
           }
         }
-      ]
+      ],
+      "category": "development",
+      "tint": "violet"
     }
   }
 }

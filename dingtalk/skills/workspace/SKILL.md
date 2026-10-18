@@ -2,6 +2,16 @@
 name: workspace
 description: Read knowledge spaces and files through DingTalk's official API using the execution Node's configured credentials.
 metadata:
+  display-name.en: "DingTalk"
+  display-name.zh-CN: "钉钉"
+  display-name.zh-TW: "釘釘"
+  display-name.ja: "DingTalk"
+  display-name.ko: "DingTalk"
+  display-name.fr: "DingTalk"
+  display-name.de: "DingTalk"
+  display-name.es: "DingTalk"
+  display-name.pt-BR: "DingTalk"
+  display-name.ru: "DingTalk"
   display-name: DingTalk
 ---
 

@@ -2,6 +2,16 @@
 name: workspace
 description: Use Linear tools for issues and projects with the authorized account on the execution Node.
 metadata:
+  display-name.en: "Linear"
+  display-name.zh-CN: "Linear"
+  display-name.zh-TW: "Linear"
+  display-name.ja: "Linear"
+  display-name.ko: "Linear"
+  display-name.fr: "Linear"
+  display-name.de: "Linear"
+  display-name.es: "Linear"
+  display-name.pt-BR: "Linear"
+  display-name.ru: "Linear"
   display-name: Linear
 ---
 

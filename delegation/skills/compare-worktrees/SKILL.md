@@ -2,6 +2,16 @@
 name: compare-worktrees
 description: Implement two or more competing approaches with independent subagents in separate registered worktrees, compare their changes and verification, and recommend a result.
 metadata:
+  display-name.en: "Compare approaches"
+  display-name.zh-CN: "比较方案"
+  display-name.zh-TW: "比較方案"
+  display-name.ja: "アプローチを比較"
+  display-name.ko: "접근 방식 비교"
+  display-name.fr: "Comparer les approches"
+  display-name.de: "Ansätze vergleichen"
+  display-name.es: "Comparar enfoques"
+  display-name.pt-BR: "Comparar abordagens"
+  display-name.ru: "Сравнить подходы"
   display-name: Compare approaches
 ---
 

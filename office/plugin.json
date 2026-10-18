@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "office",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create and edit Word, Excel, PowerPoint and PDF files using the execution Node's tools",
   "extensions": {
     "dev.sailry.platform": {
@@ -10,7 +10,9 @@
       "actions": [],
       "display": {
         "label": "Office",
-        "locales": {"zh-CN": "办公文档"},
+        "locales": {
+          "zh-CN": "办公文档"
+        },
         "icon": "reicon:files/files"
       },
       "description": {
@@ -18,7 +20,9 @@
         "locales": {
           "zh-CN": "文档技能、脚本与模板"
         }
-      }
+      },
+      "category": "documents",
+      "tint": "violet"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "brief",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -86,14 +86,15 @@
             "label": "Write HTML",
             "locales": {
               "zh-CN": "生成 HTML",
-              "zh-TW": "產生 HTML",
+              "zh-TW": "撰寫 HTML",
               "ja": "HTML を作成",
               "ko": "HTML 작성",
-              "de": "HTML erstellen",
-              "es": "Crear HTML",
+              "de": "HTML schreiben",
+              "es": "Escribir HTML",
               "fr": "Créer du HTML",
-              "pt-BR": "Criar HTML",
-              "ru": "Создать HTML"
+              "pt-BR": "Escrever HTML",
+              "ru": "Создать HTML",
+              "en": "Write HTML"
             },
             "input": {
               "summary": {
@@ -116,9 +117,10 @@
               "ko": "HTML 읽기",
               "de": "HTML lesen",
               "es": "Leer HTML",
-              "fr": "Lire le HTML",
+              "fr": "Lire du HTML",
               "pt-BR": "Ler HTML",
-              "ru": "Прочитать HTML"
+              "ru": "Прочитать HTML",
+              "en": "Read HTML"
             }
           }
         },
@@ -131,14 +133,15 @@
             "label": "List HTML",
             "locales": {
               "zh-CN": "HTML 列表",
-              "zh-TW": "HTML 清單",
+              "zh-TW": "列出 HTML",
               "ja": "HTML 一覧",
               "ko": "HTML 목록",
               "de": "HTML auflisten",
               "es": "Listar HTML",
-              "fr": "Lister le HTML",
+              "fr": "Lister les documents HTML",
               "pt-BR": "Listar HTML",
-              "ru": "Список HTML"
+              "ru": "Список HTML",
+              "en": "List HTML"
             }
           }
         }
@@ -156,7 +159,9 @@
           "dev.sailry.platform/document/forms.js",
           "dev.sailry.platform/document/brief.js"
         ]
-      }
+      },
+      "category": "documents",
+      "tint": "violet"
     }
   }
 }

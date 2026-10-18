@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -26,22 +26,138 @@
       },
       "tools": [
         {
-          "name":"list_ocr_models","presentation":"details","contexts":["plugin","workspace"],
-          "description":"List available OCR definitions and installation state on this execution Node. Set installed_only to list installed models. This does not install, remove, enable or select a model.",
-          "handler":{"name":"ocr_models","read_only":true,"parameters":{"type":"object","additionalProperties":false,"required":[],"properties":{"installed_only":{"type":"boolean","default":false}}}},
-          "display":{"label":"OCR models","locales":{"zh-CN":"OCR 模型"},"icon":"reicon:ui/magnifier"}
+          "name": "list_ocr_models",
+          "presentation": "details",
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "description": "List available OCR definitions and installation state on this execution Node. Set installed_only to list installed models. This does not install, remove, enable or select a model.",
+          "handler": {
+            "name": "ocr_models",
+            "read_only": true,
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [],
+              "properties": {
+                "installed_only": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "OCR models",
+            "locales": {
+              "zh-CN": "OCR 模型",
+              "zh-TW": "OCR 模型",
+              "ja": "OCR モデル",
+              "ko": "OCR 모델",
+              "fr": "Modèles OCR",
+              "de": "OCR-Modelle",
+              "es": "Modelos OCR",
+              "pt-BR": "Modelos OCR",
+              "ru": "Модели OCR",
+              "en": "OCR models"
+            },
+            "icon": "reicon:ui/magnifier"
+          }
         },
         {
-          "name":"install_ocr_model","presentation":"details","contexts":["plugin","workspace"],
-          "description":"Install the exact OCR model ID from list_ocr_models only when the user requests installation. This uses the shared Node installer and permission policy. Keep the immutable definition; do not silently select a model or repeat a denied or uncertain installation.",
-          "handler":{"name":"ocr_install","operation":"models.install","parameters":{"type":"object","additionalProperties":false,"required":["id"],"properties":{"id":{"type":"string","pattern":"^[0-9a-f]{64}$"}}}},
-          "display":{"label":"Install OCR model","locales":{"zh-CN":"安装 OCR 模型"},"icon":"reicon:ui/magnifier","input":{"summary":{"path":"/id"}}}
+          "name": "install_ocr_model",
+          "presentation": "details",
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "description": "Install the exact OCR model ID from list_ocr_models only when the user requests installation. This uses the shared Node installer and permission policy. Keep the immutable definition; do not silently select a model or repeat a denied or uncertain installation.",
+          "handler": {
+            "name": "ocr_install",
+            "operation": "models.install",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Install OCR model",
+            "locales": {
+              "zh-CN": "安装 OCR 模型",
+              "zh-TW": "安裝 OCR 模型",
+              "ja": "OCR モデルをインストール",
+              "ko": "OCR 모델 설치",
+              "fr": "Installer un modèle OCR",
+              "de": "OCR-Modell installieren",
+              "es": "Instalar modelo OCR",
+              "pt-BR": "Instalar modelo OCR",
+              "ru": "Установить модель OCR",
+              "en": "Install OCR model"
+            },
+            "icon": "reicon:ui/magnifier",
+            "input": {
+              "summary": {
+                "path": "/id"
+              }
+            }
+          }
         },
         {
-          "name":"uninstall_ocr_model","presentation":"details","contexts":["plugin","workspace"],
-          "description":"Uninstall the exact OCR model ID only when the user requests removal. This removes installed assets, not the model definition, settings or attachments. Do not automatically repeat a denied or uncertain removal.",
-          "handler":{"name":"ocr_remove","operation":"models.remove","parameters":{"type":"object","additionalProperties":false,"required":["id"],"properties":{"id":{"type":"string","pattern":"^[0-9a-f]{64}$"}}}},
-          "display":{"label":"Uninstall OCR model","locales":{"zh-CN":"卸载 OCR 模型"},"icon":"reicon:ui/magnifier","input":{"summary":{"path":"/id"}}}
+          "name": "uninstall_ocr_model",
+          "presentation": "details",
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "description": "Uninstall the exact OCR model ID only when the user requests removal. This removes installed assets, not the model definition, settings or attachments. Do not automatically repeat a denied or uncertain removal.",
+          "handler": {
+            "name": "ocr_remove",
+            "operation": "models.remove",
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Uninstall OCR model",
+            "locales": {
+              "zh-CN": "卸载 OCR 模型",
+              "zh-TW": "移除 OCR 模型",
+              "ja": "OCR モデルを削除",
+              "ko": "OCR 모델 제거",
+              "fr": "Désinstaller le modèle OCR",
+              "de": "OCR-Modell deinstallieren",
+              "es": "Desinstalar modelo OCR",
+              "pt-BR": "Desinstalar modelo OCR",
+              "ru": "Удалить модель OCR",
+              "en": "Uninstall OCR model"
+            },
+            "icon": "reicon:ui/magnifier",
+            "input": {
+              "summary": {
+                "path": "/id"
+              }
+            }
+          }
         },
         {
           "name": "list_directory",
@@ -91,7 +207,16 @@
           "display": {
             "label": "Browse directory",
             "locales": {
-              "zh-CN": "浏览目录"
+              "zh-CN": "浏览目录",
+              "zh-TW": "瀏覽目錄",
+              "ja": "ディレクトリを参照",
+              "ko": "디렉터리 탐색",
+              "fr": "Parcourir le dossier",
+              "de": "Verzeichnis durchsuchen",
+              "es": "Explorar directorio",
+              "pt-BR": "Explorar diretório",
+              "ru": "Обзор каталога",
+              "en": "Browse directory"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2\" /></svg>"
@@ -213,7 +338,16 @@
           "display": {
             "label": "Read file",
             "locales": {
-              "zh-CN": "读取文件"
+              "zh-CN": "读取文件",
+              "zh-TW": "讀取檔案",
+              "ja": "ファイルを読む",
+              "ko": "파일 읽기",
+              "fr": "Lire le fichier",
+              "de": "Datei lesen",
+              "es": "Leer archivo",
+              "pt-BR": "Ler arquivo",
+              "ru": "Прочитать файл",
+              "en": "Read file"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
@@ -336,7 +470,16 @@
           "display": {
             "label": "Write file",
             "locales": {
-              "zh-CN": "写入文件"
+              "zh-CN": "写入文件",
+              "zh-TW": "寫入檔案",
+              "ja": "ファイルを書き込む",
+              "ko": "파일 쓰기",
+              "fr": "Écrire le fichier",
+              "de": "Datei schreiben",
+              "es": "Escribir archivo",
+              "pt-BR": "Escrever arquivo",
+              "ru": "Записать файл",
+              "en": "Write file"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
@@ -542,7 +685,16 @@
           "display": {
             "label": "Edit file",
             "locales": {
-              "zh-CN": "编辑文件"
+              "zh-CN": "编辑文件",
+              "zh-TW": "編輯檔案",
+              "ja": "ファイルを編集",
+              "ko": "파일 편집",
+              "fr": "Modifier le fichier",
+              "de": "Datei bearbeiten",
+              "es": "Editar archivo",
+              "pt-BR": "Editar arquivo",
+              "ru": "Изменить файл",
+              "en": "Edit file"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
@@ -649,7 +801,16 @@
           "display": {
             "label": "Move to Trash",
             "locales": {
-              "zh-CN": "移到废纸篓"
+              "zh-CN": "移到废纸篓",
+              "zh-TW": "移至垃圾桶",
+              "ja": "ゴミ箱に移動",
+              "ko": "휴지통으로 이동",
+              "fr": "Mettre à la corbeille",
+              "de": "In den Papierkorb verschieben",
+              "es": "Mover a la papelera",
+              "pt-BR": "Mover para a lixeira",
+              "ru": "Переместить в корзину",
+              "en": "Move to Trash"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
@@ -720,7 +881,16 @@
           "display": {
             "label": "Move file",
             "locales": {
-              "zh-CN": "移动文件"
+              "zh-CN": "移动文件",
+              "zh-TW": "移動檔案",
+              "ja": "ファイルを移動",
+              "ko": "파일 이동",
+              "fr": "Déplacer le fichier",
+              "de": "Datei verschieben",
+              "es": "Mover archivo",
+              "pt-BR": "Mover arquivo",
+              "ru": "Переместить файл",
+              "en": "Move file"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
@@ -784,7 +954,16 @@
           "display": {
             "label": "Create directory",
             "locales": {
-              "zh-CN": "新建文件夹"
+              "zh-CN": "新建文件夹",
+              "zh-TW": "建立目錄",
+              "ja": "ディレクトリを作成",
+              "ko": "디렉터리 만들기",
+              "fr": "Créer un dossier",
+              "de": "Verzeichnis erstellen",
+              "es": "Crear directorio",
+              "pt-BR": "Criar diretório",
+              "ru": "Создать каталог",
+              "en": "Create directory"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M10 9H8\" /><path d=\"M16 13H8\" /><path d=\"M16 17H8\" /></svg>"
@@ -866,7 +1045,16 @@
           "display": {
             "label": "Find files",
             "locales": {
-              "zh-CN": "查找文件"
+              "zh-CN": "查找文件",
+              "zh-TW": "尋找檔案",
+              "ja": "ファイルを探す",
+              "ko": "파일 찾기",
+              "fr": "Trouver des fichiers",
+              "de": "Dateien suchen",
+              "es": "Buscar archivos",
+              "pt-BR": "Encontrar arquivos",
+              "ru": "Найти файлы",
+              "en": "Find files"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <circle cx=\"11\" cy=\"11\" r=\"8\"/> <path d=\"m21 21-4.3-4.3\"/> </svg>"
@@ -1027,7 +1215,16 @@
           "display": {
             "label": "Search files",
             "locales": {
-              "zh-CN": "搜索文件"
+              "zh-CN": "搜索文件",
+              "zh-TW": "搜尋檔案",
+              "ja": "ファイル内を検索",
+              "ko": "파일 검색",
+              "fr": "Rechercher dans les fichiers",
+              "de": "Dateiinhalte suchen",
+              "es": "Buscar en archivos",
+              "pt-BR": "Pesquisar arquivos",
+              "ru": "Поиск по файлам",
+              "en": "Search files"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <circle cx=\"11\" cy=\"11\" r=\"8\"/> <path d=\"m21 21-4.3-4.3\"/> </svg>"
@@ -1220,7 +1417,16 @@
           "display": {
             "label": "Read document",
             "locales": {
-              "zh-CN": "读取文档"
+              "zh-CN": "读取文档",
+              "zh-TW": "讀取文件",
+              "ja": "文書を読む",
+              "ko": "문서 읽기",
+              "fr": "Lire le document",
+              "de": "Dokument lesen",
+              "es": "Leer documento",
+              "pt-BR": "Ler documento",
+              "ru": "Прочитать документ",
+              "en": "Read document"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
@@ -1303,7 +1509,16 @@
           "display": {
             "label": "Read notebook",
             "locales": {
-              "zh-CN": "读取 Notebook"
+              "zh-CN": "读取 Notebook",
+              "zh-TW": "讀取筆記本",
+              "ja": "ノートブックを読む",
+              "ko": "노트북 읽기",
+              "fr": "Lire le notebook",
+              "de": "Notebook lesen",
+              "es": "Leer notebook",
+              "pt-BR": "Ler notebook",
+              "ru": "Прочитать блокнот",
+              "en": "Read notebook"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
@@ -1419,7 +1634,16 @@
           "display": {
             "label": "Edit notebook",
             "locales": {
-              "zh-CN": "编辑 Notebook"
+              "zh-CN": "编辑 Notebook",
+              "zh-TW": "編輯筆記本",
+              "ja": "ノートブックを編集",
+              "ko": "노트북 편집",
+              "fr": "Modifier le notebook",
+              "de": "Notebook bearbeiten",
+              "es": "Editar notebook",
+              "pt-BR": "Editar notebook",
+              "ru": "Изменить блокнот",
+              "en": "Edit notebook"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" /></svg>"
@@ -1501,7 +1725,9 @@
           "application/x-ipynb+json"
         ]
       },
-      "instructions": "Use read_file to capture the current revision before editing, moving or deleting a file. For several changes in one file, send one edit_file edits array; every match is located in the original content and the batch is saved once. Use replace_all only when every occurrence should change. Keep exact whitespace and line endings. A conflict requires reading the current file before retrying. Use create_directory and move_file for workspace file organization; delete_file moves regular files to Trash. These tools never replace an existing move destination or delete a directory. For file discovery and content search, use find_files and search_files rather than running shell commands. Scope path first, honor next_offset, and treat partial scans as incomplete: narrow path instead of claiming offset can advance an interrupted scan."
+      "instructions": "Use read_file to capture the current revision before editing, moving or deleting a file. For several changes in one file, send one edit_file edits array; every match is located in the original content and the batch is saved once. Use replace_all only when every occurrence should change. Keep exact whitespace and line endings. A conflict requires reading the current file before retrying. Use create_directory and move_file for workspace file organization; delete_file moves regular files to Trash. These tools never replace an existing move destination or delete a directory. For file discovery and content search, use find_files and search_files rather than running shell commands. Scope path first, honor next_offset, and treat partial scans as incomplete: narrow path instead of claiming offset can advance an interrupted scan.",
+      "category": "development",
+      "tint": "blue"
     }
   }
 }

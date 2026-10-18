@@ -1,6 +1,16 @@
 ---
 name: word
 metadata:
+  display-name.en: "Word"
+  display-name.zh-CN: "Word"
+  display-name.zh-TW: "Word"
+  display-name.ja: "Word"
+  display-name.ko: "Word"
+  display-name.fr: "Word"
+  display-name.de: "Word"
+  display-name.es: "Word"
+  display-name.pt-BR: "Word"
+  display-name.ru: "Word"
   display-name: Word
 description: Create and edit Word documents (.docx), templates, reports, typography, tables, headers, footers and comments.
 ---

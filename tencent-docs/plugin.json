@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tencent-docs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared documents",
   "homepage": "https://docs.qq.com/open/auth/mcp.html",
   "extensions": {
@@ -41,7 +41,9 @@
           "ru": "Общие документы"
         }
       },
-      "settings_schema": "dev.sailry.platform/settings.json"
+      "settings_schema": "dev.sailry.platform/settings.json",
+      "category": "documents",
+      "tint": "violet"
     }
   }
 }

@@ -25,6 +25,19 @@ resources and sent-turn references. Updates apply to new admission; historical
 captures keep their recorded package. Standalone imported skills retain their
 repository-commit update identity rather than adopting plugin release versions.
 
+Package marketplace metadata uses the existing v1 extension: optional `category`
+(`development`, `documents`, `data`, `automation`, `entertainment`) and `tint`
+(`blue`, `violet`, `teal`, `amber`, `gray`). Tool `display.locales` supplies names
+for the ten application locales. Skill frontmatter uses string metadata keys
+`display-name` and `display-name.<locale>`; model descriptions and skill bodies
+remain separate from these display names.
+
+Release notes live in `CHANGELOG.md`, with headings such as `## 0.1.2` matching
+the manifest version exactly. Optional `CHANGELOG.<locale>.md` files use the same
+headings. The generator includes only the selected version's plain text, alongside
+real `skills/*/SKILL.md` frontmatter in the shared catalog. Missing notes are
+omitted. New notes count as package content and require the usual version bump.
+
 ## Working with the application submodule
 
 This repository has its own Git history. The application's `plugins/` directory

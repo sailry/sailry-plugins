@@ -1,6 +1,16 @@
 ---
 name: code-review
 metadata:
+  display-name.en: "Code review"
+  display-name.zh-CN: "代码审查"
+  display-name.zh-TW: "程式碼審查"
+  display-name.ja: "コードレビュー"
+  display-name.ko: "코드 검토"
+  display-name.fr: "Revue de code"
+  display-name.de: "Codeprüfung"
+  display-name.es: "Revisión de código"
+  display-name.pt-BR: "Revisão de código"
+  display-name.ru: "Проверка кода"
   display-name: Code review
 description: Review local changes, commits or GitHub pull requests for concrete regressions and scoped repository-rule violations. Use for requested code review, not implementation or a standalone security audit.
 ---

@@ -1,56 +1,223 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
       "instructions": "Before writing code, tests or other output with style preferences, check the injected memory index and apply relevant current-project and global preferences. If a relevant title has no complete body, call search_memory with focused terms before using it. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
-      "storage": {"collections":[
-        {"scope":"node","key":"memory/settings","schema":{
-          "type":"object","required":["v","settings"],"properties":{
-            "v":{"const":1},"settings":{"type":"object","properties":{
-              "enabled":{"type":"boolean","default":true},
-              "auto_write":{"type":"boolean","default":true},
-              "context_bytes":{"type":"integer","minimum":2048,"maximum":65536,"default":8192},
-              "review_after_days":{"type":"integer","minimum":1,"maximum":3650,"default":90}
-            }}
-          }
-        }},
-        {"scope":"node","key":"memory/catalog","schema":{
-          "type":"object","required":["v","pages","active","archived","next"],"properties":{
-            "v":{"const":1},"pages":{"type":"object","propertyNames":{"pattern":"^(0|[1-9][0-9]*)$"},"additionalProperties":{"type":"integer","minimum":1,"maximum":2}},
-            "active":{"type":"integer","minimum":0,"maximum":9007199254740991},
-            "archived":{"type":"integer","minimum":0,"maximum":9007199254740991},
-            "next":{"type":"integer","minimum":0,"maximum":9007199254740991}
-          }
-        }},
-        {"scope":"node","prefix":"memory/entry/","index":{"semantic":true},"schema":{
-          "type":"object","required":["v","summary","hash","body_page","body_revision"],"properties":{
-            "v":{"const":1},"hash":{"type":"string","pattern":"^[0-9a-f]{16}$"},
-            "body_page":{"type":"string","pattern":"^(0|[1-9][0-9]*)$"},
-            "body_revision":{"type":"integer","minimum":1,"maximum":9007199254740991},
-            "summary":{"type":"object","required":["id","project","title","kind","archived","revision","updated_at_ms"],"properties":{
-              "id":{"type":"string","pattern":"^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"},
-              "project":{"type":["string","null"]},"title":{"type":"string","minLength":1},
-              "kind":{"enum":["user","feedback","project","reference"]},"archived":{"type":"boolean"},
-              "revision":{"type":"integer","minimum":0,"maximum":9007199254740991},
-              "updated_at_ms":{"type":"integer","minimum":0,"maximum":9007199254740991}
-            }}
-          }
-        }},
-        {"scope":"node","prefix":"memory/body/","schema":{
-          "type":"object","required":["v","bodies"],"properties":{
-            "v":{"const":1},"bodies":{"type":"object","maxProperties":2,"additionalProperties":{
-              "type":"object","required":["body","revision"],"properties":{
-                "body":{"type":"string"},
-                "revision":{"type":"integer","minimum":1,"maximum":9007199254740991}
+      "storage": {
+        "collections": [
+          {
+            "scope": "node",
+            "key": "memory/settings",
+            "schema": {
+              "type": "object",
+              "required": [
+                "v",
+                "settings"
+              ],
+              "properties": {
+                "v": {
+                  "const": 1
+                },
+                "settings": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "auto_write": {
+                      "type": "boolean",
+                      "default": true
+                    },
+                    "context_bytes": {
+                      "type": "integer",
+                      "minimum": 2048,
+                      "maximum": 65536,
+                      "default": 8192
+                    },
+                    "review_after_days": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3650,
+                      "default": 90
+                    }
+                  }
+                }
               }
-            }}
+            }
+          },
+          {
+            "scope": "node",
+            "key": "memory/catalog",
+            "schema": {
+              "type": "object",
+              "required": [
+                "v",
+                "pages",
+                "active",
+                "archived",
+                "next"
+              ],
+              "properties": {
+                "v": {
+                  "const": 1
+                },
+                "pages": {
+                  "type": "object",
+                  "propertyNames": {
+                    "pattern": "^(0|[1-9][0-9]*)$"
+                  },
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2
+                  }
+                },
+                "active": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "archived": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "next": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              }
+            }
+          },
+          {
+            "scope": "node",
+            "prefix": "memory/entry/",
+            "index": {
+              "semantic": true
+            },
+            "schema": {
+              "type": "object",
+              "required": [
+                "v",
+                "summary",
+                "hash",
+                "body_page",
+                "body_revision"
+              ],
+              "properties": {
+                "v": {
+                  "const": 1
+                },
+                "hash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{16}$"
+                },
+                "body_page": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)$"
+                },
+                "body_revision": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "summary": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "project",
+                    "title",
+                    "kind",
+                    "archived",
+                    "revision",
+                    "updated_at_ms"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+                    },
+                    "project": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "kind": {
+                      "enum": [
+                        "user",
+                        "feedback",
+                        "project",
+                        "reference"
+                      ]
+                    },
+                    "archived": {
+                      "type": "boolean"
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "updated_at_ms": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "scope": "node",
+            "prefix": "memory/body/",
+            "schema": {
+              "type": "object",
+              "required": [
+                "v",
+                "bodies"
+              ],
+              "properties": {
+                "v": {
+                  "const": 1
+                },
+                "bodies": {
+                  "type": "object",
+                  "maxProperties": 2,
+                  "additionalProperties": {
+                    "type": "object",
+                    "required": [
+                      "body",
+                      "revision"
+                    ],
+                    "properties": {
+                      "body": {
+                        "type": "string"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        }}
-      ]},
+        ]
+      },
       "actions": [
         "storage.read",
         "storage.write",
@@ -153,7 +320,16 @@
           "display": {
             "label": "Search memory",
             "locales": {
-              "zh-CN": "搜索记忆"
+              "zh-CN": "搜索记忆",
+              "zh-TW": "搜尋記憶",
+              "ja": "メモリを検索",
+              "ko": "메모리 검색",
+              "fr": "Rechercher une mémoire",
+              "de": "Erinnerungen suchen",
+              "es": "Buscar memoria",
+              "pt-BR": "Pesquisar memória",
+              "ru": "Поиск в памяти",
+              "en": "Search memory"
             },
             "icon": "reicon:devices/cpu"
           }
@@ -179,7 +355,16 @@
           "display": {
             "label": "Review memories",
             "locales": {
-              "zh-CN": "整理记忆"
+              "zh-CN": "整理记忆",
+              "zh-TW": "檢視記憶",
+              "ja": "メモリを見直す",
+              "ko": "메모리 검토",
+              "fr": "Examiner les mémoires",
+              "de": "Erinnerungen prüfen",
+              "es": "Revisar memorias",
+              "pt-BR": "Revisar memórias",
+              "ru": "Просмотреть память",
+              "en": "Review memories"
             },
             "icon": "reicon:devices/cpu"
           }
@@ -243,7 +428,16 @@
           "display": {
             "label": "Save memory",
             "locales": {
-              "zh-CN": "保存记忆"
+              "zh-CN": "保存记忆",
+              "zh-TW": "儲存記憶",
+              "ja": "メモリを保存",
+              "ko": "메모리 저장",
+              "fr": "Enregistrer la mémoire",
+              "de": "Erinnerung speichern",
+              "es": "Guardar memoria",
+              "pt-BR": "Salvar memória",
+              "ru": "Сохранить память",
+              "en": "Save memory"
             },
             "icon": "reicon:devices/cpu"
           }
@@ -281,7 +475,16 @@
           "display": {
             "label": "Forget memory",
             "locales": {
-              "zh-CN": "删除记忆"
+              "zh-CN": "删除记忆",
+              "zh-TW": "移除記憶",
+              "ja": "メモリを削除",
+              "ko": "메모리 삭제",
+              "fr": "Oublier la mémoire",
+              "de": "Erinnerung löschen",
+              "es": "Olvidar memoria",
+              "pt-BR": "Esquecer memória",
+              "ru": "Удалить запись памяти",
+              "en": "Forget memory"
             },
             "icon": "reicon:devices/cpu"
           }
@@ -349,12 +552,23 @@
           "display": {
             "label": "Merge memories",
             "locales": {
-              "zh-CN": "合并记忆"
+              "zh-CN": "合并记忆",
+              "zh-TW": "合併記憶",
+              "ja": "メモリを統合",
+              "ko": "메모리 병합",
+              "fr": "Fusionner les mémoires",
+              "de": "Erinnerungen zusammenführen",
+              "es": "Combinar memorias",
+              "pt-BR": "Mesclar memórias",
+              "ru": "Объединить записи памяти",
+              "en": "Merge memories"
             },
             "icon": "reicon:devices/cpu"
           }
         }
-      ]
+      ],
+      "category": "documents",
+      "tint": "violet"
     }
   }
 }

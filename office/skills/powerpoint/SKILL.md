@@ -1,6 +1,16 @@
 ---
 name: powerpoint
 metadata:
+  display-name.en: "PowerPoint"
+  display-name.zh-CN: "PowerPoint"
+  display-name.zh-TW: "PowerPoint"
+  display-name.ja: "PowerPoint"
+  display-name.ko: "PowerPoint"
+  display-name.fr: "PowerPoint"
+  display-name.de: "PowerPoint"
+  display-name.es: "PowerPoint"
+  display-name.pt-BR: "PowerPoint"
+  display-name.ru: "PowerPoint"
   display-name: PowerPoint
 description: Create and edit PowerPoint presentations (.pptx), themes, slide layouts, typography, speaker notes, tables, shapes and editable charts.
 ---

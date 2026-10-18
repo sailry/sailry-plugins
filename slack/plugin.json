@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "slack",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Workspace messages",
   "homepage": "https://docs.slack.dev/ai/slack-mcp-server/connect-to-harnesses",
   "extensions": {
@@ -41,7 +41,9 @@
           "ru": "Сообщения рабочего пространства"
         }
       },
-      "settings_schema": "dev.sailry.platform/settings.json"
+      "settings_schema": "dev.sailry.platform/settings.json",
+      "category": "automation",
+      "tint": "amber"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "linear",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Issues and projects",
   "homepage": "https://linear.app/docs/mcp",
   "extensions": {
@@ -40,7 +40,9 @@
           "pt-BR": "Issues e projetos",
           "ru": "Задачи и проекты"
         }
-      }
+      },
+      "category": "development",
+      "tint": "blue"
     }
   }
 }

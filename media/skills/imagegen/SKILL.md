@@ -1,6 +1,18 @@
 ---
 name: imagegen
 description: Generate raster images such as photos, illustrations, textures and visual assets with the media package's image generation tool. Do not use for SVG icons, deterministic diagrams or visuals better expressed in project code.
+metadata:
+  display-name: "Image generation"
+  display-name.en: "Image generation"
+  display-name.zh-CN: "图像生成"
+  display-name.zh-TW: "圖片生成"
+  display-name.ja: "画像生成"
+  display-name.ko: "이미지 생성"
+  display-name.fr: "Génération d’images"
+  display-name.de: "Bilderzeugung"
+  display-name.es: "Generación de imágenes"
+  display-name.pt-BR: "Geração de imagens"
+  display-name.ru: "Генерация изображений"
 ---
 
 # Image generation

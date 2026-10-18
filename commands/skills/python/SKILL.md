@@ -1,6 +1,18 @@
 ---
 name: python
 description: Run Python scripts with Sailry's bundled interpreter and a session-local environment when additional dependencies are needed.
+metadata:
+  display-name: "Python"
+  display-name.en: "Python"
+  display-name.zh-CN: "Python"
+  display-name.zh-TW: "Python"
+  display-name.ja: "Python"
+  display-name.ko: "Python"
+  display-name.fr: "Python"
+  display-name.de: "Python"
+  display-name.es: "Python"
+  display-name.pt-BR: "Python"
+  display-name.ru: "Python"
 ---
 
 # Python

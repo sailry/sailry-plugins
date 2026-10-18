@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -69,7 +69,16 @@
           "display": {
             "label": "Git status",
             "locales": {
-              "zh-CN": "Git 状态"
+              "zh-CN": "Git 状态",
+              "zh-TW": "Git 狀態",
+              "ja": "Git の状態",
+              "ko": "Git 상태",
+              "fr": "État Git",
+              "de": "Git-Status",
+              "es": "Estado de Git",
+              "pt-BR": "Estado do Git",
+              "ru": "Состояние Git",
+              "en": "Git status"
             },
             "icon": {
               "svg": "<svg\n    xmlns=\"http://www.w3.org/2000/svg\"\n    width=\"24\"\n    height=\"24\"\n    viewBox=\"0 0 24 24\"\n    fill=\"none\"\n    stroke=\"currentColor\"\n    stroke-width=\"2\"\n    stroke-linecap=\"round\"\n    stroke-linejoin=\"round\"\n><rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\" /><rect\n        x=\"2\"\n        y=\"16\"\n        width=\"6\"\n        height=\"6\"\n        rx=\"1\"\n    /><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\" /><path\n        d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"\n    /><path d=\"M12 12V8\" /></svg>"
@@ -600,7 +609,16 @@
           "display": {
             "label": "View diff",
             "locales": {
-              "zh-CN": "查看差异"
+              "zh-CN": "查看差异",
+              "zh-TW": "檢視差異",
+              "ja": "差分を見る",
+              "ko": "차이 보기",
+              "fr": "Voir les différences",
+              "de": "Diff anzeigen",
+              "es": "Ver diferencias",
+              "pt-BR": "Ver diferenças",
+              "ru": "Показать изменения",
+              "en": "View diff"
             },
             "icon": {
               "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n  <path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z\"/>\n  <path d=\"M14 2v6h6M8 12h6M11 9v6M8 18h6\"/>\n</svg>"
@@ -745,7 +763,16 @@
           "display": {
             "label": "Git history",
             "locales": {
-              "zh-CN": "Git 日志"
+              "zh-CN": "Git 日志",
+              "zh-TW": "Git 歷史",
+              "ja": "Git の履歴",
+              "ko": "Git 기록",
+              "fr": "Historique Git",
+              "de": "Git-Verlauf",
+              "es": "Historial de Git",
+              "pt-BR": "Histórico do Git",
+              "ru": "История Git",
+              "en": "Git history"
             },
             "icon": {
               "svg": "<svg\n    xmlns=\"http://www.w3.org/2000/svg\"\n    width=\"24\"\n    height=\"24\"\n    viewBox=\"0 0 24 24\"\n    fill=\"none\"\n    stroke=\"currentColor\"\n    stroke-width=\"2\"\n    stroke-linecap=\"round\"\n    stroke-linejoin=\"round\"\n><rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\" /><rect\n        x=\"2\"\n        y=\"16\"\n        width=\"6\"\n        height=\"6\"\n        rx=\"1\"\n    /><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\" /><path\n        d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"\n    /><path d=\"M12 12V8\" /></svg>"
@@ -902,7 +929,16 @@
           "display": {
             "label": "Git show",
             "locales": {
-              "zh-CN": "Git 查看"
+              "zh-CN": "Git 查看",
+              "zh-TW": "Git 物件",
+              "ja": "Git オブジェクト",
+              "ko": "Git 객체",
+              "fr": "Objet Git",
+              "de": "Git-Objekt",
+              "es": "Objeto Git",
+              "pt-BR": "Objeto Git",
+              "ru": "Объект Git",
+              "en": "Git show"
             },
             "icon": "reicon:newicons/hierarchy2",
             "input": {
@@ -968,7 +1004,16 @@
           "display": {
             "label": "Git blame",
             "locales": {
-              "zh-CN": "Git 行归属"
+              "zh-CN": "Git 行归属",
+              "zh-TW": "Git 逐行歸屬",
+              "ja": "Git の行の作成者",
+              "ko": "Git 줄 작성자",
+              "fr": "Auteurs des lignes Git",
+              "de": "Git-Zeilenautoren",
+              "es": "Autoría de líneas Git",
+              "pt-BR": "Autoria das linhas Git",
+              "ru": "Авторы строк Git",
+              "en": "Git blame"
             },
             "icon": "reicon:newicons/hierarchy2",
             "input": {
@@ -1266,7 +1311,16 @@
           "display": {
             "label": "Git changes",
             "locales": {
-              "zh-CN": "Git 变更"
+              "zh-CN": "Git 变更",
+              "zh-TW": "Git 變更",
+              "ja": "Git の変更",
+              "ko": "Git 변경사항",
+              "fr": "Changements Git",
+              "de": "Git-Änderungen",
+              "es": "Cambios de Git",
+              "pt-BR": "Alterações do Git",
+              "ru": "Изменения Git",
+              "en": "Git changes"
             },
             "icon": "reicon:newicons/hierarchy2",
             "input": {
@@ -1464,7 +1518,16 @@
           "display": {
             "label": "Git file change",
             "locales": {
-              "zh-CN": "Git 文件变更"
+              "zh-CN": "Git 文件变更",
+              "zh-TW": "Git 檔案變更",
+              "ja": "Git ファイルの変更",
+              "ko": "Git 파일 변경사항",
+              "fr": "Modification du fichier Git",
+              "de": "Git-Dateiänderung",
+              "es": "Cambio de archivo Git",
+              "pt-BR": "Alteração de arquivo Git",
+              "ru": "Изменение файла Git",
+              "en": "Git file change"
             },
             "icon": "reicon:newicons/hierarchy2",
             "input": {
@@ -1565,7 +1628,9 @@
           "handler": "changes",
           "order": 0
         }
-      ]
+      ],
+      "category": "development",
+      "tint": "amber"
     }
   }
 }

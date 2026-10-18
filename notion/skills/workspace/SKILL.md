@@ -2,6 +2,16 @@
 name: workspace
 description: Use Notion tools for pages and databases with the authorized account on the execution Node.
 metadata:
+  display-name.en: "Notion"
+  display-name.zh-CN: "Notion"
+  display-name.zh-TW: "Notion"
+  display-name.ja: "Notion"
+  display-name.ko: "Notion"
+  display-name.fr: "Notion"
+  display-name.de: "Notion"
+  display-name.es: "Notion"
+  display-name.pt-BR: "Notion"
+  display-name.ru: "Notion"
   display-name: Notion
 ---
 

@@ -2,6 +2,16 @@
 name: workspace
 description: Read mail, calendars and drive files through Google Workspace's official API using the execution Node's configured credentials.
 metadata:
+  display-name.en: "Google Workspace"
+  display-name.zh-CN: "Google Workspace"
+  display-name.zh-TW: "Google Workspace"
+  display-name.ja: "Google Workspace"
+  display-name.ko: "Google Workspace"
+  display-name.fr: "Google Workspace"
+  display-name.de: "Google Workspace"
+  display-name.es: "Google Workspace"
+  display-name.pt-BR: "Google Workspace"
+  display-name.ru: "Google Workspace"
   display-name: Google Workspace
 ---
 

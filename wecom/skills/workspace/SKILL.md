@@ -2,6 +2,16 @@
 name: workspace
 description: Discover and use authorized WeCom service methods through the official HTTP gateway on the execution Node.
 metadata:
+  display-name.en: "WeCom"
+  display-name.zh-CN: "企业微信"
+  display-name.zh-TW: "企業微信"
+  display-name.ja: "WeCom"
+  display-name.ko: "WeCom"
+  display-name.fr: "WeCom"
+  display-name.de: "WeCom"
+  display-name.es: "WeCom"
+  display-name.pt-BR: "WeCom"
+  display-name.ru: "WeCom"
   display-name: WeCom
 ---
 

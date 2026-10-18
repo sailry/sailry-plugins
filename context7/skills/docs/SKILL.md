@@ -2,6 +2,16 @@
 name: docs
 description: Fetch current, version-aware library, framework, SDK, API and CLI documentation with Context7 for setup, configuration, API usage, migrations and library-specific debugging. Not needed for general programming, business logic or code review without an API question.
 metadata:
+  display-name.en: "Context7"
+  display-name.zh-CN: "库文档"
+  display-name.zh-TW: "程式庫文件"
+  display-name.ja: "ライブラリのドキュメント"
+  display-name.ko: "라이브러리 문서"
+  display-name.fr: "Documentation des bibliothèques"
+  display-name.de: "Bibliotheksdokumentation"
+  display-name.es: "Documentación de bibliotecas"
+  display-name.pt-BR: "Documentação de bibliotecas"
+  display-name.ru: "Документация библиотек"
   display-name: Context7
 ---
 

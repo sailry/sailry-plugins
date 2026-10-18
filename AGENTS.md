@@ -22,6 +22,10 @@
   changes and check it with `python3 scripts/catalog.py --check`. Run the relevant
   package checks and behavior tests described in the README; report their actual
   scope. Documentation-only changes need diff review, not product builds.
+- Keep release notes in `CHANGELOG.md` under `## <manifest version>`; optional
+  `CHANGELOG.<locale>.md` sections use the same exact version. Catalog generation
+  includes only that section. Marketplace categories, tints and localized tool or
+  skill names belong to package metadata; changing them also requires a patch bump.
 - Keep source, comments, diagnostics and documentation in English. Put product
   copy in localization resources; retain imported licenses and provenance.
 - Commit only owned, verified changes here. Commit the updated `plugins/` pointer

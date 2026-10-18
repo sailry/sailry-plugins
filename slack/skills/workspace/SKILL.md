@@ -2,6 +2,16 @@
 name: workspace
 description: Use Slack tools for messages and files with the authorized account on the execution Node.
 metadata:
+  display-name.en: "Slack"
+  display-name.zh-CN: "Slack"
+  display-name.zh-TW: "Slack"
+  display-name.ja: "Slack"
+  display-name.ko: "Slack"
+  display-name.fr: "Slack"
+  display-name.de: "Slack"
+  display-name.es: "Slack"
+  display-name.pt-BR: "Slack"
+  display-name.ru: "Slack"
   display-name: Slack
 ---
 

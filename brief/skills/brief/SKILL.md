@@ -1,6 +1,18 @@
 ---
 name: brief
 description: Create session-owned HTML documents, reports, diagrams, demos and interactive previews requested or accepted by the user. HTML does not authorize executing a plan.
+metadata:
+  display-name: "HTML documents"
+  display-name.en: "HTML documents"
+  display-name.zh-CN: "HTML 文档"
+  display-name.zh-TW: "HTML 文件"
+  display-name.ja: "HTML ドキュメント"
+  display-name.ko: "HTML 문서"
+  display-name.fr: "Documents HTML"
+  display-name.de: "HTML-Dokumente"
+  display-name.es: "Documentos HTML"
+  display-name.pt-BR: "Documentos HTML"
+  display-name.ru: "HTML-документы"
 ---
 
 # HTML artifacts

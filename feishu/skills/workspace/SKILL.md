@@ -2,6 +2,16 @@
 name: workspace
 description: Use Feishu tools for documents and comments with the authorized account on the execution Node.
 metadata:
+  display-name.en: "Feishu"
+  display-name.zh-CN: "飞书"
+  display-name.zh-TW: "飛書"
+  display-name.ja: "Feishu"
+  display-name.ko: "Feishu"
+  display-name.fr: "Feishu"
+  display-name.de: "Feishu"
+  display-name.es: "Feishu"
+  display-name.pt-BR: "Feishu"
+  display-name.ru: "Feishu"
   display-name: Feishu
 ---
 

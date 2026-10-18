@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "doudizhu",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Play Dou Dizhu with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
@@ -53,7 +53,9 @@
           "zh-CN": "斗地主"
         },
         "icon": "reicon:newicons/cards"
-      }
+      },
+      "category": "entertainment",
+      "tint": "teal"
     }
   }
 }

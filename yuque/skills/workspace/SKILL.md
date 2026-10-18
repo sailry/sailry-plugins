@@ -2,6 +2,16 @@
 name: workspace
 description: Read knowledge bases and documents through Yuque's official API using the execution Node's configured credentials.
 metadata:
+  display-name.en: "Yuque"
+  display-name.zh-CN: "语雀"
+  display-name.zh-TW: "語雀"
+  display-name.ja: "Yuque"
+  display-name.ko: "Yuque"
+  display-name.fr: "Yuque"
+  display-name.de: "Yuque"
+  display-name.es: "Yuque"
+  display-name.pt-BR: "Yuque"
+  display-name.ru: "Yuque"
   display-name: Yuque
 ---
 

@@ -2,6 +2,16 @@
 name: pull-requests
 description: Poll a configured GitHub repository for new or changed pull requests, review their pinned changes, and publish authorized findings without duplicate reviews.
 metadata:
+  display-name.en: "Pull request reviews"
+  display-name.zh-CN: "拉取请求审查"
+  display-name.zh-TW: "提取請求審查"
+  display-name.ja: "プルリクエストのレビュー"
+  display-name.ko: "풀 리퀘스트 검토"
+  display-name.fr: "Révision des pull requests"
+  display-name.de: "Pull-Request-Prüfung"
+  display-name.es: "Revisión de pull requests"
+  display-name.pt-BR: "Revisão de pull requests"
+  display-name.ru: "Проверка запросов на слияние"
   display-name: Pull request reviews
 ---
 
