@@ -171,7 +171,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "browser",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -750,7 +750,7 @@
               {
                 "name": "browser_wait",
                 "presentation": "summary",
-                "description": "Wait up to 20000 ms for visible text or a visible/hidden CSS selector in the current document/frame, then read it. Invalid selectors fail immediately.",
+                "description": "Wait for the requested timeout for visible text or a visible/hidden CSS selector in the current document/frame, then read it. Invalid selectors fail immediately.",
                 "handler": {
                   "name": "wait",
                   "operation": "browser.read",
@@ -804,7 +804,7 @@
                         "type": "integer"
                       },
                       "timeout_ms": {
-                        "maximum": 20000,
+                        "maximum": 4294967295,
                         "minimum": 1,
                         "type": "integer"
                       }

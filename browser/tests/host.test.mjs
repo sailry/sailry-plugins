@@ -67,20 +67,19 @@ test('background navigation is explicit and preserves caller arguments', () => {
   assert.match(extension.instructions,/reads, clicks and screenshots keep that tab in the background/);
 });
 
-test('wait validation retains byte bounds and selector kinds', () => {
+test('wait validation preserves requested duration and conditions', () => {
   for (const condition of [{kind:'text',text:'Ready'},{kind:'visible',selector:'#ready'},{kind:'hidden',selector:'#old'}]) {
-    for (const timeout_ms of [1,20000]) {
+    for (const timeout_ms of [1,20001,0xffffffff]) {
       const args = {tab:0,condition,timeout_ms};
       assert.deepEqual(host.wait(args),{action:'wait',arguments:args});
     }
   }
-  assert.equal(host.wait({condition:{kind:'text',text:'🙂'.repeat(500)},timeout_ms:1}).action,'wait');
+  assert.equal(host.wait({condition:{kind:'text',text:'🙂'.repeat(501)},timeout_ms:1}).action,'wait');
   for (const args of [
-    {condition:{kind:'text',text:'🙂'.repeat(501)},timeout_ms:1},
     {condition:{kind:'text',text:''},timeout_ms:1},
     {condition:{kind:'unknown',selector:'#ready'},timeout_ms:1},
     {condition:{kind:'text',text:'Ready'},timeout_ms:0},
-    {condition:{kind:'text',text:'Ready'},timeout_ms:20001},
+    {condition:{kind:'text',text:'Ready'},timeout_ms:0x100000000},
     {condition:{kind:'text',text:'Ready'},timeout_ms:1.5}
   ]) assert.equal(host.wait(args).error.code,'invalid_request');
   for (const args of [undefined,null,[],false,'']) assert.equal(host.tabs(args).isError,true);

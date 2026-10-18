@@ -2,15 +2,6 @@
 // plugins/builtin/browser/agent.rs. Native browser execution remains in the core.
 import {captions} from './locales.js';
 
-function utf8Length(value) {
-  let bytes = 0;
-  for (const character of value) {
-    const code = character.codePointAt(0);
-    bytes += code <= 0x7f ? 1 : code <= 0x7ff ? 2 : code <= 0xffff ? 3 : 4;
-  }
-  return bytes;
-}
-
 function prepare(action, args) {
   if (!args || typeof args !== 'object' || Array.isArray(args)) {
     return {isError:true,error:{code:'invalid_request',message:'browser arguments must be an object'}};
@@ -25,8 +16,8 @@ function prepare(action, args) {
     const {condition, timeout_ms} = args;
     const query = condition?.kind === 'text' ? condition.text
       : ['visible', 'hidden'].includes(condition?.kind) ? condition.selector : null;
-    if (!Number.isInteger(timeout_ms) || timeout_ms < 1 || timeout_ms > 20000 ||
-        typeof query !== 'string' || !query.length || utf8Length(query) > 2000) {
+    if (!Number.isSafeInteger(timeout_ms) || timeout_ms < 1 || timeout_ms > 0xffffffff ||
+        typeof query !== 'string' || !query.length) {
       return {isError:true,error:{code:'invalid_request',message:'invalid browser wait condition or timeout'}};
     }
   }
