@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Wire rules adapted from dingminhua/dsh-connect-workbuddy aa87b71a; see NOTICE.
+// Wire rules adapted from the fixed third-party references recorded in NOTICE.
 const endpoints = {
   'https://copilot.tencent.com': 'https://www.codebuddy.cn',
   'https://www.workbuddy.ai': 'https://www.workbuddy.ai',
@@ -161,6 +161,7 @@ export function prepare_discovery(input) {
   const endpoint = base(input.endpoint);
   return {method: 'GET', url: `${endpoint}/v3/config`, headers: {
     Accept: 'application/json', 'User-Agent': endpoint === 'https://copilot.tencent.com' ? client : 'WorkBuddy/5.5.2',
+    Origin: endpoints[endpoint], Referer: `${endpoints[endpoint]}/`,
     'X-Requested-With': 'XMLHttpRequest', 'X-Product': 'SaaS',
   }, body: null, credential: {header: 'Authorization', template: 'Bearer {access}'}, framing: 'json'};
 }
@@ -168,8 +169,11 @@ export function prepare_discovery(input) {
 export function decode_discovery(input) {
   if (input.status < 200 || input.status >= 300) throw new Error('WorkBuddy model discovery failed');
   const document = typeof input.body === 'string' ? JSON.parse(input.body) : input.body;
-  if (document.code !== 0 && document.code !== 200) throw new Error('WorkBuddy model catalog was refused');
-  const data = document.data;
+  if (!document || typeof document !== 'object') throw new Error('Invalid WorkBuddy model catalog');
+  if (Object.hasOwn(document, 'code') && document.code !== 0 && document.code !== 200) {
+    throw new Error('WorkBuddy model catalog was refused');
+  }
+  const data = document.data ?? document;
   if (!data || !Array.isArray(data.models)) throw new Error('Invalid WorkBuddy model catalog');
   const models = new Map();
   for (const model of data.models) {

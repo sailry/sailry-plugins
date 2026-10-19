@@ -10,3 +10,15 @@ pi-ai integration, HTTP shim, credential scanner, account pool, billing,
 DSML recovery parser, or their source files and runtimes.
 
 This package is not an official DSH or Tencent integration.
+
+Discovery Origin/Referer headers and wrapped/bare catalog handling also reference
+corrinehu/dsh-workbuddy-connect, commit
+9e2d2559119e93113097554adacc52d62aef7882:
+https://github.com/corrinehu/dsh-workbuddy-connect/blob/9e2d2559119e93113097554adacc52d62aef7882/src/upstream.ts
+Copyright (c) 2026 Corrine Hu. MIT License, reproduced in LICENSE.
+
+That companion implementation was identified through the user's reference,
+ddGuo/dsh-workbuddy-switcher, commit
+167632f8f2e0c9efd4777d9a39c531ef2084f4d1:
+https://github.com/ddGuo/dsh-workbuddy-switcher/tree/167632f8f2e0c9efd4777d9a39c531ef2084f4d1
+No account-switching, credential-file scanning or account-pool code is included.

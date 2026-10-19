@@ -73,6 +73,8 @@ export const cases = [
   {name:'prepares regional discovery without exposing credentials',handler:'prepare_discovery',input:{endpoint:'https://www.workbuddy.ai'},check(output){
     assert.equal(output.url,'https://www.workbuddy.ai/v3/config');
     assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.2');
+    assert.equal(output.headers.Origin,'https://www.workbuddy.ai');
+    assert.equal(output.headers.Referer,'https://www.workbuddy.ai/');
     assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
     assert.equal(output.headers.Authorization,undefined);
   }},
@@ -88,10 +90,39 @@ export const cases = [
   }},
 ];
 
+for (const [region,endpoint,origin] of [
+  ['China','https://copilot.tencent.com','https://www.codebuddy.cn'],
+  ['WorkBuddy global','https://www.workbuddy.ai','https://www.workbuddy.ai'],
+  ['CodeBuddy global','https://www.codebuddy.ai','https://www.codebuddy.ai'],
+]) {
+  cases.push({name:`prepares ${region} catalog headers`,handler:'prepare_discovery',input:{endpoint},check(output){
+    assert.equal(output.url,`${endpoint}/v3/config`);
+    assert.equal(output.headers.Origin,origin);
+    assert.equal(output.headers.Referer,`${origin}/`);
+    assert.equal(output.headers['User-Agent'],region==='China'?'CLI/2.63.2 CodeBuddy/2.63.2':'WorkBuddy/5.5.2');
+    assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
+    assert.equal(output.headers.Authorization,undefined);
+  }});
+  for (const shape of ['bare','wrapped']) {
+    const catalog={models:[{id:'fixture-model',name:'Fixture model',maxInputTokens:128000,
+      maxOutputTokens:8192,supportsToolCall:true,supportsImages:false},
+      {id:'unlisted',maxInputTokens:8192,maxOutputTokens:1024}],
+      agents:[{name:'cli',models:['fixture-model']}]};
+    cases.push({name:`reads ${region} ${shape} catalog`,handler:'decode_discovery',
+      input:{endpoint,status:200,body:JSON.stringify(shape==='bare'?catalog:{code:200,data:catalog})},check(output){
+        assert.deepEqual(output,{endpoint,models:[{id:'fixture-model',display_name:'Fixture model',
+          context:128000,output:8192,capabilities:{tools:true,vision:false}}]});
+      }});
+  }
+}
+
 export const invalid = [
   {name:'rejects unsupported endpoints before HTTP',handler:'prepare',input:request({endpoint:'https://other.invalid'})},
   {name:'rejects files instead of dropping message parts',handler:'prepare',input:request({messages:[{role:'user',parts:[{kind:'file',name:'fixture',media_type:'application/pdf',data_base64:'ZmFrZQ=='}]}]})},
   {name:'rejects unfinished streams instead of reporting success',handler:'decode',input:{state:null,events:[event({choices:[{delta:{content:'Partial'}}]})],done:true}},
   {name:'rejects incomplete private token responses',script:'auth',handler:'exchange',input:{data:{accessToken:'fixture-private-access'}}},
+  {name:'rejects refused catalogs containing models',handler:'decode_discovery',input:{endpoint:'https://www.codebuddy.ai',status:200,body:JSON.stringify({code:403,data:{models:[{id:'refused',maxInputTokens:8192,maxOutputTokens:1024}]}})}},
+  {name:'rejects empty bare catalogs without fallback models',handler:'decode_discovery',input:{endpoint:'https://www.workbuddy.ai',status:200,body:'{"models":[],"agents":[]}'}},
+  {name:'rejects malformed bare catalogs',handler:'decode_discovery',input:{endpoint:'https://www.workbuddy.ai',status:200,body:'{"agents":[]}'}},
   {name:'rejects failed discovery without inventing models',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:503,body:'{"code":0,"data":{"models":[]}}'}},
 ];
