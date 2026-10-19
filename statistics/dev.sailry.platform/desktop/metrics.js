@@ -33,9 +33,12 @@ export function metrics(state,text) {
     ['composer_turns',number(statistics?.turns),[row('composer_responses',number(statistics?.responses))]],
   ];
   const limit = statistics?.context_limit;
-  const percent = context(statistics?.context_tokens,limit);
+  const estimated = statistics?.context_tokens == null && statistics?.context_estimate != null;
+  const tokens = statistics?.context_tokens ?? statistics?.context_estimate;
+  const percent = context(tokens,limit);
   const hint = state.compacting ? text.chat_compacting : percent == null ? text.composer_context_unknown
-    : text.composer_context_usage.replace('%{used}',number(statistics.context_tokens)).replace('%{limit}',number(limit));
+    : (estimated ? text.composer_context_estimate : text.composer_context_usage)
+      .replace('%{used}',number(tokens)).replace('%{limit}',number(limit));
   return [...values.map(([id,value,details])=>({id,value:value ?? '0',visible:state.has_messages,details})),
     {id:'context',value:{percent,loading:state.compacting,tone:severity(percent),hint},visible:!state.sidebar}];
 }

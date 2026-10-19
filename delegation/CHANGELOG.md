@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.15
+
+- Keep slider drafts responsive while saves settle
+- Save the latest released value after the current receipt
+- Show retry only for uncertain saves
+
 ## 0.1.14
 
 - Adjust concurrency with a slider and save once after interaction

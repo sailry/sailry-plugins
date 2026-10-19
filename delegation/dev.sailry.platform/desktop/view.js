@@ -91,7 +91,7 @@ export function render(view) {
           .child(div().w_40().child(SliderField.new(view.capacity.field,
             {disabled:view.capacity.locked()})))
           .child(div().min_w_8().text_sm().child(view.capacity.value ?? ''))
-          .children(view.capacity.request ? [button('capacity-retry',text.role_retry,
+          .children(view.capacity.request && view.capacity.unknown ? [button('capacity-retry',text.role_retry,
             (_,cx)=>view.capacity.save(cx),view.capacity.pending || !view.connected)] : [])))] : [])
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
       .child(div().h_flex().gap_2().flex_wrap()

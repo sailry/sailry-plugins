@@ -150,6 +150,100 @@ test('pending settings coalesce refreshes without replacing content',async()=>{
   assert.equal(f.view.ready,true);
 });
 
+test('capacity serializes only the latest released draft',async()=>{
+  const first=deferred(),second=deferred();
+  const f=await settings({complete:id=>id==='request-1' ? first.promise : second.promise});
+  const capacity=f.view.capacity;
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
+  assert.equal(capacity.locked(),false);
+  for(const value of [4,6]) await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value}));
+  assert.equal(capacity.value,'6');
+  assert.deepEqual(f.calls,['request-1']);
+  const saved={package:{settings_revision:'2'},values:{child_concurrency:'2',retained:'value'}};
+  await f.act(()=>first.finish({Ok:{kind:'plugin_settings',data:saved}}));
+  assert.equal(capacity.value,'6');
+  assert.deepEqual(f.prepared.map(value=>[value.revision,value.values.child_concurrency]),[['1','2'],['2','6']]);
+  assert.deepEqual(f.calls,['request-1','request-2']);
+  assert.equal(f.notices.filter(value=>value.kind==='success').length,0);
+  const latest={package:{settings_revision:'3'},values:{child_concurrency:'6',retained:'value'}};
+  f.configuration(latest);
+  await f.act(()=>second.finish({Ok:{kind:'plugin_settings',data:latest}}));
+  assert.equal(capacity.value,'6');
+  assert.equal(capacity.dirty,false);
+  assert.equal(capacity.request,null);
+  assert.deepEqual(f.forgotten,['request-1','request-2']);
+  assert.equal(f.notices.filter(value=>value.kind==='success').length,1);
+  assert.equal(f.prepared.every(value=>value.values.retained==='value'),true);
+});
+
+test('coalesced external changes preserve an unreleased local draft',async()=>{
+  const pending=deferred();let reads=0;
+  const f=await settings({read(){reads++;},complete:()=>pending.promise}),capacity=f.view.capacity;
+  await f.act(()=>f.changes.send({cursor:'1',connected:true}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
+  f.catalog([{...role,name:'External role'}],[{...model,model:'external-model'}]);
+  for(const cursor of ['2','3']) await f.act(()=>f.changes.send({cursor,connected:true}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'change',value:3}));
+  assert.equal(f.view.ready,true);
+  assert.equal(reads,1);
+  const saved={package:{settings_revision:'2'},values:{child_concurrency:'2',retained:'external'}};
+  f.configuration(saved);
+  await f.act(()=>pending.finish({Ok:{kind:'plugin_settings',data:saved}}));
+  assert.equal(reads,2);
+  assert.equal(f.view.ready,true);
+  assert.equal(f.view.roles[0].name,'External role');
+  assert.equal(f.view.models[0].model,'external-model');
+  assert.equal(capacity.saved.values.retained,'external');
+  assert.equal(capacity.value,'3');
+  assert.equal(capacity.dirty,true);
+  assert.equal(capacity.request,null);
+  assert.equal(capacity.unknown,false);
+  assert.deepEqual(f.calls,['request-1']);
+  assert.equal(f.notices.filter(value=>value.kind==='success').length,0);
+});
+
+test('failed follow-up preparation releases deferred catalog refreshes',async()=>{
+  const pending=deferred();let preparations=0,reads=0;
+  const f=await settings({read(){reads++;},prepare(){if(++preparations===2)throw new Error('revision_conflict');},
+    complete:()=>pending.promise}),capacity=f.view.capacity;
+  await f.act(()=>f.changes.send({cursor:'1',connected:true}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:4}));
+  await f.act(()=>f.changes.send({cursor:'2',connected:true}));
+  const saved={package:{settings_revision:'2'},values:{child_concurrency:'2',retained:'value'}};
+  f.configuration(saved);
+  await f.act(()=>pending.finish({Ok:{kind:'plugin_settings',data:saved}}));
+  assert.equal(reads,2);
+  assert.equal(capacity.value,'4');
+  assert.equal(capacity.dirty,true);
+  assert.equal(capacity.request,null);
+  assert.equal(capacity.pending,false);
+  assert.equal(capacity.unknown,false);
+  assert.deepEqual(f.calls,['request-1']);
+  assert.equal(f.notices.at(-1).message,messages('en').role_conflict);
+  assert.equal(f.notices.filter(value=>value.kind==='success').length,0);
+});
+
+test('uncertain receipts pause queued releases until original recovery',async()=>{
+  const pending=deferred();let attempts=0;
+  const f=await settings({complete:async(_,value)=>++attempts===1 ? pending.promise
+    : {Ok:{kind:'plugin_settings',data:{package:{settings_revision:String(attempts)},values:value.values}}}});
+  const capacity=f.view.capacity;
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:4}));
+  await f.act(()=>pending.finish({Err:{code:'outcome_unknown'}}));
+  assert.equal(capacity.unknown,true);
+  assert.equal(capacity.locked(),true);
+  assert.equal(capacity.value,'4');
+  assert.deepEqual(f.calls,['request-1']);
+  assert.equal(f.prepared.length,1);
+  await f.act(()=>capacity.save(f.cx));
+  assert.deepEqual(f.calls,['request-1','request-1','request-2']);
+  assert.deepEqual(f.prepared.map(value=>value.values.child_concurrency),['2','4']);
+  assert.equal(capacity.value,'4');
+  assert.equal(capacity.unknown,false);
+});
+
 test('saves the complete captured draft without changing hidden fields or model choices',async () => {
   const f = await settings(); f.view.edit(f.view.roles[0],f.cx);
   const owner = f.view.dialog;

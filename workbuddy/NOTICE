@@ -28,3 +28,16 @@ and the personal-resource billing request also follow the fixed companion
 src/upstream.ts and src/client-identity.ts above. Only declared read-only personal
 resource fields are queried; no account switching, check-in/claim mutation,
 external account storage or quota-management workflow is included.
+
+Gateway request markers, regional language and billing User-Agent follow
+linguo2625469/workbuddy2api-panel, commit
+6b31db6d045e985042620c819c3a938002e7b0b1:
+https://github.com/linguo2625469/workbuddy2api-panel/blob/6b31db6d045e985042620c819c3a938002e7b0b1/internal/upstream/headers.go
+MIT License. Only public wire metadata is used; no device-token scanning,
+account switching or account-management workflow is included.
+
+CodeBuddy International CLI request identity and usage trailers follow
+Lbryany/dsh-codebuddy, commit 216124e75a2d24fae8089788b26a1c0ccf6772d9:
+https://github.com/Lbryany/dsh-codebuddy/blob/216124e75a2d24fae8089788b26a1c0ccf6772d9/src/codebuddy.ts
+Copyright (c) 2026 Lbryany. MIT License, reproduced in LICENSE.
+Existing authorization and renewal declarations remain unchanged.

@@ -1,5 +1,15 @@
 # Changes
 
+## 0.1.7
+
+- Remove Hy4's trailing reasoning control token after normal stream completion
+- Show a credit icon beside the balance
+
+## 0.1.6
+
+- Send the declared regional gateway identity for chat and credit requests
+- Use the CodeBuddy International CLI identity and request streamed usage
+
 ## 0.1.5
 
 - Show zero credits when the upstream resource list is explicitly null

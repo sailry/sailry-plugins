@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Show an estimated current context after compaction without changing recorded usage or cost
+
 ## 0.1.7
 
 - Pair context usage with the model limit captured for that response

@@ -1,5 +1,5 @@
 const locales = {
-  "en": {
+  "en": {"composer_context_estimate": "Estimated context %{used} / %{limit}",
     "usage": "Usage",
     "usage_range": "Time range",
     "usage_filters": "Filters",
@@ -98,7 +98,7 @@ const locales = {
     "usage_previous": "Previous",
     "usage_next": "Next"
   },
-  "zh-CN": {
+  "zh-CN": {"composer_context_estimate": "估算上下文 %{used} / %{limit}",
     "usage": "用量",
     "usage_range": "时间范围",
     "usage_filters": "筛选",
@@ -197,13 +197,13 @@ const locales = {
     "usage_previous": "上一页",
     "usage_next": "下一页"
   },
-  "de": {"composer_first_token": "Zeit bis zum ersten Token"},
-  "es": {"composer_first_token": "Tiempo hasta el primer token"},
-  "fr": {"composer_first_token": "Délai du premier token"},
-  "ja": {"composer_first_token": "最初のトークンまでの時間"},
-  "ko": {"composer_first_token": "첫 토큰 시간"},
-  "pt-BR": {"composer_first_token": "Tempo até o primeiro token"},
-  "ru": {"composer_first_token": "Время до первого токена"},
-  "zh-TW": {"composer_first_token": "首字時間"}
+  "de": {"composer_context_estimate": "Geschätzter Kontext %{used} / %{limit}","composer_first_token": "Zeit bis zum ersten Token"},
+  "es": {"composer_context_estimate": "Contexto estimado %{used} / %{limit}","composer_first_token": "Tiempo hasta el primer token"},
+  "fr": {"composer_context_estimate": "Contexte estimé %{used} / %{limit}","composer_first_token": "Délai du premier token"},
+  "ja": {"composer_context_estimate": "推定コンテキスト %{used} / %{limit}","composer_first_token": "最初のトークンまでの時間"},
+  "ko": {"composer_context_estimate": "예상 컨텍스트 %{used} / %{limit}","composer_first_token": "첫 토큰 시간"},
+  "pt-BR": {"composer_context_estimate": "Contexto estimado %{used} / %{limit}","composer_first_token": "Tempo até o primeiro token"},
+  "ru": {"composer_context_estimate": "Оценка контекста %{used} / %{limit}","composer_first_token": "Время до первого токена"},
+  "zh-TW": {"composer_context_estimate": "估算上下文 %{used} / %{limit}","composer_first_token": "首字時間"}
 };
 export function messages(locale) { return {...locales.en,...locales[locale]}; }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -223,7 +223,10 @@
               "method": "POST",
               "headers": {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "User-Agent": "WorkBuddy/5.5.6",
+                "X-CodeBuddy-Request": "1",
+                "Accept-Language": "zh-CN"
               },
               "body": {
                 "kind": "json",
@@ -346,7 +349,10 @@
               "method": "POST",
               "headers": {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "User-Agent": "WorkBuddy/5.5.2",
+                "X-CodeBuddy-Request": "1",
+                "Accept-Language": "en-US"
               },
               "body": {
                 "kind": "json",
@@ -469,7 +475,10 @@
               "method": "POST",
               "headers": {
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                "Accept": "application/json",
+                "User-Agent": "WorkBuddy/5.5.2",
+                "X-CodeBuddy-Request": "1",
+                "Accept-Language": "en-US"
               },
               "body": {
                 "kind": "json",
@@ -535,7 +544,7 @@
               "ru": "Кредиты"
             }
           },
-          "icon": "dollar-sign",
+          "icon": "reicon:money/coins",
           "order": 0
         }
       ],

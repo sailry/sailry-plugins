@@ -66,7 +66,7 @@ test('initial reads hide empty roles and retain retry',()=>{
 test('capacity recovery is visible only for retained receipts',()=>{
   const setup=fixture();
   setup.view.text=messages('en');
-  setup.view.capacity={field:'capacity',request:null,pending:false,locked:()=>true,
+  setup.view.capacity={field:'capacity',request:null,pending:false,unknown:false,locked:()=>true,
     save:()=>setup.calls.push(['capacity-retry'])};
   setup.render();
   const row=setup.nodes.get('execution_settings').items[0];
@@ -76,7 +76,9 @@ test('capacity recovery is visible only for retained receipts',()=>{
   assert.equal(setup.nodes.get('capacity').kind,'SliderField');
   assert.deepEqual(plain(setup.nodes.get('capacity').props),{disabled:true});
   assert.equal(setup.nodes.has('capacity-retry'),false);
-  setup.view.capacity.request='original-request';setup.render();
+  setup.view.capacity.request='original-request';setup.view.capacity.pending=true;setup.render();
+  assert.equal(setup.nodes.has('capacity-retry'),false);
+  setup.view.capacity.pending=false;setup.view.capacity.unknown=true;setup.render();
   const retry=setup.nodes.get('capacity-retry').items[0];
   assert.deepEqual(plain(retry.style.label),['Retry']);
   assert.deepEqual(plain(retry.style.disabled),[false]);

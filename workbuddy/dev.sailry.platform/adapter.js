@@ -9,9 +9,10 @@ const endpoints = {
 const client = 'CLI/2.63.2 CodeBuddy/2.63.2';
 // Fixed desktop fallback identities from the companion's client-identity.ts.
 function identity(endpoint) {
+  if (endpoint === 'https://www.codebuddy.ai') return {version:'2.168.2',ide:'CLI',agent:'CLI/2.168.2 CodeBuddy/2.168.2'};
   const version = endpoint === 'https://copilot.tencent.com' ? '5.5.6' : '5.5.2';
   const product = endpoint === 'https://copilot.tencent.com' ? 'WorkBuddy' : 'WorkBuddy AI';
-  return {version, agent:`WorkBuddy/${version} ${product}/${version}`};
+  return {version, ide:'WorkBuddy', agent:`WorkBuddy/${version} ${product}/${version}`};
 }
 
 function base(endpoint) {
@@ -72,6 +73,7 @@ export function prepare(input) {
   const messages = [{role: 'system', content: input.system || 'You are a helpful assistant.'},
     ...input.messages.map(message)];
   const body = {model: input.model, messages, stream: true};
+  if (endpoint === 'https://www.codebuddy.ai') body.stream_options = {include_usage:true};
   const choice = input.tool_choice;
   if (choice.kind !== 'none' && input.tools.length) {
     body.tools = input.tools.map(tool => ({type: 'function', function: {
@@ -91,9 +93,10 @@ export function prepare(input) {
   return {method: 'POST', url: `${endpoint}/v2/chat/completions`, headers: {
     'Content-Type': 'application/json', 'User-Agent': desktop.agent,
     Accept: 'application/json, text/plain, */*',
-    'X-IDE-Type': 'WorkBuddy', 'X-IDE-Name': 'WorkBuddy', 'X-IDE-Version': desktop.version,
+    'X-IDE-Type': desktop.ide, 'X-IDE-Name': desktop.ide, 'X-IDE-Version': desktop.version,
     Origin: endpoints[endpoint], Referer: `${endpoints[endpoint]}/`,
     'X-Requested-With': 'XMLHttpRequest', 'X-Product': 'SaaS',
+    'X-CodeBuddy-Request': '1', 'Accept-Language': endpoint === 'https://copilot.tencent.com' ? 'zh-CN' : 'en-US',
     'X-No-User-Id': '1', 'X-No-Enterprise-Id': '1',
     'X-Conversation-ID': identifier(), 'X-Conversation-Request-ID': identifier(),
     'X-Conversation-Message-ID': identifier(),
@@ -106,17 +109,43 @@ function count(value) {
   return value;
 }
 
+const closing = '</think:opensource>';
+
+function content(state, value, deltas) {
+  if (state.model !== 'hy4-preview') {
+    deltas.push({kind:'text',text:value});
+    return;
+  }
+  const text = (state.tail ?? '') + value;
+  let length = Math.min(text.length, closing.length);
+  while (length && !closing.startsWith(text.slice(-length))) length--;
+  const ready = text.slice(0, text.length - length);
+  state.tail = text.slice(text.length - length);
+  if (ready) deltas.push({kind:'text',text:ready});
+}
+
+function flush(state, deltas, complete) {
+  const tail = state.tail ?? '';
+  if (tail && !(complete && tail === closing)) deltas.push({kind:'text',text:tail});
+  delete state.tail;
+}
+
 export function decode(input) {
   const state = {...input.state ?? {finished: false}};
   const deltas = [];
   for (const event of input.events) {
     if (event.data === '[DONE]') {
-      if (!state.finished) deltas.push({kind: 'finish', reason: state.reason ?? 'stop'});
+      if (!state.finished) {
+        flush(state,deltas,true);
+        deltas.push({kind: 'finish', reason: state.reason ?? 'stop'});
+      }
       state.finished = true;
       continue;
     }
     const chunk = JSON.parse(event.data);
+    if (!state.model && typeof chunk.model === 'string' && chunk.model) state.model = chunk.model;
     if (chunk.error) {
+      flush(state,deltas,false);
       deltas.push({kind: 'error', ...classify({status: input.status ?? 200, body: event.data})});
       state.finished = true;
       continue;
@@ -131,7 +160,7 @@ export function decode(input) {
     const choice = chunk.choices?.[0];
     if (!choice) continue;
     const delta = choice.delta ?? {};
-    if (typeof delta.content === 'string' && delta.content) deltas.push({kind: 'text', text: delta.content});
+    if (typeof delta.content === 'string' && delta.content) content(state,delta.content,deltas);
     if (typeof delta.reasoning_content === 'string' && delta.reasoning_content) {
       deltas.push({kind: 'reasoning', text: delta.reasoning_content, replay: delta.reasoning_content});
     }
@@ -146,9 +175,11 @@ export function decode(input) {
     }
   }
   if (input.done && !state.finished && state.reason) {
+    flush(state,deltas,true);
     deltas.push({kind: 'finish', reason: state.reason});
     state.finished = true;
   }
+  if (input.done && !state.finished) flush(state,deltas,false);
   return {state, deltas};
 }
 
@@ -169,9 +200,11 @@ export function classify(input) {
 export function prepare_discovery(input) {
   const endpoint = base(input.endpoint);
   return {method: 'GET', url: `${endpoint}/v3/config`, headers: {
-    Accept: 'application/json', 'User-Agent': endpoint === 'https://copilot.tencent.com' ? client : 'WorkBuddy/5.5.2',
+    Accept: 'application/json', 'User-Agent': endpoint === 'https://copilot.tencent.com' ? client
+      : endpoint === 'https://www.codebuddy.ai' ? identity(endpoint).agent : 'WorkBuddy/5.5.2',
     Origin: endpoints[endpoint], Referer: `${endpoints[endpoint]}/`,
     'X-Requested-With': 'XMLHttpRequest', 'X-Product': 'SaaS',
+    'X-CodeBuddy-Request': '1', 'Accept-Language': endpoint === 'https://copilot.tencent.com' ? 'zh-CN' : 'en-US',
   }, body: null, credential: {header: 'Authorization', template: 'Bearer {access}'}, framing: 'json'};
 }
 

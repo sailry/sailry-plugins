@@ -37,11 +37,22 @@ for (const fixture of invalid) {
   });
 }
 
+test('carries every Hy4 suffix split across calls',()=>{
+  const closing='</think:opensource>';
+  const event=(content,model)=>({event:null,data:JSON.stringify({...(model?{model}:{}),choices:[{delta:{content}}]})});
+  for(let split=0;split<=closing.length;split++){
+    const first=modules.adapter.decode({state:null,done:false,events:[event(`Answer${closing.slice(0,split)}`,'hy4-preview')]});
+    const second=modules.adapter.decode({state:first.state,done:false,events:[event(closing.slice(split)),{event:null,data:'[DONE]'}]});
+    assert.equal([...first.deltas,...second.deltas].filter(delta=>delta.kind==='text').map(delta=>delta.text).join(''),'Answer');
+    assert.equal(second.state.finished,true);
+  }
+});
+
 
 test('groups regional presets without changing route identities',async()=>{
   const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const presets=manifest.extensions['dev.sailry.platform'].model_providers;
-  assert.equal(manifest.version,'0.1.5');
+  assert.equal(manifest.version,'0.1.7');
   assert.deepEqual(presets.map(preset=>preset.id),['china','workbuddy-global','codebuddy-global']);
   assert.equal(new Set(presets.map(preset=>preset.name)).size,3);
   for (const preset of presets) {
@@ -69,5 +80,6 @@ test('declares regional protected reads without shared model origins',async()=>{
     assert.ok(Object.values(request.headers).every(value=>!value.includes('{')));
   }
   assert.deepEqual(extension.ui.map(entry=>[entry.id,entry.slot,entry.kind]),[['credits','footer','metric']]);
+  assert.equal(extension.ui[0].icon,'reicon:money/coins');
   assert.equal(extension.model_adapters[0].origins.includes('https://www.codebuddy.cn'),false);
 });

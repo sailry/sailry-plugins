@@ -15,6 +15,8 @@ const prepared = output => {
   assert.equal(output.headers['X-No-Enterprise-Id'],'1');
   assert.equal(output.headers.Origin,'https://www.codebuddy.cn');
   assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.6 WorkBuddy/5.5.6');
+  assert.equal(output.headers['X-CodeBuddy-Request'],'1');
+  assert.equal(output.headers['Accept-Language'],'zh-CN');
   assert.equal(output.headers['X-IDE-Type'],'WorkBuddy');
   assert.equal(output.headers['X-IDE-Name'],'WorkBuddy');
   assert.equal(output.headers['X-IDE-Version'],'5.5.6');
@@ -102,7 +104,7 @@ for (const [region,endpoint,origin] of [
     assert.equal(output.url,`${endpoint}/v3/config`);
     assert.equal(output.headers.Origin,origin);
     assert.equal(output.headers.Referer,`${origin}/`);
-    assert.equal(output.headers['User-Agent'],region==='China'?'CLI/2.63.2 CodeBuddy/2.63.2':'WorkBuddy/5.5.2');
+    assert.equal(output.headers['User-Agent'],region==='China'?'CLI/2.63.2 CodeBuddy/2.63.2':region==='CodeBuddy global'?'CLI/2.168.2 CodeBuddy/2.168.2':'WorkBuddy/5.5.2');
     assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
     assert.equal(output.headers.Authorization,undefined);
   }});
@@ -132,12 +134,14 @@ export const invalid = [
 for(const [endpoint,version,product] of [
   ['https://copilot.tencent.com','5.5.6','WorkBuddy'],
   ['https://www.workbuddy.ai','5.5.2','WorkBuddy AI'],
-  ['https://www.codebuddy.ai','5.5.2','WorkBuddy AI'],
+  ['https://www.codebuddy.ai','2.168.2','CLI'],
 ]) cases.push({name:`uses desktop generation identity for ${new URL(endpoint).hostname}`,handler:'prepare',input:request({endpoint}),check(output){
   assert.equal(output.url,`${endpoint}/v2/chat/completions`);
-  assert.equal(output.headers['User-Agent'],`WorkBuddy/${version} ${product}/${version}`);
-  assert.equal(output.headers['X-IDE-Type'],'WorkBuddy');
-  assert.equal(output.headers['X-IDE-Name'],'WorkBuddy');
+  assert.equal(output.headers['User-Agent'],product==='CLI'?`CLI/${version} CodeBuddy/${version}`:`WorkBuddy/${version} ${product}/${version}`);
+  assert.equal(output.headers['X-CodeBuddy-Request'],'1');
+  assert.equal(output.headers['Accept-Language'],endpoint==='https://copilot.tencent.com'?'zh-CN':'en-US');
+  assert.equal(output.headers['X-IDE-Type'],product==='CLI'?'CLI':'WorkBuddy');
+  assert.equal(output.headers['X-IDE-Name'],product==='CLI'?'CLI':'WorkBuddy');
   assert.equal(output.headers['X-IDE-Version'],version);
 }});
 for(const [name,status,body,kind,message] of [
@@ -190,3 +194,75 @@ cases.push({name:'leaves truncated output incomplete for the transport owner',ha
   assert.deepEqual(output.deltas,[{kind:'text',text:'Partial'}]);
   assert.equal(output.state.finished,false);
 }});
+
+for (const [endpoint,language] of [
+  ['https://copilot.tencent.com','zh-CN'],
+  ['https://www.workbuddy.ai','en-US'],
+  ['https://www.codebuddy.ai','en-US'],
+]) cases.push({name:`keeps gateway metadata for ${new URL(endpoint).hostname}`,handler:'prepare',
+  input:request({endpoint,model:'hy4-preview',reasoning:{effort:'high',replay:false}}),check(output){
+    assert.equal(output.url,`${endpoint}/v2/chat/completions`);
+    assert.equal(output.headers['X-CodeBuddy-Request'],'1');
+    assert.equal(output.headers['Accept-Language'],language);
+    assert.equal(output.headers.Authorization,undefined);
+    assert.equal(JSON.parse(output.body).reasoning_effort,'high');
+  }});
+
+cases.push({name:'requests CodeBuddy international usage trailers',handler:'prepare',
+  input:request({endpoint:'https://www.codebuddy.ai'}),check(output){
+    assert.deepEqual(JSON.parse(output.body).stream_options,{include_usage:true});
+    assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
+  }});
+
+const closing = '</think:opensource>';
+const streamed = (text,model) => event({...(model?{model}:{}),choices:[{delta:{content:text}}]});
+const text = output => output.deltas.filter(delta=>delta.kind==='text').map(delta=>delta.text).join('');
+for (let split=0;split<closing.length;split++) {
+  cases.push({name:`cleans Hy4 terminal split ${split}`,handler:'decode',input:{state:null,done:false,events:[
+    streamed(`Answer${closing.slice(0,split)}`,'hy4-preview'),streamed(closing.slice(split)),{event:null,data:'[DONE]'},
+  ]},check(output){
+    assert.equal(text(output),'Answer');
+    assert.equal(output.state.model,'hy4-preview');
+    assert.equal(output.state.tail,undefined);
+    assert.deepEqual(output.deltas.at(-1),{kind:'finish',reason:'stop'});
+  }});
+}
+cases.push({name:'retains Hy4 identity across decoder calls',handler:'decode',input:{
+  state:{finished:false,model:'hy4-preview',tail:'</think:open'},done:false,
+  events:[streamed('source>'),{event:null,data:'[DONE]'}],
+},check(output){assert.equal(text(output),'');assert.equal(output.state.finished,true);}});
+for (const [name,model,value,expected] of [
+  ['other models','other-model',`Answer${closing}`,`Answer${closing}`],
+  ['unknown models',null,`Answer${closing}`,`Answer${closing}`],
+  ['interior literal tokens','hy4-preview',`Before${closing}After`,`Before${closing}After`],
+  ['similar tokens','hy4-preview','Answer</think:opensourceX>','Answer</think:opensourceX>'],
+  ['incomplete token prefixes','hy4-preview','Answer</think:open','Answer</think:open'],
+  ['opening literal tokens','hy4-preview','<think:opensource>Answer','<think:opensource>Answer'],
+]) cases.push({name:`preserves ${name}`,handler:'decode',input:{state:null,done:false,
+  events:[streamed(value,model),{event:null,data:'[DONE]'}]},check(output){assert.equal(text(output),expected);}});
+cases.push({name:'flushes terminal-looking text before later content',handler:'decode',input:{state:null,done:false,
+  events:[streamed(`Answer${closing}`,'hy4-preview'),streamed(' continues'),{event:null,data:'[DONE]'}]},check(output){
+    assert.equal(text(output),`Answer${closing} continues`);
+  }});
+cases.push({name:'holds possible suffixes before completion',handler:'decode',input:{state:null,done:false,
+  events:[streamed(`Answer${closing}`,'hy4-preview')]},check(output){
+    assert.equal(text(output),'Answer');
+    assert.equal(output.state.tail,closing);
+    assert.equal(output.state.finished,false);
+  }});
+cases.push({name:'preserves the suffix on truncated transport',handler:'decode',input:{state:null,done:true,
+  events:[streamed(`Answer${closing}`,'hy4-preview')]},check(output){
+    assert.equal(text(output),`Answer${closing}`);
+    assert.equal(output.state.finished,false);
+  }});
+cases.push({name:'cleans the suffix at explicit completion',handler:'decode',input:{state:null,done:true,
+  events:[event({model:'hy4-preview',choices:[{delta:{content:`Answer${closing}`},finish_reason:'stop'}]})]},check(output){
+    assert.equal(text(output),'Answer');
+    assert.deepEqual(output.deltas.at(-1),{kind:'finish',reason:'stop'});
+  }});
+cases.push({name:'preserves the suffix before upstream errors',handler:'decode',input:{state:null,done:false,
+  events:[streamed(`Answer${closing}`,'hy4-preview'),event({error:{message:'Fixture upstream rejection'}})]},check(output){
+    assert.equal(text(output),`Answer${closing}`);
+    assert.equal(output.deltas.at(-1).message,'Fixture upstream rejection');
+    assert.equal(output.deltas.at(-1).kind,'error');
+  }});

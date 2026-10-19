@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFile} from 'node:fs/promises';
 import {decode,metric,range,ResponseError} from '../dev.sailry.platform/desktop/credits.js';
 const labels={remaining:'Remaining',package:'Package'};
 
@@ -33,4 +34,22 @@ test('builds the documented personal resource range',()=>{
   const result=range({now:new Date(2026,0,2,3,4,5).getTime()});
   assert.equal(result.begin,'2026-01-02 03:04:05');
   assert.match(result.end,/^212[67]-[0-9]{2}-[0-9]{2} 03:04:05$/);
+});
+
+test('declares regional billing gateway metadata',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const flows=manifest.extensions['dev.sailry.platform'].model_auth;
+  for(const [id,host,language,version] of [
+    ['china','www.codebuddy.cn','zh-CN','5.5.6'],
+    ['workbuddy-global','www.workbuddy.ai','en-US','5.5.2'],
+    ['codebuddy-global','www.codebuddy.ai','en-US','5.5.2'],
+  ]) {
+    const flow=flows.find(flow=>flow.id===id),request=flow.requests.credits;
+    assert.equal(request.url,`https://${host}/v2/billing/meter/get-user-resource`);
+    assert.equal(request.headers['User-Agent'],`WorkBuddy/${version}`);
+    assert.equal(request.headers['X-CodeBuddy-Request'],'1');
+    assert.equal(request.headers['Accept-Language'],language);
+    assert.equal(request.headers.Authorization,undefined);
+    assert.deepEqual(flow.inject,[{header:'Authorization',template:'Bearer {access}'},{header:'X-Domain',template:'{extra.domain}'}]);
+  }
 });

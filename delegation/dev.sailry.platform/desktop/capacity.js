@@ -15,12 +15,12 @@ export function count(value) {
 export class Capacity {
   constructor(text,settled = () => {}) {
     this.text = text; this.saved = null; this.request = null; this.settled = settled;
-    this.value = null;
+    this.value = null; this.queued = null; this.submitted = null; this.unknown = false;
     this.serial = 0; this.pending = false; this.loading = false; this.dirty = false; this.connected = true;
     this.field = createSlider(8,{min:1,max:50,step:1,label:text.child_concurrency});
   }
 
-  locked() { return !this.connected || !this.saved || !!this.request; }
+  locked() { return !this.connected || !this.saved || !!this.request && this.unknown; }
 
   load(cx) {
     if (this.loading || this.request) return;
@@ -47,7 +47,7 @@ export class Capacity {
   input(event,cx) {
     if (this.locked() || !Number.isInteger(event.value) || event.value < 1 || event.value > 50) return;
     this.value = String(event.value); this.dirty = true;
-    if (event.kind === 'release') this.save(cx);
+    if (event.kind === 'release') { this.queued = this.value; this.save(cx); }
     cx.notify();
   }
 
@@ -58,15 +58,19 @@ export class Capacity {
     if (!this.request) {
       let value;
       try {
-        value = count(this.value ?? '');
+        value = count(this.queued ?? this.value ?? '');
       } catch (_) { this.fail('capacity_invalid'); return; }
-      if (value === this.saved.values.child_concurrency) { this.dirty = false; return; }
+      if (value === this.saved.values.child_concurrency) {
+        this.queued = null; this.dirty = this.value !== value; return;
+      }
       try {
         this.serial += 1;
         this.request = prepareSettings({...this.saved.values,child_concurrency:value},{},
           String(this.saved.package.settings_revision));
+        this.submitted = value; this.queued = null; this.unknown = false;
       } catch (error) {
         // No request exists yet: preparation failures have no uncertain side effects.
+        this.queued = null;
         this.fail(faultCode(error.message ?? String(error)) === 'revision_conflict' ? 'role_conflict' : 'role_failed');
         return;
       }
@@ -74,25 +78,41 @@ export class Capacity {
     const request = this.request;
     this.pending = true; cx.notify();
     cx.spawn(async cx => {
+      let saved = false;
       try {
         const result = await completeRequest(request);
         if (result.Ok?.kind === 'plugin_settings') {
-          this.saved = result.Ok.data; this.dirty = false;
-          this.adopt(this.saved.values.child_concurrency);
-          forgetRequest(request); this.request = null;
-          toast({id:'delegation-capacity',message:this.text.settings_saved,kind:'success'});
+          this.saved = result.Ok.data;
+          // A receipt confirms its submitted value, not a later local slider draft.
+          if (this.value === this.submitted) this.adopt(this.saved.values.child_concurrency);
+          this.dirty = this.value !== this.saved.values.child_concurrency;
+          forgetRequest(request); this.request = null; this.unknown = false; saved = true;
         } else {
           const code = result.Err?.code;
-          this.fail(code === 'revision_conflict' ? 'role_conflict'
-            : !code || ['outcome_unknown','unavailable','cancelled'].includes(code) ? 'role_unknown' : 'role_failed');
-          if (code && !['outcome_unknown','unavailable','cancelled'].includes(code)) {
-            forgetRequest(request); this.request = null;
+          this.unknown = !code || ['outcome_unknown','unavailable','cancelled'].includes(code);
+          this.fail(code === 'revision_conflict' ? 'role_conflict' : this.unknown ? 'role_unknown' : 'role_failed');
+          if (!this.unknown) {
+            forgetRequest(request); this.request = null; this.queued = null;
             this.load(cx);
           }
         }
       } catch (error) {
+        this.unknown = true;
         this.fail(faultCode(error.message ?? String(error)) === 'revision_conflict' ? 'role_conflict' : 'role_unknown');
-      } finally { this.pending = false; if (!this.request) this.settled(cx); cx.notify(); }
+      } finally {
+        this.pending = false;
+        if (saved && this.queued !== null && this.queued !== this.saved.values.child_concurrency) {
+          this.save(cx);
+        }
+        if (!this.request) {
+          if (saved) {
+            this.queued = null;
+            if (!this.dirty) toast({id:'delegation-capacity',message:this.text.settings_saved,kind:'success'});
+          }
+          this.settled(cx);
+        }
+        cx.notify();
+      }
     });
   }
 }

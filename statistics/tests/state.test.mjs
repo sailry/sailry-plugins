@@ -244,3 +244,21 @@ test('breakdown switches regroup only for projects and keep the request page',()
   assert.equal(state.data(),report);assert(!state.ready());
   assert(state.group('model'));assert.equal(state.query.dimension,'model');
 });
+
+test('summary estimates replace stale context without resetting totals',()=>{
+  for(const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
+    const text=messages(locale);
+    const statistics={context_tokens:null,context_estimate:'120',context_limit:1000,
+      usage:{input:'880',output:'10',cached_input:'100',reasoning:'0'},cost:{usd_micros:'300',responses:'1'},responses:'1'};
+    const state={has_messages:true,statistics},before=structuredClone(statistics);
+    const values=metrics(state,text),context=values.find(value=>value.id==='context').value;
+    assert.equal(context.percent,12);
+    assert.equal(context.hint,text.composer_context_estimate.replace('%{used}','120').replace('%{limit}','1.0k'));
+    assert.equal(values.find(value=>value.id==='composer_tokens').value,'890');
+    assert.deepEqual(statistics,before);
+    statistics.context_tokens='200';
+    assert.equal(metrics(state,text).find(value=>value.id==='context').value.percent,20);
+    statistics.context_tokens=null;statistics.context_limit=null;
+    assert.equal(metrics(state,text).find(value=>value.id==='context').value.percent,null);
+  }
+});
