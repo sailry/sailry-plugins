@@ -54,6 +54,27 @@ test('accepts every official package and example', () => {
   }
 });
 
+test('accepts supported catalog metadata', () => {
+  for (const [category,tint] of [
+    ['development','blue'], ['documents','violet'], ['data','teal'],
+    ['automation','amber'], ['entertainment','gray'], [null,null],
+  ]) {
+    const result = check(fixture({'plugin.json': manifest({category,tint})}));
+    assert.equal(result.code, 0, result.output);
+  }
+});
+
+test('rejects unsupported catalog metadata', () => {
+  for (const [field,value] of [
+    ['category','unknown'], ['category',[]], ['category',false],
+    ['tint','red'], ['tint',{}], ['tint',0],
+  ]) {
+    const result = check(fixture({'plugin.json': manifest({[field]:value})}));
+    assert.equal(result.code, 1, result.output);
+    assert.match(result.output, new RegExp(`${field} must be one of:`));
+  }
+});
+
 test('rejects a name that differs from the folder', () => {
   const result = check(fixture({'plugin.json': {...manifest(), name: 'other'}}));
   assert.equal(result.code, 1);
@@ -79,6 +100,15 @@ test('accepts the registration declaration and module', () => {
       'import {RegistrationButton} from "sailry/registration";\nexport default RegistrationButton;\n',
   });
   const result = check(directory);
+  assert.equal(result.code, 0, result.output);
+});
+
+test('accepts registered settings and installation modules', () => {
+  const result = check(fixture({
+    'plugin.json': manifest({desktop: {resources: ['dev.sailry.platform/settings.js']}}),
+    'dev.sailry.platform/settings.js':
+      'import * as settings from "sailry/settings";\nimport * as installations from "sailry/installations";\nexport {settings, installations};\n',
+  }));
   assert.equal(result.code, 0, result.output);
 });
 

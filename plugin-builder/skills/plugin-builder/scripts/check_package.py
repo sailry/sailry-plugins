@@ -25,17 +25,20 @@ MODULES = {
     "sailry/sdk", "sailry/connections", "sailry/credentials", "sailry/models",
     "sailry/card", "sailry/cards", "sailry/registration", "sailry/documents",
     "sailry/file-transfers", "sailry/ssh-transfers", "sailry/artifacts", "sailry/search",
+    "sailry/settings", "sailry/installations",
 }
 FIELDS = {
     "api_version", "scope", "actions", "display", "description", "icon", "instructions",
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
-    "enabled_service", "oauth", "registration", "cards",
+    "enabled_service", "oauth", "registration", "cards", "category", "tint",
+    "conversation_options", "model_providers", "model_auth", "model_resources", "model_adapters",
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",
     "ssh.read", "ssh.control", "ssh.manage", "agents.delegate", "roles.read", "roles.write",
-    "models.read", "models.install", "media.inspect", "media.image", "media.video", "media.settings.read",
+    "models.read", "models.install", "models.provide", "models.authenticate", "credentials.inspect",
+    "media.inspect", "media.image", "media.video", "media.settings.read",
     "media.settings.write", "computer.read", "computer.control", "browser.read",
     "browser.control", "external_browser.read", "external_browser.control",
     "notifications.publish", "dispatch.manage", "files.read", "files.write", "git.read",
@@ -313,6 +316,13 @@ def check(root):
         report.error('api_version must be "v1"')
     for field in sorted(set(extension) - FIELDS):
         report.error(f"unknown extension field: {field}")
+    for field, choices in (
+        ("category", {"development", "documents", "data", "automation", "entertainment"}),
+        ("tint", {"blue", "violet", "teal", "amber", "gray"}),
+    ):
+        value = extension.get(field)
+        if value is not None and (not isinstance(value, str) or value not in choices):
+            report.error(f"{field} must be one of: {', '.join(sorted(choices))}")
     for action in check_names(extension.get("actions", []), "actions", report):
         if action not in ACTIONS:
             report.error(f"unknown action: {action}")

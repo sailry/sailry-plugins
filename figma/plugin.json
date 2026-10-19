@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "figma",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Design context",
   "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
   "extensions": {

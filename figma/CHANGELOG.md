@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Align package contract tests with the current release metadata
+
 ## 0.1.4
 
 - Add marketplace category and icon color

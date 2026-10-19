@@ -52,7 +52,7 @@ test('declares scoped registration and a package settings page', () => {
   const extension = manifest.extensions['dev.sailry.platform'];
   assert.deepEqual(extension.registration, {provider:'feishu',client_id:'app_id',client_secret:'app_secret',
     tenant_scopes:['docx:document:readonly','docs:document.content:read','docs:document.comment:read']});
-  assert.equal(manifest.version, '0.1.2');
+  assert.equal(manifest.version, '0.1.4');
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.deepEqual(extension.desktop.resources, [extension.settings_page.entry,'dev.sailry.platform/desktop/locales.js']);
 });

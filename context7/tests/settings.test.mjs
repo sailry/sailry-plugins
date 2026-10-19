@@ -8,7 +8,7 @@ const settings = JSON.parse(await readFile(new URL('../dev.sailry.platform/setti
 const configuration = JSON.parse(await readFile(new URL('../mcp.json',import.meta.url),'utf8'));
 
 test('optional API key uses protected HTTP settings', () => {
-  assert.equal(manifest.version,'0.1.1');
+  assert.equal(manifest.version,'0.1.3');
   assert.equal(extension.settings_schema,'dev.sailry.platform/settings.json');
   assert.equal(extension.settings_page,undefined);
   assert.deepEqual(settings.required,[]);

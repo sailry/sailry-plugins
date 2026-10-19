@@ -6,7 +6,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -176,18 +176,7 @@
         "artifacts.write"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -1342,7 +1331,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1709,18 +1698,7 @@
         "code.settings.write"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -2795,7 +2773,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "context7",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Current library documentation through the official Context7 MCP service",
         "homepage": "https://context7.com",
         "extensions": {
@@ -2867,18 +2845,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -6267,7 +6234,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "feishu",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Documents and comments",
         "homepage": "https://github.com/larksuite/lark-samples/tree/main/mcp_quick_remote_demo",
         "extensions": {
@@ -6350,18 +6317,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -6369,7 +6325,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "figma",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Design context",
         "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
         "extensions": {
@@ -6532,18 +6488,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -8308,7 +8253,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9950,18 +9895,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -11935,7 +11869,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "notion",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "Pages and databases",
         "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
         "extensions": {
@@ -12074,18 +12008,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
@@ -12140,7 +12063,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -12168,18 +12091,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Accept current catalog metadata and model declarations in package preflight checks\n- Reject unsupported category and tint values"
       }
     },
     {
@@ -14629,7 +14541,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14772,18 +14684,7 @@
         "web.settings.write"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Align package contract tests with the current release metadata"
       }
     },
     {
