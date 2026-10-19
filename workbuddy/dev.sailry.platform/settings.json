@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "checkin_time"
+  ],
+  "properties": {
+    "checkin_time": {
+      "type": "string",
+      "title": "Daily check-in time (HH:mm, Asia/Shanghai)",
+      "default": "09:05",
+      "minLength": 5,
+      "maxLength": 5,
+      "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+    }
+  },
+  "x-sailry-locales": {
+    "en": {
+      "checkin_time": "Daily check-in time (HH:mm, Asia/Shanghai)"
+    },
+    "zh-CN": {
+      "checkin_time": "每日签到时间（HH:mm，北京时间）"
+    },
+    "zh-TW": {
+      "checkin_time": "每日簽到時間（HH:mm，北京時間）"
+    },
+    "de": {
+      "checkin_time": "Tägliche Check-in-Zeit (HH:mm, Asia/Shanghai)"
+    },
+    "es": {
+      "checkin_time": "Hora diaria de registro (HH:mm, Asia/Shanghai)"
+    },
+    "fr": {
+      "checkin_time": "Heure quotidienne de connexion (HH:mm, Asia/Shanghai)"
+    },
+    "ja": {
+      "checkin_time": "毎日のチェックイン時刻（HH:mm、北京時間）"
+    },
+    "ko": {
+      "checkin_time": "일일 체크인 시간 (HH:mm, 베이징 시간)"
+    },
+    "pt-BR": {
+      "checkin_time": "Horário diário de check-in (HH:mm, Asia/Shanghai)"
+    },
+    "ru": {
+      "checkin_time": "Время ежедневной отметки (HH:mm, Asia/Shanghai)"
+    }
+  }
+}

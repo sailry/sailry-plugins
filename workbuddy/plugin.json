@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -13,7 +13,11 @@
         "models.provide",
         "models.authenticate",
         "credentials.inspect",
-        "http.request"
+        "http.request",
+        "storage.read",
+        "storage.write",
+        "dispatch.manage",
+        "notifications.publish"
       ],
       "display": {
         "label": "WorkBuddy",
@@ -241,6 +245,38 @@
                   "PackageEndTimeRangeBegin": "{input.begin}",
                   "PackageEndTimeRangeEnd": "{input.end}"
                 }
+              }
+            },
+            "checkin_status": {
+              "url": "https://copilot.tencent.com/v2/billing/meter/checkin-activity-status",
+              "method": "POST",
+              "headers": {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "WorkBuddy/5.5.6",
+                "X-CodeBuddy-Request": "1",
+                "Accept-Language": "zh-CN"
+              },
+              "body": {
+                "kind": "json",
+                "value": {}
+              }
+            }
+          },
+          "mutations": {
+            "checkin_claim": {
+              "url": "https://copilot.tencent.com/v2/billing/meter/daily-checkin",
+              "method": "POST",
+              "headers": {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "WorkBuddy/5.5.6",
+                "X-CodeBuddy-Request": "1",
+                "Accept-Language": "zh-CN"
+              },
+              "body": {
+                "kind": "json",
+                "value": {}
               }
             }
           }
@@ -557,7 +593,25 @@
           "dev.sailry.platform/desktop/locales.js",
           "dev.sailry.platform/errors.js"
         ]
-      }
+      },
+      "host": {
+        "entry": "dev.sailry.platform/host/main.js",
+        "resources": [
+          "dev.sailry.platform/host/main.js",
+          "dev.sailry.platform/host/records.js",
+          "dev.sailry.platform/host/protocol.js",
+          "dev.sailry.platform/host/checkin.js",
+          "dev.sailry.platform/host/schedules.js",
+          "dev.sailry.platform/errors.js",
+          "dev.sailry.platform/desktop/locales.js"
+        ],
+        "handlers": [
+          "register",
+          "checkin",
+          "reconcile"
+        ]
+      },
+      "settings_schema": "dev.sailry.platform/settings.json"
     }
   }
 }

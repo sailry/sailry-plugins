@@ -41,3 +41,6 @@ Lbryany/dsh-codebuddy, commit 216124e75a2d24fae8089788b26a1c0ccf6772d9:
 https://github.com/Lbryany/dsh-codebuddy/blob/216124e75a2d24fae8089788b26a1c0ccf6772d9/src/codebuddy.ts
 Copyright (c) 2026 Lbryany. MIT License, reproduced in LICENSE.
 Existing authorization and renewal declarations remain unchanged.
+
+Daily check-in endpoint and response fields were independently implemented from:
+https://github.com/codeLong1024/workbuddy-checkin/tree/8f7524f1bcf6a72bc58945cc745b0e9e0c7fd832

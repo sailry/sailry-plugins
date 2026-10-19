@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.8
+
+- Register China daily credit claims with the execution Node scheduler
+- Configure the daily check-in time in Beijing time, including when another model channel is selected
+- Keep closed activities, completed claims and uncertain requests from repeating
+
 ## 0.1.7
 
 - Remove Hy4's trailing reasoning control token after normal stream completion

@@ -1,6 +1,6 @@
 import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
-import {publishContributions,requestProviderHttp,faultCode} from 'sailry/sdk';
+import {publishContributions,requestProviderHttp,prepareRequest,completeRequest,forgetRequest,faultCode} from 'sailry/sdk';
 import {readModelContext,nextModelContext,toast} from 'sailry/ui';
 import {range,decode,metric,ResponseError} from './credits.js';
 import {messages} from './locales.js';
@@ -12,10 +12,11 @@ export function identity(state) {
 
 export default class Footer extends View {
   init(_props,cx) {
-    this.text = messages(JSON.parse(context()).locale);
+    this.locale = JSON.parse(context()).locale;
+    this.text = messages(this.locale);
     this.state = readModelContext(); this.key = identity(this.state);
     this.balance = null; this.pending = false; this.failure = null;
-    this.publish(); this.refresh(cx);
+    this.publish(); this.refresh(cx); this.ensure(cx);
     cx.spawn(async cx => {
       try {while (true) this.accept(await nextModelContext(this.state.cursor),cx);}
       catch (_) { /* The captured footer owns its observation. */ }
@@ -30,7 +31,25 @@ export default class Footer extends View {
     const key = identity(state);
     if (key !== this.key || state.cursor !== this.state.cursor) {this.balance = null;this.failure = null;}
     this.state = state; this.key = key;
-    this.publish(); this.refresh(cx);
+    this.publish(); this.refresh(cx); this.ensure(cx);
+  }
+
+  ensure(cx) {
+    const provider = this.state.connected ? this.state.provider : null;
+    if (provider?.preset?.id !== 'china') return;
+    const key = JSON.stringify([provider.id,provider.revision,provider.preset]);
+    if (this.registration === key) return;
+    this.registration = key;
+    cx.spawn(async () => {
+      try {
+        const id = prepareRequest({kind:'call_plugin',data:{handler:'register',input:{provider,locale:this.locale}}});
+        const result = await completeRequest(id);
+        forgetRequest(id);
+        if (result.Err) throw new Error(result.Err.message);
+      } catch (_) {
+        if (this.registration === key) toast({id:'workbuddy-checkin',kind:'error',message:this.text.checkin_failed});
+      }
+    });
   }
 
   publish() {

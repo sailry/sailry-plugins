@@ -22,7 +22,7 @@ const response=(remaining=12)=>({status:200,headers:{},body:JSON.stringify({code
 const settle=async()=>{for(let index=0;index<8;index++)await Promise.resolve();};
 
 function fixture(initial=state()) {
-  const requests=[],published=[],toasts=[],watches=[],sleeps=[],failures=[];
+  const requests=[],published=[],toasts=[],watches=[],sleeps=[],failures=[],registrations=[];
   const Controller=vm.runInNewContext(`${source}\nFooter`,{
     View:class {},div:()=>({}),context:()=>JSON.stringify({locale:'en'}),
     ...credits,messages,
@@ -30,13 +30,15 @@ function fixture(initial=state()) {
     readModelContext:()=>plain(initial),
     nextModelContext:cursor=>{const wait=deferred();watches.push({cursor,...wait});return wait.promise;},
     requestProviderHttp:(...args)=>{const wait=deferred();requests.push({args:plain(args),...wait});return wait.promise;},
+    prepareRequest:command=>{registrations.push(plain(command));return `registration-${registrations.length}`;},
+    completeRequest:async()=>({Ok:{kind:'plugin_result',data:{registered:true}}}),forgetRequest(){},
     faultCode:message=>{try{return JSON.parse(message).code;}catch{return 'failed';}},
     toast:value=>toasts.push(plain(value)),
   });
   const cx={notify(){},sleep:ms=>{const wait=deferred();sleeps.push({ms,...wait});return wait.promise;},
     spawn:callback=>{const promise=callback(cx);promise.catch(error=>failures.push(error));return promise;}};
   const view=new Controller();view.init({},cx);
-  return {view,cx,requests,published,toasts,watches,sleeps,failures,
+  return {view,cx,requests,published,toasts,watches,sleeps,failures,registrations,
     async update(value){watches.shift().resolve(plain(value));await settle();},
     latest:()=>published.at(-1)[0]};
 }
@@ -62,6 +64,19 @@ test('queries the selected channel and refreshes without overlapping requests',a
   assert.equal(setup.latest().value,'10');
   assert.deepEqual(setup.toasts,[]);
   assert.deepEqual(setup.failures,[]);
+});
+
+test('registers China scheduling once for each channel revision',async()=>{
+  const setup=fixture();
+  assert.equal(setup.registrations.length,1);
+  assert.equal(setup.registrations[0].data.handler,'register');
+  assert.equal(setup.registrations[0].data.input.provider.preset.id,'china');
+  const changed=state('2');changed.provider.model='another';
+  await setup.update(changed);assert.equal(setup.registrations.length,1);
+  const revised=state('3');revised.provider.revision='9007199254740994';
+  await setup.update(revised);assert.equal(setup.registrations.length,2);
+  const international=state('4');international.provider.preset.id='workbuddy-global';
+  await setup.update(international);assert.equal(setup.registrations.length,2);
 });
 
 test('hides unrelated selections and discards replies from older contexts',async()=>{

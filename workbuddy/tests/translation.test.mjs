@@ -52,7 +52,7 @@ test('carries every Hy4 suffix split across calls',()=>{
 test('groups regional presets without changing route identities',async()=>{
   const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const presets=manifest.extensions['dev.sailry.platform'].model_providers;
-  assert.equal(manifest.version,'0.1.7');
+  assert.equal(manifest.version,'0.1.8');
   assert.deepEqual(presets.map(preset=>preset.id),['china','workbuddy-global','codebuddy-global']);
   assert.equal(new Set(presets.map(preset=>preset.name)).size,3);
   for (const preset of presets) {
@@ -82,4 +82,19 @@ test('declares regional protected reads without shared model origins',async()=>{
   assert.deepEqual(extension.ui.map(entry=>[entry.id,entry.slot,entry.kind]),[['credits','footer','metric']]);
   assert.equal(extension.ui[0].icon,'reicon:money/coins');
   assert.equal(extension.model_adapters[0].origins.includes('https://www.codebuddy.cn'),false);
+});
+
+test('declares China claims as durable provider mutations',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
+  const extension=manifest.extensions['dev.sailry.platform'];
+  const china=extension.model_auth.find(flow=>flow.id==='china');
+  assert.equal(china.requests.checkin_status.url,'https://copilot.tencent.com/v2/billing/meter/checkin-activity-status');
+  assert.equal(china.mutations.checkin_claim.url,'https://copilot.tencent.com/v2/billing/meter/daily-checkin');
+  assert.equal(china.requests.checkin_claim,undefined);
+  assert.deepEqual(china.mutations.checkin_claim.body,{kind:'json',value:{}});
+  for(const flow of extension.model_auth.filter(flow=>flow.id!=='china')) {
+    assert.equal(flow.requests.checkin_status,undefined);assert.equal(flow.mutations,undefined);
+  }
+  assert.deepEqual(extension.host.handlers,['register','checkin','reconcile']);
+  for(const action of ['storage.read','storage.write','dispatch.manage','notifications.publish']) assert.ok(extension.actions.includes(action));
 });
