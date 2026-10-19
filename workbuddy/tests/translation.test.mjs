@@ -41,7 +41,7 @@ for (const fixture of invalid) {
 test('groups regional presets without changing route identities',async()=>{
   const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const presets=manifest.extensions['dev.sailry.platform'].model_providers;
-  assert.equal(manifest.version,'0.1.4');
+  assert.equal(manifest.version,'0.1.5');
   assert.deepEqual(presets.map(preset=>preset.id),['china','workbuddy-global','codebuddy-global']);
   assert.equal(new Set(presets.map(preset=>preset.name)).size,3);
   for (const preset of presets) {

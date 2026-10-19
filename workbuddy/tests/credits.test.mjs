@@ -8,6 +8,8 @@ test('shows only measured credit progress',()=>{
   assert.deepEqual(value,{value:'12.5',details:[{label:{label:'Remaining'},value:'12.5'},
     {label:{label:'Cycle'},value:'12.5 / 25',progress:50}]});
   assert.deepEqual(metric({remaining:null,accounts:[]},labels),{value:'—',details:[]});
+  assert.deepEqual(metric(decode({status:200,body:{code:0,data:{Response:{Data:{Accounts:null}}}}}),labels),
+    {value:'0',details:[{label:{label:'Remaining'},value:'0'}]});
   assert.equal(metric({remaining:2,accounts:[{name:null,remaining:2,capacity:null}]},labels).details[1].progress,undefined);
 });
 test('preserves totals within the shared detail budget',()=>{

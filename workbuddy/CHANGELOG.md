@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.5
+
+- Show zero credits when the upstream resource list is explicitly null
+- Preserve streamed usage before completing a model response
+
 ## 0.1.4
 
 - Send the desktop generation identity and preserve upstream business messages

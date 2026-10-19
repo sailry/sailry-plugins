@@ -24,6 +24,7 @@ export function decode(input) {
   const value = typeof input.body === 'string' ? JSON.parse(input.body) : input.body;
   if (!value || typeof value !== 'object' || value.code !== 0) throw new ResponseError(input.status,value);
   const rows = value.data?.Response?.Data?.Accounts;
+  if (rows === null) return {remaining:0,accounts:[]};
   if (!Array.isArray(rows)) throw new Error('Invalid WorkBuddy credits response');
   // An empty personal-resource list cannot establish another account type's balance.
   if (!rows.length) return {remaining:null,accounts:[]};

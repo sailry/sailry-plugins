@@ -14893,7 +14893,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -15452,7 +15452,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Send the desktop generation identity and preserve upstream business messages\n- Show selected-channel credits through protected read-only requests"
+        "text": "- Show zero credits when the upstream resource list is explicitly null\n- Preserve streamed usage before completing a model response"
       }
     },
     {

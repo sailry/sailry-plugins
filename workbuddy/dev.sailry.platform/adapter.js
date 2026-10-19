@@ -111,7 +111,7 @@ export function decode(input) {
   const deltas = [];
   for (const event of input.events) {
     if (event.data === '[DONE]') {
-      if (!state.finished) deltas.push({kind: 'finish', reason: 'stop'});
+      if (!state.finished) deltas.push({kind: 'finish', reason: state.reason ?? 'stop'});
       state.finished = true;
       continue;
     }
@@ -142,11 +142,13 @@ export function decode(input) {
     }
     if (choice.finish_reason != null) {
       const reasons = {stop: 'stop', length: 'length', tool_calls: 'tool_calls', content_filter: 'content_filter'};
-      deltas.push({kind: 'finish', reason: reasons[choice.finish_reason] ?? 'other'});
-      state.finished = true;
+      state.reason = reasons[choice.finish_reason] ?? 'other';
     }
   }
-  if (input.done && !state.finished) throw new Error('WorkBuddy response ended without a completion');
+  if (input.done && !state.finished && state.reason) {
+    deltas.push({kind: 'finish', reason: state.reason});
+    state.finished = true;
+  }
   return {state, deltas};
 }
 

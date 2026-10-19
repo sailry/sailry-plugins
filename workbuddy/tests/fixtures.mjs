@@ -122,7 +122,6 @@ for (const [region,endpoint,origin] of [
 export const invalid = [
   {name:'rejects unsupported endpoints before HTTP',handler:'prepare',input:request({endpoint:'https://other.invalid'})},
   {name:'rejects files instead of dropping message parts',handler:'prepare',input:request({messages:[{role:'user',parts:[{kind:'file',name:'fixture',media_type:'application/pdf',data_base64:'ZmFrZQ=='}]}]})},
-  {name:'rejects unfinished streams instead of reporting success',handler:'decode',input:{state:null,events:[event({choices:[{delta:{content:'Partial'}}]})],done:true}},
   {name:'rejects incomplete private token responses',script:'auth',handler:'exchange',input:{data:{accessToken:'fixture-private-access'}}},
   {name:'rejects refused catalogs containing models',handler:'decode_discovery',input:{endpoint:'https://www.codebuddy.ai',status:200,body:JSON.stringify({code:403,data:{models:[{id:'refused',maxInputTokens:8192,maxOutputTokens:1024}]}})}},
   {name:'rejects empty bare catalogs without fallback models',handler:'decode_discovery',input:{endpoint:'https://www.workbuddy.ai',status:200,body:'{"models":[],"agents":[]}'}},
@@ -166,3 +165,28 @@ invalid.push({name:'rejects malformed credit resources',script:'credits',handler
 cases.push({name:'keeps noncycle resources with zero cycle placeholders',script:'credits',handler:'decode',input:{status:200,body:{code:0,data:{Response:{Data:{Accounts:[{
   PackageName:'Gift',CycleCapacityRemain:0,CycleCapacitySize:0,CycleCapacityUsed:0,CapacityRemain:8,CapacitySize:10,
 }]}}}}},check(output){assert.deepEqual(output,{remaining:8,accounts:[{name:'Gift',remaining:8,capacity:10}]});}});
+
+cases.push({name:'shows zero for nullable personal resources',script:'credits',handler:'decode',input:{status:200,body:{code:0,data:{Response:{Data:{Accounts:null}}}}},check(output){
+  assert.deepEqual(output,{remaining:0,accounts:[]});
+}});
+cases.push({name:'preserves measured zero balances',script:'credits',handler:'decode',input:{status:200,body:{code:0,data:{Response:{Data:{Accounts:[{CapacityRemain:0}]}}}}},check(output){
+  assert.deepEqual(output,{remaining:0,accounts:[{name:null,remaining:0,capacity:null}]});
+}});
+for (const rows of ['invalid',{}]) invalid.push({name:`rejects ${typeof rows} credit resources`,script:'credits',handler:'decode',input:{status:200,body:{code:0,data:{Response:{Data:{Accounts:rows}}}}}});
+cases.push({name:'defers terminal output until trailing usage arrives',handler:'decode',input:{state:null,done:false,events:[event({choices:[{delta:{content:'Answer'},finish_reason:'stop'}]})]},check(output){
+  assert.equal(output.state.finished,false);
+  assert.equal(output.state.reason,'stop');
+  assert.deepEqual(output.deltas,[{kind:'text',text:'Answer'}]);
+}});
+cases.push({name:'retains trailing usage before the terminal marker',handler:'decode',input:{state:{finished:false,reason:'tool_calls'},done:false,events:[event({usage:{prompt_tokens:21,completion_tokens:7}}),{event:null,data:'[DONE]'}]},check(output){
+  assert.deepEqual(output.deltas,[{kind:'usage',input_tokens:21,output_tokens:7},{kind:'finish',reason:'tool_calls'}]);
+  assert.equal(output.state.finished,true);
+}});
+cases.push({name:'accepts explicit completion at the transport end',handler:'decode',input:{state:{finished:false,reason:'length'},events:[],done:true},check(output){
+  assert.deepEqual(output.deltas,[{kind:'finish',reason:'length'}]);
+  assert.equal(output.state.finished,true);
+}});
+cases.push({name:'leaves truncated output incomplete for the transport owner',handler:'decode',input:{state:null,events:[event({choices:[{delta:{content:'Partial'}}]})],done:true},check(output){
+  assert.deepEqual(output.deltas,[{kind:'text',text:'Partial'}]);
+  assert.equal(output.state.finished,false);
+}});
