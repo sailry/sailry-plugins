@@ -14272,7 +14272,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14413,18 +14413,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Pair context usage with the model limit captured for that response"
       }
     },
     {

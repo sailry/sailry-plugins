@@ -5,6 +5,21 @@ import {State,query,choices,nodeId,unit,offset} from '../dev.sailry.platform/des
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
+test('context pairs each observation with its captured limit',()=>{
+  const state={has_messages:true,context_limit:1_000,statistics:{context_tokens:'100',context_limit:200}};
+  const measured=()=>metrics(state,text).find(value=>value.id==='context').value;
+  const before=structuredClone(state);
+  assert.equal(measured().percent,50);
+  assert.equal(measured().hint,text.composer_context_usage.replace('%{used}','100').replace('%{limit}','200'));
+  state.context_limit=2_000;
+  assert.equal(measured().percent,50);
+  delete state.statistics.context_limit;
+  assert.equal(measured().percent,null);
+  assert.equal(measured().hint,text.composer_context_unknown);
+  state.statistics={context_tokens:'500',context_limit:1_000};
+  assert.equal(measured().percent,50);
+  assert.deepEqual(before.statistics,{context_tokens:'100',context_limit:200});
+});
 test('speed details use latest own first text latency',()=>{
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
@@ -89,7 +104,7 @@ test('composer defaults empty displays and preserves context thresholds',()=>{
     ['0','0'],['0','0','0'],['$0.00','$0.00'],['0','0','0'],['0']]);
   assert.equal(unknown.at(-1).value.percent,null);assert.equal(unknown.at(-1).value.hint,text.composer_context_unknown);
   assert.deepEqual(state,before);
-  const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100'},context_limit:100,compacting:true},text);
+  const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
   assert.equal(zero[0].value,'0');assert.equal(zero.at(-1).value.tone,'danger');assert(zero.at(-1).value.loading);
 });
 test('footer keeps units counts and empty money displays',async()=>{
@@ -112,7 +127,7 @@ test('footer keeps units counts and empty money displays',async()=>{
 });
 
 test('composer combines child totals and preserves own metrics',()=>{
-  const statistics={turns:'7',responses:'2',context_tokens:'60',
+  const statistics={turns:'7',responses:'2',context_tokens:'60',context_limit:100,
     usage:{input:'100',output:'20',cached_input:'25',reasoning:'5'},
     generation:{output_tokens:'43',elapsed_us:'2000000',responses:'2'},
     cost:{usd_micros:'15000',responses:'2'},

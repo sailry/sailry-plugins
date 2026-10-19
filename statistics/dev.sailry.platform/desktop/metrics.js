@@ -32,9 +32,10 @@ export function metrics(state,text) {
       row('composer_cached_input',number(cached)),row('composer_uncached_input',number(uncached)),row('composer_input_tokens',number(input))]],
     ['composer_turns',number(statistics?.turns),[row('composer_responses',number(statistics?.responses))]],
   ];
-  const percent = context(statistics?.context_tokens,state.context_limit);
+  const limit = statistics?.context_limit;
+  const percent = context(statistics?.context_tokens,limit);
   const hint = state.compacting ? text.chat_compacting : percent == null ? text.composer_context_unknown
-    : text.composer_context_usage.replace('%{used}',number(statistics.context_tokens)).replace('%{limit}',number(state.context_limit));
+    : text.composer_context_usage.replace('%{used}',number(statistics.context_tokens)).replace('%{limit}',number(limit));
   return [...values.map(([id,value,details])=>({id,value:value ?? '0',visible:state.has_messages,details})),
     {id:'context',value:{percent,loading:state.compacting,tone:severity(percent),hint},visible:!state.sidebar}];
 }
