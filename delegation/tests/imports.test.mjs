@@ -11,7 +11,7 @@ const exports = {
   'sailry':['context','theme'],
   'sailry/sdk':['listRoles','listModels','newRoleId','prepareRole','prepareRemoveRole',
     'completeRequest','forgetRequest','nextChange','faultCode','readSettings','resolveModel'],
-  'sailry/forms':['createText','readText','setText','releaseText','nextTextEvent','TextField','NumberField'],
+  'sailry/forms':['createText','readText','setText','releaseText','nextTextEvent','TextField','SliderField','createSlider','setSlider','nextSliderEvent'],
   'sailry/settings':['prepareSettings'],
   'sailry/ui':['nextControlEvent','nextMenuEvent','modal_closed','toast','dismissToast',
     'EmptyState','SettingsGroup','SettingsRow','IconButton','AppearancePicker','Menu','Modal','Loading'],

@@ -3435,7 +3435,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4022,7 +4022,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Restore settings loading and render concurrency with the shared settings row\n- Clarify that pending observations retain the admitted child without spawning it again"
+        "text": "- Adjust concurrency with a slider and save once after interaction\n- Keep settings drafts visible while confirming saves\n- Report preparation failures without claiming an uncertain result"
       }
     },
     {

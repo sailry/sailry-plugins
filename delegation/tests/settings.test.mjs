@@ -24,19 +24,21 @@ const role = {id:'existing',revision:5,key:'review',name:'Review',appearance:nul
   model:null,max_turns:null,skills:['retained'],instructions:'Original'};
 
 async function settings(options = {}) {
-  const changes = events(), controls = events(), menus = events(), closes = events(), inputs = events();
+  const changes = events(), controls = events(), menus = events(), closes = events(), inputs = events(), sliders = events();
   const prepared = [], calls = [], forgotten = [], notices = [], released = [], fields = new Map();
   let profiles = [plain(role)], models = [plain(model)], ids = 0;
-  let settings = {package:{name:'fixture',digest:'captured',settings_revision:'1'},values:{child_concurrency:'8',retained:'value'}};
+  let settings = {package:{name:'fixture',digest:'captured',settings_revision:'1'},values:{child_concurrency:options.value ?? '8',retained:'value'}};
   const bindings = {
     View:class {},context:() => '{"locale":"en"}',draft,messages,
     nextChange:changes.next,nextControlEvent:controls.next,nextMenuEvent:menus.next,
-    modal_closed:closes.next,nextTextEvent:inputs.next,
+    modal_closed:closes.next,nextTextEvent:inputs.next,nextSliderEvent:sliders.next,
+    createSlider:value => {const id=`slider-${++ids}`;fields.set(id,value);return id;},
+    setSlider:(id,value)=>fields.set(id,value),
     createText:value => {const id = `field-${++ids}`; fields.set(id,value); return id;},
     readText:id => fields.get(id),setText:(id,value) => fields.set(id,value),
     releaseText:id => {released.push(id); fields.delete(id);},
     toast:value => notices.push(value),dismissToast() {},forgetRequest:id => forgotten.push(id),
-    listRoles:async () => plain(profiles),listModels:async () => ({models:plain(models)}),newRoleId:() => 'created',
+    listRoles:async () => {if(options.read) options.read();return plain(profiles);},listModels:async () => ({models:plain(models)}),newRoleId:() => 'created',
     prepareRole:(role,revision) => {prepared.push(plain({kind:'edit',role,revision})); return `request-${prepared.length}`;},
     prepareRemoveRole:(id,revision) => {prepared.push({kind:'remove',id,revision}); return `request-${prepared.length}`;},
     completeRequest:async id => {calls.push(id); const value = prepared[Number(id.split('-')[1])-1];
@@ -45,13 +47,13 @@ async function settings(options = {}) {
       return {Ok:{kind:value.kind === 'edit' ? 'role' : 'roles',data:{}}};},
     faultCode:message => message,
     readSettings:async () => plain(settings),
-    prepareSettings:(values,edits,revision) => {prepared.push(plain({kind:'settings',values,edits,revision}));return `request-${prepared.length}`;}
+    prepareSettings:(values,edits,revision) => {if(options.prepare)options.prepare();prepared.push(plain({kind:'settings',values,edits,revision}));return `request-${prepared.length}`;}
   };
   bindings.Capacity = vm.runInNewContext(`${capacitySource}\nCapacity`,bindings);
   const Type = vm.runInNewContext(`${source}\nSettings`,bindings);
   const cx = {notify() {},spawn(action) {return action(cx);}};
   const view = new Type(); view.init({},cx); await tick();
-  return {view,cx,changes,controls,menus,closes,inputs,prepared,calls,forgotten,notices,released,fields,
+  return {view,cx,changes,controls,menus,closes,inputs,sliders,prepared,calls,forgotten,notices,released,fields,
     async act(action) {action(); await tick(); await tick();},
     configuration(value) {settings=value;},
     catalog(roles,nextModels) {profiles = roles; if (nextModels) models = nextModels;},
@@ -60,78 +62,92 @@ async function settings(options = {}) {
   };
 }
 
-test('capacity commits on blur and enter without losing other settings',async()=>{
+test('capacity saves once on release and preserves other settings',async()=>{
   const f=await settings(),capacity=f.view.capacity;
-  assert.equal(f.fields.get(capacity.field),'8');
-  for(const [kind,value] of [['blur','1'],['enter','18446744073709551615']]) {
-    const before=f.prepared.length;
-    f.fields.set(capacity.field,value);
-    await f.act(()=>f.inputs.send({id:capacity.field,kind:'change'}));
-    assert.equal(f.prepared.length,before);
-    await f.act(()=>f.inputs.send({id:capacity.field,kind}));
-    assert.equal(f.prepared.length,before+1);
-    assert.deepEqual(f.prepared.at(-1),{kind:'settings',values:{child_concurrency:value,retained:'value'},edits:{},revision:String(before+1)});
-    assert.equal(capacity.request,null);
-  }
-  assert.equal(f.prepared.length,2);
-  assert.equal(f.notices.filter(notice=>notice.kind==='success').length,2);
+  assert.equal(capacity.value,'8');
+  assert.equal(f.view.ready,true);
+  for(const value of [12,16,24]) await f.act(()=>f.sliders.send({id:capacity.field,kind:'change',value}));
+  assert.equal(capacity.value,'24');
+  assert.equal(f.prepared.length,0);
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:24}));
+  assert.deepEqual(f.prepared,[{kind:'settings',values:{child_concurrency:'24',retained:'value'},edits:{},revision:'1'}]);
+  assert.equal(capacity.request,null);
+  assert.equal(f.notices.filter(notice=>notice.kind==='success').length,1);
 });
 
-test('capacity rejects invalid integers before admission',async()=>{
-  const f=await settings(),capacity=f.view.capacity;
-  for(const value of ['0','-1','1.5','18446744073709551616','x','']) {
-    f.fields.set(capacity.field,value);
-    await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
+test('capacity keeps existing values outside the slider range',async()=>{
+  for(const value of ['1','51','18446744073709551615']) {
+    const f=await settings({value});
+    assert.equal(f.view.capacity.value,value);
+    assert.equal(f.fields.get(f.view.capacity.field),Number(BigInt(value)>50n ? 50n : BigInt(value)));
+    assert.deepEqual(f.prepared,[]);
+    await f.act(()=>f.changes.send({cursor:'1',connected:true}));
+    await f.act(()=>f.changes.send({cursor:'2',connected:true}));
+    assert.equal(f.view.capacity.value,value);
+    assert.deepEqual(f.prepared,[]);
   }
+});
+
+test('capacity rejects invalid user events before admission',async()=>{
+  const f=await settings(),capacity=f.view.capacity;
+  for(const value of [0,51,1.5,NaN,Infinity]) await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value}));
+  assert.equal(capacity.value,'8');
   assert.deepEqual(f.prepared,[]);
-  assert.equal(f.notices.length,6);
-  assert.equal(f.fields.get(capacity.field),'');
 });
 
-test('capacity steps use exact integers and commit immediately',async()=>{
-  const f=await settings(),capacity=f.view.capacity;
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'increment'}));
-  assert.equal(f.fields.get(capacity.field),'9');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
-  assert.equal(f.fields.get(capacity.field),'8');
-  f.fields.set(capacity.field,'18446744073709551615');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
-  assert.equal(f.fields.get(capacity.field),'18446744073709551614');
-  const before=f.prepared.length;
-  f.fields.set(capacity.field,'18446744073709551615');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'increment'}));
-  f.fields.set(capacity.field,'1');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'decrement'}));
-  assert.equal(f.prepared.length,before);
-});
-
-test('capacity recovers an uncertain save through the original receipt',async()=>{
+test('capacity recovers uncertain saves through the original receipt',async()=>{
   let attempts=0;
   const f=await settings({complete:async(_,value)=>++attempts===1
     ? {Err:{code:'outcome_unknown'}}
     : {Ok:{kind:'plugin_settings',data:{package:{settings_revision:'2'},values:value.values}}}});
   const capacity=f.view.capacity;
-  f.fields.set(capacity.field,'2');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'enter'}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
   assert.equal(capacity.locked(),true);
   assert.equal(capacity.request,'request-1');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
+  await f.act(()=>capacity.save(f.cx));
   assert.deepEqual(f.calls,['request-1','request-1']);
   assert.equal(f.prepared.length,1);
   assert.deepEqual(f.forgotten,['request-1']);
   assert.equal(capacity.locked(),false);
-  assert.equal(f.fields.get(capacity.field),'2');
+  assert.equal(capacity.value,'2');
+});
+
+test('capacity preparation failures retain drafts without uncertain outcomes',async()=>{
+  const f=await settings({prepare(){throw new Error('unavailable');}}),capacity=f.view.capacity;
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:3}));
+  assert.equal(capacity.value,'3');
+  assert.equal(capacity.request,null);
+  assert.deepEqual(f.calls,[]);
+  assert.equal(f.notices.at(-1).message,messages('en').role_failed);
 });
 
 test('capacity conflicts retain drafts until another explicit commit',async()=>{
   const f=await settings({complete:async()=>({Err:{code:'revision_conflict'}})}),capacity=f.view.capacity;
-  f.fields.set(capacity.field,'3');
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'change'}));
-  await f.act(()=>f.inputs.send({id:capacity.field,kind:'blur'}));
-  assert.equal(f.fields.get(capacity.field),'3');
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:3}));
+  assert.equal(capacity.value,'3');
   assert.equal(capacity.request,null);
   assert.deepEqual(f.calls,['request-1']);
   assert.equal(f.notices.at(-1).message,messages('en').role_conflict);
+});
+
+test('pending settings coalesce refreshes without replacing content',async()=>{
+  const pending=deferred();let reads=0;
+  const f=await settings({read(){reads++;},complete:()=>pending.promise}),capacity=f.view.capacity;
+  await f.act(()=>f.changes.send({cursor:'1',connected:true}));
+  await f.act(()=>f.sliders.send({id:capacity.field,kind:'release',value:2}));
+  const original=f.view.roles;
+  for(const cursor of ['2','3']) await f.act(()=>f.changes.send({cursor,connected:true}));
+  assert.equal(reads,1);
+  assert.equal(f.view.roles,original);
+  assert.equal(f.view.ready,true);
+  assert.equal(capacity.value,'2');
+  const saved={package:{settings_revision:'2'},values:{child_concurrency:'2',retained:'value'}};
+  f.configuration(saved);
+  pending.finish({Ok:{kind:'plugin_settings',data:saved}});
+  await tick();await tick();
+  assert.equal(reads,2);
+  assert.equal(capacity.value,'2');
+  assert.equal(f.view.ready,true);
 });
 
 test('saves the complete captured draft without changing hidden fields or model choices',async () => {

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.14
+
+- Adjust concurrency with a slider and save once after interaction
+- Keep settings drafts visible while confirming saves
+- Report preparation failures without claiming an uncertain result
+
 ## 0.1.13
 
 - Restore settings loading and render concurrency with the shared settings row

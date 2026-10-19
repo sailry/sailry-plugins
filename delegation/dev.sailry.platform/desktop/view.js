@@ -2,7 +2,7 @@
 import {div} from 'gpui-kit';
 import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
-import {TextField,NumberField} from 'sailry/forms';
+import {TextField,SliderField} from 'sailry/forms';
 import {EmptyState,SettingsGroup,SettingsRow,IconButton,AppearancePicker,Menu,Modal,Loading} from 'sailry/ui';
 import {efforts} from './draft.js';
 
@@ -88,8 +88,9 @@ export function render(view) {
     .children(view.capacity ? [SettingsGroup.new('execution_settings',{title:text.execution_settings})
       .child(SettingsRow.new('capacity-row',{label:text.child_concurrency})
         .child(div().h_flex().items_center().gap_2()
-          .child(div().w_32().child(NumberField.new(view.capacity.field,
-            {readonly:view.capacity.locked(),size:'small'})))
+          .child(div().w_40().child(SliderField.new(view.capacity.field,
+            {disabled:view.capacity.locked()})))
+          .child(div().min_w_8().text_sm().child(view.capacity.value ?? ''))
           .children(view.capacity.request ? [button('capacity-retry',text.role_retry,
             (_,cx)=>view.capacity.save(cx),view.capacity.pending || !view.connected)] : [])))] : [])
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})

@@ -3,7 +3,7 @@ import {View} from 'gpui-kit';
 import {context} from 'sailry';
 import {listRoles,listModels,newRoleId,prepareRole,prepareRemoveRole,completeRequest,
   forgetRequest,nextChange,faultCode} from 'sailry/sdk';
-import {createText,readText,setText,releaseText,nextTextEvent} from 'sailry/forms';
+import {createText,readText,setText,releaseText,nextTextEvent,nextSliderEvent} from 'sailry/forms';
 import {nextControlEvent,nextMenuEvent,modal_closed,toast,dismissToast} from 'sailry/ui';
 import * as draft from './draft.js';
 import {messages} from './locales.js';
@@ -15,7 +15,9 @@ export default class Settings extends View {
     this.text = messages(JSON.parse(context()).locale);
     this.roles = []; this.models = []; this.ready = false; this.connected = true;
     this.loading = false; this.refresh = false; this.error = null; this.dialog = null; this.serial = 0;
-    this.capacity = new Capacity(this.text);
+    this.capacity = new Capacity(this.text,cx => {
+      if (this.refresh) { this.refresh = false; this.load(cx); }
+    });
     this.load(cx);
     cx.spawn(async cx => {
       let cursor;
@@ -43,8 +45,13 @@ export default class Settings extends View {
     });
     cx.spawn(async cx => {
       try { while (true) {
+        const event = await nextSliderEvent();
+        if (event.id === this.capacity.field) this.capacity.input(event,cx);
+      } } catch (_) { /* The page owns its native slider. */ }
+    });
+    cx.spawn(async cx => {
+      try { while (true) {
         const event = await nextTextEvent(), owner = this.dialog;
-        if (event.id === this.capacity.field) { this.capacity.input(event,cx); continue; }
         if (owner?.kind === 'edit' && !owner.request && Object.values(owner.fields).includes(event.id)
           && event.kind === 'change') { owner.error = null; cx.notify(); }
       } } catch (_) { /* Native fields are released with the draft. */ }
@@ -53,7 +60,7 @@ export default class Settings extends View {
 
   load(cx) {
     if (!this.connected) return;
-    if (this.loading) { this.refresh = true; return; }
+    if (this.capacity.request || this.loading) { this.refresh = true; return; }
     this.loading = true;
     this.capacity.load(cx);
     cx.spawn(async cx => {

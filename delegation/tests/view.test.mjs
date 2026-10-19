@@ -23,7 +23,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','SettingsRow','IconButton','AppearancePicker','Menu','Modal','TextField','NumberField','Loading']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','SettingsRow','IconButton','AppearancePicker','Menu','Modal','TextField','SliderField','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},
@@ -73,8 +73,8 @@ test('capacity recovery is visible only for retained receipts',()=>{
   assert.equal(row.kind,'SettingsRow');
   assert.equal(row.selector,'capacity-row');
   assert.equal(row.props.label,setup.view.text.child_concurrency);
-  assert.equal(setup.nodes.get('capacity').kind,'NumberField');
-  assert.deepEqual(plain(setup.nodes.get('capacity').props),{readonly:true,size:'small'});
+  assert.equal(setup.nodes.get('capacity').kind,'SliderField');
+  assert.deepEqual(plain(setup.nodes.get('capacity').props),{disabled:true});
   assert.equal(setup.nodes.has('capacity-retry'),false);
   setup.view.capacity.request='original-request';setup.render();
   const retry=setup.nodes.get('capacity-retry').items[0];
