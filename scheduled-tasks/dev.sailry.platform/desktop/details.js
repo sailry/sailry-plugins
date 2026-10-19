@@ -27,7 +27,7 @@ export function taskStatus(text, item) {
 }
 export function statusTag(view, item, id) {
   const {label, tone} = taskStatus(view.text, item);
-  const tag = new Tag().variant(["danger", "info", "success"].includes(tone) ? tone : "secondary").size("large").rounded_full();
+  const tag = new Tag().variant(["danger", "info", "success"].includes(tone) ? tone : "secondary").size("medium").rounded_full();
   return div().id(id).flex_none().child((tone === "muted" ? tag.outline() : tag).child(label));
 }
 function cell(id, label, value, font, first) {

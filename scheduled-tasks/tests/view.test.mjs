@@ -175,7 +175,7 @@ test("status tags map native state to tone beside a muted time", () => {
     assert.equal(tag.kind, "Tag");
     assert.deepEqual(texts(tag), [label]);
     assert.deepEqual(tag.style.variant, [variant]);
-    assert.deepEqual(tag.style.size, ["large"]);
+    assert.deepEqual(tag.style.size, ["medium"]);
     assert.equal("outline" in tag.style, label === "Paused");
     assert.equal(setup.nodes.has("task-time-row"), !!time);
     if (typeof time === "string") assert.deepEqual(texts(setup.nodes.get("task-time-row")), [time]);
@@ -384,7 +384,7 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.6");
+  assert.equal(manifest.version, "0.1.8");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);

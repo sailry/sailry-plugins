@@ -15,7 +15,7 @@ export function reminderStatus(text, item, now) {
   return {label:text.pending, tone:"warning"};
 }
 export function statusTag(status, id) {
-  return div().id(id).flex_none().child(new Tag().variant(status.tone).size("large").rounded_full().child(status.label));
+  return div().id(id).flex_none().child(new Tag().variant(status.tone).size("medium").rounded_full().child(status.label));
 }
 export function deliveryColor(status, colors) {
   return {completed:colors.success, failed:colors.destructive, running:colors.info, queued:colors.info,
