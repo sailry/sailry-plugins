@@ -143,3 +143,27 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
     assert.equal(output.calls.length,1);
   }
 });
+
+
+test('rejects non-object response envelopes', async () => {
+  const request = adapter();
+  for (const value of [null, true, 42, 'text', []]) {
+    const output = plain(await request({step:1, arguments:{action:'discover'},
+      outcome:{data:{status:200,headers:{},body:JSON.stringify(value)}}}));
+    assert.equal(output.result.isError, true);
+    assert.equal(output.result.error.code, 'unavailable');
+    assert.equal(output.call, undefined);
+  }
+});
+
+runtimeTest('rejects malformed envelopes in production', async () => {
+  for (const value of [null, true, 42, 'text', []]) {
+    const input = await packageInput(new URL('./', import.meta.url), 'request',
+      {step:1,arguments:{action:'discover'},outcome:{data:{status:200,headers:{},body:JSON.stringify(value)}}});
+    const output = execute(input);
+    assert.equal(output.result.Err, undefined);
+    assert.equal(output.result.Ok.result.isError, true);
+    assert.equal(output.result.Ok.result.error.code, 'unavailable');
+    assert.equal(output.calls.length, 0);
+  }
+});

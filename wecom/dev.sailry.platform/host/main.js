@@ -23,6 +23,8 @@ function response(outcome) {
     return {error:failure(`WeCom request failed (${value?.status ?? 'unknown'})`)};
   let envelope;
   try { envelope = JSON.parse(value.body); } catch { return {error:failure('Invalid WeCom response')}; }
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope))
+    return {error:failure('Invalid WeCom response')};
   if (envelope.error?.code && envelope.error.code !== 0)
     return {error:failure(`WeCom returned error ${envelope.error.code}`)};
   if (envelope.taskid || envelope.long_task_poll)

@@ -10,7 +10,8 @@ async function current(entry=undefined) {
   entry ??= await getConversationValue(key);
   const value=goal(entry);
   if (value?.state!=='active') return {entry,value};
-  let history=await readConversation();
+  let history=await readConversation(null,100);
+  const revision=history.page.revision;
   let anchor=history.page.runs.find(run=>run.turn===value.after);
   if (value.after && !anchor) {
     try {anchor=(await readTurn(value.after)).run;}
@@ -19,16 +20,29 @@ async function current(entry=undefined) {
       value.state='paused';return {entry,value};
     }
   }
+  const seen=new Set();
+  let ceiling=null;
   while (true) {
+    if (history.page.revision!==revision || ceiling!==null && history.page.runs.some(run=>run.sequence>=ceiling)) failHistory();
     if (history.page.runs.some(run=>run.turn!==context().turn && (!anchor || run.sequence>anchor.sequence)
       && ['interrupted','cancelled','failed'].includes(run.status)
       && !(run.status==='cancelled' && run.error?.code==='conflict'))) {
       value.state='paused';break;
     }
-    if (history.next_before==null || anchor && history.page.runs.some(run=>run.sequence<=anchor.sequence)) break;
-    history=await readConversation(history.next_before);
+    const before=history.page.next_before;
+    if (before==null) break;
+    const boundary=history.page.runs.find(run=>run.turn===before);
+    if (!boundary || seen.has(before)) failHistory();
+    if (anchor && boundary.sequence<=anchor.sequence) break;
+    seen.add(before);
+    ceiling=boundary.sequence;
+    history=await readConversation(before,100);
   }
   return {entry,value};
+}
+function failHistory() {
+  const error=new Error('Goal history changed; read it again');
+  error.code='revision_conflict';throw error;
 }
 async function anchor(history=undefined) {
   history ??= await readConversation();
@@ -88,7 +102,11 @@ export async function completed(args) {
     await execute(setConversationValue(key,{...entry.value,state:'paused'},entry.revision));
     return {};
   }
-  try {await execute(prepareTransaction([next(entry,args.turn)]));}
+  const advance=entry.value.after!==args.turn;
+  const captured=advance ? {...entry,revision:String(BigInt(entry.revision)+1n)} : entry;
+  try {await execute(prepareTransaction([
+    ...(advance ? [write(entry,{...entry.value,after:args.turn})] : []),next(captured,args.turn),
+  ]));}
   catch(error) {if (!['busy','conflict','revision_conflict','not_configured','not_found'].includes(error.code)) throw error;}
   return {};
 }

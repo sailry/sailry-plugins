@@ -11,14 +11,15 @@ test('continuation markers remain localized package declarations',async()=>{
   const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
   assert.deepEqual(manifest.extensions['dev.sailry.platform'].host.read_only,['read']);
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.3');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+  assert.equal(manifest.version,'0.1.5');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;
   const requests=[];
   const scope={session:'session-id',turn:null};
   const session={revision:'3',config:{mode:'code'}};
-  const history={page:{runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}],queue:{revision:'9007199254740993',paused:true,items:[]}},next_before:null};
+  const history={page:{revision:1,runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}],queue:{revision:'9007199254740993',paused:true,items:[]},next_before:null}};
+  const pages=new Map(),reads=[];
   const sdk={context:()=>scope,newId:()=> 'new-goal',getConversationValue:async key=>{
     assert.equal(key,'goal');return plain(current);
   },setConversationValue:(key,value,revision)=>prepare([{kind:'conversation_write',data:{key,value,expected_revision:revision}}]),
@@ -34,7 +35,16 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     }
     return {Ok:{data:operations.length===1 ? plain(current) : operations.map(()=>({data:{}}))}};
   },forgetRequest:()=>{},readSession:async()=>plain(session),
-  readConversation:async()=>plain(history),readTurn:async()=>({run:plain(history.page.runs[0])}),
+  readConversation:async(before=null,limit=20)=>{
+    reads.push({before,limit});
+    const result=before===null ? history : pages.get(before);
+    if (!result) throw new Error('Unexpected history page');
+    return plain(result);
+  },readTurn:async turn=>{
+    const run=[history,...pages.values()].flatMap(history=>history.page.runs).find(run=>run.turn===turn);
+    if (!run) {const error=new Error('Turn not found');error.code='not_found';throw error;}
+    return {run:plain(run)};
+  },
   readTurnState:()=>state,stageTurnState:value=>state=plain(value)};
   function prepare(operations) {requests.push(plain(operations));return String(requests.length-1);}
   const context=vm.createContext({});
@@ -49,7 +59,7 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     modules.set(path,module);await module.link(load);return module;
   }
   const main=await load('./main.js');await main.evaluate();
-  return {api:main.namespace,requests,history,scope,session,state:()=>state,current:()=>plain(current)};
+  return {api:main.namespace,requests,history,pages,reads,scope,session,state:()=>state,current:()=>plain(current)};
 }
 
 test('restored active goals remain suspended without a write or continuation',async()=>{
@@ -100,7 +110,11 @@ test('guidance keeps a goal active and the next completed turn continues',async(
   assert.equal(current().value.state,'active');assert.equal(requests.length,0);
   history.page.runs[0]={turn:'guided-turn',sequence:2,status:'completed',origin:null};
   await api.completed({turn:'guided-turn'});
-  assert.equal(requests[0][0].kind,'continue');assert.equal(requests[0][0].data.after,'guided-turn');
+  assert.deepEqual(requests[0].map(operation=>operation.kind),['conversation_write','continue']);
+  assert.equal(requests[0][0].data.value.after,'guided-turn');
+  assert.equal(requests[0][0].data.value.description,value.description);
+  assert.equal(requests[0][1].data.after,'guided-turn');
+  assert.equal(requests[0][1].data.expected_revision,'6');
 });
 
 test('explicit interruption still pauses an active goal',async()=>{
@@ -180,4 +194,60 @@ test('cancelled history pauses reads without writing',async()=>{
   history.page.runs[0].status='cancelled';
   assert.equal((await api.read()).goal.state,'paused');
   assert.equal(requests.length,0);
+});
+
+
+test('older interruptions pause without writing',async()=>{
+  const {api,history,pages,reads,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,after:'anchor'}});
+  history.page.runs=[{turn:'queued',sequence:0,status:'queued'},{turn:'recent',sequence:40,status:'completed'}];history.page.next_before='recent';
+  pages.set('recent',{page:{revision:1,runs:[{turn:'anchor',sequence:1,status:'completed'},{turn:'stopped',sequence:2,status:'cancelled'}],next_before:null}});
+  assert.equal((await api.read()).goal.state,'paused');
+  assert.deepEqual(reads,[{before:null,limit:100},{before:'recent',limit:100}]);
+  await api.completed({turn:'recent'});
+  assert.equal(requests.length,0);
+});
+
+test('verified anchors stop older history reads',async()=>{
+  const {api,history,pages,reads}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,after:'anchor'}});
+  history.page.runs=[{turn:'recent',sequence:40,status:'completed'}];history.page.next_before='recent';
+  pages.set('recent',{page:{revision:1,runs:[{turn:'anchor',sequence:10,status:'completed'},{turn:'middle',sequence:20,status:'completed'}],next_before:'anchor'}});
+  pages.set('anchor',{page:{revision:1,runs:[{turn:'older',sequence:1,status:'cancelled'}],next_before:null}});
+  assert.equal((await api.read()).goal.state,'active');
+  assert.equal(reads.length,2);
+});
+
+test('nonprogressing cursors report a conflict',async()=>{
+  const {api,history,pages,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  history.page.runs=[{turn:'recent',sequence:40,status:'completed'}];history.page.next_before='recent';
+  pages.set('recent',plain(history));
+  await assert.rejects(api.read(),error=>error.code==='revision_conflict');
+  assert.equal(requests.length,0);
+});
+
+test('changed history revisions report a conflict',async()=>{
+  const {api,history,pages,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  history.page.runs=[{turn:'recent',sequence:40,status:'completed'}];history.page.next_before='recent';
+  pages.set('recent',{page:{revision:2,runs:[{turn:'older',sequence:20,status:'completed'}],next_before:null}});
+  await assert.rejects(api.read(),error=>error.code==='revision_conflict');
+  assert.equal(requests.length,0);
+});
+
+test('completion advances progress with its continuation',async()=>{
+  const {api,history,pages,requests,current,reads}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,after:'anchor'}});
+  history.page.runs=[{turn:'finished',sequence:300,status:'completed'}];history.page.next_before='finished';
+  pages.set('finished',{page:{revision:1,runs:[{turn:'anchor',sequence:1,status:'completed'},{turn:'middle',sequence:200,status:'completed'}],next_before:'anchor'}});
+  await api.completed({turn:'finished'});
+  assert.deepEqual(requests[0].map(operation=>operation.kind),['conversation_write','continue']);
+  assert.equal(requests[0][0].data.expected_revision,'5');
+  assert.equal(requests[0][0].data.value.description,value.description);
+  assert.equal(requests[0][1].data.expected_revision,'6');
+  assert.equal(requests[0][1].data.after,'finished');
+  assert.equal(current().value.after,'finished');
+  assert.equal(current().revision,'6');
+  reads.length=0;
+  assert.equal((await api.read()).goal.state,'active');
+  assert.deepEqual(reads,[{before:null,limit:100}]);
+  history.page.runs.push({turn:'new-stop',sequence:301,status:'cancelled'});
+  assert.equal((await api.read()).goal.state,'paused');
+  assert.equal(requests.length,1);
 });

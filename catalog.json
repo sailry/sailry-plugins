@@ -4030,7 +4030,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "dingtalk",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Knowledge spaces and files",
         "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
         "extensions": {
@@ -4229,18 +4229,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Report invalid service response shapes without throwing"
       }
     },
     {
@@ -10031,7 +10020,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10455,18 +10444,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Check paged goal history and advance verified progress atomically"
       }
     },
     {
@@ -10552,7 +10530,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "google-workspace",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Mail, calendars and Drive files",
         "homepage": "https://developers.google.com/workspace",
         "extensions": {
@@ -10731,18 +10709,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Report invalid service response shapes without throwing"
       }
     },
     {
@@ -11753,7 +11720,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "microsoft-365",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Outlook and OneDrive",
         "homepage": "https://learn.microsoft.com/graph/overview",
         "extensions": {
@@ -11960,18 +11927,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Report invalid service response shapes without throwing"
       }
     },
     {
@@ -14701,7 +14657,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "wecom",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Workplace services",
         "homepage": "https://github.com/WecomTeam/wecom-cli",
         "extensions": {
@@ -14874,18 +14830,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Report invalid service response shapes without throwing"
       }
     },
     {
@@ -15866,7 +15811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "yuque",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Knowledge bases and documents",
         "homepage": "https://github.com/yuque/yuque-mcp-server",
         "extensions": {
@@ -16093,18 +16038,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Report invalid service response shapes without throwing"
       }
     }
   ],

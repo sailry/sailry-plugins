@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Report invalid service response shapes without throwing
+
 ## 0.1.4
 
 - Add marketplace category and icon color

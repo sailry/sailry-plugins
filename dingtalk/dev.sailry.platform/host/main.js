@@ -31,7 +31,12 @@ function response(outcome) {
   if (data.status < 200 || data.status >= 300)
     return {error:{...failure(`Service request failed (${data.status})`, data.status),
       retry_after:data.headers?.['retry-after']?.[0] ?? null}};
-  try { return {value:JSON.parse(data.body)}; }
+  try {
+    const value = JSON.parse(data.body);
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+      return {error:failure('Service returned an invalid response', data.status)};
+    return {value};
+  }
   catch { return {error:failure('Service returned invalid JSON', data.status)}; }
 }
 function call(url, credential, state = null) {
