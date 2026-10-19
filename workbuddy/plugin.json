@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -26,6 +26,20 @@
           "zh-TW": "WorkBuddy"
         },
         "icon": "reicon:messages/chat"
+      },
+      "description": {
+        "label": "WorkBuddy model channels",
+        "locales": {
+          "zh-CN": "WorkBuddy 模型渠道",
+          "zh-TW": "WorkBuddy 模型管道",
+          "de": "WorkBuddy-Modellkanäle",
+          "es": "Canales de modelos de WorkBuddy",
+          "fr": "Canaux de modèles WorkBuddy",
+          "ja": "WorkBuddy のモデルチャンネル",
+          "ko": "WorkBuddy 모델 채널",
+          "pt-BR": "Canais de modelos do WorkBuddy",
+          "ru": "Модельные каналы WorkBuddy"
+        }
       },
       "model_providers": [
         {

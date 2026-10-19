@@ -95,7 +95,7 @@ test('rejects malformed payloads without fabricated quota',()=>{
 test('declares only fixed native read resources',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.0');
+  assert.equal(manifest.version,'0.1.1');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.actions,['http.request']);
   assert.deepEqual(extension.model_resources.map(resource=>resource.authentication),

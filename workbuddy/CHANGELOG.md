@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Add localized catalog descriptions
+
 ## 0.1.8
 
 - Register China daily credit claims with the execution Node scheduler

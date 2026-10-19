@@ -12422,7 +12422,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -12445,7 +12445,21 @@
                 "pt-BR": "Uso da conta",
                 "ru": "Использование аккаунта"
               },
-              "icon": "gauge"
+              "icon": "reicon:business/chart"
+            },
+            "description": {
+              "label": "Usage for connected model accounts",
+              "locales": {
+                "zh-CN": "已连接模型账户的用量",
+                "zh-TW": "已連線模型帳戶的用量",
+                "de": "Nutzung verbundener Modellkonten",
+                "es": "Uso de cuentas de modelos conectadas",
+                "fr": "Utilisation des comptes de modèles connectés",
+                "ja": "接続済みモデルアカウントの使用量",
+                "ko": "연결된 모델 계정 사용량",
+                "pt-BR": "Uso da conta",
+                "ru": "Использование подключённых аккаунтов моделей"
+              }
             },
             "category": "data",
             "tint": "teal",
@@ -12534,7 +12548,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Read configured GPT and Claude OAuth account usage in the shared footer"
+        "text": "- Fix package metadata and localized catalog descriptions"
       }
     },
     {
@@ -14958,7 +14972,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -14983,6 +14997,20 @@
                 "zh-TW": "WorkBuddy"
               },
               "icon": "reicon:messages/chat"
+            },
+            "description": {
+              "label": "WorkBuddy model channels",
+              "locales": {
+                "zh-CN": "WorkBuddy 模型渠道",
+                "zh-TW": "WorkBuddy 模型管道",
+                "de": "WorkBuddy-Modellkanäle",
+                "es": "Canales de modelos de WorkBuddy",
+                "fr": "Canaux de modèles WorkBuddy",
+                "ja": "WorkBuddy のモデルチャンネル",
+                "ko": "WorkBuddy 모델 채널",
+                "pt-BR": "Canais de modelos do WorkBuddy",
+                "ru": "Модельные каналы WorkBuddy"
+              }
             },
             "model_providers": [
               {
@@ -15584,7 +15612,7 @@
         "notifications.publish"
       ],
       "release_notes": {
-        "text": "- Register China daily credit claims with the execution Node scheduler\n- Configure the daily check-in time in Beijing time, including when another model channel is selected\n- Keep closed activities, completed claims and uncertain requests from repeating"
+        "text": "- Add localized catalog descriptions"
       }
     },
     {
