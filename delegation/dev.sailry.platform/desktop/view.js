@@ -1,9 +1,9 @@
 // Existing role records and forms composed with the same native Kit controls.
-import {div,asElement} from 'gpui-kit';
-import {Button,Checkbox,Field,Form,SettingItem} from 'gpui-component';
+import {div} from 'gpui-kit';
+import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField,NumberField} from 'sailry/forms';
-import {EmptyState,SettingsGroup,IconButton,AppearancePicker,Menu,Modal,Loading} from 'sailry/ui';
+import {EmptyState,SettingsGroup,SettingsRow,IconButton,AppearancePicker,Menu,Modal,Loading} from 'sailry/ui';
 import {efforts} from './draft.js';
 
 function button(id,label,action,disabled = false,primary = false) {
@@ -86,12 +86,12 @@ export function render(view) {
     .children(owner ? [editing ? editor(view,owner) : removal(view,owner),footer(view,owner)] : []);
   return div().id('role-settings').v_flex().gap_6()
     .children(view.capacity ? [SettingsGroup.new('execution_settings',{title:text.execution_settings})
-      .child(asElement(new SettingItem(text.child_concurrency).layout('horizontal')
-        .content(asElement(div().h_flex().items_center().gap_2()
+      .child(SettingsRow.new('capacity-row',{label:text.child_concurrency})
+        .child(div().h_flex().items_center().gap_2()
           .child(div().w_32().child(NumberField.new(view.capacity.field,
             {readonly:view.capacity.locked(),size:'small'})))
           .children(view.capacity.request ? [button('capacity-retry',text.role_retry,
-            (_,cx)=>view.capacity.save(cx),view.capacity.pending || !view.connected)] : [])))))] : [])
+            (_,cx)=>view.capacity.save(cx),view.capacity.pending || !view.connected)] : [])))] : [])
     .child(SettingsGroup.new('roles_profiles',{title:text.roles_profiles,header_action:true})
       .child(div().h_flex().gap_2().flex_wrap()
         .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))

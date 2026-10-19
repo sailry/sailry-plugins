@@ -135,12 +135,25 @@ test('background guidance does not imply result collection',async()=>{
   assert.doesNotMatch(wait.description,/wait again after guiding the child/);
 });
 
+test('bounded observations preserve existing child ownership',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const tools=manifest.extensions['dev.sailry.platform'].tools;
+  for(const name of ['spawn_agent','wait_agent']) {
+    const tool=tools.find(tool=>tool.name===name);
+    assert.match(tool.description,/bounded observation window/);
+    assert.match(tool.description,/admitted, pending/);
+    assert.match(tool.description,/Do not spawn it again/);
+  }
+  assert.doesNotMatch(tools.find(tool=>tool.name==='spawn_agent').description,/synchronous calls still wait for the final result/);
+});
+
 test('admission receipts never imply child completion',()=>{
   const policy = host();
   const running = {session:'child',turn:'turn',status:'running'};
   const queued = {session:'child',turn:'guidance',recipient:'turn',status:'queued'};
   const admitted = {session:'child',turn:'turn',status:'queued'};
-  for(const receipt of [running,queued,admitted]) {
+  for(const receipt of [running,queued,admitted,
+    {...admitted,admitted:true,pending:true},{...running,admitted:true,pending:true}]) {
     assert.deepEqual(plain(policy.result({output:receipt})),receipt);
     assert.deepEqual(plain(policy.result({output:{kind:'delegation',data:receipt}})),receipt);
   }
