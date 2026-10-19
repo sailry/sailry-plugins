@@ -14,7 +14,10 @@ const prepared = output => {
   assert.equal(output.headers['X-No-User-Id'],'1');
   assert.equal(output.headers['X-No-Enterprise-Id'],'1');
   assert.equal(output.headers.Origin,'https://www.codebuddy.cn');
-  assert.equal(output.headers['User-Agent'],'CLI/2.63.2 CodeBuddy/2.63.2');
+  assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.6 WorkBuddy/5.5.6');
+  assert.equal(output.headers['X-IDE-Type'],'WorkBuddy');
+  assert.equal(output.headers['X-IDE-Name'],'WorkBuddy');
+  assert.equal(output.headers['X-IDE-Version'],'5.5.6');
   const keys = ['X-Conversation-ID','X-Conversation-Request-ID','X-Conversation-Message-ID'];
   for (const key of keys) assert.match(output.headers[key],/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   assert.equal(new Set(keys.map(key=>output.headers[key])).size,3);
@@ -126,3 +129,40 @@ export const invalid = [
   {name:'rejects malformed bare catalogs',handler:'decode_discovery',input:{endpoint:'https://www.workbuddy.ai',status:200,body:'{"agents":[]}'}},
   {name:'rejects failed discovery without inventing models',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:503,body:'{"code":0,"data":{"models":[]}}'}},
 ];
+
+for(const [endpoint,version,product] of [
+  ['https://copilot.tencent.com','5.5.6','WorkBuddy'],
+  ['https://www.workbuddy.ai','5.5.2','WorkBuddy AI'],
+  ['https://www.codebuddy.ai','5.5.2','WorkBuddy AI'],
+]) cases.push({name:`uses desktop generation identity for ${new URL(endpoint).hostname}`,handler:'prepare',input:request({endpoint}),check(output){
+  assert.equal(output.url,`${endpoint}/v2/chat/completions`);
+  assert.equal(output.headers['User-Agent'],`WorkBuddy/${version} ${product}/${version}`);
+  assert.equal(output.headers['X-IDE-Type'],'WorkBuddy');
+  assert.equal(output.headers['X-IDE-Name'],'WorkBuddy');
+  assert.equal(output.headers['X-IDE-Version'],version);
+}});
+for(const [name,status,body,kind,message] of [
+  ['localized business display',429,{error:{code:14018,displayTips:{zh:'积分不足，请稍后重试',en:'Credits unavailable'}}},'quota','积分不足，请稍后重试'],
+  ['nested business display',503,{data:{error:{bizcode:'6004',displayMsg:{en:'Account request limit'}}}},'rate_limited','Account request limit'],
+  ['model busy display',429,{error:{code:14003,displayMsg:'Model is busy'}},'rate_limited','Model is busy'],
+  ['unclassified throttling',429,{message:'Please retry later'},'rate_limited','Please retry later'],
+  ['private echo preservation',400,{error:{message:'Rejected fixture-private-access'}},'invalid_request','Rejected fixture-private-access'],
+  ['empty business display',429,{error:{displayTips:{zh:' '}}},'rate_limited','HTTP 429'],
+  ['non JSON failure',503,'not JSON','unavailable','HTTP 503'],
+]) cases.push({name:`preserves ${name}`,handler:'classify',input:{status,body:typeof body==='string'?body:JSON.stringify(body)},check(output){
+  assert.deepEqual(output,{class:kind,message});
+}});
+const accounts=[{PackageName:'Cycle',CycleCapacityRemainPrecise:'12.25',CycleCapacitySizePrecise:'30.5'},
+  {PackageName:'Gift',CapacityRemain:3.5}];
+cases.push({name:'reads actual personal credit resources',script:'credits',handler:'decode',input:{status:200,body:JSON.stringify({code:0,data:{Response:{Data:{Accounts:accounts}}}})},check(output){
+  assert.deepEqual(output,{remaining:15.75,accounts:[{name:'Cycle',remaining:12.25,capacity:30.5},{name:'Gift',remaining:3.5,capacity:null}]});
+}});
+cases.push({name:'keeps empty personal balances unknown',script:'credits',handler:'decode',input:{status:200,body:'{"code":0,"data":{"Response":{"Data":{"Accounts":[]}}}}'},check(output){
+  assert.deepEqual(output,{remaining:null,accounts:[]});
+}});
+invalid.push({name:'rejects malformed credit resources',script:'credits',handler:'decode',input:{status:200,body:'{"code":0,"data":{}}'}},
+  {name:'rejects refused credit responses',script:'credits',handler:'decode',input:{status:429,body:'{"displayTips":{"zh":"请稍后重试"}}'}});
+
+cases.push({name:'keeps noncycle resources with zero cycle placeholders',script:'credits',handler:'decode',input:{status:200,body:{code:0,data:{Response:{Data:{Accounts:[{
+  PackageName:'Gift',CycleCapacityRemain:0,CycleCapacitySize:0,CycleCapacityUsed:0,CapacityRemain:8,CapacitySize:10,
+}]}}}}},check(output){assert.deepEqual(output,{remaining:8,accounts:[{name:'Gift',remaining:8,capacity:10}]});}});

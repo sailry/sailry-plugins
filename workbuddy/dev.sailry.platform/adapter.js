@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import {failure} from './errors.js';
 // Wire rules adapted from the fixed third-party references recorded in NOTICE.
 const endpoints = {
   'https://copilot.tencent.com': 'https://www.codebuddy.cn',
@@ -6,6 +7,12 @@ const endpoints = {
   'https://www.codebuddy.ai': 'https://www.codebuddy.ai',
 };
 const client = 'CLI/2.63.2 CodeBuddy/2.63.2';
+// Fixed desktop fallback identities from the companion's client-identity.ts.
+function identity(endpoint) {
+  const version = endpoint === 'https://copilot.tencent.com' ? '5.5.6' : '5.5.2';
+  const product = endpoint === 'https://copilot.tencent.com' ? 'WorkBuddy' : 'WorkBuddy AI';
+  return {version, agent:`WorkBuddy/${version} ${product}/${version}`};
+}
 
 function base(endpoint) {
   const value = endpoint.replace(/\/+$/, '');
@@ -80,8 +87,11 @@ export function prepare(input) {
     if (typeof effort !== 'string') throw new Error('WorkBuddy requires a declared effort level');
     body.reasoning_effort = effort;
   }
+  const desktop = identity(endpoint);
   return {method: 'POST', url: `${endpoint}/v2/chat/completions`, headers: {
-    'Content-Type': 'application/json', 'User-Agent': client,
+    'Content-Type': 'application/json', 'User-Agent': desktop.agent,
+    Accept: 'application/json, text/plain, */*',
+    'X-IDE-Type': 'WorkBuddy', 'X-IDE-Name': 'WorkBuddy', 'X-IDE-Version': desktop.version,
     Origin: endpoints[endpoint], Referer: `${endpoints[endpoint]}/`,
     'X-Requested-With': 'XMLHttpRequest', 'X-Product': 'SaaS',
     'X-No-User-Id': '1', 'X-No-Enterprise-Id': '1',
@@ -141,20 +151,17 @@ export function decode(input) {
 }
 
 export function classify(input) {
-  let value;
-  try { value = JSON.parse(input.body); } catch { value = {}; }
-  const error = value.error ?? value;
-  const code = String(error.code ?? '');
+  const {code,message} = failure(input.body);
   let kind = 'unknown';
   if (input.status === 401) kind = 'authentication';
   else if (input.status === 403 || code === '11140') kind = 'permission';
   else if (input.status === 402 || code === '14018') kind = 'quota';
   else if (input.status === 413 || code === '11115') kind = 'context_overflow';
-  else if (input.status === 429) kind = 'rate_limited';
+  else if (input.status === 429 || code === '14003' || code === '6004') kind = 'rate_limited';
   else if (input.status >= 500) kind = 'unavailable';
   else if (input.status >= 400) kind = 'invalid_request';
-  const message = [error.displayTips, error.message, error.msg].find(value => typeof value === 'string' && value);
-  return {class: kind, message: message ?? 'WorkBuddy request failed'};
+  const numeric = /^[0-9]+$/.test(code ?? '') ? ` (${code})` : '';
+  return {class: kind, message:message ?? `HTTP ${input.status}${numeric}`};
 }
 
 export function prepare_discovery(input) {

@@ -14893,7 +14893,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -14904,7 +14904,8 @@
             "actions": [
               "models.provide",
               "models.authenticate",
-              "credentials.inspect"
+              "credentials.inspect",
+              "http.request"
             ],
             "display": {
               "label": "WorkBuddy",
@@ -15107,6 +15108,30 @@
                       "domain": "/domain"
                     }
                   }
+                },
+                "requests": {
+                  "credits": {
+                    "url": "https://www.codebuddy.cn/v2/billing/meter/get-user-resource",
+                    "method": "POST",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {
+                        "PageNumber": 1,
+                        "PageSize": 100,
+                        "ProductCode": "p_tcaca",
+                        "Status": [
+                          0,
+                          3
+                        ],
+                        "PackageEndTimeRangeBegin": "{input.begin}",
+                        "PackageEndTimeRangeEnd": "{input.end}"
+                      }
+                    }
+                  }
                 }
               },
               {
@@ -15204,6 +15229,30 @@
                     "expires_in": "/expires_in",
                     "extra": {
                       "domain": "/domain"
+                    }
+                  }
+                },
+                "requests": {
+                  "credits": {
+                    "url": "https://www.workbuddy.ai/v2/billing/meter/get-user-resource",
+                    "method": "POST",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {
+                        "PageNumber": 1,
+                        "PageSize": 100,
+                        "ProductCode": "p_tcaca",
+                        "Status": [
+                          0,
+                          3
+                        ],
+                        "PackageEndTimeRangeBegin": "{input.begin}",
+                        "PackageEndTimeRangeEnd": "{input.end}"
+                      }
                     }
                   }
                 }
@@ -15305,6 +15354,30 @@
                       "domain": "/domain"
                     }
                   }
+                },
+                "requests": {
+                  "credits": {
+                    "url": "https://www.codebuddy.ai/v2/billing/meter/get-user-resource",
+                    "method": "POST",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json"
+                    },
+                    "body": {
+                      "kind": "json",
+                      "value": {
+                        "PageNumber": 1,
+                        "PageSize": 100,
+                        "ProductCode": "p_tcaca",
+                        "Status": [
+                          0,
+                          3
+                        ],
+                        "PackageEndTimeRangeBegin": "{input.begin}",
+                        "PackageEndTimeRangeEnd": "{input.end}"
+                      }
+                    }
+                  }
                 }
               }
             ],
@@ -15314,7 +15387,8 @@
                 "script": {
                   "entry": "dev.sailry.platform/adapter.js",
                   "resources": [
-                    "dev.sailry.platform/adapter.js"
+                    "dev.sailry.platform/adapter.js",
+                    "dev.sailry.platform/errors.js"
                   ]
                 },
                 "origins": [
@@ -15333,7 +15407,40 @@
               }
             ],
             "category": "automation",
-            "tint": "amber"
+            "tint": "amber",
+            "ui": [
+              {
+                "id": "credits",
+                "slot": "footer",
+                "kind": "metric",
+                "label": {
+                  "label": "Credits",
+                  "locales": {
+                    "zh-CN": "积分",
+                    "zh-TW": "點數",
+                    "de": "Guthaben",
+                    "es": "Créditos",
+                    "fr": "Crédits",
+                    "ja": "クレジット",
+                    "ko": "크레딧",
+                    "pt-BR": "Créditos",
+                    "ru": "Кредиты"
+                  }
+                },
+                "icon": "dollar-sign",
+                "order": 0
+              }
+            ],
+            "desktop": {
+              "ui_shared": true,
+              "ui_entry": "dev.sailry.platform/desktop/footer.js",
+              "resources": [
+                "dev.sailry.platform/desktop/footer.js",
+                "dev.sailry.platform/desktop/credits.js",
+                "dev.sailry.platform/desktop/locales.js",
+                "dev.sailry.platform/errors.js"
+              ]
+            }
           }
         }
       },
@@ -15341,10 +15448,11 @@
       "permissions": [
         "models.provide",
         "models.authenticate",
-        "credentials.inspect"
+        "credentials.inspect",
+        "http.request"
       ],
       "release_notes": {
-        "text": "- Send regional discovery headers and accept wrapped or bare model catalogs\n- Group regional channels under WorkBuddy"
+        "text": "- Send the desktop generation identity and preserve upstream business messages\n- Show selected-channel credits through protected read-only requests"
       }
     },
     {

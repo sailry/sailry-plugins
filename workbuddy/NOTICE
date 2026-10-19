@@ -6,7 +6,7 @@ Copyright (c) 2026 LaoDing. MIT License, reproduced in LICENSE.
 
 The Sailry implementation adapts the request, token-field and model-catalog
 rules in src/upstream.ts and src/oauth.ts. It does not include that project's
-pi-ai integration, HTTP shim, credential scanner, account pool, billing,
+pi-ai integration, HTTP shim, credential scanner, account pool,
 DSML recovery parser, or their source files and runtimes.
 
 This package is not an official DSH or Tencent integration.
@@ -22,3 +22,9 @@ ddGuo/dsh-workbuddy-switcher, commit
 167632f8f2e0c9efd4777d9a39c531ef2084f4d1:
 https://github.com/ddGuo/dsh-workbuddy-switcher/tree/167632f8f2e0c9efd4777d9a39c531ef2084f4d1
 No account-switching, credential-file scanning or account-pool code is included.
+
+Desktop generation User-Agent/IDE headers, safe structured error-field handling
+and the personal-resource billing request also follow the fixed companion
+src/upstream.ts and src/client-identity.ts above. Only declared read-only personal
+resource fields are queried; no account switching, check-in/claim mutation,
+external account storage or quota-management workflow is included.
