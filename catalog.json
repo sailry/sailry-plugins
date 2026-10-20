@@ -12622,7 +12622,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -12773,7 +12773,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Show remaining usage and shared account measurements in channel rows\n- Hide unavailable percentages and keep queries silent"
+        "text": "- Label 5-hour and 7-day usage windows as 5h and 7d"
       }
     },
     {

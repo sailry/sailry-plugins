@@ -64,8 +64,8 @@ test('projects boundaries without changing account credits',()=>{
     const snapshot=adapter.decode(response(body));
     assert.deepEqual(snapshot.windows.map(window=>window.used),[0,100]);
     assert.deepEqual(metric(snapshot,messages('en')),{value:'0%',details:[
-      {label:{label:'5h remaining'},value:'100%',progress:100},
-      {label:{label:'7d remaining'},value:'0%',progress:0},
+      {label:{label:'5h'},value:'100%',progress:100},
+      {label:{label:'7d'},value:'0%',progress:0},
     ]});
   }
   for(const balance of [41205.37,0]) {
@@ -130,7 +130,7 @@ test('rejects malformed payloads without fabricated quota',()=>{
 test('declares only fixed native read resources',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.4');
+  assert.equal(manifest.version,'0.1.5');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.actions,['http.request']);
   assert.deepEqual(extension.model_resources.map(resource=>resource.authentication),

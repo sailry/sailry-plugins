@@ -218,7 +218,7 @@ test('batches provider metrics in one page lifetime',async()=>{
   setup.requests[1].resolve({status:200,body:JSON.stringify({rate_limit:{primary_window:{used_percent:30,limit_window_seconds:18000}},credits:{has_credits:true,unlimited:false,balance:'12.5'}})});await settle();
   assert.equal(current(setup,'first').value,'85%');
   assert.deepEqual(current(setup,'second').details,[
-    {label:{label:'5h remaining'},value:'70%',progress:70},
+    {label:{label:'5h'},value:'70%',progress:70},
     {label:{label:'Account credits'},value:'12.5'},
   ]);
   assert.equal(setup.watches.length,1);assert.equal(setup.sleeps.length,1);
