@@ -47,6 +47,42 @@ function verified(kind,event,state,context,now) {
   if (!context.previous || !state.refreshing) return invalid();
   return finish(kind,tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id);
 }
+// Device tokens come from the declared TLS/PKCE exchange. Claims are metadata,
+// not authority: they never select an issuer, client, endpoint or permission.
+function metadata(token) {
+  if (!text(token)) return null;
+  const parts=token.split('.');
+  if (parts.length !== 3 || parts.some(part=>!part || !/^[A-Za-z0-9_-]+$/.test(part))) return null;
+  const payload=parts[1];
+  if (payload.length % 4 === 1) return null;
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  let bits=0,buffer=0,encoded='';
+  for (const character of payload) {
+    buffer=(buffer<<6)|alphabet.indexOf(character);
+    bits+=6;
+    if (bits>=8) {
+      bits-=8;
+      encoded+=`%${((buffer>>bits)&255).toString(16).padStart(2,'0')}`;
+      buffer&=(1<<bits)-1;
+    }
+  }
+  if (buffer !== 0) return null;
+  try {
+    const claims=JSON.parse(decodeURIComponent(encoded));
+    return claims && typeof claims === 'object' && !Array.isArray(claims) ? claims : null;
+  } catch { return null; }
+}
+function deviceTokens(event,state,context,now) {
+  if (event.kind !== 'response') return invalid();
+  const tokens=event.body;
+  if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) return invalid();
+  if (tokens.id_token != null) {
+    const claims=metadata(tokens.id_token);
+    return claims ? finish('chat_gpt_oauth',tokens,claims,context,now,state.client_id) : invalid();
+  }
+  if (!context.previous || !state.refreshing) return invalid();
+  return finish('chat_gpt_oauth',tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id);
+}
 export function codex({event,context,state,now_ms:now}) {
   const CLIENT=context.fields?.client_id;
   if (!client(CLIENT)) return invalid();
@@ -79,7 +115,7 @@ export function codex({event,context,state,now_ms:now}) {
       if (event.kind === 'elapsed') return request('poll',{device_auth_id:state.device_auth_id,user_code:state.user_code},state);
       if (!text(event.body?.authorization_code) || !text(event.body?.code_verifier)) return invalid();
       return request('token',{client_id:CLIENT,redirect_uri:CODEX_REDIRECT,code:event.body.authorization_code,verifier:event.body.code_verifier},{phase:'tokens',client_id:CLIENT});
-    case 'tokens': return verified('chat_gpt_oauth',event,state,context,now);
+    case 'tokens': return deviceTokens(event,state,context,now);
     default: return invalid();
   }
 }

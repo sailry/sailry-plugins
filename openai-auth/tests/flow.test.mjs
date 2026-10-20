@@ -6,21 +6,20 @@ import {runtimeTest,translate,translationInput} from '../../scripts/test-host.mj
 
 const now=1800000000000;
 const context={previous:null,host_id:'urn:uuid:fixture',registration:null,redirect:'http://127.0.0.1:12345/auth/callback',fields:{client_id:'app_EMoamEEZ73f0CkXaXp7hrann'},scopes:'openid profile email offline_access resource.invoke chatgpt.tokens.use.direct'.split(' '),proof:{state:'private-state',nonce:'private-nonce',verifier:'private-verifier',challenge:'public-challenge'}};
-const token={access_token:'fixture-access',refresh_token:'fixture-refresh',id_token:'fixture-id-token',expires_in:3600,token_type:'Bearer'};
+const jwt=claims=>`e30.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.c2lnbmF0dXJl`;
+const token={access_token:'fixture-access',refresh_token:'fixture-refresh',id_token:jwt({sub:'fixture-subject',email:'fixture@example.test',chatgpt_account_id:'fixture-account'}),expires_in:3600,token_type:'Bearer'};
 const identity={sub:'fixture-subject',email:'fixture@example.test',chatgpt_account_id:'fixture-account'};
 const step=(handler,event,state,overrides={})=>handler({event,state,context:{...context,...overrides},now_ms:now});
 function pollState() {
   return step(codex,{kind:'response',status:200,body:{device_auth_id:'private-device',usercode:'ABCD-EFGH',interval:'1'}},{phase:'device'}).state;
 }
 function codexTokens(body=token,overrides={}) {
-  const verifying=step(codex,{kind:'response',status:200,body},{phase:'tokens',client_id:'app_EMoamEEZ73f0CkXaXp7hrann'},overrides);
-  if(verifying.kind!=='verify')return verifying;
-  return step(codex,{kind:'identity',claims:identity},verifying.state,overrides);
+  return step(codex,{kind:'response',status:200,body},{phase:'tokens',client_id:'app_EMoamEEZ73f0CkXaXp7hrann'},overrides);
 }
 
 test('keeps the two account protocols distinct',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.1.0');
+  assert.equal(manifest.version,'0.1.1');
   const declarations=manifest.extensions['dev.sailry.platform'].model_auth;
   assert.deepEqual(declarations.map(item=>[item.id,item.authentication]),[['siwc','chat_gpt'],['codex','chat_gpt_oauth']]);
   assert.equal(declarations[0].flow.callback.path,'/auth/callback');
@@ -54,7 +53,7 @@ test('uses the device verifier only in the token exchange',()=>{
   assert.equal(result.fields.redirect_uri,'https://auth.openai.com/deviceauth/callback');
 });
 test('preserves the existing credential representation',()=>{
-  assert.deepEqual(codexTokens(),{kind:'finish',grant:{kind:'chat_gpt_oauth',access:'fixture-access',refresh:'fixture-refresh',expires_at_ms:now+3600000,subject:identity.sub,email:identity.email,id_token:'fixture-id-token',renewal_pending:false,account_id:identity.chatgpt_account_id}});
+  assert.deepEqual(codexTokens(),{kind:'finish',grant:{kind:'chat_gpt_oauth',access:'fixture-access',refresh:'fixture-refresh',expires_at_ms:now+3600000,subject:identity.sub,email:identity.email,id_token:token.id_token,renewal_pending:false,account_id:identity.chatgpt_account_id}});
   assert.equal(codexTokens({...token,expires_in:undefined}).kind,'reject');
   assert.equal(codexTokens({...token,id_token:undefined}).kind,'reject');
   assert.equal(codexTokens({...token,refresh_token:undefined}).kind,'reject');
@@ -66,8 +65,7 @@ test('retains omitted rotating fields on refresh',()=>{
   assert.equal(result.grant.refresh,previous.refresh);
   assert.equal(result.grant.id_token,previous.id_token);
   assert.equal(result.grant.account_id,previous.account_id);
-  const verification=step(codex,{kind:'response',status:200,body:token},{phase:'tokens',client_id:'app_EMoamEEZ73f0CkXaXp7hrann',refreshing:true},{previous});
-  assert.equal(step(codex,{kind:'identity',claims:{...identity,chatgpt_account_id:'other'}},verification.state,{previous}).kind,'reject');
+  assert.equal(codexTokens({...token,id_token:jwt({...identity,chatgpt_account_id:'other'})},{previous}).kind,'reject');
 });
 test('keeps SIWC registration and nonce bound',()=>{
   const prompted=step(siwc,{kind:'start'},null);
@@ -106,10 +104,23 @@ test('keeps device intervals and expiry validation',()=>{
   for(const body of [{device_auth_id:'private-device',user_code:'ABCD',usercode:'EFGH'},{device_auth_id:'private-device',user_code:'ABCD',expires_in:'30'},{device_auth_id:'private-device',user_code:'not a code'}])assert.equal(step(codex,{kind:'response',status:200,body},{phase:'device'}).kind,'reject');
   assert.equal(step(codex,{kind:'response',status:200,body:{device_auth_id:'private-device',user_code:'ABCD',expires_in:0}},{phase:'device'}).code,'expired');
 });
-test('maps only verified account claim shapes',()=>{
-  const verifying=step(codex,{kind:'response',status:200,body:token},{phase:'tokens',client_id:'app_EMoamEEZ73f0CkXaXp7hrann'});
-  assert.equal(step(codex,{kind:'identity',claims:{sub:identity.sub,'https://api.openai.com/auth':{chatgpt_account_id:'nested-account'}}},verifying.state).grant.account_id,'nested-account');
-  for(const claims of [{sub:identity.sub,chatgpt_account_id:42},{sub:identity.sub,'https://api.openai.com/auth':'wrong'},{sub:identity.sub,'https://api.openai.com/auth':{chatgpt_account_id:false}}])assert.equal(step(codex,{kind:'identity',claims},verifying.state).kind,'reject');
+test('maps only valid device metadata shapes',()=>{
+  assert.equal(codexTokens({...token,id_token:jwt({sub:identity.sub,'https://api.openai.com/auth':{chatgpt_account_id:'nested-account'}})}).grant.account_id,'nested-account');
+  for(const claims of [{sub:identity.sub,chatgpt_account_id:42},{sub:identity.sub,'https://api.openai.com/auth':'wrong'},{sub:identity.sub,'https://api.openai.com/auth':{chatgpt_account_id:false}},{...identity,sub:undefined},{...identity,chatgpt_account_id:undefined}])assert.equal(codexTokens({...token,id_token:jwt(claims)}).kind,'reject');
+});
+test('keeps device metadata separate from OIDC',()=>{
+  const claims={...identity,email:'测试@example.test'};
+  const body={...token,id_token:jwt(claims)};
+  const finished=codexTokens(body);
+  assert.equal(finished.kind,'finish');
+  assert.equal(finished.grant.email,claims.email);
+  const refreshing=step(codex,{kind:'response',status:200,body},{phase:'tokens',refreshing:true},{previous:finished.grant});
+  assert.equal(refreshing.kind,'finish');
+  assert.equal(refreshing.grant.id_token,body.id_token);
+  for(const refreshing of [false,true])assert.equal(step(siwc,{kind:'response',status:200,body},{phase:'tokens',client_id:'oaiapp_fixture',refreshing},{previous:refreshing?{...finished.grant,client_id:'oaiapp_fixture'}:null}).kind,'verify');
+});
+test('rejects malformed device metadata',()=>{
+  for(const id_token of ['missing.parts','a..b','a.A.b','a._w.b','a.W10.b','a.e.b','a.eyJ9.b',jwt(null),jwt('text'),'a.'+'A'.repeat(16384)+'.b'])assert.equal(codexTokens({...token,id_token}).kind,'reject');
 });
 test('requires the existing token fields and types',()=>{
   for(const fields of [{expires_in:0},{expires_in:'3600'},{expires_in:1.5},{token_type:'Basic'},{access_token:''},{refresh_token:''},{id_token:''}])assert.equal(codexTokens({...token,...fields}).kind,'reject');
@@ -152,8 +163,25 @@ for(const handler of ['codex','siwc'])runtimeTest(`${handler} uses production pr
     assert.equal((await call({kind:'callback',fields:{code:'private-code',client_id:'oaiapp_issued'}})).kind,'registered');
     await call({kind:'registered'});
   }
-  assert.equal((await call({kind:'response',status:200,body:{...token,scope:'openid profile'}})).kind,'verify');
-  const finished=await call({kind:'identity',claims:identity});
+  const exchanged=await call({kind:'response',status:200,body:{...token,scope:'openid profile'}});
+  assert.equal(exchanged.kind,handler==='codex'?'finish':'verify');
+  const finished=handler==='codex'?exchanged:await call({kind:'identity',claims:identity});
   assert.equal(finished.kind,'finish');
   assert.equal(finished.grant.kind,declaration.authentication);
+});
+
+runtimeTest('device metadata keeps production credential boundaries',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const declaration=manifest.extensions['dev.sailry.platform'].model_auth.find(item=>item.id==='codex');
+  const run=async (body,previous=null)=>{
+    const input={event:{kind:'response',status:200,body},state:{phase:'tokens',refreshing:previous!==null},context:{...context,previous},now_ms:now};
+    const report=translate(await translationInput(new URL('../',import.meta.url),declaration.flow.script,'codex',input));
+    assert.deepEqual(report.calls,[]);
+    return report.result.Ok;
+  };
+  const result=await run(token);
+  assert.equal(result.kind,'finish');
+  assert.equal(result.grant.id_token,token.id_token);
+  assert.equal((await run({...token,access_token:'rotated-access'},result.grant)).kind,'finish');
+  for(const body of [{...token,id_token:'broken'}, {...token,id_token:jwt({...identity,sub:undefined})}, {...token,id_token:jwt({...identity,chatgpt_account_id:'other'})}, {...token,expires_in:0}])assert.equal((await run(body,result.grant)).kind,'reject');
 });
