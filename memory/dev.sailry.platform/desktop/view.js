@@ -1,6 +1,6 @@
 // Existing memory settings rows, catalog toolbar and modal fields use Kit controls.
 import {div} from 'gpui-kit';
-import {Button,Switch,Tab,TabBar,DropdownMenu,Field} from 'gpui-component';
+import {Button,Switch,Tab,TabBar,DropdownMenu,Field,Tag} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
 import {EmptyState,Modal,SettingsGroup,SelectField,SegmentedTabs,Loading,IconButton} from 'sailry/ui';
@@ -53,7 +53,9 @@ function catalog(view) {
     return div().id(`memory-${entry.id}`).h_flex().items_center().w_full().gap_3().py_3().text_sm()
       .child(div().flex_1().min_w_0().v_flex().gap_1().child(div().truncate().child(entry.title))
         .children(review ? [div().text_color(theme().colors.muted_foreground).child(text[review.duplicate_of ? 'memory_possible_duplicate' : 'memory_needs_review'])] : [])
-        .child(div().text_color(theme().colors.muted_foreground).child(`${view.kindLabel(entry.kind)} · ${view.projectLabel(entry.project)}`)))
+        .child(div().h_flex().items_center().gap_2()
+          .child(div().text_color(theme().colors.muted_foreground).child(view.kindLabel(entry.kind)))
+          .child(new Tag().variant('secondary').size('small').child(view.projectLabel(entry.project)))))
       .child(IconButton.new(`memory-edit-${entry.id}`,{icon:'reicon:newicons/edit',label:text.settings_edit,disabled:view.busy()}))
       .child(IconButton.new(`memory-delete-${entry.id}`,{icon:'reicon:ui/trash2',label:text.settings_delete,disabled:view.busy()}));
   });

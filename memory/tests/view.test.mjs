@@ -29,6 +29,7 @@ function fixture() {
     Tab:function(id){return element('Tab',id);},
     TabBar:function(id){return element('TabBar',id);},
     Field:function(){return element('Field');},
+    Tag:function(){return element('Tag');},
     DropdownMenu:function(id){return element('DropdownMenu',id);},
     SelectField:{new:(id,props)=>element('SelectField',id,props)},
     SegmentedTabs:{new:(id,props)=>element('SegmentedTabs',id,props)},
@@ -141,4 +142,23 @@ test('catalog failures keep existing memories without a retry bar',()=>{
   setup.view.results=[{id:'retained',title:'Retained memory',kind:'feedback',project:null}];setup.render();
   assert.equal(setup.nodes.has('memory-search-retry'),false);
   assert.ok(setup.nodes.has('memory-retained'));
+});
+
+test('scope tags retain global and project labels',()=>{
+  const setup=fixture();
+  setup.view.projectLabel=id=>id===null ? 'Global' : 'Project Alpha';
+  setup.view.results=[
+    {id:'global',title:'Global preference',kind:'feedback',project:null},
+    {id:'project',title:'Project preference',kind:'feedback',project:'project-id'},
+  ];
+  setup.render();
+  for(const [id,label] of [['global','Global'],['project','Project Alpha']]) {
+    const description=setup.nodes.get(`memory-${id}`).items[0].items.at(-1);
+    assert.deepEqual(plain(description.items[0].items),['Feedback']);
+    const tag=description.items[1];
+    assert.equal(tag.kind,'Tag');
+    assert.deepEqual(plain(tag.items),[label]);
+    assert.deepEqual(plain(tag.style.size),['small']);
+    assert.deepEqual(plain(tag.style.variant),['secondary']);
+  }
 });

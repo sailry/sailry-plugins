@@ -11174,7 +11174,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -11752,18 +11752,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Show the memory scope as a tag"
       }
     },
     {
