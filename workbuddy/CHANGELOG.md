@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Share credit reads across sessions using the current account credential
+- Align credit query ranges with the existing refresh interval
+
 ## 0.1.10
 
 - Keep credit queries silent and hide unavailable balances

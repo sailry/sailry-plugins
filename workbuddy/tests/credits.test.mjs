@@ -32,8 +32,10 @@ test('rejects invalid successful balances',()=>{
 });
 test('builds the documented personal resource range',()=>{
   const result=range({now:new Date(2026,0,2,3,4,5).getTime()});
-  assert.equal(result.begin,'2026-01-02 03:04:05');
-  assert.match(result.end,/^212[67]-[0-9]{2}-[0-9]{2} 03:04:05$/);
+  assert.equal(result.begin,'2026-01-02 03:04:00');
+  assert.deepEqual(range({now:new Date(2026,0,2,3,4,59).getTime()}),result);
+  assert.notDeepEqual(range({now:new Date(2026,0,2,3,5,0).getTime()}),result);
+  assert.match(result.end,/^212[67]-[0-9]{2}-[0-9]{2} 03:04:00$/);
 });
 
 test('declares regional billing gateway metadata',async()=>{
@@ -50,6 +52,9 @@ test('declares regional billing gateway metadata',async()=>{
     assert.equal(request.headers['X-CodeBuddy-Request'],'1');
     assert.equal(request.headers['Accept-Language'],language);
     assert.equal(request.headers.Authorization,undefined);
+    assert.equal(request.cache_ttl_ms,60000);
+    for(const [name,endpoint] of Object.entries(flow.requests)) if(name!=='credits') assert.equal(endpoint.cache_ttl_ms,undefined);
+    for(const endpoint of Object.values(flow.mutations ?? {})) assert.equal(endpoint.cache_ttl_ms,undefined);
     assert.deepEqual(flow.inject,[{header:'Authorization',template:'Bearer {access}'},{header:'X-Domain',template:'{extra.domain}'}]);
   }
 });

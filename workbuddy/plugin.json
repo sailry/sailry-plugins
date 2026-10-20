@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -259,7 +259,8 @@
                   "PackageEndTimeRangeBegin": "{input.begin}",
                   "PackageEndTimeRangeEnd": "{input.end}"
                 }
-              }
+              },
+              "cache_ttl_ms": 60000
             },
             "checkin_status": {
               "url": "https://copilot.tencent.com/v2/billing/meter/checkin-activity-status",
@@ -417,7 +418,8 @@
                   "PackageEndTimeRangeBegin": "{input.begin}",
                   "PackageEndTimeRangeEnd": "{input.end}"
                 }
-              }
+              },
+              "cache_ttl_ms": 60000
             }
           }
         },
@@ -543,7 +545,8 @@
                   "PackageEndTimeRangeBegin": "{input.begin}",
                   "PackageEndTimeRangeEnd": "{input.end}"
                 }
-              }
+              },
+              "cache_ttl_ms": 60000
             }
           }
         }

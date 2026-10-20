@@ -2,7 +2,8 @@ import {ResponseError} from '../errors.js';
 export {ResponseError} from '../errors.js';
 // MIT: billing wire fields reference the fixed revisions recorded in NOTICE.
 export function range({now = Date.now()} = {}) {
-  const start = new Date(now), end = new Date(now + 365 * 101 * 24 * 3600 * 1000);
+  const aligned = Math.floor(now / 60000) * 60000;
+  const start = new Date(aligned), end = new Date(aligned + 365 * 101 * 24 * 3600 * 1000);
   const format = value => `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')} ${String(value.getHours()).padStart(2,'0')}:${String(value.getMinutes()).padStart(2,'0')}:${String(value.getSeconds()).padStart(2,'0')}`;
   return {begin:format(start),end:format(end)};
 }

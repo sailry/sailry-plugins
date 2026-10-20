@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
 import * as claude from '../dev.sailry.platform/adapters/claude.js';
 import * as codex from '../dev.sailry.platform/adapters/codex.js';
 import {ResponseError} from '../dev.sailry.platform/adapters/response.js';
@@ -19,8 +20,21 @@ test('reads Claude percentages and independent reset times',()=>{
   const output = metric(result,messages('en'));
   assert.equal(output.value,'42.5%');
   assert.equal(output.details[0].progress,42.5);
-  assert.equal(output.details[1].value,'2026-10-20 12:00 UTC');
+  assert.equal(output.details[1].label.label,'Reset time');
+  assert.match(output.details[1].value,/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   assert.equal(output.details[2].value,'16%');
+});
+
+test('formats reset times in local time',()=>{
+  const module = new URL('../dev.sailry.platform/desktop/format.js',import.meta.url).href;
+  const source = `import {metric} from ${JSON.stringify(module)};
+    console.log(JSON.stringify(metric({windows:[{key:'primary',used:20,reset:Date.parse('2026-11-19T01:52:45Z')}],credits:null,extra:null},
+      {primary:'Primary',resets:'Reset time'}).details[1]));`;
+  for(const [zone,expected] of [['Asia/Shanghai','2026-11-19 09:52'],['America/New_York','2026-11-18 20:52']]) {
+    const output=execFileSync(process.execPath,['--input-type=module','-e',source],
+      {encoding:'utf8',env:{...process.env,TZ:zone}});
+    assert.deepEqual(JSON.parse(output),{label:{label:'Reset time'},value:expected});
+  }
 });
 
 test('displays nullable numbers without inventing measurements',()=>{
@@ -98,7 +112,7 @@ test('rejects malformed payloads without fabricated quota',()=>{
 test('declares only fixed native read resources',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.2');
+  assert.equal(manifest.version,'0.1.3');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.actions,['http.request']);
   assert.deepEqual(extension.model_resources.map(resource=>resource.authentication),
@@ -125,4 +139,13 @@ test('localizes every shared detail label',()=>{
     assert.deepEqual(Object.keys(text).sort(),english);
     for (const value of Object.values(text)) assert.ok(value.trim());
   }
+});
+
+
+test('shares only declared usage freshness',async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const resources=manifest.extensions['dev.sailry.platform'].model_resources;
+  assert.equal(resources.length,3);
+  for(const resource of resources)assert.equal(resource.requests.usage.cache_ttl_ms,180000);
 });

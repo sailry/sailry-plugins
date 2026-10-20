@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Show reset times in the device local time zone with a concise shared label
+- Share usage reads across sessions using the current account credential
+
 ## 0.1.2
 
 - Keep account usage reads silent and hide unavailable measurements
