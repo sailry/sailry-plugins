@@ -2,19 +2,22 @@ import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/tes
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync, readFileSync} from 'node:fs';
-import vm from 'node:vm';
 
 const manifest = JSON.parse(readFileSync(new URL('./plugin.json', import.meta.url)));
 const extension = manifest.extensions['dev.sailry.platform'];
 const connector = extension.connectors[0];
-const source = readFileSync(new URL('./dev.sailry.platform/host/main.js', import.meta.url), 'utf8').replace(/^export /gm, '');
-const read = vm.runInNewContext(`${source}\n({read})`).read;
+const fixture = await packageInput(new URL('./',import.meta.url),'read',{});
+function read(input) {
+  const output = execute({...fixture,input});
+  if (output.result.Err) throw new Error(output.result.Err.message);
+  return output.result.Ok;
+}
 const plain = value => JSON.parse(JSON.stringify(value));
 const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.stringify(body)}});
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.6');
+  assert.equal(manifest.version, '0.1.7');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);
@@ -28,7 +31,7 @@ test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(connector.fields[0].help,'https://developers.figma.com/docs/rest-api/personal-access-tokens/');
 });
 
-test('reads exact files and nodes with bounded parameters', () => {
+runtimeTest('reads exact files and nodes with bounded parameters', () => {
   const file = plain(read({step:0, arguments:{action:'file', file_key:'file-key', version:'9007199254740993', depth:2}}));
   assert.equal(file.call.operation, 'http.request');
   assert.equal(file.call.arguments.method, 'GET');
@@ -52,7 +55,7 @@ test('reads exact files and nodes with bounded parameters', () => {
   ]) assert.throws(() => read({step:0, arguments:args}));
 });
 
-test('preserves JSON metadata and missing nodes honestly', () => {
+runtimeTest('preserves JSON metadata and missing nodes honestly', () => {
   const data = {name:'Actual file', version:'9007199254740993', document:{id:'0:0', children:[]}};
   const result = plain(read({step:1, arguments:{action:'file',depth:1}, outcome:outcome(data)}));
   assert.deepEqual(result.result, {data,untrusted:true,depth:1,partial:true});
@@ -61,7 +64,7 @@ test('preserves JSON metadata and missing nodes honestly', () => {
     {data:nodes,untrusted:true,depth:null,partial:true});
 });
 
-test('preserves errors without retry or private response bodies', () => {
+runtimeTest('preserves errors without retry or private response bodies', () => {
   const uncertain = {isError:true,error:{code:'outcome_unknown',message:'interrupted'}};
   assert.deepEqual(plain(read({step:1,outcome:uncertain})), {result:uncertain});
   for (const status of [401,403,429]) {
@@ -82,7 +85,7 @@ const targets = [
   {args:{action:'file',file_key:'file-key'},required:['file_key']},
   {args:{action:'nodes',file_key:'file-key',ids:['1:2']},required:['file_key','ids']},
 ];
-test('action targets reach the handler with their required fields', () => {
+runtimeTest('action targets reach the handler with their required fields', () => {
   for (const {args,required} of targets) {
     assert.equal(read({step:0,arguments:args}).call.operation,'http.request');
     for (const field of required) {
@@ -122,7 +125,7 @@ const largeCases = [
 const invalidCases = [{action:'file',file_key:'file',depth:1.5},
   {action:'file',file_key:'file',depth:Number.MAX_SAFE_INTEGER+1}];
 
-test('larger requests preserve source values and endpoint budgets', async () => {
+runtimeTest('larger requests preserve source values and endpoint budgets', async () => {
   const run = read;
   for (const entry of largeCases) {
     const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);

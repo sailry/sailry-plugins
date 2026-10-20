@@ -2,12 +2,17 @@ import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/tes
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
 const manifest=JSON.parse(readFileSync(new URL('./plugin.json',import.meta.url)));
 const extension=manifest.extensions['dev.sailry.platform'];
-const source=readFileSync(new URL('./dev.sailry.platform/host/main.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+const fixture = await packageInput(new URL('./',import.meta.url),'request',{});
 const plain=value=>JSON.parse(JSON.stringify(value));
-function adapter(){return vm.runInNewContext(`${source}\n({request})`,{readSettings:async()=>({values:{operator:'operator-id'}})}).request;}
+function adapter() {
+  return input => {
+    const output = execute({...fixture,input});
+    if (output.result.Err) throw new Error(output.result.Err.message);
+    return output.result.Ok;
+  };
+}
 function outcome(body,status=200){return {data:{status,headers:{},body:JSON.stringify(body)}};}
 test('captures finite operations and origin-bound credentials',()=>{
  assert.deepEqual(extension.actions,['http.request']);
@@ -18,7 +23,7 @@ test('captures finite operations and origin-bound credentials',()=>{
  }
 });
 
-test('reads original documents without guessing pagination',()=>{
+runtimeTest('reads original documents without guessing pagination',()=>{
  const request=adapter();
  const document=new URL(request({step:0,arguments:{action:'doc',repo:'owner/book',id:'entry/quoted'}}).call.arguments.url);
  assert.equal(document.origin,'https://www.yuque.com'); assert.equal(document.pathname,'/api/v2/repos/owner/book/docs/entry%2Fquoted');
@@ -29,7 +34,7 @@ test('reads original documents without guessing pagination',()=>{
  for(const repo of ['../secret','owner/../secret','owner/book/extra']) assert.throws(()=>request({step:0,arguments:{action:'docs',repo}}));
 });
 
-test('preserves failures without replaying uncertain effects',async()=>{
+runtimeTest('preserves failures without replaying uncertain effects',async()=>{
  const request=adapter(); const uncertain={isError:true,error:{code:'outcome_unknown',message:'interrupted'}};
  assert.deepEqual(plain(await request({step:1,outcome:uncertain})),{result:uncertain});
  for(const reply of [{data:{status:200,body:'invalid'}},{data:{status:429,headers:{'retry-after':['12']},body:'private error body'}}]){
@@ -40,7 +45,7 @@ test('preserves failures without replaying uncertain effects',async()=>{
 });
 
 
-test('provides localized protected connector fields', () => {
+runtimeTest('provides localized protected connector fields', () => {
   const connector = extension.connectors[0];
   assert.equal(connector.fields[0].help, 'https://www.yuque.com/settings/tokens');
   assert.equal(connector.fields[0].secret, true);
@@ -55,7 +60,7 @@ const targets = [
   {args:{action:'toc',repo:'owner/book'},required:['repo']},
   {args:{action:'doc',repo:'owner/book',id:'document'},required:['repo','id']},
 ];
-test('action targets reach the handler with their required fields', () => {
+runtimeTest('action targets reach the handler with their required fields', () => {
   const request = adapter();
   for (const {args,required} of targets) {
     assert.equal(request({step:0,arguments:args}).call.operation,'http.request');
@@ -97,7 +102,7 @@ const largeCases = [
 ];
 const invalidCases = [0,-1,1.5,Number.MAX_SAFE_INTEGER+1].map(page => ({action:'search',query:'q',page}));
 
-test('larger requests preserve source values and endpoint budgets', async () => {
+runtimeTest('larger requests preserve source values and endpoint budgets', async () => {
   const run = adapter();
   for (const entry of largeCases) {
     const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
@@ -124,7 +129,7 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
 });
 
 
-test('rejects non-object response envelopes', async () => {
+runtimeTest('rejects non-object response envelopes', async () => {
   const request = adapter();
   for (const value of [null, true, 42, 'text', []]) {
     const output = plain(await request({step:1, arguments:{action:'discover'},

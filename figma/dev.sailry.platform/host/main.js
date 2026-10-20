@@ -1,3 +1,5 @@
+import {call, failure, response} from 'sailry/http';
+
 const origin = 'https://api.figma.com';
 
 function segment(value, name) {
@@ -27,29 +29,15 @@ function parameters(args) {
   const query = values.map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
   return `/v1/files/${segment(args.file_key, 'file key')}${args.action === 'nodes' ? '/nodes' : ''}${query ? `?${query}` : ''}`;
 }
-function failure(message, status = null) {
-  return {isError:true, error:{code:'unavailable',message}, status};
-}
 export function read(input) {
   const args = input.arguments ?? {};
-  if (input.step === 0) return {call:{operation:'http.request', arguments:{
-    method:'GET', url:`${origin}${parameters(args)}`, headers:{Accept:'application/json'},
-    body:null, connector:'figma', timeout_ms:30000
-  }}};
-  if (input.outcome?.isError) return {result:input.outcome};
-  const response = input.outcome?.data;
-  if (!response || !Number.isInteger(response.status) || typeof response.body !== 'string')
-    return {result:failure('Invalid HTTP response')};
-  if (response.status < 200 || response.status >= 300)
-    return {result:{...failure(`Figma request failed (${response.status})`, response.status),
-      retry_after:response.headers?.['retry-after']?.[0] ?? null}};
-  let value;
-  try { value = JSON.parse(response.body); }
-  catch { return {result:failure('Figma returned invalid JSON', response.status)}; }
-  if (!value || typeof value !== 'object' || Array.isArray(value)
-      || (args.action === 'file' && (!value.document || typeof value.document !== 'object' || Array.isArray(value.document)))
+  if (input.step === 0) return call(`${origin}${parameters(args)}`, 'figma');
+  const reply = response(input.outcome);
+  if (reply.error) return {result:reply.error};
+  const value = reply.value;
+  if ((args.action === 'file' && (!value.document || typeof value.document !== 'object' || Array.isArray(value.document)))
       || (args.action === 'nodes' && (!value.nodes || typeof value.nodes !== 'object' || Array.isArray(value.nodes))))
-    return {result:failure('Invalid Figma response', response.status)};
+    return {result:failure('Invalid Figma response', input.outcome.data.status)};
   const partial = args.depth !== undefined
     || (args.action === 'nodes' && Object.values(value.nodes).some(node => node === null));
   return {result:{data:value, untrusted:true, depth:args.depth ?? null, partial}};

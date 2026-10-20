@@ -1,3 +1,5 @@
+import {call, failure, response as httpResponse} from 'sailry/http';
+
 const origin = 'https://qyapi.weixin.qq.com';
 const base = `${origin}/cli`;
 
@@ -11,20 +13,14 @@ function path(value) {
   return value;
 }
 function request(url, payload, state = null) {
-  return {call:{operation:'http.request',arguments:{method:'POST',url,
+  return call(url, 'wecom', state, {method:'POST',
     headers:{Accept:'application/json','Content-Type':'application/json'},
-    body:JSON.stringify(payload),connector:'wecom',timeout_ms:30000}},state};
+    body:JSON.stringify(payload)});
 }
-function failure(message) { return {isError:true,error:{code:'unavailable',message}}; }
 function response(outcome) {
-  if (outcome?.isError) return {error:outcome};
-  const value = outcome?.data;
-  if (!value || !Number.isInteger(value.status) || value.status < 200 || value.status >= 300)
-    return {error:failure(`WeCom request failed (${value?.status ?? 'unknown'})`)};
-  let envelope;
-  try { envelope = JSON.parse(value.body); } catch { return {error:failure('Invalid WeCom response')}; }
-  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope))
-    return {error:failure('Invalid WeCom response')};
+  const reply = httpResponse(outcome);
+  if (reply.error) return reply;
+  const envelope = reply.value;
   if (envelope.error?.code && envelope.error.code !== 0)
     return {error:failure(`WeCom returned error ${envelope.error.code}`)};
   if (envelope.taskid || envelope.long_task_poll)

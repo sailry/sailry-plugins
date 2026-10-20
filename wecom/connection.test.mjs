@@ -2,14 +2,19 @@ import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/tes
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
 const extension=JSON.parse(readFileSync(new URL('./plugin.json',import.meta.url))).extensions['dev.sailry.platform'];
-const source=readFileSync(new URL('./dev.sailry.platform/host/main.js',import.meta.url),'utf8').replace(/^export /gm,'');
+const fixture = await packageInput(new URL('./',import.meta.url),'requestFlow',{});
 const plain=value=>JSON.parse(JSON.stringify(value));
-function adapter(){return vm.runInNewContext(`${source}\n({requestFlow})`).requestFlow;}
+function adapter() {
+  return input => {
+    const output = execute({...fixture,input});
+    if (output.result.Err) throw new Error(output.result.Err.message);
+    return output.result.Ok;
+  };
+}
 function outcome(result){return {data:{status:200,body:JSON.stringify({error:{code:0},result:JSON.stringify(result)})}};}
 
-test('discovers service schemas without invoking remote instructions',()=>{
+runtimeTest('discovers service schemas without invoking remote instructions',()=>{
  const request=adapter();
  const call=plain(request({step:0,arguments:{action:'discover'}}));
  assert.equal(call.call.operation,'http.request');
@@ -20,7 +25,7 @@ test('discovers service schemas without invoking remote instructions',()=>{
  assert.deepEqual(plain(request({step:1,arguments:{action:'discover'},outcome:outcome(schema)})),{result:{data:schema,untrusted:true}});
 });
 
-test('invokes one freshly discovered same-origin method',()=>{
+runtimeTest('invokes one freshly discovered same-origin method',()=>{
  const request=adapter();
  const arguments_={action:'invoke',service:'docs',method:['documents','read'],payload:{id:'document-id'}};
  const discovery=plain(request({step:0,arguments:arguments_}));
@@ -33,7 +38,7 @@ test('invokes one freshly discovered same-origin method',()=>{
  assert.deepEqual(plain(request({step:2,arguments:arguments_,outcome:outcome({body:'Actual document'})})),{result:{data:{body:'Actual document'},untrusted:true}});
 });
 
-test('rejects untrusted origins and path substitutions',()=>{
+runtimeTest('rejects untrusted origins and path substitutions',()=>{
  const request=adapter();
  const arguments_={action:'invoke',service:'docs',method:['read'],payload:{id:'one'}};
  for(const target of [
@@ -46,7 +51,7 @@ test('rejects untrusted origins and path substitutions',()=>{
  assert.throws(()=>request({step:0,arguments:{action:'invoke',service:'../docs'}}));
 });
 
-test('does not replay uncertain or asynchronous operations',()=>{
+runtimeTest('does not replay uncertain or asynchronous operations',()=>{
  const request=adapter(); const arguments_={action:'invoke',service:'docs',method:['write'],payload:{id:'one'}};
  const uncertain={isError:true,error:{code:'outcome_unknown',message:'interrupted'}};
  assert.deepEqual(plain(request({step:1,arguments:arguments_,outcome:uncertain})),{result:uncertain});
@@ -80,7 +85,7 @@ function prepare(args) {
     methods:{read:{http_method:'GET',path:'/docs/read'}},
   })});
 }
-test('action targets reach the handler with their required fields', () => {
+runtimeTest('action targets reach the handler with their required fields', () => {
   for (const {args,required} of targets) {
     assert.equal(prepare(args).call.operation,'http.request');
     for (const field of required) {
@@ -117,7 +122,7 @@ const largeCases = [
 ];
 const invalidCases = [{action:'invoke',service:'docs',method:[],payload:{}}];
 
-test('larger requests preserve source values and endpoint budgets', async () => {
+runtimeTest('larger requests preserve source values and endpoint budgets', async () => {
   const run = adapter();
   for (const entry of largeCases) {
     const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
@@ -144,7 +149,7 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
 });
 
 
-test('rejects non-object response envelopes', async () => {
+runtimeTest('rejects non-object response envelopes', async () => {
   const request = adapter();
   for (const value of [null, true, 42, 'text', []]) {
     const output = plain(await request({step:1, arguments:{action:'discover'},

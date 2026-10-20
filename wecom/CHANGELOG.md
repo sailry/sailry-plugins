@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Reuse the shared HTTP flow helpers
+
 ## 0.1.6
 
 - Manage service accounts through declared connectors

@@ -2,12 +2,20 @@ import {execute, packageInput, runtimeTest, validateSchema} from '../scripts/tes
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
 const manifest=JSON.parse(readFileSync(new URL('./plugin.json',import.meta.url)));
 const extension=manifest.extensions['dev.sailry.platform'];
-const source=readFileSync(new URL('./dev.sailry.platform/host/main.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+const fixture = await packageInput(new URL('./',import.meta.url),'request',{});
+fixture.replies = [{command:{kind:'read_plugin_settings',data:{package:fixture.context.package}},
+  response:{Ok:{kind:'plugin_settings',data:{package:fixture.context.package,
+    values:{operator:'operator-id'},configured:[],keepable:[],ready:true}}}}];
 const plain=value=>JSON.parse(JSON.stringify(value));
-function adapter(){return vm.runInNewContext(`${source}\n({request})`,{readSettings:async()=>({values:{operator:'operator-id'}})}).request;}
+function adapter() {
+  return async input => {
+    const output = execute({...fixture,input,replies:input.step === 0 ? fixture.replies : []});
+    if (output.result.Err) throw new Error(output.result.Err.message);
+    return output.result.Ok;
+  };
+}
 function outcome(body,status=200){return {data:{status,headers:{},body:JSON.stringify(body)}};}
 test('captures finite operations and origin-bound credentials',()=>{
  assert.deepEqual(extension.actions,['http.request']);
@@ -31,7 +39,7 @@ test('separates app credentials from ordinary settings',()=>{
  assert.equal(extension.oauth,undefined);
 });
 
-test('uses configured operator and preserves page tokens',async()=>{
+runtimeTest('uses configured operator and preserves page tokens',async()=>{
  const request=adapter();
  const initial=await request({step:0,arguments:{action:'nodes',parent:'parent',cursor:'opaque+next',limit:7}});
  assert.equal(initial.call.arguments.connector,'dingtalk');
@@ -49,7 +57,7 @@ test('uses configured operator and preserves page tokens',async()=>{
  await assert.rejects(request({step:0,arguments:{action:'node',id:'..'}}));
 });
 
-test('preserves failures without replaying uncertain effects',async()=>{
+runtimeTest('preserves failures without replaying uncertain effects',async()=>{
  const request=adapter(); const uncertain={isError:true,error:{code:'outcome_unknown',message:'interrupted'}};
  assert.deepEqual(plain(await request({step:1,outcome:uncertain})),{result:uncertain});
  for(const reply of [{data:{status:200,body:'invalid'}},{data:{status:429,headers:{'retry-after':['12']},body:'private error body'}}]){
@@ -65,7 +73,7 @@ const targets = [
   {args:{action:'node',id:'node'},required:['id']},
   {args:{action:'files',space:'space',parent:'folder'},required:['space','parent']},
 ];
-test('action targets reach the handler with their required fields', async () => {
+runtimeTest('action targets reach the handler with their required fields', async () => {
   const request = adapter();
   for (const {args,required} of targets) {
     assert.equal((await request({step:0,arguments:args})).call.operation,'http.request');
@@ -101,7 +109,7 @@ const largeCases = [
 ];
 const invalidCases = [0,-1,1.5,null,Number.MAX_SAFE_INTEGER+1].map(limit => ({action:'nodes',parent:'root',limit}));
 
-test('larger requests preserve source values and endpoint budgets', async () => {
+runtimeTest('larger requests preserve source values and endpoint budgets', async () => {
   const run = adapter();
   for (const entry of largeCases) {
     const arguments_ = structuredClone(entry.arguments), original = structuredClone(arguments_);
@@ -137,7 +145,7 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
 });
 
 
-test('rejects non-object response envelopes', async () => {
+runtimeTest('rejects non-object response envelopes', async () => {
   const request = adapter();
   for (const value of [null, true, 42, 'text', []]) {
     const output = plain(await request({step:1, arguments:{action:'discover'},
