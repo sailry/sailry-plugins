@@ -37,14 +37,38 @@ function fixture(item, error = null) {
   return {nodes, calls, view, root, render:() => render(view), text:text(root)};
 }
 
-test('explicit shell opening shows a spinner', () => {
-  const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}});
-  assert.doesNotMatch(setup.text, /Loading/);
+test('opening a shell renders only the terminal background', () => {
+  const setup = fixture({id:'shell', tool:null, ssh:null, status:{kind:'stopped'}, revision:3});
   const kinds = node => typeof node === 'string' ? [] : [node.kind,...node.items.flatMap(kinds)];
-  assert(kinds(setup.root).includes('Spinner'));
-  assert.doesNotMatch(setup.text, /Terminal stopped/);
-  assert.equal(setup.nodes.has('terminal-resume'), false);
-  assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);
+  const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
+  for (const state of [
+    {busy:true, openAttempts:new Map([['shell', {revision:3, failed:false}]])},
+    {busy:false, openAttempts:new Map([['shell', {revision:3, failed:false}]])},
+    {busy:false, openAttempts:new Map(), openIntent:{target:'shell'}},
+    {busy:false, openAttempts:new Map(), openIntent:{target:null}},
+  ]) {
+    Object.assign(setup.view, {openIntent:null}, state);
+    const root = setup.render();
+    assert.equal(kinds(root).includes('Spinner'), false);
+    assert.doesNotMatch(text(root), /Terminal stopped|Loading/);
+    assert.equal(setup.nodes.get('commands-terminal').props.terminal, null);
+  }
+});
+
+test('opening state ignores external, failed and outdated attempts', () => {
+  const view = {error:null, openIntent:null, openAttempts:new Map([['shell', {revision:3, failed:true}]])};
+  const {opening} = vm.runInNewContext(`${source}\n({opening})`, {});
+  const shell = {id:'shell', tool:null, ssh:null, status:{kind:'stopped'}, revision:3};
+  assert.equal(opening(view, shell), false);
+  view.openAttempts.set('shell', {revision:2, failed:false});
+  assert.equal(opening(view, shell), false);
+  view.openIntent = {target:'other'};
+  assert.equal(opening(view, shell), false);
+  view.openIntent = {target:'shell'};
+  assert.equal(opening(view, {...shell, tool:'claude'}), false);
+  assert.equal(opening(view, {...shell, status:{kind:'running'}}), false);
+  assert.equal(opening({...view, error:'failed'}, shell), false);
+  assert.equal(opening(view, shell), true);
 });
 
 test('idle restored shells remain stopped without a loading spinner', () => {
@@ -108,8 +132,8 @@ test('opening a resource waits for its terminal metadata', () => {
   for (const loaded of [false,true]) {
     setup.view.loaded = loaded;
     const root = setup.render();
-    assert.doesNotMatch(text(root),/No terminals/);
-    assert(kinds(root).includes('Spinner'));
+    assert.doesNotMatch(text(root),/No terminals|Terminal stopped/);
+    assert.equal(kinds(root).includes('Spinner'),false);
   }
   setup.view.items = [{id:'shell',status:{kind:'running'}}];
   const root = setup.render();

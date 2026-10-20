@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Keep switching terminals free of transient stopped text and spinners
+
 ## 0.1.6
 
 - Keep terminal panes loading until their terminal metadata arrives

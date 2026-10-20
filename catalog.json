@@ -2403,7 +2403,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2801,7 +2801,7 @@
         "terminals.control"
       ],
       "release_notes": {
-        "text": "- Keep terminal panes loading until their terminal metadata arrives"
+        "text": "- Keep switching terminals free of transient stopped text and spinners"
       }
     },
     {

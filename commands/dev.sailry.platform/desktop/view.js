@@ -10,8 +10,8 @@ export function render(view) {
   const attached = selected && selected.status.kind !== 'stopped';
   const stoppedShell = selected?.status.kind === 'stopped' && !selected.tool && !selected.ssh;
   const waiting = !selected && (!view.loaded || view.loading || disabled || !!view.resource);
-  const spinning = stoppedShell && view.busy || waiting && !view.error;
-  const status = selected ? text.stopped : waiting ? null : text.empty;
+  const spinning = waiting && !view.error && !view.resource;
+  const status = selected ? (opening(view, selected) ? null : text.stopped) : waiting ? null : text.empty;
   return div().id('commands-page').v_flex().size_full().min_w_0().min_h_0()
     .children(!view.resource ? [div().h_flex().flex_shrink(0).gap_1().px_2().py_1()
       .child(new Button('terminal-new').ghost().label(text.create).disabled(disabled)
@@ -38,4 +38,14 @@ export function render(view) {
       .flex_grow(attached ? 1 : 0).min_h_0().min_w_0().children([
       Terminal.new('commands-terminal', {terminal:attached ? selected.id : null}),
     ]));
+}
+
+// A stopped shell that is being opened, or whose open awaits the refreshed
+// inventory, is transient: render the plain terminal background.
+export function opening(view, item) {
+  if (item?.status.kind !== 'stopped' || item.tool || item.ssh || view.error) return false;
+  const attempt = view.openAttempts?.get(item.id);
+  if (attempt && attempt.revision === item.revision) return !attempt.failed;
+  const intent = view.openIntent;
+  return !!intent && (intent.target === null || intent.target === item.id);
 }
