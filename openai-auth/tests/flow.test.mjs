@@ -19,7 +19,7 @@ function codexTokens(body=token,overrides={}) {
 
 test('keeps the two account protocols distinct',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.1.1');
+  assert.equal(manifest.version,'0.1.2');
   const declarations=manifest.extensions['dev.sailry.platform'].model_auth;
   assert.deepEqual(declarations.map(item=>[item.id,item.authentication]),[['siwc','chat_gpt'],['codex','chat_gpt_oauth']]);
   assert.equal(declarations[0].flow.callback.path,'/auth/callback');
@@ -65,7 +65,7 @@ test('retains omitted rotating fields on refresh',()=>{
   assert.equal(result.grant.refresh,previous.refresh);
   assert.equal(result.grant.id_token,previous.id_token);
   assert.equal(result.grant.account_id,previous.account_id);
-  assert.equal(codexTokens({...token,id_token:jwt({...identity,chatgpt_account_id:'other'})},{previous}).kind,'reject');
+  assert.equal(step(codex,{kind:'response',status:200,body:{...token,id_token:jwt({...identity,chatgpt_account_id:'other'})}},{phase:'tokens',refreshing:true},{previous}).kind,'reject');
 });
 test('keeps SIWC registration and nonce bound',()=>{
   const prompted=step(siwc,{kind:'start'},null);
@@ -93,7 +93,7 @@ test('rejects changed registration and account',()=>{
   const prompted=step(siwc,{kind:'start'},null,{previous});
   assert.equal(new URL(prompted.url).searchParams.get('client_id'),previous.client_id);
   assert.equal(step(siwc,{kind:'callback',fields:{code:'private-code',client_id:'oaiapp_changed'}},{phase:'returned',client_id:previous.client_id},{previous}).kind,'reject');
-  const verify=step(siwc,{kind:'response',status:200,body:token},{phase:'tokens',client_id:previous.client_id},{previous});
+  const verify=step(siwc,{kind:'response',status:200,body:token},{phase:'tokens',client_id:previous.client_id,refreshing:true},{previous});
   assert.equal(step(siwc,{kind:'identity',claims:identity},verify.state,{previous}).kind,'reject');
 });
 test('keeps device intervals and expiry validation',()=>{
@@ -182,6 +182,30 @@ runtimeTest('device metadata keeps production credential boundaries',async()=>{
   const result=await run(token);
   assert.equal(result.kind,'finish');
   assert.equal(result.grant.id_token,token.id_token);
+  for(const email of [undefined,'   ']){
+    const optional=await run({...token,id_token:jwt({...identity,email,name:'Display name'})});
+    assert.equal(optional.kind,'finish');assert.equal(optional.grant.email,null);
+  }
   assert.equal((await run({...token,access_token:'rotated-access'},result.grant)).kind,'finish');
   for(const body of [{...token,id_token:'broken'}, {...token,id_token:jwt({...identity,sub:undefined})}, {...token,id_token:jwt({...identity,chatgpt_account_id:'other'})}, {...token,expires_in:0}])assert.equal((await run(body,result.grant)).kind,'reject');
+});
+
+test('replaces accounts only through interactive sign in',()=>{
+  const previous=codexTokens().grant;
+  const claims={...identity,sub:'new-subject',chatgpt_account_id:'new-account',name:'New account',email:'new@example.test'};
+  const body={...token,access_token:'new-access',refresh_token:'new-refresh',id_token:jwt(claims)};
+  const result=codexTokens(body,{previous});
+  assert.equal(result.kind,'finish');assert.equal(result.grant.subject,claims.sub);assert.equal(result.grant.account_id,claims.chatgpt_account_id);
+  assert.equal(result.grant.refresh,'new-refresh');assert.equal(result.grant.email,'new@example.test');
+  for(const field of ['refresh_token','id_token'])assert.equal(codexTokens({...body,[field]:undefined},{previous}).kind,'reject');
+  const verified=step(siwc,{kind:'identity',claims},{phase:'tokens',tokens:{...body,scope:'openid'},client_id:'oaiapp_existing'},{previous});
+  assert.equal(verified.kind,'finish');assert.equal(verified.grant.subject,claims.sub);
+  assert.equal(step(siwc,{kind:'identity',claims},{phase:'tokens',tokens:{...body,scope:'openid'},client_id:'oaiapp_existing',refreshing:true},{previous}).kind,'reject');
+});
+test('publishes only optional account emails',()=>{
+  for(const [fields,email] of [[{name:'Account name',preferred_username:'Username'},identity.email],[{email:undefined,name:'Account name'},null],[{email:'   ',name:'Account name'},null],[{email:'  spaced@example.test  '},'spaced@example.test']]){
+    const result=codexTokens({...token,id_token:jwt({...identity,...fields})});
+    assert.equal(result.grant.email,email);
+    assert.equal('account_label' in result.grant,false);
+  }
 });

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "openai-auth",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenAI accounts",
   "license": "Apache-2.0",
   "extensions": {

@@ -12191,7 +12191,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "openai-auth",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "OpenAI accounts",
         "license": "Apache-2.0",
         "extensions": {
@@ -12387,7 +12387,7 @@
         "credentials.inspect"
       ],
       "release_notes": {
-        "text": "- Read Codex device-token account metadata without imposing SIWC OIDC verification\n- Preserve SIWC identity verification and existing credential bindings"
+        "text": "- Allow explicit sign-in to replace the account while preserving strict refresh identity checks\n- Expose an optional account email"
       }
     },
     {

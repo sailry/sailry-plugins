@@ -13,8 +13,8 @@ function error(event) {
   if (event.kind !== 'response' || event.status >= 200 && event.status < 300) return null;
   return event.status === 410 ? {kind:'reject',code:'expired'} : [400,401,403].includes(event.status) ? denied() : invalid();
 }
-function finish(kind,tokens,claims,context,now,selectedClient) {
-  const previous=context.previous;
+function finish(kind,tokens,claims,context,now,selectedClient,refreshing=false) {
+  const previous=refreshing ? context.previous : null;
   const expiry=expires(now,tokens.expires_in);
   if (!text(tokens.access_token) || expiry === null || !text(claims.sub)) return invalid();
   if (tokens.token_type != null && (typeof tokens.token_type !== 'string' || tokens.token_type.toLowerCase() !== 'bearer')) return invalid();
@@ -23,7 +23,8 @@ function finish(kind,tokens,claims,context,now,selectedClient) {
   if (!text(refresh) || !text(identity)) return invalid();
   if (claims.chatgpt_account_id != null && typeof claims.chatgpt_account_id !== 'string' || claims['https://api.openai.com/auth'] != null && (typeof claims['https://api.openai.com/auth'] !== 'object' || Array.isArray(claims['https://api.openai.com/auth'])) || claims['https://api.openai.com/auth']?.chatgpt_account_id != null && typeof claims['https://api.openai.com/auth'].chatgpt_account_id !== 'string') return invalid();
   const account=claims.chatgpt_account_id ?? claims['https://api.openai.com/auth']?.chatgpt_account_id ?? null;
-  const grant={kind,access:tokens.access_token,refresh,expires_at_ms:expiry,subject:claims.sub,email:claims.email ?? null,id_token:identity,renewal_pending:false};
+  const email=text(claims.email) && claims.email.length <= 1024 && claims.email.trim() ? claims.email.trim() : null;
+  const grant={kind,access:tokens.access_token,refresh,expires_at_ms:expiry,subject:claims.sub,email,id_token:identity,renewal_pending:false};
   if (kind === 'chat_gpt_oauth') {
     if (!text(account)) return invalid();
     grant.account_id=account;
@@ -40,12 +41,12 @@ function finish(kind,tokens,claims,context,now,selectedClient) {
   return {kind:'finish',grant};
 }
 function verified(kind,event,state,context,now) {
-  if (event.kind === 'identity') return finish(kind,state.tokens,event.claims,context,now,state.client_id);
+  if (event.kind === 'identity') return finish(kind,state.tokens,event.claims,context,now,state.client_id,state.refreshing===true);
   const tokens=event.body;
   if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) return invalid();
   if (text(tokens.id_token)) return {kind:'verify',token:tokens.id_token,audience:state.client_id,nonce:state.nonce ?? null,state:{...state,tokens}};
   if (!context.previous || !state.refreshing) return invalid();
-  return finish(kind,tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id);
+  return finish(kind,tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id,state.refreshing===true);
 }
 // Device tokens come from the declared TLS/PKCE exchange. Claims are metadata,
 // not authority: they never select an issuer, client, endpoint or permission.
@@ -78,10 +79,10 @@ function deviceTokens(event,state,context,now) {
   if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) return invalid();
   if (tokens.id_token != null) {
     const claims=metadata(tokens.id_token);
-    return claims ? finish('chat_gpt_oauth',tokens,claims,context,now,state.client_id) : invalid();
+    return claims ? finish('chat_gpt_oauth',tokens,claims,context,now,state.client_id,state.refreshing===true) : invalid();
   }
   if (!context.previous || !state.refreshing) return invalid();
-  return finish('chat_gpt_oauth',tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id);
+  return finish('chat_gpt_oauth',tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id,state.refreshing===true);
 }
 export function codex({event,context,state,now_ms:now}) {
   const CLIENT=context.fields?.client_id;
