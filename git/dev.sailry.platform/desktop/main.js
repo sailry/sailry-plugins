@@ -94,7 +94,7 @@ export default class Git extends View {
       if (!this.repo.closed) { this.worktrees = available; cx.notify(); }
     });
   }
-  async invalidate() { await this.repo.refresh(); }
+  async invalidate() { await this.repo.invalidate(); }
   watch(read,handle,cx) {
     cx.spawn(async cx => { try { while (true) { handle(await read(),cx); cx.notify(); } } catch (_) { /* Event streams close with this captured controller. */ } });
   }

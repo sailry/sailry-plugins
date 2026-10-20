@@ -1,5 +1,5 @@
 // Package-owned forms and retries; core retains source scope, admission and session moves.
-import {listing,errorKey,current} from './policy.js';
+import {listing,registered,errorKey,current} from './policy.js';
 
 export class Controller {
   constructor(api,text,changed) {
@@ -11,7 +11,11 @@ export class Controller {
   owner(kind, extra = {}) {
     return {token:`worktrees-${++this.serial}`,kind,bound:this.location,pending:false,error:null,request:null,uncertain:false,...extra};
   }
-  accept(location) { this.location = location; this.notify(); }
+  accept(location) {
+    this.location = location;
+    if (this.dialog && ['list','actions'].includes(this.dialog.kind) && !this.valid(this.dialog)) this.close();
+    this.notify();
+  }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
   show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }
   close() {
@@ -39,14 +43,22 @@ export class Controller {
     if (!this.location.project) { await this.api.selectLocation(this.location.cursor,{projects:true}); return; }
     if (intent === 'create' && entry) return this.create({branch:entry.branch,head:entry.commit});
     if (intent === 'create' || intent === 'fork') return this.createManaged(intent === 'fork');
+    if (this.dialog?.loading && this.dialog.kind === 'list' && this.valid(this.dialog)) return this.dialog.read;
     const owner = this.show(this.owner('list',{loading:true,choices:[]}));
+    owner.read = this.load(owner,entry);
+    return owner.read;
+  }
+  async load(owner,entry) {
     try {
-      const [catalog,found] = await Promise.all([this.api.readWorktreeCatalog(),this.api.listWorktrees()]);
-      if (this.dialog !== owner) return;
+      const catalog = await this.api.readWorktreeCatalog();
+      if (this.dialog !== owner || !this.valid(owner) || this.disposed) return;
       this.catalog = catalog;
+      owner.choices = registered(catalog,owner.bound,this.text); this.notify();
+      const found = await this.api.listWorktrees();
+      if (this.dialog !== owner || !this.valid(owner) || this.disposed || owner.kind !== 'list') return;
       owner.choices = listing(catalog,found,owner.bound,this.text);
       if (entry) return this.create(entry);
-    } catch (_) { if (this.dialog === owner) this.fail(owner,'worktree_load_failed'); }
+    } catch (_) { if (this.dialog === owner && this.valid(owner) && !this.disposed) this.fail(owner,'worktree_load_failed'); }
     finally { owner.loading = false; this.notify(); }
   }
   async choose(id, captured) {
@@ -58,7 +70,7 @@ export class Controller {
     const action = choice.action;
     if (action.kind === 'actions') {
       owner.choices = action.actions.map((action,index) => ({id:`action-${index}`,label:this.text(action.kind === 'open' ? 'workspace_open_worktree' : 'worktree_remove'),detail:choice.label,action}));
-      owner.kind = 'actions'; this.notify();
+      owner.kind = 'actions'; owner.loading = false; this.notify();
     } else if (action.kind === 'projects') {
       this.close(); await this.api.selectLocation(owner.bound.cursor,{projects:true});
     } else if (action.kind === 'managed') await this.createManaged(action.fork);

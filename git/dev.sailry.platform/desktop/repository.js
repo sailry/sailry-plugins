@@ -36,10 +36,20 @@ export class Repository {
     this.readCode = null;
     if (this.closed || !this.connected || this.pending?.busy) return Promise.resolve(false);
     const previous = this.refreshing;
+    if (previous?.active && previous.sequence === this.read && this.loading) {
+      previous.review ||= review;
+      return previous.promise;
+    }
     const current = {sequence:++this.read,review:review || !!(previous?.active && previous.sequence === this.read - 1 && previous.review),active:true,promise:null};
     this.refreshing = current;
     current.promise = this.reload(current);
     return current.promise;
+  }
+
+  invalidate() {
+    const current = this.refreshing;
+    if (current?.active && current.sequence === this.read && this.loading) current.invalidated = true;
+    return this.refresh();
   }
 
   latest(sequence) {
@@ -56,6 +66,10 @@ export class Repository {
       try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
       catch (_) { branchError = 'git_branches_failed'; }
       if (this.closed || sequence !== this.read) return this.latest(sequence);
+      if (current.invalidated) {
+        current.active = false;
+        return this.refresh(current.review);
+      }
       this.status = status; this.branches = branches; this.error = branchError;
       if (branchError) this.report(branchError);
       if (this.pending?.reviewing || current.review) {
@@ -68,6 +82,10 @@ export class Repository {
       if (this.view === 'history') await this.loadHistory();
       return !this.closed && sequence === this.read ? true : this.latest(sequence);
     } catch (error) {
+      if (!this.closed && sequence === this.read && current.invalidated) {
+        current.active = false;
+        return this.refresh(current.review);
+      }
       if (sequence === this.read && !this.closed) {
         this.error = 'git_read_failed'; this.readCode = this.api.faultCode(error.message ?? String(error)); this.report(this.error);
       }

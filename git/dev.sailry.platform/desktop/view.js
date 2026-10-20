@@ -203,7 +203,7 @@ export function dialogs(view) {
   const confirmation = dialog?.action === 'undo_commit' ? 'git_undo_confirm' : dialog?.action?.push ? 'git_force_push_confirm'
     : dialog?.action?.discard ? 'git_discard_confirm' : dialog?.action?.discard_all ? 'git_discard_all_confirm'
     : dialog?.action?.remove_remote ? 'git_remove_remote_confirm' : dialog?.operation === 'merge' ? 'git_merge_branch_confirm' : 'git_delete_confirm';
-  return div().children([Picker.new(`git-picker-${picker?.id ?? 0}`, {open:!!picker,title:picker?.title ?? '',items:picker?.items ?? [],empty:text.git_no_matches}),
+  return div().children([Picker.new(`git-picker-${picker?.id ?? 0}`, {open:!!picker,title:picker?.title ?? '',loading:!!picker?.loading,items:picker?.items ?? [],empty:text.git_no_matches}),
     Modal.new(`git-dialog-${dialog?.id ?? 0}`,{open:!!dialog,form:true,title:dialog ? (text[dialog.title] ?? dialog.title) : '',width:468}).children(dialog ? [
       div().id('git-form').v_flex().gap_3()
       .children(form === 'confirm' ? [div().text_sm().child(`${text[confirmation]}\n${dialog.target}`)] : [])

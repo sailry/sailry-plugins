@@ -50,11 +50,14 @@ function contributions() {
   const never=()=>new Promise(()=>{});
   const globals={View:class {},Surfaces,DiffState:()=>({}),EditorState:text=>({text}),context:()=>'{"locale":"en"}',
     messages:()=>({}),workspaceMode:()=> 'main',createText:()=> 'message',Repository,Menus,
-    Actions:class {choose(title,items){choices.push({title,items});}},registerShortcuts:()=> 'FixtureGitKeys',
+    Actions:class {
+      choose(title,items){const picker={title,items};choices.push(picker);this.picker=picker;return picker;}
+      update(picker,items){if(this.picker===picker){picker.items=items;picker.loading=false;}}
+    },registerShortcuts:()=> 'FixtureGitKeys',
     readScope:()=>({worktree:'captured'}),readLocation:()=>({surface:'project',worktree:'captured',branch:'main',main:true,git:true,can_move:true}),
     nextLocationChange:never,nextWindowActivation:never,readResourceTarget:()=>null,canInvokeContribution:async()=>true,
     nextContributionEvent:()=>events++===0 ? event.promise : never(),publishContributions:states=>published.push(states),toast:()=>{},
-    sdk:{nextChange:()=>changes++===0 ? change.promise : never(),
+    sdk:{faultCode:()=> 'unavailable',nextChange:()=>changes++===0 ? change.promise : never(),
       inspectGit:()=>{const pending=deferred();reads.push(pending);return pending.promise;},
       listGitBranches:()=>{const pending=deferred();branches.push(pending);return pending.promise;}}};
   for (const name of ['nextMenuEvent','nextContextMenuEvent','nextControlEvent','nextTreeEvent',
@@ -70,7 +73,7 @@ function badgeFixture(options={}) {
   const location={cursor:'0',surface:'composer',node:'captured-node',worktree:'captured',branch:'main',
     main:true,git:true,connected:true,can_move:true};
   const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt'}],truncated:false,omitted_paths:0},
-    refresh:options.refresh ?? (async()=>true)};
+    refresh:options.refresh ?? (async()=>true),invalidate(){return this.refresh();}};
   const globals={
     Git:class {
       init(){this.text={git_detached:'Detached HEAD',tool_partial:'Partial'};this.repo=repo;this.notify=()=>{};}
@@ -87,41 +90,55 @@ function badgeFixture(options={}) {
   return {owner,repo,published,reported};
 }
 
-test('branch contributions survive concurrent repository observation',async()=>{
+test('branch picker opens before fresh repository observation',async()=>{
   for (const eventFirst of [false,true]) {
     const state=contributions();
     const invoke=()=>state.event.resolve({id:'manage',handler:'manage',sequence:1,value:null});
     const invalidate=()=>state.change.resolve({cursor:'created-worktree',connected:true});
     (eventFirst ? invoke : invalidate)();await settle();
-    state.reads[0].resolve({branch:'stale',kind:'ready',entries:[]});await settle();
-    assert.equal(state.branches.length,1);
     (eventFirst ? invalidate : invoke)();await settle();
-    assert.equal(state.reads.length,2);
-    state.branches[0].resolve({entries:[{name:'stale',commit:'abc1234'}],sync:{tracking:{}}});await settle();
-    assert.equal(state.choices.length,0);
-    state.reads[1].resolve({branch:'latest',kind:'ready',entries:[]});await settle();
-    state.branches[1].resolve({entries:[{name:'managed',commit:'abc1234'}],sync:{tracking:{}}});await settle();
-    assert.equal(state.choices.length,1);assert.equal(state.owner.repo.status.branch,'latest');
-    assert(state.choices[0].items.some(item=>item.label==='managed'));
-    assert(!state.choices[0].items.some(item=>item.label==='stale'));
+    assert.equal(state.choices.length,1);
+    const picker=state.choices[0];assert.equal(picker.loading,true);assert.equal(picker.items.length,0);
+    assert.equal(state.reads.length,1,'only one observation runs at a time');
+    await state.owner.openPicker('manage');
+    assert.equal(state.choices.length,1);assert.equal(state.reads.length,1);
+    state.reads[0].resolve({branch:eventFirst ? 'stale' : 'latest',kind:'ready',entries:[]});await settle();
+    state.branches[0].resolve({entries:[{name:eventFirst ? 'stale' : 'managed',commit:'abc1234'}],sync:{tracking:{}}});await settle();
+    if(eventFirst) {
+      assert.equal(state.reads.length,2,'a changed snapshot requires one fresh observation');
+      assert.equal(picker.items.length,0,'stale branches are not displayed');
+      state.reads[1].resolve({branch:'latest',kind:'ready',entries:[]});await settle();
+      state.branches[1].resolve({entries:[{name:'managed',commit:'abc1234'}],sync:{tracking:{}}});await settle();
+    }
+    assert.equal(state.choices.length,1);assert.equal(state.owner.actions.picker,picker);
+    assert.equal(picker.loading,false);assert.equal(state.owner.repo.status.branch,'latest');
+    assert(picker.items.some(item=>item.label==='managed'));
+    assert(!picker.items.some(item=>item.label==='stale'));
     assert(state.published.some(states=>states.some(item=>item.id==='manage' && item.reply_to===1)));
     state.owner.release();
   }
 });
 
-test('released or failed observation cannot open a contribution picker',async()=>{
-  for (const released of [false,true]) {
+test('closed or released pickers reject late results',async()=>{
+  for (const change of ['closed','released','scope']) {
     const state=contributions();state.event.resolve({id:'manage',handler:'manage',sequence:1,value:null});await settle();
-    state.change.resolve({cursor:'created-worktree',connected:true});await settle();
-    state.reads[0].resolve({branch:'stale',kind:'ready',entries:[]});await settle();
-    state.branches[0].resolve({entries:[],sync:{tracking:{}}});await settle();
-    if (released) {
-      state.owner.release();state.reads[1].resolve({branch:'latest',kind:'ready',entries:[]});await settle();
-      state.branches[1].resolve({entries:[],sync:{tracking:{}}});
-    }
-    else state.reads[1].reject(Error('repository unavailable'));
-    await settle();assert.equal(state.choices.length,0);state.owner.release();
+    assert.equal(state.choices.length,1);const picker=state.choices[0];
+    if (change==='closed') state.owner.actions.picker=null;
+    else if (change==='released') state.owner.release();
+    else state.owner.location={...state.owner.location,worktree:'other'};
+    state.reads[0].resolve({branch:'latest',kind:'ready',entries:[]});await settle();
+    state.branches[0].resolve({entries:[{name:'late',commit:'abc1234'}],sync:{tracking:{}}});await settle();
+    assert.equal(state.choices.length,1);assert.equal(picker.items.length,0);
+    assert.equal(state.owner.actions.picker,null);
+    state.owner.release();
   }
+});
+
+test('failed observation closes its loading picker',async()=>{
+  const state=contributions();state.event.resolve({id:'manage',handler:'manage',sequence:1,value:null});await settle();
+  assert.equal(state.choices[0].loading,true);
+  state.reads[0].reject(Error('repository unavailable'));await settle();
+  assert.equal(state.owner.actions.picker,null);assert.equal(state.choices.length,1);state.owner.release();
 });
 
 test('badge keeps known counts through overlapping refreshes',async()=>{
@@ -222,7 +239,7 @@ test('composer location exists before eager repository observation starts',async
     Git:class {
       init() {
         this.text = {};
-        this.repo = {refresh:async()=>{reads++;return false;}};
+        this.repo = {invalidate:async()=>{reads++;return false;}};
         this.invalidate();
       }
     },
@@ -246,7 +263,7 @@ test('unassigned controllers do not read or publish a repository contribution',a
     Git:class {
       init() {
         this.text = {};
-        this.repo = {refresh:async()=>{reads++;return false;}};
+        this.repo = {invalidate:async()=>{reads++;return false;}};
         this.invalidate();
       }
     },
@@ -269,7 +286,7 @@ test('composer controllers skip repository reads until location metadata confirm
     let reads=0,published;
     const updates=[deferred(),deferred()]; let cursor=0;
     const location={cursor:'0',surface:'composer',project,worktree:'captured',main:true,git:false,can_move:true};
-    const globals={Git:class {init(){this.text={};this.repo={refresh:async()=>{reads++;return false;}};this.invalidate();}},
+    const globals={Git:class {init(){this.text={};this.repo={invalidate:async()=>{reads++;return false;}};this.invalidate();}},
       readScope:()=>({worktree:'captured'}),readLocation:()=>location,
       nextLocationChange:()=>updates[cursor++].promise,nextContributionEvent:()=>new Promise(()=>{}),
       publishContributions:states=>{published=states;}};

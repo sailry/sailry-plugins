@@ -26,6 +26,34 @@ function fixture(surface = 'project') {
 }
 const inputs = {revision:'release',branch:'topic/new',path:'/checkouts/new'};
 
+const deferred = () => {let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail;});return {promise,resolve,reject};};
+const settle = async () => {for(let index=0;index<8;index++)await Promise.resolve();};
+
+test('registered choices appear before native discovery completes',async()=>{
+  const {model,api,state}=fixture();const native=deferred();let reads=0;
+  api.listWorktrees=()=>{reads++;return native.promise;};
+  const first=model.open();await settle();const owner=model.dialog;
+  assert.equal(owner.loading,true);assert.equal(owner.choices.length,1);
+  assert.equal(owner.choices[0].checked,true);
+  assert.deepEqual(owner.choices[0].action.actions.map(action=>action.kind),['open']);
+  const second=model.open();assert.equal(model.dialog,owner);assert.equal(reads,1);
+  await model.choose('entry-0');assert.equal(owner.kind,'actions');
+  native.resolve({kind:'repository',entries:[],truncated:false,omitted_paths:'0'});
+  await Promise.all([first,second]);
+  assert.equal(owner.kind,'actions');assert.equal(owner.choices[0].action.kind,'open');
+  await model.choose('action-0');assert.equal(state.selected[0].value.worktree,'tree-a');
+});
+
+test('native discovery cannot reopen a closed or changed picker',async()=>{
+  for (const changed of [false,true]) {
+    const {model,api,change}=fixture();const native=deferred();api.listWorktrees=()=>native.promise;
+    const task=model.open();await settle();
+    if(changed)change({cursor:'2',worktree:'tree-b'});else model.close();
+    native.resolve({kind:'repository',entries:[{path:'/late',available:true}],truncated:false,omitted_paths:'0'});
+    await task;assert.equal(model.dialog,null);
+  }
+});
+
 test('manual create pins resolution and ID for unchanged retries', async () => {
   const {model,state} = fixture();
   model.create({branch:'main',head:'head-a'});

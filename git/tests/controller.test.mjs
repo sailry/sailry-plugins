@@ -99,11 +99,37 @@ test('stale and released reads cannot report failures',async()=>{
   assert.equal(owner.selected,'b.txt');assert.deepEqual(reported,[]);
 });
 
+test('overlapping observations share only their active read',async()=>{
+  const pending=deferred();let reads=0;
+  const {owner,forgotten}=fixture({inspectGit:()=>{reads++;return reads===1 ? pending.promise : Promise.resolve(status());}});
+  owner.pending={id:'unknown',kind:'index',busy:false,reviewing:false};
+  const first=owner.refresh(),second=owner.refresh(true);
+  assert.equal(first,second);assert.equal(reads,1);
+  pending.resolve(status());assert.deepEqual(await Promise.all([first,second]),[true,true]);
+  assert.equal(owner.pending,null);assert.deepEqual(forgotten,['unknown']);
+  await owner.refresh();assert.equal(reads,2,'completed reads are not cached');
+});
+
+test('invalidation follows shared reads with one fresh observation',async()=>{
+  for(const failed of [false,true]) {
+    const first=deferred(),latest=deferred();let reads=0;
+    const {owner,reported}=fixture({inspectGit:()=>++reads===1 ? first.promise : latest.promise});
+    const observation=owner.refresh(),changed=owner.invalidate(),again=owner.invalidate();
+    assert.equal(observation,changed);assert.equal(changed,again);assert.equal(reads,1);
+    if(failed)first.reject(Error('stale failure'));else first.resolve({...status(),branch:'stale'});
+    await settle();assert.equal(reads,2);
+    assert.equal(owner.status.branch,'main','invalidated results are not accepted');
+    latest.resolve({...status(),branch:'fresh'});
+    assert.deepEqual(await Promise.all([observation,changed,again]),[true,true,true]);
+    assert.equal(owner.status.branch,'fresh');assert.equal(reads,2);assert.deepEqual(reported,[]);
+  }
+});
+
 test('superseded refreshes follow the latest result',async()=>{
   for (const latestFirst of [false,true]) {
     const first=deferred(),second=deferred();let reads=0;
     const {owner}=fixture({inspectGit:()=>++reads===1 ? first.promise : second.promise});
-    const older=owner.refresh(),latest=owner.refresh();let finished=false;
+    const older=owner.refresh();++owner.read;const latest=owner.refresh();let finished=false;
     older.then(()=>{finished=true;});
     if (latestFirst) { second.resolve({...status(),branch:'latest'});await latest; }
     first.resolve({...status(),branch:'stale'});await settle();
@@ -117,7 +143,7 @@ test('stale inspect and branch failures follow the accepted refresh',async()=>{
   for (const method of ['inspectGit','listGitBranches']) {
     const first=deferred(),second=deferred();let reads=0;
     const {owner,reported}=fixture({[method]:()=>++reads===1 ? first.promise : second.promise});
-    const older=owner.refresh();await settle();const latest=owner.refresh();await settle();
+    const older=owner.refresh();await settle();++owner.read;const latest=owner.refresh();await settle();
     first.reject(Error('stale failure'));await settle();
     second.resolve(method === 'inspectGit' ? status() : {sync:{head_message:'Latest'}});
     assert.deepEqual(await Promise.all([older,latest]),[true,true]);assert.deepEqual(reported,[]);
@@ -128,7 +154,7 @@ test('latest failure and release reach every refresh waiter',async()=>{
   for (const released of [false,true]) {
     const first=deferred(),second=deferred();let reads=0;
     const {owner,reported}=fixture({inspectGit:()=>++reads===1 ? first.promise : second.promise});
-    const older=owner.refresh(),latest=owner.refresh();
+    const older=owner.refresh();++owner.read;const latest=owner.refresh();
     first.resolve(status());await settle();
     if (released) {owner.stop();second.resolve(status());}
     else second.reject(Error('latest failure'));
@@ -137,18 +163,30 @@ test('latest failure and release reach every refresh waiter',async()=>{
   }
 });
 
-test('active review follows the newest read without carrying into later refreshes',async()=>{
+test('active review joins observation without affecting later refreshes',async()=>{
   for (const reviewFirst of [false,true]) {
-    const first=deferred(),second=deferred();let reads=0;
-    const {owner,forgotten}=fixture({inspectGit:()=>++reads===1 ? first.promise : reads===2 ? second.promise : Promise.resolve(status())});
+    const first=deferred();let reads=0;
+    const {owner,forgotten}=fixture({inspectGit:()=>++reads===1 ? first.promise : Promise.resolve(status())});
     owner.pending={id:'unknown',kind:'index',busy:false,reviewing:false};
     const older=owner.refresh(reviewFirst),latest=owner.refresh(!reviewFirst);
-    first.resolve(status());await settle();assert.equal(owner.pending.id,'unknown');
-    second.resolve(status());assert.deepEqual(await Promise.all([older,latest]),[true,true]);
+    assert.equal(older,latest);assert.equal(owner.pending.id,'unknown');
+    first.resolve(status());assert.deepEqual(await Promise.all([older,latest]),[true,true]);
     assert.equal(owner.pending,null);assert.deepEqual(forgotten,['unknown']);
     owner.pending={id:'later',kind:'index',busy:false,reviewing:false};
     await owner.refresh();assert.equal(owner.pending.id,'later');assert.deepEqual(forgotten,['unknown']);
   }
+});
+
+test('explicit review is not delayed behind document rendering',async()=>{
+  const document=deferred();let reads=0;
+  const {owner,forgotten}=fixture({inspectGit:async()=>{reads++;return status();},readGitDiff:()=>document.promise});
+  owner.selected='notes';owner.tabs=['notes'];owner.documents.set('notes',{request:{kind:'file',path:'notes',scope:'all'}});
+  owner.pending={id:'unknown',kind:'index',busy:false,reviewing:false};
+  const observation=owner.refresh();await settle();
+  assert.equal(owner.pending.id,'unknown');assert.equal(owner.loading,false);
+  owner.selected=null;const review=owner.refresh(true);await review;
+  assert.equal(reads,2);assert.equal(owner.pending,null);assert.deepEqual(forgotten,['unknown']);
+  document.resolve({path:'notes',text:'accepted'});assert.equal(await observation,true);
 });
 
 test('an active document review does not unlock a later uncertain write',async()=>{

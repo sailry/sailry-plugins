@@ -3,6 +3,11 @@ export function label(entry, project) {
   return entry.main ? project : entry.branch || entry.head?.slice(0,8)
     || entry.path.split(/[\\/]/).filter(Boolean).at(-1) || entry.path;
 }
+export function registered(catalog, location, text) {
+  const entries = catalog.worktrees.map(tree => ({...tree,branch:tree.id === location.worktree ? location.branch : null,
+    head:null,locked:false,available:true}));
+  return listing(catalog,{kind:'repository',entries},{...location,surface:'project'},text);
+}
 export function listing(catalog, found, location, text) {
   const project = catalog.projects.find(project => project.id === location.project);
   const entries = [...found.entries];

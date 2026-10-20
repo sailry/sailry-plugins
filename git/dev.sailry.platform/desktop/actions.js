@@ -6,7 +6,14 @@ import {prepareGitChange, completeRequest, forgetRequest, faultCode, listGitRemo
 export class Actions {
   constructor(view) { this.view = view; this.sequence = 0; this.dialog = null; this.picker = null; }
   choose(title,items,literal = false) {
-    this.picker = {id:++this.sequence,title:literal ? title : this.view.text[title === 'git_checkout' ? 'git_search_branches' : title],items:items.map((item,index) => ({...item,id:String(index)}))};
+    this.picker = {id:++this.sequence,title:literal ? title : this.view.text[title === 'git_checkout' ? 'git_search_branches' : title]};
+    this.update(this.picker,items);
+    return this.picker;
+  }
+  update(picker,items) {
+    if (this.picker !== picker) return;
+    picker.items = items.map((item,index) => ({...item,id:String(index)}));
+    picker.loading = false;
     this.view.notify();
   }
   async invoke(value) {

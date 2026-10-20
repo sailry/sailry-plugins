@@ -17,7 +17,7 @@ export default class Context extends Git {
       try { while (true) {
         const previous = this.location;
         this.location = await nextLocationChange(previous.cursor);
-        if (!this.sameScope()) this.clearCounts();
+        if (!this.sameScope()) { this.actions.picker = null; this.clearCounts(); }
         else {
           this.publish();
           if (this.location.git !== previous.git) await this.invalidate();
@@ -31,15 +31,28 @@ export default class Context extends Git {
         if (!this.sameScope()) { cx.notify(); continue; }
         this.run(async () => {
           if (event.id === 'changes') { await openResource('git',{path:null}); return; }
-          if (await this.repo.refresh() && this.sameScope()) this.actions.choose('git_manage_branches',event.id === 'branch' ? this.menus.checkout() : this.menus.management());
+          await this.openPicker(event.id);
         },cx);
       } } catch (_) { /* Disabling the package releases contribution events. */ }
     });
   }
+  async openPicker(kind) {
+    if (this.actions.picker?.loading && this.actions.picker.contribution === kind) return;
+    const picker = this.actions.choose('git_manage_branches',[]);
+    picker.contribution = kind; picker.loading = true; this.notify();
+    let ready = false;
+    try { ready = await this.repo.refresh(); }
+    finally {
+      if (this.actions.picker === picker) {
+        if (ready && this.sameScope()) this.actions.update(picker,kind === 'branch' ? this.menus.checkout() : this.menus.management());
+        else { this.actions.picker = null; this.notify(); }
+      }
+    }
+  }
   sameScope() {
     return !!this.worktree && this.location?.node === this.node
       && this.location?.worktree === this.worktree && this.location.connected !== false
-      && this.repo?.connected !== false;
+      && this.repo?.connected !== false && !this.repo?.closed;
   }
   clearCounts() {
     this.badgeRead = (this.badgeRead ?? 0) + 1;
@@ -55,7 +68,7 @@ export default class Context extends Git {
     if (!this.sameScope() || this.location.surface === 'composer' && !this.location.git) {
       this.counts = null; this.publish(); return;
     }
-    if (!await this.repo.refresh()) {
+    if (!await this.repo.invalidate()) {
       if (this.badgeRead === sequence && this.sameScope() && clearsBadge.has(this.repo.readCode)) {
         this.counts = null; this.publish(); this.notify?.();
       }

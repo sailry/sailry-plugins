@@ -42,7 +42,7 @@ export function render(view) {
   const owner = view.model.dialog;
   const picking = owner && ['list','actions'].includes(owner.kind);
   const picker = Picker.new(picking ? owner.token : 'worktree-picker',{open:!!picking,title:view.text('worktree_manage'),
-    loading:!!(picking && owner.loading),empty:view.text('git_no_matches'),
+    loading:!!(picking && owner.loading && owner.choices.length === 0),empty:view.text('git_no_matches'),
     items:picking ? owner.choices.map(choice => {
       const {action,...props} = choice;
       return {...props,disabled:!!(owner.pending || choice.disabled),value:{token:owner.token,choice}};
