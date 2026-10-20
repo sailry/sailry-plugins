@@ -8,7 +8,7 @@ const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{k
 
 async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}, initialEntry = 0) {
   const context = vm.createContext({});
-  const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], requests = new Map();
+  const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], closed = [], requests = new Map();
   const host = {items, complete:null, prepareError:null, change:null};
   const prepare = (action, target) => {
     const id = `request-${prepared.length}`;
@@ -37,7 +37,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     },
     'sailry/ui':{nextMenuEvent() {}, pane:() => resource ? {resource} : null,
       openPane:value => { panes.push(value); return true; }, updatePane:value => updates.push(value),
-      closePane() {}, nextPaneEvent() {},toast:value=>notices.push(value)},
+      closePane:() => closed.push(true), nextPaneEvent() {},toast:value=>notices.push(value)},
     './locales.js':{messages:() => ({terminal:'Terminal', tools:{},failed:'Terminal action failed',unknown:'Outcome unknown',loadFailed:'Could not load terminals'})},
     './view.js':{render() {}},
     './labels.js':{title:() => null, directory:() => null},
@@ -66,11 +66,12 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   };
   const enter = async () => { entry++; await observe(); };
   await observe();
-  return {view, host, cx, settle, observe, enter, prepared, completed, forgotten, panes, updates,notices};
+  return {view, host, cx, settle, observe, enter, prepared, completed, forgotten, panes, updates,notices,closed};
 }
 
 test('restored shell metadata never launches a hidden process', async () => {
   const setup = await fixture();
+  assert.equal(setup.view.loaded,true);
   setup.view.refresh(setup.cx); setup.view.refresh(setup.cx); await setup.settle();
   await setup.observe();
   assert.equal(setup.prepared.length, 0);
@@ -300,4 +301,13 @@ test('new terminals default to full and retain workspace retries', async () => {
   assert.equal(setup.prepared.length,2);
   assert.deepEqual(setup.completed,['request-0','request-1','request-1']);
   assert.equal(setup.view.pending,null);
+});
+
+
+test('a missing resource closes after authoritative inventory loads', async () => {
+  const setup = await fixture([], {kind:'terminal',id:'missing'});
+  assert.equal(setup.view.loaded,true);
+  assert.deepEqual(setup.closed,[true]);
+  assert.deepEqual(setup.prepared,[]);
+  assert.deepEqual(setup.notices,[]);
 });

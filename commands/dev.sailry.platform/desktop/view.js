@@ -9,6 +9,9 @@ export function render(view) {
   const selected = view.items.find(item => item.id === view.selected);
   const attached = selected && selected.status.kind !== 'stopped';
   const stoppedShell = selected?.status.kind === 'stopped' && !selected.tool && !selected.ssh;
+  const waiting = !selected && (!view.loaded || view.loading || disabled || !!view.resource);
+  const spinning = stoppedShell && view.busy || waiting && !view.error;
+  const status = selected ? text.stopped : waiting ? null : text.empty;
   return div().id('commands-page').v_flex().size_full().min_w_0().min_h_0()
     .children(!view.resource ? [div().h_flex().flex_shrink(0).gap_1().px_2().py_1()
       .child(new Button('terminal-new').ghost().label(text.create).disabled(disabled)
@@ -30,7 +33,7 @@ export function render(view) {
       .child(new Button('terminal-retry').ghost().label(text.retry).disabled(view.busy)
         .on_click((_, cx) => view.retry(cx)))] : [])
     .children(!attached && (!stoppedShell || !view.error) ? [div().flex_1().v_flex().items_center().justify_center()
-      .child(stoppedShell && view.busy || view.loading && !selected ? new Spinner() : selected ? text.stopped : text.empty)] : [])
+      .children(spinning ? [new Spinner()] : status ? [status] : [])] : [])
     .child(div().id(`terminal-content-${selected?.status.kind ?? 'empty'}`)
       .flex_grow(attached ? 1 : 0).min_h_0().min_w_0().children([
       Terminal.new('commands-terminal', {terminal:attached ? selected.id : null}),

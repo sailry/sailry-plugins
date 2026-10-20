@@ -30,8 +30,8 @@ function fixture(item, error = null) {
     Terminal:{new:(id, props) => element('Terminal', id, props)},
     Menu:{new:(id, props) => element('Menu', id, props)},
   });
-  const view = {items:[item], selected:item.id, resource:{id:item.id}, text:messages('en'),
-    busy:!error, pending:null, openRetry:error === 'failed' ? item.id : null, error, retry:() => calls.push('retry')};
+  const view = {items:[item], tools:[], selected:item.id, resource:{id:item.id}, text:messages('en'),
+    loaded:true, loading:false, busy:!error, pending:null, openRetry:error === 'failed' ? item.id : null, error, retry:() => calls.push('retry')};
   const root = render(view);
   const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
   return {nodes, calls, view, root, render:() => render(view), text:text(root)};
@@ -97,4 +97,38 @@ test('manual creation offers full access and explicit workspace choices',()=>{
   const tools=setup.nodes.get('terminal-tools').props.items;
   assert.equal(tools[0].id,'claude');
   assert.ok(tools.find(item=>item.id==='claude:workspace').label.includes('Workspace'));
+});
+
+
+test('opening a resource waits for its terminal metadata', () => {
+  const setup = fixture({id:'shell',status:{kind:'running'}});
+  Object.assign(setup.view,{items:[],busy:false,loaded:false});
+  const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
+  const kinds = node => typeof node === 'string' ? [] : [node.kind,...node.items.flatMap(kinds)];
+  for (const loaded of [false,true]) {
+    setup.view.loaded = loaded;
+    const root = setup.render();
+    assert.doesNotMatch(text(root),/No terminals/);
+    assert(kinds(root).includes('Spinner'));
+  }
+  setup.view.items = [{id:'shell',status:{kind:'running'}}];
+  const root = setup.render();
+  assert.equal(setup.nodes.get('commands-terminal').props.terminal,'shell');
+  assert.equal(kinds(root).includes('Spinner'),false);
+  assert.doesNotMatch(text(root),/No terminals/);
+});
+
+test('only a confirmed empty inventory shows the empty state', () => {
+  const setup = fixture({id:'shell',status:{kind:'running'}});
+  Object.assign(setup.view,{items:[],selected:null,resource:null,busy:false,loaded:false});
+  const text = node => typeof node === 'string' ? node : node.items.map(text).join(' ');
+  assert.doesNotMatch(text(setup.render()),/No terminals/);
+  setup.view.loaded = true;
+  assert.match(text(setup.render()),/No terminals/);
+  for (const state of [{loading:true},{loading:false,busy:true},{busy:false,pending:{id:'creating'}}]) {
+    Object.assign(setup.view,state);
+    assert.doesNotMatch(text(setup.render()),/No terminals/);
+  }
+  Object.assign(setup.view,{busy:false,pending:null,loaded:false,error:'loadFailed'});
+  assert.doesNotMatch(text(setup.render()),/No terminals|Could not load terminals/);
 });

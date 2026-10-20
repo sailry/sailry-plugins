@@ -13,7 +13,7 @@ export default class Commands extends View {
     this.text = messages(JSON.parse(context()).locale);
     this.resource = pane()?.resource;
     this.items = []; this.tools = []; this.selected = this.resource?.id ?? null; this.reveal = null;
-    this.loading = false; this.dirty = false; this.busy = false; this.pending = null; this.error = null;
+    this.loaded = false; this.loading = false; this.dirty = false; this.busy = false; this.pending = null; this.error = null;
     this.openAttempts = new Map(); this.openRetry = null;
     this.openIntent = null;
     if (this.resource) cx.spawn(async cx => {
@@ -49,7 +49,7 @@ export default class Commands extends View {
         this.dirty = false;
         const selected = this.selected;
         const [items, tools] = await Promise.all([listTerminals(), listTerminalTools()]);
-        this.items = items.filter(item => item.status.kind !== 'closed'); this.tools = tools;
+        this.items = items.filter(item => item.status.kind !== 'closed'); this.tools = tools; this.loaded = true;
         if (this.resource) {
           const index = this.items.findIndex(item => item.id === this.resource.id);
           if (index < 0) { closePane(); return; }
