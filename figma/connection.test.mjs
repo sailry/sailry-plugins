@@ -6,7 +6,7 @@ import vm from 'node:vm';
 
 const manifest = JSON.parse(readFileSync(new URL('./plugin.json', import.meta.url)));
 const extension = manifest.extensions['dev.sailry.platform'];
-const settings = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
+const connector = extension.connectors[0];
 const source = readFileSync(new URL('./dev.sailry.platform/host/main.js', import.meta.url), 'utf8').replace(/^export /gm, '');
 const read = vm.runInNewContext(`${source}\n({read})`).read;
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -14,31 +14,25 @@ const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.st
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.5');
+  assert.equal(manifest.version, '0.1.6');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);
   assert.deepEqual(extension.tools[0].handler.flow.operations, ['http.request']);
   assert.equal(extension.tools[0].handler.parameters.additionalProperties, false);
   assert.deepEqual(extension.tools[0].handler.parameters.properties.action.enum, ['file','nodes']);
-  assert.deepEqual(settings.properties.token['x-sailry-secret'], {
-    origin:'https://api.figma.com', header:'X-Figma-Token'
-  });
-  assert.equal(settings.properties.token.default, undefined);
-  assert.deepEqual(settings.required, ['token']);
-  assert.equal(Object.keys(settings['x-sailry-locales']).length, 10);
-  for (const locale of Object.values(settings['x-sailry-locales'])) {
-    assert.ok(locale.description.includes('https://developers.figma.com/docs/rest-api/personal-access-tokens/'));
-    assert.ok(locale.description.includes('file_content:read'));
-    assert.ok(locale.description.includes('MCP'));
-  }
+  assert.deepEqual(connector.inject,[{origin:'https://api.figma.com',header:'X-Figma-Token'}]);
+  assert.equal(connector.fields[0].secret,true);
+  assert.equal(connector.fields[0].default,undefined);
+  assert.equal(Object.keys(connector.fields[0].locales).length,10);
+  assert.equal(connector.fields[0].help,'https://developers.figma.com/docs/rest-api/personal-access-tokens/');
 });
 
 test('reads exact files and nodes with bounded parameters', () => {
   const file = plain(read({step:0, arguments:{action:'file', file_key:'file-key', version:'9007199254740993', depth:2}}));
   assert.equal(file.call.operation, 'http.request');
   assert.equal(file.call.arguments.method, 'GET');
-  assert.equal(file.call.arguments.credential, 'token');
+  assert.equal(file.call.arguments.connector, 'figma');
   assert.equal(file.call.arguments.body, null);
   assert.deepEqual(file.call.arguments.headers, {Accept:'application/json'});
   assert.equal(file.call.arguments.url, 'https://api.figma.com/v1/files/file-key?version=9007199254740993&depth=2');

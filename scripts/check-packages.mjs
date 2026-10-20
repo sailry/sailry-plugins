@@ -4,6 +4,7 @@ import {readFileSync, realpathSync, statSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {SourceTextModule} from 'node:vm';
+import {checkConnectors} from './connectors.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const number = '(?:0|[1-9]\\d*)';
@@ -12,7 +13,7 @@ const version = new RegExp(`^${number}\\.${number}\\.${number}(?:-${preview}(?:\
 const modules = new Set([
   'gpui-base', 'gpui-component', 'gpui-kit', 'sailry', 'sailry/ui',
   'sailry/search', 'sailry/settings', 'sailry/forms', 'sailry/sdk', 'sailry/connections', 'sailry/credentials', 'sailry/models',
-  'sailry/card', 'sailry/cards', 'sailry/registration',
+  'sailry/card', 'sailry/cards', 'sailry/registration', 'sailry/connectors',
   'sailry/documents', 'sailry/file-transfers', 'sailry/ssh-transfers', 'sailry/artifacts',
 ]);
 
@@ -55,6 +56,7 @@ export function checkPackage(manifest) {
   const extension = data.extensions?.['dev.sailry.platform'];
   if (!extension || extension.api_version !== 'v1') throw new Error('Sailry extension must use v1');
   distinct(extension.actions ?? [], 'Actions');
+  checkConnectors(extension, directory);
   const sections = [extension.host, extension.desktop, extension.settings_page].filter(Boolean);
   for (const section of sections) distinct(section.resources ?? [], 'Resources');
   distinct(extension.host?.handlers ?? [], 'Host handlers');
@@ -63,6 +65,7 @@ export function checkPackage(manifest) {
     distinct((extension[key] ?? []).map(item => item.id), label);
   }
   const pure = [
+    ...(extension.connectors ?? []).flatMap(connector => connector.auth.flatMap(auth => auth.registration?.flow?.kind === 'script' ? [auth.registration.flow.script] : [])),
     ...(extension.model_adapters ?? []).map(adapter => adapter.script),
     ...(extension.model_auth ?? []).flatMap(auth => [
       ...(auth.exchange ? [auth.exchange.script] : []),

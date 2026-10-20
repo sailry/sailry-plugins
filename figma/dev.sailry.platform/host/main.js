@@ -34,7 +34,7 @@ export function read(input) {
   const args = input.arguments ?? {};
   if (input.step === 0) return {call:{operation:'http.request', arguments:{
     method:'GET', url:`${origin}${parameters(args)}`, headers:{Accept:'application/json'},
-    body:null, credential:'token', timeout_ms:30000
+    body:null, connector:'figma', timeout_ms:30000
   }}};
   if (input.outcome?.isError) return {result:input.outcome};
   const response = input.outcome?.data;

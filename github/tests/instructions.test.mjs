@@ -30,26 +30,28 @@ test('authenticated workflows retain token and write boundaries', () => {
   assert.deepEqual(extension.actions, []);
   assert.equal(extension.tools, undefined);
   assert.equal(configuration.mcpServers.github.url, 'https://api.githubcopilot.com/mcp/');
-  assert.equal(configuration.mcpServers.github.headers.Authorization, '');
+  assert.equal(configuration.mcpServers.github.headers.Authorization, undefined);
   assert.match(extension.instructions, /official GitHub MCP service still requires authentication/);
   assert.match(skill, /official hosted MCP service requires a GitHub access token/);
   assert.match(skill, /Never ask them to paste a token into chat/);
-  assert.match(skill, /explicitly configured token takes precedence/);
-  assert.match(skill, /automatically uses the current authenticated GitHub CLI account on the execution Node/);
+  assert.match(skill, /Select a protected token or the current authenticated GitHub CLI account/);
+  assert.match(skill, /silently reads the token and verifies that account/);
   assert.match(skill, /never enter the model's arguments or output/);
   assert.match(skill, /run a command that exposes it to the model/);
   assert.match(skill, /anonymous path to private repositories or writes/);
   assert.match(skill, /do not automatically repeat/);
 });
 
-const settings = JSON.parse(await readFile(new URL('../dev.sailry.platform/settings.json', import.meta.url), 'utf8'));
-test('login import uses an optional protected MCP token', () => {
-  assert.equal(extension.credential_source, 'github_cli');
-  assert.equal(extension.settings_schema, 'dev.sailry.platform/settings.json');
-  assert.deepEqual(settings.required, []);
-  assert.deepEqual(settings.properties.token['x-sailry-secret'], {server:'github', header:'Authorization', prefix:'Bearer '});
-  assert.equal(settings.properties.token.maxLength, 4096);
-  for (const locale of ['en','zh-CN','zh-TW','de','es','fr','ja','ko','pt-BR','ru']) {
-    assert.ok(settings['x-sailry-locales'][locale].token);
-  }
+test('declares explicit token and silent fixed CLI methods', () => {
+  assert.equal(extension.credential_source, undefined);
+  assert.equal(extension.settings_schema, undefined);
+  const connector = extension.connectors[0], cli = connector.auth.find(auth=>auth.kind==='local_cli');
+  assert.deepEqual(connector.auth.map(auth=>auth.kind),['secret','local_cli']);
+  assert.deepEqual(connector.inject,[{server:'github',header:'Authorization',prefix:'Bearer '}]);
+  assert.equal(cli.command,'gh');
+  assert.deepEqual(cli.status.argv,['auth','status','--active','--hostname','github.com','--json','hosts']);
+  assert.deepEqual(cli.token.argv,['auth','token','--hostname','github.com','--user','{account}']);
+  assert.deepEqual(cli.env,{GH_PROMPT_DISABLED:'1'});
+  assert.equal(cli.timeout_ms,15000); assert.equal(cli.max_output,65536);
+  assert.equal(connector.fields[0].secret,true); assert.equal(connector.fields[0].default,undefined);
 });

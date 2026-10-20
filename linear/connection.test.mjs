@@ -19,5 +19,5 @@ test('declares the official remote connection', () => {
 test('uses OAuth without a manual token field', () => {
   assert.equal(manifest.extensions['dev.sailry.platform'].settings_schema, undefined);
   assert.deepEqual(mcp.mcpServers.linear.headers ?? {}, {});
-  assert.equal(manifest.extensions['dev.sailry.platform'].oauth, undefined);
+  assert.deepEqual(manifest.extensions['dev.sailry.platform'].connectors[0].auth,[{kind:'mcp_oauth',server:'linear'}]);
 });

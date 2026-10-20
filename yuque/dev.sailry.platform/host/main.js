@@ -38,9 +38,9 @@ function response(outcome) {
   }
   catch { return {error:failure('Service returned invalid JSON', data.status)}; }
 }
-function call(url, credential, state = null) {
+function call(url, connector, state = null) {
   return {call:{operation:'http.request',arguments:{method:'GET',url,
-    headers:{Accept:'application/json'},body:null,credential,timeout_ms:30000}},state};
+    headers:{Accept:'application/json'},body:null,connector,timeout_ms:30000}},state};
 }
 function repository(value) {
   const parts = text(value, 'repository').split('/');
@@ -62,7 +62,7 @@ export function request(input) {
       case 'toc': path = `/repos/${repository(args.repo)}/toc`; break;
       default: throw new Error('Unknown Yuque action');
     }
-    return call(`https://www.yuque.com/api/v2${path}`, 'token');
+    return call(`https://www.yuque.com/api/v2${path}`, 'yuque');
   }
   const reply = response(input.outcome);
   if (reply.error) return {result:reply.error};

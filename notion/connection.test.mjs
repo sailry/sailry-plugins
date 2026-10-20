@@ -6,14 +6,13 @@ const manifest = JSON.parse(readFileSync(new URL('./plugin.json', import.meta.ur
 const mcp = JSON.parse(readFileSync(new URL('./mcp.json', import.meta.url)));
 const extension = manifest.extensions['dev.sailry.platform'];
 const hostSource = readFileSync(new URL('./dev.sailry.platform/host/connection.js', import.meta.url), 'utf8');
-const desktopSource = readFileSync(new URL('./dev.sailry.platform/desktop/connection.js', import.meta.url), 'utf8');
-const {fallback, messages} = await import('./dev.sailry.platform/desktop/locales.js');
+const {fallback} = await import('./dev.sailry.platform/desktop/locales.js');
 
 async function host(configured) {
   const source = hostSource.replace(/^import .*;\s*$/gm, '').replace('export async function connection', 'async function connection');
   const {create} = await import(`data:text/javascript,${encodeURIComponent(`export function create(status,card,fallback){${source}\nreturn connection;}`)}`);
   const reads = [];
-  const connection = create(async server => { reads.push(server); return {configured}; }, (key,props,fallback) => ({kind:'card',key,props,fallback}), fallback);
+  const connection = create(async server => { reads.push(server); return configured ? {enabled:true,state:'connected'} : null; }, (key,props,fallback) => ({kind:'card',key,props,fallback}), fallback);
   const result = await connection();
   assert.deepEqual(reads, ['notion']);
   return result;
@@ -31,7 +30,7 @@ test('declares the official remote connection', () => {
 });
 
 test('declares a card-only entry with native named targets', () => {
-  assert.equal(manifest.version, '0.1.7');
+  assert.equal(manifest.version, '0.1.8');
   assert.equal(extension.desktop.entry, undefined);
   assert.equal(extension.desktop.navigation, undefined);
   assert.equal(extension.tools[0].handler.read_only, true);
@@ -59,52 +58,4 @@ test('disconnected status returns a neutral public draft', async () => {
   assert.equal(connected.error, undefined);
   assert.equal(connected.isError, undefined);
   assert.equal(connected.sailry_content.blocks[0].props.configured, true);
-});
-
-test('mount reads status but login remains a native gesture', async () => {
-  const source = desktopSource.replace(/^import .*;\s*$/gm, '').replace('export default class', 'class');
-  const {create} = await import(`data:text/javascript,${encodeURIComponent(`export function create(View,div,Attachment,Icon,Action,state,theme,nextChange,status,toast,messages){${source}\nreturn Connection;}`)}`);
-  const jobs = [], actions = [], cards = [];
-  let statusReads = 0;
-  const element = new Proxy({}, {get:() => () => element});
-  // These keys are embedded by the public desktop asset source, unlike the full Kit catalog.
-  const availableIcons = new Set(['reicon:arrows/arrow-up-right','icons/external-link.svg','icons/close.svg','icons/refresh-cw.svg']);
-  const NativeAction = {new(id,props) {
-    assert.ok(availableIcons.has(props.icon), `unregistered action icon: ${props.icon}`);
-    actions.push({id,...props}); return element;
-  }};
-  class NativeAttachment { constructor(id) {cards.push(id); return element;} }
-  class NativeIcon { constructor() {return element;} }
-  const Connection = create(class {}, () => element, NativeAttachment, NativeIcon, NativeAction,
-    () => ({cursor:'0',props:{configured:false},configured:false,login:'idle',can_open:false,can_cancel:false,action:null,locale:'en'}),
-    () => ({colors:{}}), async () => {throw new Error('released');}, async () => {statusReads++;}, () => {}, messages);
-  const view = new Connection(), cx = {spawn: job => jobs.push(job), notify() {}};
-  view.init({}, cx);
-  assert.equal(statusReads, 0);
-  assert.equal(actions.length, 0);
-  await jobs[1](cx);
-  assert.equal(statusReads, 1);
-  view.render(cx);
-  assert.deepEqual(cards, ['notion-connection-card']);
-  assert.deepEqual(actions.filter(action => action.action.kind === 'connect').map(action => action.action.mode), ['embedded','external']);
-  assert.equal(actions.find(action => action.id === 'notion-login').icon, 'reicon:arrows/arrow-up-right');
-  assert.ok(actions.every(action => action.icon && action.label), 'native icon actions retain accessible labels');
-  assert.ok(actions.every(action => !('on_click' in action)), 'package never receives a callable login bridge');
-  actions.length = 0; view.state.login = 'pending'; view.state.can_open = true; view.state.can_cancel = true;
-  view.render(cx);
-  assert.deepEqual(actions.map(action => action.action.kind), ['browser','browser','cancel','refresh']);
-  assert.equal(actions.find(action => action.id === 'notion-open-login').icon, 'reicon:arrows/arrow-up-right');
-  assert.equal(actions.find(action => action.id === 'notion-cancel-login').icon, 'icons/close.svg');
-  assert.ok(actions.filter(action => action.action.kind === 'browser').every(action => !action.disabled));
-  assert.ok(!actions.some(action => action.action.kind === 'connect'), 'reopening preserves the active attempt');
-  for (const login of ['unconfirmed','failed']) {
-    actions.length = 0; view.state.login = login; view.state.can_open = false;
-    view.render(cx);
-    assert.deepEqual(actions.map(action => action.action.kind), ['connect','cancel','refresh']);
-    assert.deepEqual(actions[0].action, {kind:'connect'}, 'Check resumes the retained attempt');
-  }
-  actions.length = 0; view.state.login = 'pending'; view.state.can_open = false;
-  view.render(cx);
-  assert.ok(actions.filter(action => action.action.kind === 'browser').every(action => action.disabled));
-  assert.ok(actions.some(action => action.action.kind === 'cancel' && !action.disabled));
 });

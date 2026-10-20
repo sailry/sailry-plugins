@@ -39,9 +39,9 @@ function response(outcome) {
   }
   catch { return {error:failure('Service returned invalid JSON', data.status)}; }
 }
-function call(url, credential, state = null) {
+function call(url, connector, state = null) {
   return {call:{operation:'http.request',arguments:{method:'GET',url,
-    headers:{Accept:'application/json'},body:null,credential,timeout_ms:30000}},state};
+    headers:{Accept:'application/json'},body:null,connector,timeout_ms:30000}},state};
 }
 import {readSettings} from 'sailry/sdk';
 
@@ -63,7 +63,7 @@ export async function request(input) {
         delete values.operatorId; values.unionId = operator; values.parentId = text(args.parent, 'parent file'); break;
       default: throw new Error('Unknown DingTalk action');
     }
-    return call(`https://api.dingtalk.com${path}?${query(values)}`, 'app_secret',
+    return call(`https://api.dingtalk.com${path}?${query(values)}`, 'dingtalk',
       ['nodes','files'].includes(args.action) ? {pagination} : null);
   }
   const reply = response(input.outcome);

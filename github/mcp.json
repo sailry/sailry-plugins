@@ -5,7 +5,6 @@
       "type": "streamable-http",
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": {
-        "Authorization": "",
         "X-MCP-Toolsets": "repos,issues,pull_requests,actions,users"
       }
     }

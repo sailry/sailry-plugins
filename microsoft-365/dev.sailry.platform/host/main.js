@@ -38,9 +38,9 @@ function response(outcome) {
   }
   catch { return {error:failure('Service returned invalid JSON', data.status)}; }
 }
-function call(url, credential, state = null) {
+function call(url, connector, state = null) {
   return {call:{operation:'http.request',arguments:{method:'GET',url,
-    headers:{Accept:'application/json'},body:null,credential,timeout_ms:30000}},state};
+    headers:{Accept:'application/json'},body:null,connector,timeout_ms:30000}},state};
 }
 function next(value, path) {
   if (value === undefined || value === null || value === '') return null;
@@ -63,24 +63,24 @@ export function request(input) {
         path = '/me/messages'; values['$select'] = 'id,subject,from,receivedDateTime,bodyPreview,webLink';
         if (args.query) values['$search'] = JSON.stringify(text(args.query, 'query')); break;
       case 'message':
-        return call(`https://graph.microsoft.com/v1.0/me/messages/${id(args.id)}`, 'token');
+        return call(`https://graph.microsoft.com/v1.0/me/messages/${id(args.id)}`, 'microsoft');
       case 'events':
         if (args.time_min || args.time_max) {
           path = '/me/calendarView'; values.startDateTime = text(args.time_min, 'start time');
           values.endDateTime = text(args.time_max, 'end time');
         } else path = '/me/events';
         break;
-      case 'event': return call(`https://graph.microsoft.com/v1.0/me/events/${id(args.id)}`, 'token');
+      case 'event': return call(`https://graph.microsoft.com/v1.0/me/events/${id(args.id)}`, 'microsoft');
       case 'files':
         path = args.query ? `/me/drive/root/search(q='${id(text(args.query, 'query').replace(/'/g, "''"), 'query')}')` : '/me/drive/root/children';
         break;
-      case 'file': return call(`https://graph.microsoft.com/v1.0/me/drive/items/${id(args.id)}`, 'token');
+      case 'file': return call(`https://graph.microsoft.com/v1.0/me/drive/items/${id(args.id)}`, 'microsoft');
       default: throw new Error('Unknown Microsoft 365 action');
     }
     const cursor = next(args.cursor,path);
     const url = cursor ?? `https://graph.microsoft.com/v1.0${path}?${query(values)}`;
     // Continuations are opaque server URLs; do not rewrite their page size.
-    return call(url, 'token', {path,...(cursor ? {} : {pagination})});
+    return call(url, 'microsoft', {path,...(cursor ? {} : {pagination})});
   }
   const reply = response(input.outcome);
   if (reply.error) return {result:reply.error};

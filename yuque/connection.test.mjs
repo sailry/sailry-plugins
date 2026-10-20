@@ -13,8 +13,8 @@ test('captures finite operations and origin-bound credentials',()=>{
  assert.deepEqual(extension.actions,['http.request']);
  assert.deepEqual(extension.tools[0].handler.flow.operations,['http.request']);
  assert.equal(extension.tools[0].handler.parameters.additionalProperties,false);
- for(const field of Object.values(JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json',import.meta.url))).properties)){
-  if(field['x-sailry-secret']) assert.equal(field.default,undefined);
+ for(const field of extension.connectors[0].fields){
+  if(field.secret) assert.equal(field.default,undefined);
  }
 });
 
@@ -40,13 +40,12 @@ test('preserves failures without replaying uncertain effects',async()=>{
 });
 
 
-test('provides localized official credential guidance', () => {
-  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
-  assert.ok(schema.description.includes("https://www.yuque.com/settings/tokens"));
-  assert.equal(Object.keys(schema['x-sailry-locales']).length, 10);
-  for (const locale of Object.values(schema['x-sailry-locales']))
-    assert.ok(locale.description.includes("https://www.yuque.com/settings/tokens"));
-  assert.equal(schema.properties.token.default, undefined);
+test('provides localized protected connector fields', () => {
+  const connector = extension.connectors[0];
+  assert.equal(connector.fields[0].help, 'https://www.yuque.com/settings/tokens');
+  assert.equal(connector.fields[0].secret, true);
+  assert.equal(connector.fields[0].default, undefined);
+  assert.equal(Object.keys(connector.fields[0].locales).length, 10);
 });
 
 const targets = [

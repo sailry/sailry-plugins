@@ -5,7 +5,6 @@
       "type": "streamable-http",
       "url": "https://mcp.feishu.cn/mcp",
       "headers": {
-        "X-Lark-MCP-TAT": "",
         "X-Lark-MCP-Allowed-Tools": "get-comments,fetch-doc"
       }
     }

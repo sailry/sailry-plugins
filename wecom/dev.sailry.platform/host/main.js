@@ -13,7 +13,7 @@ function path(value) {
 function request(url, payload, state = null) {
   return {call:{operation:'http.request',arguments:{method:'POST',url,
     headers:{Accept:'application/json','Content-Type':'application/json'},
-    body:JSON.stringify(payload),credential:'token',timeout_ms:30000}},state};
+    body:JSON.stringify(payload),connector:'wecom',timeout_ms:30000}},state};
 }
 function failure(message) { return {isError:true,error:{code:'unavailable',message}}; }
 function response(outcome) {

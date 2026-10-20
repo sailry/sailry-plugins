@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Manage service accounts through declared connectors
+
 ## 0.1.5
 
 - Align package contract tests with the current release metadata

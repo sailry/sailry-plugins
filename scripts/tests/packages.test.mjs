@@ -87,6 +87,7 @@ test('repository packages and examples accept valid version increments', t => {
   mkdirSync(scripts);
   const checker = path.join(scripts, 'check-packages.mjs');
   copyFileSync(new URL('../check-packages.mjs', import.meta.url), checker);
+  copyFileSync(new URL('../connectors.mjs', import.meta.url), path.join(scripts, 'connectors.mjs'));
   const example = path.join(temp, 'examples', 'sample', 'plugin.json');
   mkdirSync(path.dirname(example), {recursive: true});
   writeFileSync(example, JSON.stringify(data));

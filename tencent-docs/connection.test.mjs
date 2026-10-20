@@ -16,22 +16,12 @@ test('declares the official remote connection', () => {
   assert.equal(new URL(server.url).username, '');
 });
 
-test('binds credentials outside package resources', () => {
-  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
-  const binding = schema.properties.token['x-sailry-secret'];
-  assert.equal(binding.server, "tencent-docs");
-  assert.equal(binding.header, "Authorization");
-  assert.equal(binding.prefix ?? '', "");
-  assert.equal(mcp.mcpServers["tencent-docs"].headers["Authorization"], '');
-  assert.equal(schema.properties.token.default, undefined);
-});
-
-
-test('provides localized official credential guidance', () => {
-  const schema = JSON.parse(readFileSync(new URL('./dev.sailry.platform/settings.json', import.meta.url)));
-  assert.ok(schema.description.includes("https://docs.qq.com/open/auth/mcp.html"));
-  assert.equal(Object.keys(schema['x-sailry-locales']).length, 10);
-  for (const locale of Object.values(schema['x-sailry-locales']))
-    assert.ok(locale.description.includes("https://docs.qq.com/open/auth/mcp.html"));
-  assert.equal(schema.properties.token.default, undefined);
+test('binds a protected token to the declared server', () => {
+  const connector = manifest.extensions['dev.sailry.platform'].connectors[0];
+  assert.deepEqual(connector.inject,[{server:'tencent-docs',header:'Authorization'}]);
+  assert.equal(connector.fields[0].secret,true);
+  assert.equal(connector.fields[0].help,'https://docs.qq.com/open/auth/mcp.html');
+  assert.equal(connector.fields[0].default,undefined);
+  assert.equal(Object.keys(connector.fields[0].locales).length,10);
+  assert.deepEqual(mcp.mcpServers['tencent-docs'].headers ?? {},{});
 });
