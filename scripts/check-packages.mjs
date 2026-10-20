@@ -64,12 +64,15 @@ export function checkPackage(manifest) {
   }
   const pure = [
     ...(extension.model_adapters ?? []).map(adapter => adapter.script),
-    ...(extension.model_auth ?? []).flatMap(auth => auth.exchange ? [auth.exchange.script] : []),
+    ...(extension.model_auth ?? []).flatMap(auth => [
+      ...(auth.exchange ? [auth.exchange.script] : []),
+      ...(auth.flow?.kind === 'script' ? [auth.flow.script] : []),
+    ]),
   ];
   if (pure.some(script => !script || typeof script.entry !== 'string')) throw new Error('Model translations must declare a script');
   if (extension.model_adapters?.length && !extension.actions.includes('models.provide')) throw new Error('Model adapters require models.provide');
   if (extension.model_auth?.length && !extension.actions.includes('models.authenticate')) throw new Error('Model authentication requires models.authenticate');
-  if (extension.model_auth?.some(auth => auth.exchange) && !extension.actions.includes('credentials.inspect')) throw new Error('Credential transformations require credentials.inspect');
+  if (extension.model_auth?.some(auth => auth.exchange || auth.flow?.kind === 'script') && !extension.actions.includes('credentials.inspect')) throw new Error('Credential transformations require credentials.inspect');
   const pureFiles = new Set(), pureScopes = [];
   for (const script of pure) {
     distinct(script.resources ?? [], 'Model resources');

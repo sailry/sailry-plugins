@@ -1327,6 +1327,134 @@
       }
     },
     {
+      "id": "claude-auth",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "claude-auth",
+        "version": "0.1.0",
+        "description": "Claude account",
+        "license": "MIT",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "scope": "host",
+            "actions": [
+              "models.authenticate",
+              "credentials.inspect"
+            ],
+            "display": {
+              "label": "Claude account",
+              "locales": {
+                "zh-CN": "Claude 账户",
+                "zh-TW": "Claude 帳戶",
+                "de": "Claude-Konten",
+                "es": "Cuentas de Claude",
+                "fr": "Comptes Claude",
+                "ja": "Claude アカウント",
+                "ko": "Claude 계정",
+                "pt-BR": "Contas Claude",
+                "ru": "Учётные записи Claude"
+              },
+              "icon": "reicon:newicons/key-square8"
+            },
+            "description": {
+              "label": "Claude account",
+              "locales": {
+                "zh-CN": "Claude 账户",
+                "zh-TW": "Claude 帳戶",
+                "de": "Claude-Konten",
+                "es": "Cuentas de Claude",
+                "fr": "Comptes Claude",
+                "ja": "Claude アカウント",
+                "ko": "Claude 계정",
+                "pt-BR": "Contas Claude",
+                "ru": "Учётные записи Claude"
+              }
+            },
+            "category": "data",
+            "tint": "teal",
+            "model_auth": [
+              {
+                "id": "subscription",
+                "authentication": "claude_oauth",
+                "display": {
+                  "label": "Claude OAuth"
+                },
+                "flow": {
+                  "kind": "script",
+                  "script": {
+                    "entry": "dev.sailry.platform/auth/flow.js",
+                    "resources": []
+                  },
+                  "handler": "authorize",
+                  "requests": {
+                    "token": {
+                      "url": "https://platform.claude.com/v1/oauth/token",
+                      "body": {
+                        "kind": "json",
+                        "value": {
+                          "grant_type": "authorization_code",
+                          "client_id": "{client_id}",
+                          "code": "{code}",
+                          "state": "{state}",
+                          "redirect_uri": "{redirect_uri}",
+                          "code_verifier": "{verifier}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    },
+                    "refresh": {
+                      "url": "https://platform.claude.com/v1/oauth/token",
+                      "body": {
+                        "kind": "json",
+                        "value": {
+                          "grant_type": "refresh_token",
+                          "client_id": "{client_id}",
+                          "refresh_token": "{refresh}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    }
+                  },
+                  "callback": {
+                    "path": "/callback",
+                    "redirect_uri": "https://platform.claude.com/oauth/code/callback",
+                    "manual": true,
+                    "allow_localhost": true
+                  },
+                  "issuer": null,
+                  "refresh": true
+                },
+                "client": {
+                  "client_id": "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+                },
+                "scopes": [
+                  "org:create_api_key",
+                  "user:profile",
+                  "user:inference",
+                  "user:sessions:claude_code",
+                  "user:mcp_servers",
+                  "user:file_upload"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.authenticate",
+        "credentials.inspect"
+      ],
+      "release_notes": {
+        "text": "- Provide existing account authorization through the shared private authentication services"
+      }
+    },
+    {
       "id": "code",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -12059,11 +12187,215 @@
       }
     },
     {
+      "id": "openai-auth",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "openai-auth",
+        "version": "0.1.0",
+        "description": "OpenAI accounts",
+        "license": "Apache-2.0",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "scope": "host",
+            "actions": [
+              "models.authenticate",
+              "credentials.inspect"
+            ],
+            "display": {
+              "label": "OpenAI accounts",
+              "locales": {
+                "zh-CN": "OpenAI 账户",
+                "zh-TW": "OpenAI 帳戶",
+                "de": "OpenAI-Konten",
+                "es": "Cuentas de OpenAI",
+                "fr": "Comptes OpenAI",
+                "ja": "OpenAI アカウント",
+                "ko": "OpenAI 계정",
+                "pt-BR": "Contas OpenAI",
+                "ru": "Учётные записи OpenAI"
+              },
+              "icon": "reicon:newicons/key-square8"
+            },
+            "description": {
+              "label": "OpenAI accounts",
+              "locales": {
+                "zh-CN": "OpenAI 账户",
+                "zh-TW": "OpenAI 帳戶",
+                "de": "OpenAI-Konten",
+                "es": "Cuentas de OpenAI",
+                "fr": "Comptes OpenAI",
+                "ja": "OpenAI アカウント",
+                "ko": "OpenAI 계정",
+                "pt-BR": "Contas OpenAI",
+                "ru": "Учётные записи OpenAI"
+              }
+            },
+            "category": "data",
+            "tint": "teal",
+            "model_auth": [
+              {
+                "id": "siwc",
+                "authentication": "chat_gpt",
+                "display": {
+                  "label": "ChatGPT SIWC"
+                },
+                "flow": {
+                  "kind": "script",
+                  "script": {
+                    "entry": "dev.sailry.platform/auth/flow.js",
+                    "resources": []
+                  },
+                  "handler": "siwc",
+                  "requests": {
+                    "token": {
+                      "url": "https://auth.openai.com/api/accounts/oauth/token",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "grant_type": "authorization_code",
+                          "client_id": "{client_id}",
+                          "redirect_uri": "{redirect_uri}",
+                          "resource": "{resource}",
+                          "code": "{code}",
+                          "code_verifier": "{verifier}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    },
+                    "refresh": {
+                      "url": "https://auth.openai.com/api/accounts/oauth/token",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "grant_type": "refresh_token",
+                          "client_id": "{client_id}",
+                          "refresh_token": "{refresh}",
+                          "resource": "{resource}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    }
+                  },
+                  "callback": {
+                    "path": "/auth/callback",
+                    "redirect_uri": null,
+                    "manual": false
+                  },
+                  "issuer": "https://auth.openai.com",
+                  "refresh": true
+                },
+                "scopes": [
+                  "openid",
+                  "profile",
+                  "email",
+                  "offline_access",
+                  "resource.invoke",
+                  "chatgpt.tokens.use.direct"
+                ]
+              },
+              {
+                "id": "codex",
+                "authentication": "chat_gpt_oauth",
+                "display": {
+                  "label": "ChatGPT OAuth"
+                },
+                "flow": {
+                  "kind": "script",
+                  "script": {
+                    "entry": "dev.sailry.platform/auth/flow.js",
+                    "resources": []
+                  },
+                  "handler": "codex",
+                  "requests": {
+                    "device": {
+                      "url": "https://auth.openai.com/api/accounts/deviceauth/usercode",
+                      "body": {
+                        "kind": "json",
+                        "value": {
+                          "client_id": "{client_id}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    },
+                    "poll": {
+                      "url": "https://auth.openai.com/api/accounts/deviceauth/token",
+                      "body": {
+                        "kind": "json",
+                        "value": {
+                          "device_auth_id": "{device_auth_id}",
+                          "user_code": "{user_code}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    },
+                    "token": {
+                      "url": "https://auth.openai.com/oauth/token",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "grant_type": "authorization_code",
+                          "client_id": "{client_id}",
+                          "redirect_uri": "{redirect_uri}",
+                          "code": "{code}",
+                          "code_verifier": "{verifier}"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    },
+                    "refresh": {
+                      "url": "https://auth.openai.com/oauth/token",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "grant_type": "refresh_token",
+                          "client_id": "{client_id}",
+                          "refresh_token": "{refresh}",
+                          "scope": "openid profile email"
+                        }
+                      },
+                      "headers": {
+                        "User-Agent": "{user_agent}"
+                      }
+                    }
+                  },
+                  "callback": null,
+                  "issuer": "https://auth.openai.com",
+                  "refresh": true
+                },
+                "client": {
+                  "client_id": "app_EMoamEEZ73f0CkXaXp7hrann"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.authenticate",
+        "credentials.inspect"
+      ],
+      "release_notes": {
+        "text": "- Provide existing account authorization through the shared private authentication services"
+      }
+    },
+    {
       "id": "plugin-builder",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -12091,7 +12423,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Accept current catalog metadata and model declarations in package preflight checks\n- Reject unsupported category and tint values"
+        "text": "- Check declared authentication scripts and their credential access"
       }
     },
     {

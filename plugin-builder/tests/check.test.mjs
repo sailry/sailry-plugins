@@ -213,3 +213,17 @@ test('rejects a skill whose name differs from its folder', () => {
   const result = check(fixture({'plugin.json': manifest(), 'skills/notes/SKILL.md': skill}));
   assert.match(result.output, /skills\/notes: name must equal the folder name/);
 });
+
+
+test('checks declared authentication scripts', () => {
+  const auth = {id:'example',flow:{kind:'script',script:{entry:'dev.sailry.platform/auth.js'},handler:'step'}};
+  const files = actions => ({'plugin.json':manifest({actions,model_auth:[auth]}),
+    'dev.sailry.platform/auth.js':'export function step() { return {}; }'});
+  assert.equal(check(fixture(files(['models.authenticate','credentials.inspect']))).code,0);
+  assert.match(check(fixture(files(['models.authenticate']))).output,/require credentials.inspect/);
+  assert.match(check(fixture({...files(['models.authenticate','credentials.inspect']),
+    'dev.sailry.platform/auth.js':'import x from "sailry/settings"; export {x};'})).output,/unavailable module/);
+  const missing=files(['models.authenticate','credentials.inspect']);
+  delete missing['dev.sailry.platform/auth.js'];
+  assert.match(check(fixture(missing)).output,/does not exist/);
+});

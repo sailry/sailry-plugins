@@ -1,0 +1,193 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "openai-auth",
+  "version": "0.1.0",
+  "description": "OpenAI accounts",
+  "license": "Apache-2.0",
+  "extensions": {
+    "dev.sailry.platform": {
+      "api_version": "v1",
+      "scope": "host",
+      "actions": [
+        "models.authenticate",
+        "credentials.inspect"
+      ],
+      "display": {
+        "label": "OpenAI accounts",
+        "locales": {
+          "zh-CN": "OpenAI 账户",
+          "zh-TW": "OpenAI 帳戶",
+          "de": "OpenAI-Konten",
+          "es": "Cuentas de OpenAI",
+          "fr": "Comptes OpenAI",
+          "ja": "OpenAI アカウント",
+          "ko": "OpenAI 계정",
+          "pt-BR": "Contas OpenAI",
+          "ru": "Учётные записи OpenAI"
+        },
+        "icon": "reicon:newicons/key-square8"
+      },
+      "description": {
+        "label": "OpenAI accounts",
+        "locales": {
+          "zh-CN": "OpenAI 账户",
+          "zh-TW": "OpenAI 帳戶",
+          "de": "OpenAI-Konten",
+          "es": "Cuentas de OpenAI",
+          "fr": "Comptes OpenAI",
+          "ja": "OpenAI アカウント",
+          "ko": "OpenAI 계정",
+          "pt-BR": "Contas OpenAI",
+          "ru": "Учётные записи OpenAI"
+        }
+      },
+      "category": "data",
+      "tint": "teal",
+      "model_auth": [
+        {
+          "id": "siwc",
+          "authentication": "chat_gpt",
+          "display": {
+            "label": "ChatGPT SIWC"
+          },
+          "flow": {
+            "kind": "script",
+            "script": {
+              "entry": "dev.sailry.platform/auth/flow.js",
+              "resources": []
+            },
+            "handler": "siwc",
+            "requests": {
+              "token": {
+                "url": "https://auth.openai.com/api/accounts/oauth/token",
+                "body": {
+                  "kind": "form",
+                  "fields": {
+                    "grant_type": "authorization_code",
+                    "client_id": "{client_id}",
+                    "redirect_uri": "{redirect_uri}",
+                    "resource": "{resource}",
+                    "code": "{code}",
+                    "code_verifier": "{verifier}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              },
+              "refresh": {
+                "url": "https://auth.openai.com/api/accounts/oauth/token",
+                "body": {
+                  "kind": "form",
+                  "fields": {
+                    "grant_type": "refresh_token",
+                    "client_id": "{client_id}",
+                    "refresh_token": "{refresh}",
+                    "resource": "{resource}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              }
+            },
+            "callback": {
+              "path": "/auth/callback",
+              "redirect_uri": null,
+              "manual": false
+            },
+            "issuer": "https://auth.openai.com",
+            "refresh": true
+          },
+          "scopes": [
+            "openid",
+            "profile",
+            "email",
+            "offline_access",
+            "resource.invoke",
+            "chatgpt.tokens.use.direct"
+          ]
+        },
+        {
+          "id": "codex",
+          "authentication": "chat_gpt_oauth",
+          "display": {
+            "label": "ChatGPT OAuth"
+          },
+          "flow": {
+            "kind": "script",
+            "script": {
+              "entry": "dev.sailry.platform/auth/flow.js",
+              "resources": []
+            },
+            "handler": "codex",
+            "requests": {
+              "device": {
+                "url": "https://auth.openai.com/api/accounts/deviceauth/usercode",
+                "body": {
+                  "kind": "json",
+                  "value": {
+                    "client_id": "{client_id}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              },
+              "poll": {
+                "url": "https://auth.openai.com/api/accounts/deviceauth/token",
+                "body": {
+                  "kind": "json",
+                  "value": {
+                    "device_auth_id": "{device_auth_id}",
+                    "user_code": "{user_code}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              },
+              "token": {
+                "url": "https://auth.openai.com/oauth/token",
+                "body": {
+                  "kind": "form",
+                  "fields": {
+                    "grant_type": "authorization_code",
+                    "client_id": "{client_id}",
+                    "redirect_uri": "{redirect_uri}",
+                    "code": "{code}",
+                    "code_verifier": "{verifier}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              },
+              "refresh": {
+                "url": "https://auth.openai.com/oauth/token",
+                "body": {
+                  "kind": "form",
+                  "fields": {
+                    "grant_type": "refresh_token",
+                    "client_id": "{client_id}",
+                    "refresh_token": "{refresh}",
+                    "scope": "openid profile email"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              }
+            },
+            "callback": null,
+            "issuer": "https://auth.openai.com",
+            "refresh": true
+          },
+          "client": {
+            "client_id": "app_EMoamEEZ73f0CkXaXp7hrann"
+          }
+        }
+      ]
+    }
+  }
+}

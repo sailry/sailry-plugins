@@ -123,15 +123,29 @@ def check_names(values, label, report):
 def check_sections(root, extension, report):
     """Check entries and resources, then the imports of every script."""
     declared = {}
-    for key in ("host", "desktop", "settings_page"):
-        section = extension.get(key)
+    sections = [(key, extension.get(key), False) for key in ("host", "desktop", "settings_page")]
+    sections.extend(("model_adapters.script", item.get("script"), True)
+                    for item in extension.get("model_adapters", []) if isinstance(item, dict))
+    for item in extension.get("model_auth", []):
+        if not isinstance(item, dict):
+            continue
+        if isinstance(item.get("exchange"), dict):
+            sections.append(("model_auth.exchange.script", item["exchange"].get("script"), True))
+        if isinstance(item.get("flow"), dict) and item["flow"].get("kind") == "script":
+            sections.append(("model_auth.flow.script", item["flow"].get("script"), True))
+    pure = set()
+    for key, section, translation in sections:
         if not isinstance(section, dict):
             continue
         resources = check_names(section.get("resources", []), f"{key}.resources", report)
+        if translation and isinstance(section.get("entry"), str) and section["entry"] not in resources:
+            resources = [*resources, section["entry"]]
         for value in resources:
             target = package_file(root, value, f"{key}.resources", report)
             if target:
                 declared[target] = value
+                if translation:
+                    pure.add(target)
         for field in ("entry", "ui_entry"):
             value = section.get(field)
             if value is None:
@@ -145,7 +159,7 @@ def check_sections(root, extension, report):
         source = target.read_text(encoding="utf-8", errors="replace")
         for specifier in IMPORT.findall(source):
             if not specifier.startswith("."):
-                if specifier not in MODULES:
+                if (specifier != "sailry/adapter" if target in pure else specifier not in MODULES):
                     report.error(f"{value} imports an unavailable module: {specifier}")
                 continue
             imported = (target.parent / specifier).resolve()
@@ -330,6 +344,12 @@ def check(root):
         report.warn("display is missing; catalogs fall back to the package name")
     if not manifest.get("description") and not extension.get("description"):
         report.warn("add a description so the catalog can explain the plugin")
+    for auth in extension.get("model_auth", []):
+        if not isinstance(auth, dict):
+            continue
+        scripted = isinstance(auth.get("flow"), dict) and auth["flow"].get("kind") == "script"
+        if (scripted or auth.get("exchange")) and "credentials.inspect" not in extension.get("actions", []):
+            report.error("credential transformations require credentials.inspect")
     check_sections(root, extension, report)
     check_host(extension, report)
     check_tools(extension, servers, report)

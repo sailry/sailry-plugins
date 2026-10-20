@@ -1,0 +1,117 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "claude-auth",
+  "version": "0.1.0",
+  "description": "Claude account",
+  "license": "MIT",
+  "extensions": {
+    "dev.sailry.platform": {
+      "api_version": "v1",
+      "scope": "host",
+      "actions": [
+        "models.authenticate",
+        "credentials.inspect"
+      ],
+      "display": {
+        "label": "Claude account",
+        "locales": {
+          "zh-CN": "Claude 账户",
+          "zh-TW": "Claude 帳戶",
+          "de": "Claude-Konten",
+          "es": "Cuentas de Claude",
+          "fr": "Comptes Claude",
+          "ja": "Claude アカウント",
+          "ko": "Claude 계정",
+          "pt-BR": "Contas Claude",
+          "ru": "Учётные записи Claude"
+        },
+        "icon": "reicon:newicons/key-square8"
+      },
+      "description": {
+        "label": "Claude account",
+        "locales": {
+          "zh-CN": "Claude 账户",
+          "zh-TW": "Claude 帳戶",
+          "de": "Claude-Konten",
+          "es": "Cuentas de Claude",
+          "fr": "Comptes Claude",
+          "ja": "Claude アカウント",
+          "ko": "Claude 계정",
+          "pt-BR": "Contas Claude",
+          "ru": "Учётные записи Claude"
+        }
+      },
+      "category": "data",
+      "tint": "teal",
+      "model_auth": [
+        {
+          "id": "subscription",
+          "authentication": "claude_oauth",
+          "display": {
+            "label": "Claude OAuth"
+          },
+          "flow": {
+            "kind": "script",
+            "script": {
+              "entry": "dev.sailry.platform/auth/flow.js",
+              "resources": []
+            },
+            "handler": "authorize",
+            "requests": {
+              "token": {
+                "url": "https://platform.claude.com/v1/oauth/token",
+                "body": {
+                  "kind": "json",
+                  "value": {
+                    "grant_type": "authorization_code",
+                    "client_id": "{client_id}",
+                    "code": "{code}",
+                    "state": "{state}",
+                    "redirect_uri": "{redirect_uri}",
+                    "code_verifier": "{verifier}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              },
+              "refresh": {
+                "url": "https://platform.claude.com/v1/oauth/token",
+                "body": {
+                  "kind": "json",
+                  "value": {
+                    "grant_type": "refresh_token",
+                    "client_id": "{client_id}",
+                    "refresh_token": "{refresh}"
+                  }
+                },
+                "headers": {
+                  "User-Agent": "{user_agent}"
+                }
+              }
+            },
+            "callback": {
+              "path": "/callback",
+              "redirect_uri": "https://platform.claude.com/oauth/code/callback",
+              "manual": true,
+              "allow_localhost": true
+            },
+            "issuer": null,
+            "refresh": true
+          },
+          "client": {
+            "client_id": "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+          },
+          "scopes": [
+            "org:create_api_key",
+            "user:profile",
+            "user:inference",
+            "user:sessions:claude_code",
+            "user:mcp_servers",
+            "user:file_upload"
+          ]
+        }
+      ]
+    }
+  }
+}
