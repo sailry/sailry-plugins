@@ -1331,8 +1331,8 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "claude-auth",
-        "version": "0.1.0",
-        "description": "Claude account",
+        "version": "0.1.1",
+        "description": "Sign in to use Claude models",
         "license": "MIT",
         "extensions": {
           "dev.sailry.platform": {
@@ -1343,32 +1343,21 @@
               "credentials.inspect"
             ],
             "display": {
-              "label": "Claude account",
-              "locales": {
-                "zh-CN": "Claude 账户",
-                "zh-TW": "Claude 帳戶",
-                "de": "Claude-Konten",
-                "es": "Cuentas de Claude",
-                "fr": "Comptes Claude",
-                "ja": "Claude アカウント",
-                "ko": "Claude 계정",
-                "pt-BR": "Contas Claude",
-                "ru": "Учётные записи Claude"
-              },
+              "label": "Claude OAuth",
               "icon": "reicon:newicons/key-square8"
             },
             "description": {
-              "label": "Claude account",
+              "label": "Sign in to use Claude models",
               "locales": {
-                "zh-CN": "Claude 账户",
-                "zh-TW": "Claude 帳戶",
-                "de": "Claude-Konten",
-                "es": "Cuentas de Claude",
-                "fr": "Comptes Claude",
-                "ja": "Claude アカウント",
-                "ko": "Claude 계정",
-                "pt-BR": "Contas Claude",
-                "ru": "Учётные записи Claude"
+                "zh-CN": "登录并使用 Claude 模型",
+                "zh-TW": "登入並使用 Claude 模型",
+                "de": "Bei Claude anmelden und Modelle nutzen",
+                "es": "Inicia sesión para usar modelos de Claude",
+                "fr": "Se connecter pour utiliser les modèles Claude",
+                "ja": "ログインして Claude モデルを利用",
+                "ko": "로그인하여 Claude 모델 사용",
+                "pt-BR": "Entre para usar os modelos Claude",
+                "ru": "Войдите, чтобы использовать модели Claude"
               }
             },
             "category": "data",
@@ -1451,7 +1440,7 @@
         "credentials.inspect"
       ],
       "release_notes": {
-        "text": "- Provide existing account authorization through the shared private authentication services"
+        "text": "- Use the Claude OAuth name with a distinct localized model sign-in description"
       }
     },
     {
@@ -12191,8 +12180,8 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "openai-auth",
-        "version": "0.1.2",
-        "description": "OpenAI accounts",
+        "version": "0.1.3",
+        "description": "Sign in to use ChatGPT models",
         "license": "Apache-2.0",
         "extensions": {
           "dev.sailry.platform": {
@@ -12203,32 +12192,21 @@
               "credentials.inspect"
             ],
             "display": {
-              "label": "OpenAI accounts",
-              "locales": {
-                "zh-CN": "OpenAI 账户",
-                "zh-TW": "OpenAI 帳戶",
-                "de": "OpenAI-Konten",
-                "es": "Cuentas de OpenAI",
-                "fr": "Comptes OpenAI",
-                "ja": "OpenAI アカウント",
-                "ko": "OpenAI 계정",
-                "pt-BR": "Contas OpenAI",
-                "ru": "Учётные записи OpenAI"
-              },
+              "label": "ChatGPT OAuth / SIWC",
               "icon": "reicon:newicons/key-square8"
             },
             "description": {
-              "label": "OpenAI accounts",
+              "label": "Sign in to use ChatGPT models",
               "locales": {
-                "zh-CN": "OpenAI 账户",
-                "zh-TW": "OpenAI 帳戶",
-                "de": "OpenAI-Konten",
-                "es": "Cuentas de OpenAI",
-                "fr": "Comptes OpenAI",
-                "ja": "OpenAI アカウント",
-                "ko": "OpenAI 계정",
-                "pt-BR": "Contas OpenAI",
-                "ru": "Учётные записи OpenAI"
+                "zh-CN": "登录并使用 ChatGPT 模型",
+                "zh-TW": "登入並使用 ChatGPT 模型",
+                "de": "Bei ChatGPT anmelden und Modelle nutzen",
+                "es": "Inicia sesión para usar modelos de ChatGPT",
+                "fr": "Se connecter pour utiliser les modèles ChatGPT",
+                "ja": "ログインして ChatGPT モデルを利用",
+                "ko": "로그인하여 ChatGPT 모델 사용",
+                "pt-BR": "Entre para usar os modelos ChatGPT",
+                "ru": "Войдите, чтобы использовать модели ChatGPT"
               }
             },
             "category": "data",
@@ -12387,7 +12365,7 @@
         "credentials.inspect"
       ],
       "release_notes": {
-        "text": "- Allow explicit sign-in to replace the account while preserving strict refresh identity checks\n- Expose an optional account email"
+        "text": "- Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions"
       }
     },
     {

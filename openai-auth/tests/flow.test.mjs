@@ -19,7 +19,7 @@ function codexTokens(body=token,overrides={}) {
 
 test('keeps the two account protocols distinct',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.1.2');
+  assert.equal(manifest.version,'0.1.3');
   const declarations=manifest.extensions['dev.sailry.platform'].model_auth;
   assert.deepEqual(declarations.map(item=>[item.id,item.authentication]),[['siwc','chat_gpt'],['codex','chat_gpt_oauth']]);
   assert.equal(declarations[0].flow.callback.path,'/auth/callback');

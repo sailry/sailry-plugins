@@ -8,7 +8,7 @@ const context={previous:null,fields:{client_id:'9d1c250a-e61b-44d9-88ed-5944d196
 const step=(event,state=null,overrides={})=>authorize({event,state,context:{...context,...overrides},now_ms:now});
 test('declares the existing callback and token contracts',async()=>{
  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
- assert.equal(manifest.version,'0.1.0');
+ assert.equal(manifest.version,'0.1.1');
  const declaration=manifest.extensions['dev.sailry.platform'].model_auth[0];
  assert.equal(declaration.authentication,'claude_oauth');
  assert.deepEqual(declaration.flow.callback,{path:'/callback',redirect_uri:context.redirect,manual:true,allow_localhost:true});

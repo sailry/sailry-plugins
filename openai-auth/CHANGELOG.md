@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions
+
 ## 0.1.2
 
 - Allow explicit sign-in to replace the account while preserving strict refresh identity checks
