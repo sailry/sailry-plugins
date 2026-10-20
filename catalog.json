@@ -3508,7 +3508,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3556,7 +3556,7 @@
                     "ru": "Проактивные субагенты"
                   }
                 },
-                "icon": "bot",
+                "icon": "reicon:ui/sparkles",
                 "handler": "super",
                 "order": 0
               }
@@ -4095,7 +4095,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Keep slider drafts responsive while saves settle\n- Save the latest released value after the current receipt\n- Show retry only for uncertain saves"
+        "text": "- Use a distinct glyph for proactive subagents"
       }
     },
     {

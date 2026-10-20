@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Use a distinct glyph for proactive subagents
+
 ## 0.1.15
 
 - Keep slider drafts responsive while saves settle
