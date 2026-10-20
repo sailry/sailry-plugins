@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Capitalize the selected Super label
+
 ## 0.1.16
 
 - Use a distinct glyph for proactive subagents

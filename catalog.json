@@ -3508,7 +3508,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4095,7 +4095,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Use a distinct glyph for proactive subagents"
+        "text": "- Capitalize the selected Super label"
       }
     },
     {

@@ -43,7 +43,7 @@ test('toggle commits its own option and publishes the confirmed marker',async()=
   await f.event(true);
   assert.deepEqual(f.calls,[{cursor:'1',key:'plugin',value:{key:'proactive',value:true}}]);
   assert.equal(f.last().value,true);
-  assert.deepEqual(f.last().segments,[{label:{label:'super'},tone:'accent'}]);
+  assert.deepEqual(f.last().segments,[{label:{label:'Super'},tone:'accent'}]);
   assert.equal(f.last().reply_to,7);
 });
 

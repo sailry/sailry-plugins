@@ -35,7 +35,7 @@ export default class Composer extends View {
   publish(event) {
     const active = this.state.options?.proactive === true;
     publishContributions([{id:'super',enabled:!!this.enabled(),visible:true,value:active,
-      segments:active ? [{label:{label:'super'},tone:'accent'}] : [],
+      segments:active ? [{label:{label:'Super'},tone:'accent'}] : [],
       ...(event?.id === 'super' ? {reply_to:event.sequence} : {})}]);
   }
 
