@@ -1,3 +1,4 @@
+import Providers from './providers.js';
 import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
 import {publishContributions,requestProviderHttp,prepareRequest,completeRequest,forgetRequest} from 'sailry/sdk';
@@ -12,6 +13,9 @@ export function identity(state) {
 
 export default class Footer extends View {
   init(_props,cx) {
+    if(JSON.parse(context()).surface==='provider') {
+      this.providers=new Providers(cx,messages(JSON.parse(context()).locale));return;
+    }
     this.locale = JSON.parse(context()).locale;
     this.text = messages(this.locale);
     this.state = readModelContext(); this.key = identity(this.state);

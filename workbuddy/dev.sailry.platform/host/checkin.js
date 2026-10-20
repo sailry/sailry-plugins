@@ -1,4 +1,4 @@
-import {requestProviderHttp,prepareProviderHttp,forgetRequest} from 'sailry/sdk';
+import {requestProviderHttp,prepareProviderHttp,forgetRequest,readSettings} from 'sailry/sdk';
 import {day,status,claimed} from './protocol.js';
 import {channel,read,write,complete,notify,report} from './records.js';
 import {messages} from '../desktop/locales.js';
@@ -9,6 +9,9 @@ const active = new Map();
 export async function checkin(input) {
   const provider = input?.provider;
   if (!channel(provider)) return {status:'unsupported'};
+  if (input.automatic === true && (await readSettings()).values.checkin_enabled === false) {
+    return {status:'disabled',skipped:true};
+  }
   if (active.has(provider.id)) return active.get(provider.id);
   const pending = run(provider,input.locale);
   active.set(provider.id,pending);

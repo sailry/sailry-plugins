@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -584,17 +584,38 @@
           "slot": "footer",
           "kind": "metric",
           "label": {
-            "label": "Credits",
+            "label": "Account credits",
             "locales": {
-              "zh-CN": "积分",
-              "zh-TW": "點數",
-              "de": "Guthaben",
-              "es": "Créditos",
-              "fr": "Crédits",
-              "ja": "クレジット",
-              "ko": "크레딧",
-              "pt-BR": "Créditos",
-              "ru": "Кредиты"
+              "zh-CN": "账户积分",
+              "zh-TW": "帳戶積分",
+              "de": "Kontoguthaben",
+              "es": "Créditos de la cuenta",
+              "fr": "Crédits du compte",
+              "ja": "アカウントクレジット",
+              "ko": "계정 크레딧",
+              "pt-BR": "Créditos da conta",
+              "ru": "Кредиты аккаунта"
+            }
+          },
+          "icon": "reicon:money/coins",
+          "order": 0
+        },
+        {
+          "id": "provider_credits",
+          "slot": "provider",
+          "kind": "metric",
+          "label": {
+            "label": "Account credits",
+            "locales": {
+              "zh-CN": "账户积分",
+              "zh-TW": "帳戶積分",
+              "de": "Kontoguthaben",
+              "es": "Créditos de la cuenta",
+              "fr": "Crédits du compte",
+              "ja": "アカウントクレジット",
+              "ko": "계정 크레딧",
+              "pt-BR": "Créditos da conta",
+              "ru": "Кредиты аккаунта"
             }
           },
           "icon": "reicon:money/coins",
@@ -608,7 +629,8 @@
           "dev.sailry.platform/desktop/footer.js",
           "dev.sailry.platform/desktop/credits.js",
           "dev.sailry.platform/desktop/locales.js",
-          "dev.sailry.platform/errors.js"
+          "dev.sailry.platform/errors.js",
+          "dev.sailry.platform/desktop/providers.js"
         ]
       },
       "host": {

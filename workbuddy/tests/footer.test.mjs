@@ -8,6 +8,8 @@ import {messages} from '../dev.sailry.platform/desktop/locales.js';
 // These tests exercise package scheduling and SDK arguments, not native rendering.
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/footer.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export default /gm,'').replace(/^export /gm,'');
+const providerSource=(await readFile(new URL('../dev.sailry.platform/desktop/providers.js',import.meta.url),'utf8'))
+  .replace(/^import .*;\n/gm,'').replace(/^export default /gm,'');
 const plain=value=>JSON.parse(JSON.stringify(value));
 const deferred=()=>{
   let resolve,reject;
@@ -21,13 +23,15 @@ const response=(remaining=12)=>({status:200,headers:{},body:JSON.stringify({code
 ]}}}})});
 const settle=async()=>{for(let index=0;index<8;index++)await Promise.resolve();};
 
-function fixture(initial=state()) {
+function fixture(initial=state(),providers=null) {
   const requests=[],published=[],toasts=[],watches=[],sleeps=[],failures=[],registrations=[];
-  const Controller=vm.runInNewContext(`${source}\nFooter`,{
-    View:class {},div:()=>({}),context:()=>JSON.stringify({locale:'en'}),
+  const Controller=vm.runInNewContext(`${providerSource}\n${source}\nFooter`,{
+    View:class {},div:()=>({}),context:()=>JSON.stringify({locale:'en',surface:providers ? 'provider' : 'composer'}),
     ...credits,messages,
     publishContributions:states=>published.push(plain(states)),
     readModelContext:()=>plain(initial),
+    readProviderContexts:()=>plain(providers),
+    nextProviderContexts:cursor=>{const wait=deferred();watches.push({cursor,...wait});return wait.promise;},
     nextModelContext:cursor=>{const wait=deferred();watches.push({cursor,...wait});return wait.promise;},
     requestProviderHttp:(...args)=>{const wait=deferred();requests.push({args:plain(args),...wait});return wait.promise;},
     prepareRequest:command=>{registrations.push(plain(command));return `registration-${registrations.length}`;},
@@ -185,4 +189,54 @@ test('keeps successful zero distinct from unavailable credits',async()=>{
     assert.equal(setup.latest().visible,false);assert.deepEqual(setup.latest().details,[]);
     assert.deepEqual(setup.toasts,[]);assert.deepEqual(setup.failures,[]);
   }
+});
+
+const provider=(id,revision='1',credential='account-a',credentialRevision='1')=>({...state().provider,id,revision,
+  scope:{provider:id,revision:`${revision}:${credentialRevision}`,credential:{node:'execution-node',id:credential}},
+});
+const batch=(providers,cursor='1')=>({cursor,connected:true,providers});
+const current=(setup,id)=>setup.published.flat().findLast(entry=>entry.scope?.provider===id);
+
+test('shares one provider page loop without registering jobs',async()=>{
+  const setup=fixture(state(),batch([provider('china'),provider('global')]));
+  setup.requests[0].resolve(response(12));await settle();
+  assert.equal(setup.requests[1].args[0],'global');
+  setup.requests[1].resolve(response(0));await settle();
+  assert.equal(current(setup,'china').value,'12');
+  assert.equal(current(setup,'global').value,'0');
+  assert.deepEqual(current(setup,'china').details,[]);
+  assert.equal(setup.sleeps.length,1);assert.equal(setup.watches.length,1);
+  assert.deepEqual(setup.registrations,[]);assert.deepEqual(setup.toasts,[]);
+  assert.deepEqual(setup.failures,[]);
+});
+
+test('isolates late balances after account replacement',async()=>{
+  const setup=fixture(state(),batch([provider('same')]));
+  const replacement=provider('same','2','account-b');
+  await setup.update(batch([replacement],'2'));
+  setup.requests[0].resolve(response(999));await settle();
+  assert.equal(current(setup,'same').visible,false);
+  assert.deepEqual(current(setup,'same').scope,replacement.scope);
+  assert.equal(setup.requests.length,2);
+  setup.requests[1].resolve(response(8));await settle();
+  assert.equal(current(setup,'same').value,'8');
+  await setup.update(batch([replacement],'3'));
+  assert.equal(setup.requests.length,2);
+  assert.deepEqual(setup.registrations,[]);assert.deepEqual(setup.failures,[]);
+});
+
+test('discards late balances after same-credential renewal',async()=>{
+  const original=provider('same');
+  const setup=fixture(state(),batch([original]));
+  const renewed=provider('same','1','account-a','2');
+  assert.deepEqual(renewed.scope.credential,original.scope.credential);
+  assert.equal(renewed.revision,original.revision);
+  await setup.update(batch([renewed],'2'));
+  setup.requests[0].resolve(response(999));await settle();
+  assert.equal(current(setup,'same').visible,false);
+  assert.equal(current(setup,'same').scope.revision,'1:2');
+  assert.equal(setup.requests[1].args[1],'1');
+  setup.requests[1].resolve(response(8));await settle();
+  assert.equal(current(setup,'same').value,'8');
+  assert.deepEqual(setup.failures,[]);
 });

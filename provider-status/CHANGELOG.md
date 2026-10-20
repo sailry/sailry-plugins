@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Show remaining usage and shared account measurements in channel rows
+- Hide unavailable percentages and keep queries silent
+
 ## 0.1.3
 
 - Show reset times in the device local time zone with a concise shared label

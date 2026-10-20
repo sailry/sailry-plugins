@@ -80,8 +80,8 @@ runtimeTest('production SDK reconciles timing without a footer',async()=>{
   const record={id:scheduleId,...payload,time:'09:05',settings_revision:'2'};
   const schedule={id:scheduleId,revision:5,enabled:true,topic:scheduleId,payload,
     timing:{kind:'weekly',data:{timezone:'Asia/Shanghai',weekdays:[1,2,3,4,5,6,7],hour:9,minute:5}},next_ms:null};
-  const updated={...record,time:'07:30',settings_revision:'3'};
-  const next={...schedule,timing:{...schedule.timing,data:{...schedule.timing.data,hour:7,minute:30}}};
+  const updated={...record,automatic:true,enabled:true,time:'07:30',settings_revision:'3'};
+  const next={...schedule,payload:{...payload,automatic:true},timing:{...schedule.timing,data:{...schedule.timing.data,hour:7,minute:30}}};
   const operations=[
     {kind:'write',data:{key:scheduleKey,value:updated,expected_revision:2}},
     {kind:'dispatch',data:{kind:'save_schedule',data:next}},
@@ -106,7 +106,7 @@ runtimeTest('production SDK reconciles timing without a footer',async()=>{
 
 runtimeTest('production SDK deduplicates failures and reports recovery',async()=>{
   const packageRef={name:'workbuddy',digest:'f'.repeat(64),settings_revision:0};
-  const content=(message,kind)=>({title:'Credits',message,kind,session:null});
+  const content=(message,kind)=>({title:'Account credits',message,kind,session:null});
   const notice=(message,kind)=>({id:'00000000-0000-4000-8000-000000000050',sequence:1,
     package:'workbuddy',timestamp_ms:1792454400000,read:false,content:content(message,kind)});
   const failed={day:stamp,status:'failed',submitted:false,error:{code:'unavailable',message:'Unable to claim daily credits'}};
@@ -144,7 +144,7 @@ runtimeTest('production SDK records uncertain claims as warnings',async()=>{
   const packageRef={name:'workbuddy',digest:'f'.repeat(64),settings_revision:0};
   const error={code:'outcome_unknown',message:'Daily credit claim outcome unknown'};
   const result={status:'unknown',error};
-  const content={title:'Credits',message:error.message,kind:'warning',session:null};
+  const content={title:'Account credits',message:error.message,kind:'warning',session:null};
   const report=execute(await input([
     reply(read(),'plugin_value',entry(0,null)),
     reply(status(),'plugin_http',response({code:0,data:{active:true,today_checked_in:false}})),
@@ -157,4 +157,98 @@ runtimeTest('production SDK records uncertain claims as warnings',async()=>{
   assert.deepEqual(report.result.Ok,result);
   assert.equal(report.calls.filter(call=>call.command.kind==='execute_provider_http').length,1);
   assert.equal(report.calls.filter(call=>call.command.kind==='publish_notification').length,1);
+});
+
+runtimeTest('production SDK skips disabled automatic claims',async()=>{
+  const packageRef={name:'workbuddy',digest:'f'.repeat(64),settings_revision:3};
+  const report=execute(await packageInput(root,'checkin',{provider,automatic:true},{
+    context:{package:packageRef,session:null,worktree:null},replies:[
+      reply({kind:'read_plugin_settings',data:{package:packageRef}},'plugin_settings',
+        {package:packageRef,values:{checkin_enabled:false,checkin_time:'09:05'},configured:[],keepable:[],ready:true}),
+    ],
+  }));
+  assert.deepEqual(report.result.Ok,{status:'disabled',skipped:true});
+  assert.deepEqual(report.calls.map(call=>call.command.kind),['read_plugin_settings']);
+});
+
+for(const enabled of [false,true]) runtimeTest(`production SDK ${enabled?'reenables':'disables'} the same schedule`,async()=>{
+  const packageRef={name:'workbuddy',digest:'f'.repeat(64),settings_revision:3};
+  const scheduleKey=`checkin/schedule/${id}`,scheduleId='00000000-0000-4000-8000-000000000010';
+  const payload={provider,locale:'en',automatic:true};
+  const record={id:scheduleId,...payload,enabled:!enabled,...(enabled?{paused:true}:{}),time:'09:05',settings_revision:'2'};
+  const schedule={id:scheduleId,revision:5,enabled:!enabled,topic:scheduleId,payload,
+    timing:{kind:'weekly',data:{timezone:'Asia/Shanghai',weekdays:[1,2,3,4,5,6,7],hour:9,minute:5}},next_ms:null};
+  const updated={id:scheduleId,...payload,enabled,...(!enabled?{paused:true}:{}),time:'07:30',settings_revision:'3'};
+  const next={...schedule,enabled,timing:{...schedule.timing,data:{...schedule.timing.data,hour:7,minute:30}}};
+  const handler={name:scheduleId,revision:0,enabled:true,source:{package:'workbuddy',topic:scheduleId},queue:scheduleId,
+    callback:{scope:{worktree:null,session:null},completion:'command',
+      command:{kind:'call_plugin',data:{handler:'checkin',input:null}},bindings:{'/data/input':'/payload'}}};
+  const action=enabled?{kind:'save_handler',data:handler}
+    :{kind:'remove_handler',data:{name:scheduleId,expected_revision:7,cancel_pending:true}};
+  const operations=[
+    {kind:'write',data:{key:scheduleKey,value:updated,expected_revision:2}},
+    {kind:'dispatch',data:{kind:'save_schedule',data:next}},
+    {kind:'dispatch',data:action},
+  ];
+  const report=execute(await packageInput(root,'reconcile',{key:scheduleKey},{
+    context:{package:packageRef,session:null,worktree:null},replies:[
+      reply({kind:'read_plugin_settings',data:{package:packageRef}},'plugin_settings',
+        {package:packageRef,values:{checkin_enabled:enabled,checkin_time:'07:30'},configured:[],keepable:[],ready:true}),
+      reply({kind:'read_plugin_value',data:{key:scheduleKey}},'plugin_value',
+        {key:scheduleKey,revision:2,present:true,value:record}),
+      reply({kind:'dispatch',data:{package:packageRef,action:{kind:'list_schedules'}}},'dispatch',{kind:'schedules',data:[schedule]}),
+      reply({kind:'dispatch',data:{package:packageRef,action:{kind:'list_handlers'}}},'dispatch',
+        {kind:'handlers',data:enabled?[]:[{...handler,revision:7}]}),
+      reply({kind:'plugin_transaction',data:{operations}},'plugin_transaction',[
+        {kind:'plugin_value',data:{key:scheduleKey,revision:3,present:true,value:updated}},
+        {kind:'dispatch',data:{kind:'schedule',data:{...next,revision:6}}},
+        {kind:'dispatch',data:enabled?{kind:'handler',data:{...handler,revision:1}}:{kind:'removed'}},
+      ]),
+    ],
+  }));
+  assert.deepEqual(report.result.Ok,{updated:1});assert.equal(report.calls.length,5);
+  assert.ok(report.calls.every(call=>!['request_provider_http','execute_provider_http','publish_notification'].includes(call.command.kind)));
+});
+
+for(const phase of ['timing','off','on']) runtimeTest(`production SDK preserves manual pauses during ${phase}`,async()=>{
+  const packageRef={name:'workbuddy',digest:'f'.repeat(64),settings_revision:3};
+  const scheduleKey=`checkin/schedule/${id}`,scheduleId='00000000-0000-4000-8000-000000000010';
+  const enabled=phase!=='off',payload={provider,locale:'en',automatic:true};
+  const record={id:scheduleId,...payload,...(phase==='timing'?{}:{enabled:phase==='off'}),time:'09:05',settings_revision:'2'};
+  const schedule={id:scheduleId,revision:5,enabled:false,topic:scheduleId,payload,
+    timing:{kind:'weekly',data:{timezone:'Asia/Shanghai',weekdays:[1,2,3,4,5,6,7],hour:9,minute:5}},next_ms:null};
+  const updated={id:scheduleId,...payload,enabled,time:'07:30',settings_revision:'3'};
+  const next={...schedule,timing:{...schedule.timing,data:{...schedule.timing.data,hour:7,minute:30}}};
+  const handler={name:scheduleId,revision:0,enabled:true,source:{package:'workbuddy',topic:scheduleId},queue:scheduleId,
+    callback:{scope:{worktree:null,session:null},completion:'command',
+      command:{kind:'call_plugin',data:{handler:'checkin',input:null}},bindings:{'/data/input':'/payload'}}};
+  const action=phase==='timing'?[]:[{kind:'dispatch',data:enabled?{kind:'save_handler',data:handler}
+    :{kind:'remove_handler',data:{name:scheduleId,expected_revision:7,cancel_pending:true}}}];
+  const operations=[
+    {kind:'write',data:{key:scheduleKey,value:updated,expected_revision:2}},
+    {kind:'dispatch',data:{kind:'save_schedule',data:next}},...action,
+  ];
+  const replies=[
+    reply({kind:'read_plugin_settings',data:{package:packageRef}},'plugin_settings',
+      {package:packageRef,values:{checkin_enabled:enabled,checkin_time:'07:30'},configured:[],keepable:[],ready:true}),
+    reply({kind:'read_plugin_value',data:{key:scheduleKey}},'plugin_value',
+      {key:scheduleKey,revision:2,present:true,value:record}),
+    reply({kind:'dispatch',data:{package:packageRef,action:{kind:'list_schedules'}}},'dispatch',{kind:'schedules',data:[schedule]}),
+  ];
+  if(phase!=='timing') replies.push(reply({kind:'dispatch',data:{package:packageRef,action:{kind:'list_handlers'}}},'dispatch',
+    {kind:'handlers',data:enabled?[]:[{...handler,revision:7}]}));
+  replies.push(reply({kind:'plugin_transaction',data:{operations}},'plugin_transaction',[
+    {kind:'plugin_value',data:{key:scheduleKey,revision:3,present:true,value:updated}},
+    {kind:'dispatch',data:{kind:'schedule',data:{...next,revision:6}}},
+    ...(phase==='timing'?[]:[{kind:'dispatch',data:enabled?{kind:'handler',data:{...handler,revision:1}}:{kind:'removed'}}]),
+  ]));
+  const report=execute(await packageInput(root,'reconcile',{key:scheduleKey},{
+    context:{package:packageRef,session:null,worktree:null},replies,
+  }));
+  assert.deepEqual(report.result.Ok,{updated:1});
+  assert.equal(report.calls.length,phase==='timing'?4:5);
+  const saved=report.calls.at(-1).command.data.operations;
+  assert.equal(saved[1].data.data.id,scheduleId);assert.equal(saved[1].data.data.enabled,false);
+  assert.equal(Object.hasOwn(saved[0].data.value,'paused'),false);
+  assert.ok(report.calls.every(call=>!['request_provider_http','execute_provider_http','publish_notification'].includes(call.command.kind)));
 });

@@ -18,11 +18,11 @@ test('reads Claude percentages and independent reset times',()=>{
     {key:'seven_day',used:16,reset:Date.parse('2026-10-23T08:00:00Z')},
   ]);
   const output = metric(result,messages('en'));
-  assert.equal(output.value,'42.5%');
-  assert.equal(output.details[0].progress,42.5);
+  assert.equal(output.value,'57.5%');
+  assert.equal(output.details[0].progress,57.5);
   assert.equal(output.details[1].label.label,'Reset time');
   assert.match(output.details[1].value,/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-  assert.equal(output.details[2].value,'16%');
+  assert.equal(output.details[2].value,'84%');
 });
 
 test('formats reset times in local time',()=>{
@@ -37,12 +37,12 @@ test('formats reset times in local time',()=>{
   }
 });
 
-test('displays nullable numbers without inventing measurements',()=>{
+test('hides unavailable percentages without inventing measurements',()=>{
   const result = claude.decode(response({five_hour:{utilization:null,resets_at:null},seven_day:null}));
   assert.deepEqual(result.windows,[{key:'five_hour',used:null,reset:null}]);
   const output = metric(result,messages('en'));
-  assert.equal(output.value,'0%');
-  assert.deepEqual(output.details,[{label:{label:'5h'},value:'0%'}]);
+  assert.equal(output.value,null);
+  assert.deepEqual(output.details,[]);
   assert.deepEqual(claude.decode(response({five_hour:null})).windows,[]);
   assert.deepEqual(metric(null,messages('en')),{value:null,details:[]});
   for(const snapshot of [claude.decode(response({five_hour:null})),codex.decode(response({rate_limit:null,credits:null}))]) {
@@ -50,12 +50,30 @@ test('displays nullable numbers without inventing measurements',()=>{
   }
 });
 
-test('keeps overage visible within bounded progress',()=>{
+test('keeps raw overage while showing no remaining',()=>{
   const result = claude.decode(response({seven_day:{utilization:125.5,resets_at:null}}));
   const output = metric(result,messages('en'));
   assert.equal(result.windows[0].used,125.5);
-  assert.equal(output.value,'125.5%');
-  assert.equal(output.details[0].progress,100);
+  assert.equal(output.value,'0%');
+  assert.equal(output.details[0].progress,0);
+});
+
+test('projects boundaries without changing account credits',()=>{
+  for(const [adapter,body] of [[claude,{five_hour:{utilization:0},seven_day:{utilization:100}}],
+    [codex,{rate_limit:{primary_window:{used_percent:0,limit_window_seconds:18000},secondary_window:{used_percent:100,limit_window_seconds:604800}}}]]) {
+    const snapshot=adapter.decode(response(body));
+    assert.deepEqual(snapshot.windows.map(window=>window.used),[0,100]);
+    assert.deepEqual(metric(snapshot,messages('en')),{value:'0%',details:[
+      {label:{label:'5h remaining'},value:'100%',progress:100},
+      {label:{label:'7d remaining'},value:'0%',progress:0},
+    ]});
+  }
+  for(const balance of [41205.37,0]) {
+    const snapshot=codex.decode(response({rate_limit:{primary_window:{}},credits:{balance}}));
+    assert.deepEqual(metric(snapshot,messages('en')),{value:String(balance),details:[
+      {label:{label:'Account credits'},value:String(balance)},
+    ]});
+  }
 });
 
 test('preserves explicit Claude extra usage units',()=>{
@@ -73,7 +91,9 @@ test('maps GPT windows by their reported duration',()=>{
     {key:'seven_day',used:35,reset:61000}]);
   assert.deepEqual(result.credits,{available:true,unlimited:false,balance:12.5});
   const output = metric(result,messages('en'));
-  assert.equal(output.value,'35%');
+  assert.equal(output.value,'65%');
+  assert.equal(output.details[0].value,'80%');
+  assert.equal(output.details[2].value,'65%');
   assert.equal(output.details.at(-1).value,'12.5');
 });
 
@@ -82,9 +102,7 @@ test('does not guess missing GPT durations or balances',()=>{
     secondary_window:null},credits:{has_credits:false,unlimited:false,balance:null}}));
   assert.deepEqual(result.windows,[{key:'primary',used:null,reset:null}]);
   assert.equal(result.credits.balance,null);
-  assert.deepEqual(metric(result,messages('en')).details,[
-    {label:{label:'Primary'},value:'0%'},{label:{label:'Credits'},value:'0'},
-  ]);
+  assert.deepEqual(metric(result,messages('en')),{value:null,details:[]});
   const unlimited = codex.decode(response({credits:{unlimited:true,balance:null}}));
   assert.equal(metric(unlimited,messages('en')).details[0].value,'Unlimited');
 });
@@ -112,7 +130,7 @@ test('rejects malformed payloads without fabricated quota',()=>{
 test('declares only fixed native read resources',async()=>{
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.3');
+  assert.equal(manifest.version,'0.1.4');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.actions,['http.request']);
   assert.deepEqual(extension.model_resources.map(resource=>resource.authentication),
@@ -129,7 +147,7 @@ test('declares only fixed native read resources',async()=>{
       assert.ok(!value.includes('{'));
     }
   }
-  assert.deepEqual(extension.ui.map(entry=>[entry.slot,entry.kind]),[['footer','metric']]);
+  assert.deepEqual(extension.ui.map(entry=>[entry.slot,entry.kind]),[['footer','metric'],['provider','metric']]);
 });
 
 test('localizes every shared detail label',()=>{

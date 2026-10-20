@@ -47,8 +47,8 @@ for (const [authentication,status] of [['chat_gpt',403],['chat_gpt_oauth',429],[
         assert.deepEqual(result,{error:{status,message}});
       } else {
         assert.deepEqual(result.snapshot,{windows:[{key:'five_hour',used,reset:null}],credits:null,extra:null});
-        assert.deepEqual(result.metric,{value:`${used ?? 0}%`,details:[
-          {label:{label:'5h'},value:`${used ?? 0}%`,...(used == null ? {} : {progress:used})},
+        assert.deepEqual(result.metric,kind === 'nullable' ? {value:null,details:[]} : {value:'75%',details:[
+          {label:{label:'5h remaining'},value:'75%',progress:75},
         ]});
       }
     }

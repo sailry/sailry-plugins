@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Show shared account credits in channel rows
+- Configure automatic daily check-in with a time control and enable switch
+
 ## 0.1.11
 
 - Share credit reads across sessions using the current account credential

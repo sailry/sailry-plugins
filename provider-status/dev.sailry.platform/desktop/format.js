@@ -9,21 +9,26 @@ function time(value) {
   return `${String(date.getFullYear()).padStart(4,'0')}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function remaining(used) {
+  return used == null ? null : Math.max(0,100-used);
+}
+
 export function metric(snapshot,text) {
   if (!snapshot || (!snapshot.windows.length && !snapshot.credits && !snapshot.extra)) return {value:null,details:[]};
-  const measured = snapshot.windows.map(window=>window.used).filter(value=>value != null);
+  const measured = snapshot.windows.map(window=>remaining(window.used)).filter(value=>value != null);
   const details = [];
   for (const window of snapshot.windows) {
     const label = text[window.key];
-    details.push({label:{label},value:`${amount(window.used)}%`,
-      ...(window.used == null ? {} : {progress:Math.min(100,window.used)})});
+    const value = remaining(window.used);
+    if (value != null) details.push({label:{label},value:`${amount(value)}%`,progress:value});
     if (window.reset != null) details.push({label:{label:text.resets},value:time(window.reset)});
   }
-  if (snapshot.credits) details.push({label:{label:text.credits},
-    value:snapshot.credits.unlimited === true ? text.unlimited : amount(snapshot.credits.balance)});
+  const credits = snapshot.credits?.unlimited === true ? text.unlimited
+    : snapshot.credits?.balance != null ? amount(snapshot.credits.balance) : null;
+  if (credits != null) details.push({label:{label:text.credits},value:credits});
   if (snapshot.extra) {
     // Claude's extra_usage amounts use minor currency units, unlike dollar windows.
     details.push({label:{label:text.extra},value:`${amount(snapshot.extra.used == null ? null : snapshot.extra.used / 100)} / ${amount(snapshot.extra.limit == null ? null : snapshot.extra.limit / 100)}${snapshot.extra.currency ? ` ${snapshot.extra.currency}` : ''}`});
   }
-  return {value:`${amount(measured.length ? Math.max(...measured) : null)}%`,details};
+  return {value:measured.length ? `${amount(Math.min(...measured))}%` : credits,details};
 }
