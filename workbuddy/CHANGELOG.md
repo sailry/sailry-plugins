@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Use the WorkBuddy logo for the package and its channel types
+
 ## 0.1.12
 
 - Show shared account credits in channel rows

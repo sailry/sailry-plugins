@@ -44,3 +44,10 @@ Existing authorization and renewal declarations remain unchanged.
 
 Daily check-in endpoint and response fields were independently implemented from:
 https://github.com/codeLong1024/workbuddy-checkin/tree/8f7524f1bcf6a72bc58945cc745b0e9e0c7fd832
+
+The package and channel-type glyph is the official WorkBuddy mark, reduced to a
+monochrome foreground: the head and eye shapes from
+https://download.codebuddy.ai/web/workbuddy/2365138d79c29bb1cbce4644f5cbbffd2b561a5c/assets/logo.svg
+(the favicon of https://www.workbuddy.ai), clipped to its circular frame, with the
+background, blur, gradients and colors removed. WorkBuddy is a trademark of its
+owner; it identifies the service this package connects to.
