@@ -81,7 +81,9 @@ test('declares regional protected reads without shared model origins',async()=>{
       PackageEndTimeRangeBegin:'{input.begin}',PackageEndTimeRangeEnd:'{input.end}'});
     assert.ok(Object.values(request.headers).every(value=>!value.includes('{')));
   }
-  assert.deepEqual(extension.ui.map(entry=>[entry.id,entry.slot,entry.kind]),[['credits','footer','metric']]);
+  assert.deepEqual(extension.ui.map(entry=>[entry.id,entry.slot,entry.kind]),[
+    ['credits','footer','metric'],['provider_credits','provider','metric'],
+  ]);
   assert.equal(extension.ui[0].icon,'reicon:money/coins');
   assert.equal(extension.model_adapters[0].origins.includes('https://www.codebuddy.cn'),false);
 });

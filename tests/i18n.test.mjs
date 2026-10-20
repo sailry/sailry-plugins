@@ -24,15 +24,18 @@ async function packages(parent) {
   return result;
 }
 
-function labels(value, context) {
+function labels(value, context, localized = true) {
   if (!value || typeof value !== 'object') return;
   if (typeof value.label === 'string') {
     assert.ok(value.label.trim(), context);
     assert.equal(chinese.test(value.label), false, `${context}: English label`);
-    assert.ok(value.locales?.['zh-CN']?.trim(), `${context}: Chinese label`);
-    assert.deepEqual(placeholders(value.label), placeholders(value.locales['zh-CN']), context);
+    const translated = value.locales?.['zh-CN'];
+    if (localized || translated !== undefined) {
+      assert.ok(translated?.trim(), `${context}: Chinese label`);
+    }
+    assert.deepEqual(placeholders(value.label), placeholders(translated ?? value.label), context);
   }
-  for (const [key, child] of Object.entries(value)) labels(child, `${context}.${key}`);
+  for (const [key, child] of Object.entries(value)) labels(child, `${context}.${key}`, key !== 'display');
 }
 
 async function dictionaries(path) {
@@ -54,7 +57,7 @@ async function dictionaries(path) {
   return entry.namespace.dictionaries;
 }
 
-test('all packaged labels and descriptions cover both application languages', async () => {
+test('packaged names preserve canonical fallback and descriptions cover both languages', async () => {
   const entries = [...await packages('.'), ...await packages('examples')];
   assert.ok(entries.length, 'packaged plugins must be discovered');
   for (const {manifest} of entries) {
@@ -62,6 +65,13 @@ test('all packaged labels and descriptions cover both application languages', as
     assert.ok(extension?.description, `${manifest.name}: description`);
     labels(extension, manifest.name);
   }
+});
+
+test('display names allow fallback without hiding invalid translations', () => {
+  labels({display:{label:'Example OAuth'}}, 'example');
+  labels({display:{label:'Example OAuth',locales:{'zh-CN':'Example OAuth'}}}, 'example');
+  assert.throws(() => labels({display:{label:'Example OAuth',locales:{'zh-CN':''}}}, 'example'), /Chinese label/);
+  assert.throws(() => labels({description:{label:'Sign in'}}, 'example'), /Chinese label/);
 });
 
 test('desktop dictionaries have matching keys and placeholders without cross-language fallback', async () => {

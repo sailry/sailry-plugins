@@ -215,7 +215,7 @@ test('rejects a skill whose name differs from its folder', () => {
 });
 
 
-test('checks declared authentication scripts', () => {
+test('validates declared authentication scripts', () => {
   const auth = {id:'example',flow:{kind:'script',script:{entry:'dev.sailry.platform/auth.js'},handler:'step'}};
   const files = actions => ({'plugin.json':manifest({actions,model_auth:[auth]}),
     'dev.sailry.platform/auth.js':'export function step() { return {}; }'});
