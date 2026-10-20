@@ -68,7 +68,8 @@ async function fixture(initial=state()) {
 test('shares one refresh owner across native adapters',async()=>{
   const setup=await fixture();
   assert.deepEqual(setup.requests[0].args,['channel','9007199254740993','usage',{}]);
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   setup.sleeps.shift().resolve();await settle();
   assert.equal(setup.requests.length,1);
   setup.requests[0].resolve(response(20));await settle();
@@ -79,6 +80,7 @@ test('shares one refresh owner across native adapters',async()=>{
   setup.advance(120000);setup.sleeps.shift().resolve();await settle();
   assert.equal(setup.requests.length,2);
   assert.equal(setup.sleeps.length,1);
+  assert.deepEqual(setup.toasts,[]);
   assert.deepEqual(setup.failures,[]);
 });
 
@@ -86,16 +88,19 @@ test('discards late replies after provider or session changes',async()=>{
   const setup=await fixture();
   const changed=state('2','chat_gpt_oauth');changed.provider.id='another';changed.provider.model='gpt';
   await setup.update(changed);
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   setup.requests[0].resolve(response(99));await settle();
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   assert.equal(setup.requests.length,2);
   assert.equal(setup.requests[1].args[0],'another');
   setup.requests[1].resolve({status:200,body:JSON.stringify({rate_limit:{primary_window:{
     used_percent:30,limit_window_seconds:18000,reset_at:null}}})});await settle();
   assert.equal(setup.latest().value,'30%');
   await setup.update({...changed,cursor:'3'});
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   assert.equal(setup.requests.length,3);
   await setup.update({cursor:'4',connected:false,provider:null});
   setup.requests[2].resolve(response(88));await settle();
@@ -108,7 +113,8 @@ test('clears values on revision changes and unsupported selections',async()=>{
   const setup=await fixture();setup.requests[0].resolve(response(10));await settle();
   const changed=state('2');changed.provider.revision='9007199254740994';
   await setup.update(changed);
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   assert.equal(setup.requests[1].args[1],'9007199254740994');
   await setup.update(state('3','api_key'));
   assert.equal(setup.latest().visible,false);
@@ -121,45 +127,68 @@ test('uses the same adapter for SIWC without assuming credentials',async()=>{
   const setup=await fixture(state('1','chat_gpt'));
   assert.equal(setup.requests.length,1);
   setup.requests[0].resolve({status:403,body:'{"error":{"message":"Fixture account not entitled"}}'});await settle();
-  assert.equal(setup.toasts[0].message,'Fixture account not entitled');
-  assert.equal(setup.latest().value,'0%');
+  assert.deepEqual(setup.toasts,[]);
+  assert.equal(setup.latest().value,null);
+  assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.latest().details,[]);
 });
 
-test('reports errors once and retries only after the shared interval',async()=>{
+test('shows successful nullable measurements as zero',async()=>{
+  const setup=await fixture();
+  setup.requests[0].resolve(response(null));await settle();
+  assert.equal(setup.latest().visible,true);
+  assert.equal(setup.latest().value,'0%');
+  assert.deepEqual(setup.latest().details,[{label:{label:'5h'},value:'0%'}]);
+});
+
+test('silently retries after the shared interval',async()=>{
   const setup=await fixture();
   setup.requests[0].reject(new Error(JSON.stringify({code:'permission_denied',message:'Private SDK diagnostic'})));
   await settle();
-  assert.equal(setup.toasts[0].message,'Unable to read account usage');
-  assert.ok(!JSON.stringify(setup.toasts).includes('Private SDK diagnostic'));
+  assert.deepEqual(setup.toasts,[]);
+  assert.equal(setup.latest().visible,false);
+  assert.equal(setup.latest().value,null);
   setup.view.refresh(setup.cx);assert.equal(setup.requests.length,1);
   setup.advance(60000);setup.sleeps.shift().resolve();await settle();
   setup.requests[1].reject(new Error(JSON.stringify({code:'permission_denied'})));await settle();
-  assert.equal(setup.toasts.length,1);
+  assert.deepEqual(setup.toasts,[]);
   setup.advance(60000);setup.sleeps.shift().resolve();await settle();
   setup.requests[2].resolve(response());await settle();
   assert.equal(setup.latest().value,'12%');
+  assert.deepEqual(setup.toasts,[]);
   assert.deepEqual(setup.failures,[]);
 });
 
-test('retains successful metrics when the same channel read fails',async()=>{
+test('hides failed latest usage and restores successful measurements',async()=>{
   const setup=await fixture();setup.requests[0].resolve(response(42));await settle();
-  const saved=setup.latest();
+  assert.equal(setup.latest().visible,true);
   setup.advance(180000);setup.sleeps.shift().resolve();await settle();
   setup.requests[1].resolve({status:429,body:'{"error":{"message":"Fixture usage rate limited"}}'});
   await settle();
-  assert.deepEqual(setup.latest(),saved);
-  assert.equal(setup.toasts.length,1);
-  assert.equal(setup.toasts[0].message,'Fixture usage rate limited');
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
-  setup.requests[2].resolve({status:429,body:'{"error":{"message":"Fixture usage rate limited"}}'});
-  await settle();
-  assert.deepEqual(setup.latest(),saved);
-  assert.equal(setup.toasts.length,1);
-  const changed=state('2');changed.provider.revision='9007199254740994';
-  await setup.update(changed);
-  assert.equal(setup.latest().value,'0%');
+  assert.equal(setup.latest().visible,false);
+  assert.equal(setup.latest().value,null);
   assert.deepEqual(setup.latest().details,[]);
+  setup.view.refresh(setup.cx);assert.equal(setup.requests.length,2);
+  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.requests[2].reject(new Error('Private SDK diagnostic'));await settle();
+  assert.equal(setup.latest().visible,false);
+  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.requests[3].resolve(response(8));await settle();
+  assert.equal(setup.latest().visible,true);
+  assert.equal(setup.latest().value,'8%');
+  assert.deepEqual(setup.toasts,[]);
+});
+
+test('hides successful payloads without measurement objects',async()=>{
+  for(const authentication of ['chat_gpt','chat_gpt_oauth','claude_oauth']) {
+    const setup=await fixture(state('1',authentication));
+    const body=authentication==='claude_oauth'?{five_hour:null}:{rate_limit:null,credits:null};
+    setup.requests[0].resolve({status:200,body:JSON.stringify(body)});await settle();
+    assert.equal(setup.latest().visible,false);
+    assert.equal(setup.latest().value,null);
+    assert.deepEqual(setup.latest().details,[]);
+    assert.deepEqual(setup.toasts,[]);
+  }
 });
 
 test('does not query disconnected or unrelated contexts',async()=>{

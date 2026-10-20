@@ -50,7 +50,7 @@ test('queries the selected channel and refreshes without overlapping requests',a
   assert.deepEqual([id,revision,request],['channel','9007199254740993','credits']);
   assert.deepEqual(Object.keys(input).sort(),['begin','end']);
   assert.match(input.begin,/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
-  assert.equal(setup.latest().visible,true);
+  assert.equal(setup.latest().visible,false);
   assert.equal(setup.latest().value,'—');
   setup.sleeps.shift().resolve();await settle();
   assert.equal(setup.requests.length,1);
@@ -108,7 +108,7 @@ test('clears retained values on disconnection and a new context generation',asyn
   assert.equal(setup.latest().visible,false);
   assert.equal(setup.latest().value,'—');
   await setup.update(state('3'));
-  assert.equal(setup.latest().visible,true);
+  assert.equal(setup.latest().visible,false);
   assert.equal(setup.latest().value,'—');
   setup.requests[1].resolve(response(8));await settle();
   await setup.update(state('4'));
@@ -126,40 +126,39 @@ test('does not request another package or a disconnected channel',()=>{
   }
 });
 
-test('reports safe errors once and recovers after a successful refresh',async()=>{
+test('silently hides failures and recovers after successful refresh',async()=>{
   const setup=fixture();
   const failure=new Error(JSON.stringify({code:'permission_denied',message:'Synthetic private diagnostic'}));
   setup.requests[0].reject(failure);await settle();
-  assert.equal(setup.toasts.length,1);
-  assert.equal(setup.toasts[0].message,messages('en').permission);
-  assert.ok(!JSON.stringify(setup.toasts).includes('Synthetic private diagnostic'));
+  assert.deepEqual(setup.toasts,[]);
   setup.view.refresh(setup.cx);setup.requests[1].reject(failure);await settle();
-  assert.equal(setup.toasts.length,1);
+  assert.deepEqual(setup.toasts,[]);
   setup.view.refresh(setup.cx);setup.requests[2].resolve(response());await settle();
   assert.equal(setup.latest().value,'12');
   setup.view.refresh(setup.cx);setup.requests[3].reject(failure);await settle();
-  assert.equal(setup.toasts.length,2);
+  assert.deepEqual(setup.toasts,[]);
   assert.equal(setup.latest().value,'—');
+  assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.failures,[]);
 });
 
-test('keeps guarded provider messages without exposing ordinary SDK diagnostics',async()=>{
+test('silently hides rejected credit queries',async()=>{
   const setup=fixture();
   setup.requests[0].resolve({status:429,headers:{},body:JSON.stringify({code:14018,message:'Actual account is unavailable'})});
   await settle();
-  assert.equal(setup.toasts.length,1);
-  assert.equal(setup.toasts[0].message,'Actual account is unavailable');
+  assert.deepEqual(setup.toasts,[]);
   assert.equal(setup.latest().value,'—');
+  assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.failures,[]);
 });
 
 
-test('uses a localized failure when the provider has no display message',async()=>{
+test('silently hides invalid credit responses',async()=>{
   const setup=fixture();
   setup.requests[0].resolve({status:503,headers:{},body:'upstream transport unavailable'});await settle();
-  assert.equal(setup.toasts.length,1);
-  assert.equal(setup.toasts[0].message,messages('en').failed);
+  assert.deepEqual(setup.toasts,[]);
   assert.equal(setup.latest().value,'—');
+  assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.failures,[]);
 });
 
@@ -169,4 +168,21 @@ test('does not toast failures for a replaced selection',async()=>{
   assert.deepEqual(setup.toasts,[]);
   assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.failures,[]);
+});
+
+test('keeps successful zero distinct from unavailable credits',async()=>{
+  for(const preset of ['china','workbuddy-global','codebuddy-global']) {
+    const initial=state();initial.provider.preset.id=preset;
+    const setup=fixture(initial);
+    const reply=Accounts=>({status:200,body:JSON.stringify({code:0,data:{Response:{Data:{Accounts}}}})});
+    setup.requests[0].resolve(reply(null));await settle();
+    assert.equal(setup.latest().visible,true);assert.equal(setup.latest().value,'0');
+    setup.view.refresh(setup.cx);setup.requests[1].resolve(reply([]));await settle();
+    assert.equal(setup.latest().visible,false);
+    setup.view.refresh(setup.cx);setup.requests[2].resolve(response(0));await settle();
+    assert.equal(setup.latest().visible,true);assert.equal(setup.latest().value,'0');
+    setup.view.refresh(setup.cx);setup.requests[3].reject(new Error('Private SDK diagnostic'));await settle();
+    assert.equal(setup.latest().visible,false);assert.deepEqual(setup.latest().details,[]);
+    assert.deepEqual(setup.toasts,[]);assert.deepEqual(setup.failures,[]);
+  }
 });

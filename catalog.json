@@ -12334,7 +12334,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -12460,7 +12460,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Fix package metadata and localized catalog descriptions"
+        "text": "- Keep account usage reads silent and hide unavailable measurements\n- Preserve zero for successful nullable measurements"
       }
     },
     {
@@ -14873,7 +14873,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -15513,7 +15513,7 @@
         "notifications.publish"
       ],
       "release_notes": {
-        "text": "- Add localized catalog descriptions"
+        "text": "- Keep credit queries silent and hide unavailable balances"
       }
     },
     {

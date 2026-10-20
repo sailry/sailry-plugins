@@ -1,8 +1,8 @@
 import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
-import {publishContributions,requestProviderHttp,prepareRequest,completeRequest,forgetRequest,faultCode} from 'sailry/sdk';
+import {publishContributions,requestProviderHttp,prepareRequest,completeRequest,forgetRequest} from 'sailry/sdk';
 import {readModelContext,nextModelContext,toast} from 'sailry/ui';
-import {range,decode,metric,ResponseError} from './credits.js';
+import {range,decode,metric} from './credits.js';
 import {messages} from './locales.js';
 
 export function identity(state) {
@@ -15,7 +15,7 @@ export default class Footer extends View {
     this.locale = JSON.parse(context()).locale;
     this.text = messages(this.locale);
     this.state = readModelContext(); this.key = identity(this.state);
-    this.balance = null; this.pending = false; this.failure = null;
+    this.balance = null; this.pending = false;
     this.publish(); this.refresh(cx); this.ensure(cx);
     cx.spawn(async cx => {
       try {while (true) this.accept(await nextModelContext(this.state.cursor),cx);}
@@ -29,7 +29,7 @@ export default class Footer extends View {
 
   accept(state,cx) {
     const key = identity(state);
-    if (key !== this.key || state.cursor !== this.state.cursor) {this.balance = null;this.failure = null;}
+    if (key !== this.key || state.cursor !== this.state.cursor) {this.balance = null;}
     this.state = state; this.key = key;
     this.publish(); this.refresh(cx); this.ensure(cx);
   }
@@ -53,7 +53,7 @@ export default class Footer extends View {
   }
 
   publish() {
-    publishContributions([{id:'credits',visible:!!this.key && this.state.connected,
+    publishContributions([{id:'credits',visible:!!this.key && this.state.connected && this.balance?.remaining != null,
       ...metric(this.balance,this.text)}]);
   }
 
@@ -65,15 +65,10 @@ export default class Footer extends View {
       try {
         const response = await requestProviderHttp(provider.id,provider.revision,'credits',range());
         if (this.key !== key || this.state.cursor !== cursor) return;
-        this.balance = decode(response); this.failure = null;
-      } catch (error) {
+        this.balance = decode(response);
+      } catch (_) {
         if (this.key !== key || this.state.cursor !== cursor) return;
-        const code = faultCode(error.message ?? String(error));
-        const message = error instanceof ResponseError && error.message ? error.message
-          : this.text[code === 'permission_denied' || code === 'not_configured' ? 'permission' : 'failed'];
-        const failure = JSON.stringify([code,message]);
-        if (this.failure !== failure) toast({id:'workbuddy-credits',kind:'error',message});
-        this.balance = null; this.failure = failure;
+        this.balance = null;
       } finally {
         this.pending = false;
         this.publish(); cx.notify();

@@ -28,7 +28,8 @@ function inspect(input) {
 const entry = `import * as claude from './adapters/claude.js';
 import * as codex from './adapters/codex.js';
 import {metric} from './desktop/format.js';
-export ${inspect.toString()}`;
+export ${inspect.toString()}
+export function missing(input) {return metric(null,input.text);}`;
 
 for (const [authentication,status] of [['chat_gpt',403],['chat_gpt_oauth',429],['claude_oauth',401]]) {
   for (const kind of ['measured','nullable','error']) {
@@ -65,3 +66,12 @@ for (const [authentication,status] of [['chat_gpt',403],['chat_gpt_oauth',429],[
     });
   }
 }
+
+runtimeTest('production VM omits unavailable measurements',async()=>{
+  const request=await translationInput(root,script,'missing',{text:messages('en')});
+  request.entry='dev.sailry.platform/contract.js';request.files[request.entry]=entry;
+  const report=translate(request);
+  assert.deepEqual(report.calls,[]);
+  assert.equal(report.staged_turn,null);
+  assert.deepEqual(report.result.Ok,{value:null,details:[]});
+});

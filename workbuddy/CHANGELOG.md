@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Keep credit queries silent and hide unavailable balances
+
 ## 0.1.9
 
 - Add localized catalog descriptions

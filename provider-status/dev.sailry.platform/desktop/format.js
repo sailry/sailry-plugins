@@ -3,7 +3,7 @@ export function amount(value) {
 }
 
 export function metric(snapshot,text) {
-  if (!snapshot) return {value:'0%',details:[]};
+  if (!snapshot || (!snapshot.windows.length && !snapshot.credits && !snapshot.extra)) return {value:null,details:[]};
   const measured = snapshot.windows.map(window=>window.used).filter(value=>value != null);
   const details = [];
   for (const window of snapshot.windows) {
