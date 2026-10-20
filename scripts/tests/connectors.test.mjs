@@ -31,3 +31,11 @@ test('bounds silent CLI declarations', () => {
     const value=structuredClone(item);change(value.auth[0]);assert.throws(()=>check(value));
   }
 });
+test('bounds account status conditions',()=>{
+ const item=declaration();
+ item.auth=[{kind:'local_cli',command:'example',status:{argv:['status'],account:'/account',condition:{pointer:'/active',values:[true]}},token:{argv:['token'],parse:'line'},timeout_ms:1000,max_output:1024}];
+ assert.doesNotThrow(()=>check(item));
+ for(const condition of [{pointer:'active',values:[true]},{pointer:'/active',values:[]},{pointer:'/active',values:[{}]},{pointer:'/active',values:Array(9).fill(true)}]){
+  const changed=structuredClone(item);changed.auth[0].status.condition=condition;assert.throws(()=>check(changed));
+ }
+});

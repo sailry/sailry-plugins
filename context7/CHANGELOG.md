@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Keep the connector declaration valid without extra instructions
+
 ## 0.1.4
 
 - Manage service accounts through declared connectors

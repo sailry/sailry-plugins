@@ -1,3 +1,7 @@
+## 0.1.3
+
+Require an active local CLI account before reading a transient credential.
+
 # Changes
 
 ## 0.1.2

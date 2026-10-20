@@ -104,9 +104,10 @@ export function checkConnectors(extension, directory) {
           break;
         case 'local_cli':
           keys(auth, ['kind','command','env','status','token','timeout_ms','max_output']);
-          keys(auth.status, ['argv','account']); keys(auth.token, ['argv','parse']);
+          keys(auth.status, ['argv','account','condition']); keys(auth.token, ['argv','parse']);
           assert(typeof auth.command === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(auth.command), 'CLI executable must be a fixed filename');
           assert(Object.entries(auth.env ?? {}).length <= 8 && Object.entries(auth.env ?? {}).every(([name,value]) => environment(name) && !['PATH','HOME','USERPROFILE','APPDATA','LOCALAPPDATA'].includes(name) && typeof value === 'string' && value.length <= 2048 && !value.includes('\0')), 'invalid CLI environment');
+          if(auth.status.condition!==undefined){const condition=auth.status.condition;keys(condition,['pointer','values']);assert(pointer(condition.pointer) && Array.isArray(condition.values) && condition.values.length>0 && condition.values.length<=8 && condition.values.every(value=>typeof value==='boolean' || Number.isSafeInteger(value) || typeof value==='string' && value.length<=256 && !/[\x00-\x1f\x7f]/.test(value)), 'invalid CLI account condition');}
           assert(argv(auth.status.argv, false) && pointer(auth.status.account) && argv(auth.token.argv, true), 'invalid fixed CLI arguments');
           assert(auth.token.parse === 'line' || (auth.token.parse && Object.keys(auth.token.parse).length === 1 && pointer(auth.token.parse.json)), 'invalid CLI token parser');
           assert(Number.isInteger(auth.timeout_ms) && auth.timeout_ms > 0 && auth.timeout_ms <= 30000 && Number.isInteger(auth.max_output) && auth.max_output > 0 && auth.max_output <= 65536, 'invalid CLI bounds');

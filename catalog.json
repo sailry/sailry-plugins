@@ -2879,7 +2879,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "context7",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Current library documentation through the official Context7 MCP service",
         "homepage": "https://context7.com",
         "extensions": {
@@ -2994,15 +2994,14 @@
                   }
                 ]
               }
-            ],
-            "instructions": ""
+            ]
           }
         }
       },
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Manage service accounts through declared connectors"
+        "text": "- Keep the connector declaration valid without extra instructions"
       }
     },
     {
@@ -10318,7 +10317,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "github",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Public GitHub research and authenticated repository, issue, pull-request and CI workflows",
         "homepage": "https://github.com/github/github-mcp-server",
         "extensions": {
@@ -10379,7 +10378,13 @@
                         "--json",
                         "hosts"
                       ],
-                      "account": "/hosts/github.com/0/login"
+                      "account": "/hosts/github.com/0/login",
+                      "condition": {
+                        "pointer": "/hosts/github.com/0/active",
+                        "values": [
+                          true
+                        ]
+                      }
                     },
                     "token": {
                       "argv": [
@@ -10432,7 +10437,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Manage service accounts through declared connectors"
+        "text": "Require an active local CLI account before reading a transient credential.\n\n# Changes"
       }
     },
     {
