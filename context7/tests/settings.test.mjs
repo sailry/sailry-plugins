@@ -5,7 +5,7 @@ const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.
 const extension = manifest.extensions['dev.sailry.platform'];
 const configuration = JSON.parse(await readFile(new URL('../mcp.json',import.meta.url),'utf8'));
 test('optional API key uses a protected connector', () => {
-  assert.equal(manifest.version,'0.1.4');
+  assert.equal(manifest.version,'0.1.5');
   assert.equal(extension.settings_schema,undefined);
   const connector = extension.connectors[0], field = connector.fields[0];
   assert.equal(field.name,'api_key'); assert.equal(field.secret,true); assert.equal(field.optional,true);
