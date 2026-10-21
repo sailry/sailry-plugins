@@ -1823,7 +1823,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -2384,18 +2384,7 @@
         "agents.delegate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-        }
+        "text": "- Recompute parallel finding and review receipt updates after a confirmed storage conflict\n- Preserve frozen review scope, tool identity and uncertain outcomes during retries"
       }
     },
     {
@@ -11635,7 +11624,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -11909,7 +11898,8 @@
                 "dev.sailry.platform/host/storage.js",
                 "dev.sailry.platform/host/settings.js",
                 "dev.sailry.platform/host/retrieval.js",
-                "dev.sailry.platform/host/mutations.js"
+                "dev.sailry.platform/host/mutations.js",
+                "dev.sailry.platform/host/workflow.js"
               ],
               "handlers": [
                 "initialize",
@@ -12056,8 +12046,11 @@
                     ],
                     "additionalProperties": false
                   },
-                  "operation": "storage.transaction",
-                  "result": "result"
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  }
                 },
                 "display": {
                   "label": "Save memory",
@@ -12103,8 +12096,11 @@
                     ],
                     "additionalProperties": false
                   },
-                  "operation": "storage.transaction",
-                  "result": "result"
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  }
                 },
                 "display": {
                   "label": "Forget memory",
@@ -12180,8 +12176,11 @@
                     ],
                     "additionalProperties": false
                   },
-                  "operation": "storage.transaction",
-                  "result": "result"
+                  "flow": {
+                    "operations": [
+                      "storage.transaction"
+                    ]
+                  }
                 },
                 "display": {
                   "label": "Merge memories",
@@ -12213,7 +12212,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Show the memory scope as a tag"
+        "text": "- Reconcile concurrent memory reads and writes automatically\n- Preserve deleted memories and newly committed facts during concurrent edits"
       }
     },
     {

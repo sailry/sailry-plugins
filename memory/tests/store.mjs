@@ -13,7 +13,7 @@ export const fault = (code,message) => Object.assign(new Error(message),{code});
 export async function fixture() {
   const records = new Map(), indexes = new Map(), drafts = new Map(), receipts = new Map();
   const prepared = [], completed = [], forgotten = [], reads = [], searches = [], catalogReads = [];
-  let now = 100*86_400_000, state = null, onRead = null;
+  let now = 100*86_400_000, state = null, onRead = null, nextId=9999;
   const get = key => clone(records.get(key) ?? {key,revision:'0',value:null,present:false});
   function store(key,value,revision='1',index) {
     records.set(key,{key,value:clone(value),revision,present:true});
@@ -61,7 +61,7 @@ export async function fixture() {
     try {
       for (const operation of operations) {
         const {key,expected_revision}=operation.data, previous=get(key);
-        if (String(expected_revision) !== previous.revision) throw fault('revision_conflict','plugin value changed');
+        if (String(expected_revision) !== previous.revision) throw Object.assign(fault('revision_conflict','plugin value changed'),{details:{kind:'plugin_value_conflict'}});
         const saved={key,revision:String(BigInt(previous.revision)+1n),present:operation.kind !== 'remove',
           value:operation.kind === 'remove' ? null : clone(operation.data.value)};
         records.set(key,saved);
@@ -81,8 +81,9 @@ export async function fixture() {
     readProjectCatalog:async()=>{catalogReads.push(true);return {projects:[{id:project,name:'Current'},{id:id(9000),name:'Foreign'}],worktrees:[]};},
     prepareTransaction:operations=>{const id=`request-${prepared.length}`;const frozen=clone(operations);drafts.set(id,frozen);prepared.push({id,operations:frozen});return id;},
     completeRequest:async id=>{completed.push(id);if (!receipts.has(id)) {
-      try {receipts.set(id,{Ok:apply(drafts.get(id))});} catch (error) {receipts.set(id,{Err:{code:error.code,message:error.message}});}
-    }return clone(receipts.get(id));},forgetRequest:id=>{forgotten.push(id);drafts.delete(id);},newId:()=>id(9999),
+      try {receipts.set(id,{Ok:apply(drafts.get(id))});} catch (error) {receipts.set(id,{Err:{code:error.code,message:error.message,...(error.details ? {details:error.details} : {})}});}
+    }return clone(receipts.get(id));},forgetRequest:id=>{forgotten.push(id);drafts.delete(id);},newId:()=>id(nextId++),
+    isValueConflict:outcome=>outcome?.isError===true && outcome.error?.code==='revision_conflict' && outcome.error.details?.kind==='plugin_value_conflict',
     readTurnState:()=>clone(state),stageTurnState:value=>{state=clone(value);}};
   const context=vm.createContext({});
   const bridge=new vm.SyntheticModule(Object.keys(sdk),function(){for (const [key,value] of Object.entries(sdk))this.setExport(key,value);},{context});

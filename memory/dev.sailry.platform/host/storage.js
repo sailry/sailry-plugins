@@ -11,9 +11,27 @@ export const entryKey = id => entryPrefix+identifier(id);
 export const write = (record,value) => ({kind:'write',data:{key:record.key,value,expected_revision:record.revision}});
 export const remove = record => ({kind:'remove',data:{key:record.key,expected_revision:record.revision}});
 
+class SnapshotChanged extends Error {
+  constructor(message) { super(message); this.code='revision_conflict'; }
+}
+export const snapshotChanged = error => error instanceof SnapshotChanged;
+export function changed(message='memory catalog changed') { throw new SnapshotChanged(message); }
+
 export async function head() {
   const record = await getValue(headKey);
   return {record,value:catalog(record.present ? record.value : null)};
+}
+export async function unchanged(revision) {
+  if (revision !== (await head()).record.revision) changed();
+}
+// These functions only acquire package data; commits never run inside this loop.
+export async function stable(read) {
+  for (let attempt=0; ; attempt++) {
+    try { return await read(); }
+    catch (error) {
+      if (attempt === 2 || !snapshotChanged(error)) throw error;
+    }
+  }
 }
 export function metadata(record) {
   if (!record.present) fail('memory does not exist','not_found');
@@ -50,7 +68,14 @@ export async function body(value,source) {
   return validate({summary:clone(value.summary),body:content.body});
 }
 export async function readMemory(id,project) {
-  return body(metadata(await record(id,project)));
+  return stable(async()=>{
+    const current=await head(), stored=await record(id,project);
+    const value=stored.present ? metadata(stored) : null;
+    const source=value ? await page(value.body_page) : null;
+    await unchanged(current.record.revision);
+    if (!value) fail('memory does not exist','not_found');
+    return body(value,source);
+  });
 }
 export async function clock() {
   const result = await searchValues({terms:[],all:['state:clock'],any:[],offset:0,limit:1});

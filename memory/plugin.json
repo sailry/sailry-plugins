@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
@@ -275,7 +275,8 @@
           "dev.sailry.platform/host/storage.js",
           "dev.sailry.platform/host/settings.js",
           "dev.sailry.platform/host/retrieval.js",
-          "dev.sailry.platform/host/mutations.js"
+          "dev.sailry.platform/host/mutations.js",
+          "dev.sailry.platform/host/workflow.js"
         ],
         "handlers": [
           "initialize",
@@ -422,8 +423,11 @@
               ],
               "additionalProperties": false
             },
-            "operation": "storage.transaction",
-            "result": "result"
+            "flow": {
+              "operations": [
+                "storage.transaction"
+              ]
+            }
           },
           "display": {
             "label": "Save memory",
@@ -469,8 +473,11 @@
               ],
               "additionalProperties": false
             },
-            "operation": "storage.transaction",
-            "result": "result"
+            "flow": {
+              "operations": [
+                "storage.transaction"
+              ]
+            }
           },
           "display": {
             "label": "Forget memory",
@@ -546,8 +553,11 @@
               ],
               "additionalProperties": false
             },
-            "operation": "storage.transaction",
-            "result": "result"
+            "flow": {
+              "operations": [
+                "storage.transaction"
+              ]
+            }
           },
           "display": {
             "label": "Merge memories",

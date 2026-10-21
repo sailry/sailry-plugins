@@ -7,7 +7,7 @@ import {review} from '../dev.sailry.platform/host/review.js';
 async function load(sdk = {}) {
   const context = vm.createContext({});
   const cache = new Map();
-  const names = ['readTurnState','stageTurnState','newId'];
+  const names = ['readTurnState','stageTurnState','newId','isValueConflict'];
   const bridge = new vm.SyntheticModule(names,function() {
     for (const name of names) this.setExport(name, sdk[name] ?? (() => { throw new Error(`unexpected ${name}`); }));
   }, {context});
@@ -19,10 +19,11 @@ async function load(sdk = {}) {
     ['settings.js',synthetic({readMemorySettings:unexpected('readMemorySettings')})],
     ['retrieval.js',synthetic({indexMemories:sdk.indexMemories ?? unexpected('listMemories'),searchMemories:unexpected('searchMemories'),
       reviewMemories:async(settings,filter)=>review(await unexpected('listMemories')(),settings,filter,unexpected('readMemory'))})],
-    ['storage.js',synthetic({readMemory:unexpected('readMemory')})],
+    ['storage.js',synthetic({readMemory:unexpected('readMemory'),snapshotChanged:()=>false,
+      stable:read=>read(),head:async()=>({record:{revision:'1'}}),unchanged:async()=>{}})],
     ['mutations.js',synthetic({putOperations:(entry,expected_revision)=>({entry,expected_revision}),
       removeOperations:(id,expected_revision)=>({id,expected_revision}),mergeOperations:(entry,sources)=>({entry,sources}),
-      memoryOutput:output=>({kind:'memory_results',data:output.data.map(value=>value.data.value.summary)})})],
+      memoryOutput:output=>({kind:'memory_results',data:output.data.map(value=>value.data.value.summary)}),RecordChanged:class extends Error{},EquivalentMemory:class extends Error{}})],
   ]);
   async function module(path) {
     if (path === 'sailry/sdk') return bridge;
@@ -122,18 +123,19 @@ test('search, replacement, scope policy and live revocation share one captured t
   const {main} = await load({readMemorySettings:async()=>current,listMemories:async()=>[summary],searchMemories:async()=>[original],readMemory:async()=>structuredClone(original),stageTurnState:value=>state=plain(value),readTurnState:()=>plain(state),newId:()=>id});
   await main.initialize({tools:['search_memory','save_memory'],project,resources:true});
   const input = {id,expected_revision:1,kind:'feedback',title:'Correction',body:'Updated with conditions'};
-  assert.equal((await main.save(input)).error.code,'invalid_request');
+  const save=value=>main.save({arguments:value,step:0});
+  assert.equal((await save(input)).result.error.code,'invalid_request');
   const retrieved = await main.search({query:id});
   main.beforeModel({results:[{name:'search_memory',response:retrieved}]});
-  const prepared = await main.save(input);
-  assert.equal(prepared.entry.summary.project,project);
-  assert.equal(prepared.entry.body,input.body);
+  const prepared = await save(input);
+  assert.equal(prepared.call.arguments.entry.summary.project,project);
+  assert.equal(prepared.call.arguments.entry.body,input.body);
   main.beforeModel({results:[]});
-  assert.equal((await main.save(input)).error.code,'invalid_request');
+  assert.equal((await save(input)).result.error.code,'invalid_request');
   const create = {expected_revision:0,global:true,kind:'project',title:'Invalid global fact',body:'A project fact'};
-  assert.equal((await main.save(create)).error.code,'invalid_request');
+  assert.equal((await save(create)).result.error.code,'invalid_request');
   current.auto_write = false;
-  assert.equal((await main.save({...create,kind:'user'})).error.code,'permission_denied');
+  assert.equal((await save({...create,kind:'user'})).result.error.code,'permission_denied');
 });
 
 test('formats mutations without disclosing bodies or replacing authoritative faults',async () => {

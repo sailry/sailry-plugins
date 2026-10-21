@@ -69,14 +69,16 @@ test('prevents concurrent equivalent creates through head CAS without partial pa
   assert.equal((await f.retrieval.searchMemories(project,'C++'))[0].summary.id,id(4));
 });
 
-test('rejects a concurrent body replacement instead of pairing it with old metadata',async()=>{
+test('recaptures a changed body without pairing old metadata',async()=>{
   const f=await fixture();
   f.seed([entry(1,'Original verified conditions')]);
   const captured=f.get('memory/entry/'+id(1)), changed=await f.storage.readMemory(id(1));
   changed.body='New verified conditions';
   const prepared=await f.mutations.putOperations(changed,1);
   f.onRead=key=>{if(key.startsWith('memory/body/')) {f.onRead=null;f.apply(prepared.operations);}};
-  await assert.rejects(f.storage.readMemory(id(1)),error=>error.code==='revision_conflict');
+  const recaptured=await f.storage.readMemory(id(1));
+  assert.equal(recaptured.summary.revision,2);
+  assert.equal(recaptured.body,changed.body);
   await assert.rejects(f.storage.body(f.storage.metadata(captured)),error=>error.code==='revision_conflict');
   const current=await f.storage.readMemory(id(1));
   assert.equal(current.summary.revision,2);
@@ -100,7 +102,7 @@ test('scope, archive, exact IDs and literal search stay in the package',async()=
   assert.equal((await f.retrieval.searchMemories(project,'"keyword" OR (')).length,2);
   const before=f.reads.length;
   await assert.rejects(f.storage.readMemory(id(3),project),error=>error.code==='permission_denied');
-  assert.deepEqual(f.reads.slice(before),['memory/entry/'+id(3)]);
+  assert.deepEqual(f.reads.slice(before),['memory/catalog','memory/entry/'+id(3)]);
   await assert.rejects(f.mutations.removeOperations(id(3),1,project),error=>error.code==='permission_denied');
 });
 
@@ -120,18 +122,23 @@ test('new turns receive only short active scoped preference bodies',async()=>{
   assert.deepEqual(f.reads.filter(key=>key.startsWith('memory/body/')),['memory/body/0','memory/body/1']);
   assert.equal(f.state.remaining,8192-Buffer.byteLength(initialized.instruction));
   assert.deepEqual(f.state.reads,[],'injected preferences grant no mutation authority');
-  const denied=await f.main.save({id:id(2),expected_revision:1,kind:'feedback',title:'Replacement',body:'Changed'});
-  assert.equal(denied.error.code,'invalid_request');
+  const denied=await f.main.save({arguments:{id:id(2),expected_revision:1,kind:'feedback',title:'Replacement',body:'Changed'},step:0});
+  assert.equal(denied.result.error.code,'invalid_request');
 });
 
-test('preference indexing rejects concurrent metadata changes',async()=>{
+test('preference indexing reads the latest consistent snapshot',async()=>{
   const f=await fixture();
   f.seed([entry(1,'Use unittest',{kind:'user'})]);
   const changed=await f.storage.readMemory(id(1));changed.summary.title='Updated preference';
   const prepared=await f.mutations.putOperations(changed,1);
   f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(prepared.operations);}};
-  await assert.rejects(f.main.initialize({tools:['search_memory'],project,resources:true}),error=>error.code==='revision_conflict');
-  assert.equal(f.state,null);
+  const initialized=await f.main.initialize({tools:['search_memory'],project,resources:true});
+  const index=JSON.parse(initialized.instruction.split('Index:\n')[1]);
+  assert.equal(index[0].title,'Updated preference');
+  assert.equal(index[0].body,'Use unittest');
+  assert.equal(index[0].revision,2);
+  assert.equal(f.prepared.length,0);
+  assert.equal(f.completed.length,0);
 });
 
 test('scoped writes reuse the captured project without reading a management catalog',async()=>{
@@ -206,13 +213,15 @@ test('reviews a populated catalog within host SDK call capacity',async()=>{
   assert.equal(f.reads.filter(key=>key.startsWith('memory/body/')).length,256);
 });
 
-test('review rejects metadata edits made while body pages are being read',async()=>{
+test('review recaptures metadata changed during body reads',async()=>{
   const f=await fixture();
   f.seed([entry(1,'Verified conditions remain unchanged')]);
   const changed=await f.storage.readMemory(id(1));changed.summary.title='Updated title';
   const prepared=await f.mutations.putOperations(changed,1);
   f.onRead=key=>{if(key.startsWith('memory/body/')) {f.onRead=null;f.apply(prepared.operations);}};
-  await assert.rejects(f.retrieval.reviewMemories({review_after_days:90},{project,all_projects:false}),error=>error.code==='revision_conflict');
+  const hints=await f.retrieval.reviewMemories({review_after_days:90},{project,all_projects:false});
+  assert.equal(hints[0].summary.title,'Updated title');
+  assert.equal(hints[0].summary.revision,2);
 });
 
 test('maximal consolidation and full catalogs respect operation, value, key and byte bounds',async()=>{

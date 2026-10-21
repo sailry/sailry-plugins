@@ -1,5 +1,5 @@
 import {getValue} from 'sailry/sdk';
-import {indexed,metadata,body,page,entryKey,scopeTag,head} from './storage.js';
+import {indexed,metadata,body,page,entryKey,scopeTag,head,stable,changed,unchanged} from './storage.js';
 import {ordered} from './model.js';
 import {query as tokenize} from './tokenize.js';
 import {bytes,fail} from './policy.js';
@@ -23,44 +23,63 @@ async function catalog(project) {
   const before = await head();
   const records = await indexed({terms:[],all:[],any:project === undefined ? [] : Array.from(new Set([scopeTag(null),scopeTag(project)])),weights:[3,1]});
   const after = await head();
-  if (before.record.revision !== after.record.revision) fail('memory catalog changed','revision_conflict');
+  if (before.record.revision !== after.record.revision) changed();
   return {revision:after.record.revision,entries:records.map(metadata)};
 }
 export async function listMemories(project) {
-  return (await catalog(project)).entries.map(entry=>entry.summary).sort(ordered);
+  return stable(async()=>(await catalog(project)).entries.map(entry=>entry.summary).sort(ordered));
 }
-export async function indexMemories(project) {
+async function indexSnapshot(project) {
   const captured = await catalog(project), pages = new Map(), entries = [];
+  for (const entry of captured.entries) {
+    if (!entry.summary.archived && ["user","feedback"].includes(entry.summary.kind) && !pages.has(entry.body_page)) {
+      pages.set(entry.body_page,await page(entry.body_page));
+    }
+  }
+  // A deletion can remove an entire page. Check the head before pairing the
+  // captured metadata with its body, preserving real corruption diagnostics.
+  if (captured.revision !== (await head()).record.revision) changed('memory catalog changed during indexing');
   for (const entry of captured.entries) {
     const summary = entry.summary;
     if (summary.archived) continue;
     let value = summary;
     if (["user","feedback"].includes(summary.kind)) {
-      if (!pages.has(entry.body_page)) pages.set(entry.body_page,page(entry.body_page));
-      const current = await body(entry,await pages.get(entry.body_page));
+      const current = await body(entry,pages.get(entry.body_page));
       if (bytes(current.body) <= 300) value = {...summary,body:current.body};
     }
     entries.push(value);
   }
-  if (captured.revision !== (await head()).record.revision) fail('memory catalog changed during indexing','revision_conflict');
   return entries.sort(ordered);
 }
-export async function reviewMemories(settings,filter) {
+export async function indexMemories(project) {
+  return stable(()=>indexSnapshot(project));
+}
+async function reviewSnapshot(settings,filter) {
   const captured = await catalog(filter.all_projects ? undefined : filter.project);
   const entries = new Map(captured.entries.map(entry=>[entry.summary.id,entry])), pages = new Map();
   const hints = await review(captured.entries.map(entry=>entry.summary),settings,filter,async id=>{
     const entry = entries.get(id);
     if (!pages.has(entry.body_page)) pages.set(entry.body_page,page(entry.body_page));
-    return body(entry,await pages.get(entry.body_page));
+    const source=await pages.get(entry.body_page);
+    await unchanged(captured.revision);
+    return body(entry,source);
   });
-  if (captured.revision !== (await head()).record.revision) fail('memory catalog changed during review','revision_conflict');
+  await unchanged(captured.revision);
   return hints;
 }
+export async function reviewMemories(settings,filter) { return stable(()=>reviewSnapshot(settings,filter)); }
 export async function browseMemories(filter) {
   return (await find(filter)).map(record=>metadata(record).summary);
 }
 export async function searchMemories(project,query) {
-  const results = [];
-  for (const current of await find({project,query,recall:true})) results.push(await body(metadata(current)));
-  return results;
+  return stable(async()=>{
+    const current=await head(), captured=[], pages=new Map();
+    for (const stored of await find({project,query,recall:true})) {
+      const value=metadata(stored);
+      captured.push(value);
+      if (!pages.has(value.body_page)) pages.set(value.body_page,await page(value.body_page));
+    }
+    await unchanged(current.record.revision);
+    return Promise.all(captured.map(value=>body(value,pages.get(value.body_page))));
+  });
 }
