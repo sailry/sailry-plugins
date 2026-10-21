@@ -1,4 +1,3 @@
-import {callId} from 'sailry/sdk';
 import {verify} from './content.js';
 import {fail, fields, identifier, limits, path, revision, size} from './policy.js';
 import {head, key, manifest, open, shards, transaction, write} from './records.js';
@@ -54,7 +53,7 @@ function receipt(args, scope, value) {
   if (!args.finalize && !groups.size) fail('Child or partial completion requires a whole group receipt');
   return {files,groups};
 }
-export async function prepare(input, actor) {
+export async function prepare(input, actor, intent) {
   const args = fields(input,['review_id','reviewed_files','reviewed_groups','finalize'],
     ['review_id','reviewed_files','reviewed_groups','finalize']);
   identifier(args.review_id);
@@ -75,7 +74,7 @@ export async function prepare(input, actor) {
   const operations = [];
   current.value.reviewed_groups = scope.groups.map(group => group.id).filter(id => covered.has(id));
   if (incoming.groups.size) {
-    const id = identifier(callId());
+    const id = identifier(intent);
     if (current.value.receipts.includes(id)) fail('Receipt was already recorded','conflict');
     const rows = [...args.reviewed_files.map(value => ({kind:'file',value})),
       ...args.reviewed_groups.map(value => ({kind:'group',value})),{kind:'reporter',value:actor.session}];

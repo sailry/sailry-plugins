@@ -96,3 +96,52 @@ runtimeTest('production SDK reads captured source without Git',async()=>{
   assert.equal(output.result.Ok.revision,file.revision);
   assert.deepEqual(output.calls.map(call=>call.command.kind),['read_session','read_plugin_value','read_plugin_value','read_plugin_value']);
 });
+
+
+runtimeTest('production SDK rebuilds only a confirmed key conflict',async()=>{
+  const {input,review,file,group,head,sessionData,entry,read}=await stored('finding');
+  const intent=policy.call_id, other='00000000-0000-4000-8000-000000000009';
+  head.findings=[other];
+  const arguments_={review_id:review,path:file.path,revision:file.revision,side:'new',line:7,
+    snippet:'return changed();',severity:'P1',title:'Changed result is lost',
+    explanation:'The added return loses its result.',evidence:'The frozen changed line demonstrates the loss.'};
+  input.input={arguments:arguments_,step:1,state:{intent,writes:[],result:{}},
+    outcome:{isError:true,error:{code:'revision_conflict',message:'plugin value changed',
+      details:{kind:'plugin_value_conflict'}}}};
+  input.replies=[
+    read({kind:'read_session',data:{session:input.context.session}},'session',sessionData),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/head`}},'plugin_value',
+      {...entry(`review/${review}/head`,head),revision:2}),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/scope/0`}},'plugin_value',
+      entry(`review/${review}/scope/0`,{v:1,kind:'scope',rows:[{kind:'file',value:file},{kind:'group',value:group}]})),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/data/0`}},'plugin_value',
+      entry(`review/${review}/data/0`,{v:1,kind:'content',capture:review,path:file.path,part:'diff',
+        revision:file.revision,offset:0,next:null,lines:[{kind:'added',old_line:null,new_line:7,text:'return changed();'}]})),
+  ];
+  const output=execute(input),transition=output.result.Ok;
+  assert.equal(transition.call.operation,'storage.transaction');
+  const operations=transition.call.arguments.operations;
+  assert.equal(operations[0].data.expected_revision,'2');
+  assert.deepEqual(operations[0].data.value.findings,[other,intent]);
+  assert.equal(operations[1].data.key,`review/${review}/finding/${intent}`);
+  assert.equal(operations[1].data.value.finding.revision,file.revision);
+  assert.equal(transition.state.intent,intent);
+  assert.deepEqual(output.calls.map(call=>call.command.kind),
+    ['read_session','read_plugin_value','read_plugin_value','read_plugin_value']);
+});
+
+runtimeTest('production SDK preserves non-key failures without reads',async()=>{
+  for (const error of [
+    {code:'revision_conflict',message:'plugin configuration changed'},
+    {code:'outcome_unknown',message:'Completion unavailable'},
+    {code:'cancelled',message:'Turn cancelled'},
+    {code:'permission_denied',message:'Package revoked'},
+  ]) {
+    const input=await packageInput(directory,'finding',{
+      arguments:{},step:1,state:{intent:policy.call_id},outcome:{isError:true,error},
+    },{policy});
+    const output=execute(input);
+    assert.deepEqual(output.result.Ok,{result:{isError:true,error}});
+    assert.deepEqual(output.calls,[]);
+  }
+});

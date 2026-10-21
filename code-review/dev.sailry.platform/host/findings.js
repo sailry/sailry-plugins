@@ -1,4 +1,3 @@
-import {callId} from 'sailry/sdk';
 import {pages} from './content.js';
 import {fail, fields, identifier, integer, limits, path, revision, text} from './policy.js';
 import {head, key, manifest, open, transaction, write} from './records.js';
@@ -23,7 +22,7 @@ async function locate(value,file,snippet,side) {
   if (selected === null) fail('Finding snippet does not anchor a changed line');
   return selected;
 }
-export async function prepare(input, actor) {
+export async function prepare(input, actor, intent) {
   const args = fields(input,['review_id','path','revision','side','line','snippet','severity','title','explanation','evidence'],
     ['review_id','path','revision','side','line','snippet','severity','title','explanation','evidence']);
   identifier(args.review_id);
@@ -42,7 +41,7 @@ export async function prepare(input, actor) {
   if (!file) fail('Finding file is outside the review scope');
   if (file.revision !== args.revision) fail('Finding uses a stale file revision','revision_conflict');
   const line = await locate(current.value,file,args.snippet,args.side);
-  const id = identifier(callId());
+  const id = identifier(intent);
   if (current.value.findings.includes(id)) fail('Finding was already recorded','conflict');
   const finding = {id,path:args.path,revision:file.revision,side:args.side,line,
     snippet:args.snippet,severity:args.severity,title:args.title,explanation:args.explanation,

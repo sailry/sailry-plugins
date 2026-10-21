@@ -1,3 +1,4 @@
+import {callId, isValueConflict} from 'sailry/sdk';
 import {fail, result} from './policy.js';
 import {committed, identity} from './records.js';
 import {prepare as scopeRequest} from './scope.js';
@@ -10,9 +11,16 @@ export {initialize} from './delegation.js';
 function flow(prepare, present = value => value) {
   return async ({arguments:input,step,state,outcome}) => {
     try {
-      if (step === 1) return {result:present(committed(outcome,state))};
-      if (step !== 0) fail('Invalid review continuation');
-      return await prepare(input,await identity());
+      if (!Number.isInteger(step) || step < 0 || step > 8) fail('Invalid review continuation');
+      if (step > 0 && (!isValueConflict(outcome) || step === 8)) {
+        return outcome?.isError ? {result:outcome} : {
+          result:present(committed(outcome,state)),output:step-1,
+        };
+      }
+      const intent = step === 0 ? callId() : state?.intent;
+      if (typeof intent !== 'string') fail('Review tool identity is unavailable','internal');
+      const pending = await prepare(input,await identity(),intent);
+      return {...pending,state:{...pending.state,intent}};
     } catch (error) { return {result:result(error)}; }
   };
 }

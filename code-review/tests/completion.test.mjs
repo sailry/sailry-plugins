@@ -117,7 +117,7 @@ test('unrelated sessions grandchildren and package identities cannot write', asy
   assert.equal((await fixtureData.invoke('complete',receipt(scope))).error.code,'permission_denied');
 });
 
-test('CAS conflicts keep parallel findings without hidden retry', async () => {
+test('merges parallel findings after a storage conflict', async () => {
   const fixtureData = await fixture();
   const creator = fixtureData.captured.session;
   const scope = await fixtureData.invoke('scope',{});
@@ -128,14 +128,19 @@ test('CAS conflicts keep parallel findings without hidden retry', async () => {
   assert.equal(first.response.call.arguments.operations[0].data.expected_revision,'1');
   assert.equal(second.response.call.arguments.operations[0].data.expected_revision,'1');
   assert.ok((await fixtureData.finish(first)).finding);
-  const reads = fixtureData.calls.length;
-  assert.equal((await fixtureData.finish(second)).error.code,'revision_conflict');
-  assert.equal(fixtureData.calls.length,reads);
-  assert.ok((await fixtureData.invoke('finding',finding(scope,{title:'Second evidenced finding'}))).finding);
-  assert.equal(fixtureData.values.get(`review/${scope.review_id}/head`).value.findings.length,2);
+  const merged = await fixtureData.finish(second);
+  assert.equal(merged.finding.id,second.response.state.intent);
+  assert.equal(merged.finding.reporter,uuid(21));
+  assert.equal(second.attempts.length,2);
+  assert.equal(second.attempts[0][0].data.expected_revision,'1');
+  assert.equal(second.attempts[1][0].data.expected_revision,'2');
+  assert.equal(second.attempts[0][1].data.key,second.attempts[1][1].data.key);
+  const head = fixtureData.values.get(`review/${scope.review_id}/head`).value;
+  assert.deepEqual(head.findings,[first.response.state.intent,second.response.state.intent]);
+  assert.equal(fixtureData.values.get(`review/${scope.review_id}/finding/${first.response.state.intent}`).value.finding.reporter,uuid(20));
 });
 
-test('CAS protects receipts from concurrent lost updates', async () => {
+test('merges independent child receipts without lost coverage', async () => {
   const fixtureData = await fixture([file('first/main.rs'),file('second/main.rs')]);
   const creator = fixtureData.captured.session;
   const scope = await fixtureData.invoke('scope',{});
@@ -144,8 +149,11 @@ test('CAS protects receipts from concurrent lost updates', async () => {
   fixtureData.actor(uuid(21),creator);
   const second = await fixtureData.start('complete',partial(scope,scope.groups[1]));
   assert.equal((await fixtureData.finish(first)).status,'open');
-  assert.equal((await fixtureData.finish(second)).error.code,'revision_conflict');
-  assert.equal((await fixtureData.invoke('complete',partial(scope,scope.groups[1]))).status,'open');
+  assert.equal((await fixtureData.finish(second)).status,'open');
+  assert.equal(second.attempts.length,2);
+  assert.equal(second.attempts[0][1].data.key,second.attempts[1][1].data.key);
+  assert.deepEqual(fixtureData.values.get(`review/${scope.review_id}/head`).value.receipts,
+    [first.response.state.intent,second.response.state.intent]);
   fixtureData.actor(creator);
   const result = await fixtureData.invoke('complete',receipt(scope,{reviewed_files:[],reviewed_groups:[]}));
   assert.equal(result.status,'complete');
@@ -157,7 +165,56 @@ test('finalization races reject stale reports', async () => {
   const scope = await fixtureData.invoke('scope',{});
   const report = await fixtureData.start('finding',finding(scope));
   assert.equal((await fixtureData.invoke('complete',receipt(scope))).status,'complete');
-  assert.equal((await fixtureData.finish(report)).error.code,'revision_conflict');
+  assert.equal((await fixtureData.finish(report)).error.code,'conflict');
+  assert.equal(report.attempts.length,1);
   const head = fixtureData.values.get(`review/${scope.review_id}/head`).value;
   assert.deepEqual(head.findings,[]);
+});
+
+
+test('retries only confirmed key conflicts within the budget',async()=>{
+  const f=await fixture(), scope=await f.invoke('scope',{});
+  const pending=await f.start('finding',finding(scope));
+  const conflict={isError:true,error:{code:'revision_conflict',message:'Value changed',
+    details:{kind:'plugin_value_conflict'}}};
+  const result=await f.finish(pending,()=>conflict);
+  assert.deepEqual(result,conflict);
+  assert.equal(pending.attempts.length,8);
+  assert.ok(pending.attempts.every(operations => operations[1].data.key.endsWith(pending.response.state.intent)));
+  assert.deepEqual(f.values.get(`review/${scope.review_id}/head`).value.findings,[]);
+  assert.equal([...f.values.keys()].filter(key => key.includes('/finding/')).length,0);
+});
+
+test('preserves unknown cancellation and configuration fences',async()=>{
+  for (const error of [
+    {code:'outcome_unknown',message:'Completion unavailable'},
+    {code:'cancelled',message:'Turn cancelled'},
+    {code:'permission_denied',message:'Package revoked'},
+    {code:'revision_conflict',message:'Configuration changed'},
+    {code:'revision_conflict',message:'File changed',details:{kind:'another_conflict'}},
+  ]) {
+    const f=await fixture(),scope=await f.invoke('scope',{});
+    const pending=await f.start('finding',finding(scope));
+    const outcome={isError:true,error};
+    const before=structuredClone([...f.values]);
+    assert.deepEqual(await f.finish(pending,outcome),outcome);
+    assert.equal(pending.attempts.length,1);
+    assert.deepEqual([...f.values],before);
+  }
+});
+
+test('rechecks review ownership after a retryable conflict',async()=>{
+  const f=await fixture(),scope=await f.invoke('scope',{});
+  const pending=await f.start('finding',finding(scope));
+  const before=structuredClone([...f.values]);
+  const result=await f.finish(pending,()=>{
+    f.values.get(`review/${scope.review_id}/head`).value.package.name='other-package';
+    return {isError:true,error:{code:'revision_conflict',message:'Value changed',
+      details:{kind:'plugin_value_conflict'}}};
+  });
+  assert.equal(result.error.code,'permission_denied');
+  assert.equal(pending.attempts.length,1);
+  assert.deepEqual(f.values.get(`review/${scope.review_id}/head`).value.findings,[]);
+  assert.equal([...f.values.keys()].filter(key => key.includes('/finding/')).length,0);
+  assert.equal(f.values.size,before.length);
 });

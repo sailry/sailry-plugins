@@ -75,6 +75,8 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   }
   const sdk = {
     context:() => plain(captured), callId:() => currentCall,
+    isValueConflict:value => value?.isError === true && value.error?.code === 'revision_conflict'
+      && value.error.details?.kind === 'plugin_value_conflict',
     readSession:async () => plain(sessions.get(captured.session)),
     readTurn:async turn => ({run:{turn,session:captured.session,worktree:captured.worktree,status:turns.get(turn) ?? 'completed'}}),
     listKeys:async (prefix,after,limit) => {
@@ -108,12 +110,12 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
     currentCall = uuid(++sequence);
     const response = name === 'scope' ? {result:await entry.namespace.scope(plain(args))}
       : await entry.namespace[name]({arguments:plain(args),step:0,state:null,outcome:null});
-    return {name,args:plain(args),response:plain(response)};
+    return {name,args:plain(args),response:plain(response),call:currentCall,actor:plain(captured)};
   }
   function commit(operations) {
     for (const operation of operations) {
       const {key,expected_revision} = operation.data;
-      if ((values.get(key)?.revision ?? '0') !== expected_revision) return {isError:true,error:{code:'revision_conflict',message:'Revision conflict'}};
+      if ((values.get(key)?.revision ?? '0') !== expected_revision) return {isError:true,error:{code:'revision_conflict',message:'Revision conflict',details:{kind:'plugin_value_conflict'}}};
     }
     const output = [];
     for (const operation of operations) {
@@ -128,9 +130,25 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   }
   async function finish(pending, forced = null) {
     if (pending.response.result) return pending.response.result;
-    const outcome = forced ?? commit(pending.response.call.arguments.operations);
-    const response = await entry.namespace[pending.name]({arguments:pending.args,step:1,state:pending.response.state,outcome});
-    return plain(response.result);
+    const previous = plain(captured), previousCall = currentCall;
+    Object.assign(captured,pending.actor);
+    currentCall = pending.call;
+    pending.attempts = [];
+    let response = pending.response;
+    try {
+      for (let step=1; step<=8; step++) {
+        const operations = response.call.arguments.operations;
+        pending.attempts.push(plain(operations));
+        const outcome = typeof forced === 'function' ? forced(step,operations)
+          : forced ?? commit(operations);
+        response = await entry.namespace[pending.name]({arguments:pending.args,step,state:response.state,outcome});
+        if (Object.hasOwn(response,'result')) return plain(response.result);
+      }
+      throw new Error('Review exceeded its flow budget');
+    } finally {
+      Object.assign(captured,previous);
+      currentCall = previousCall;
+    }
   }
   return {values,calls,captured,sessions,start,finish,commit,
     initialize:input => plain(entry.namespace.initialize(plain(input))),
