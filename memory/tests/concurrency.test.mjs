@@ -140,6 +140,32 @@ test('deletion wins over a concurrently changed body',async()=>{
   assert.equal(f.get('memory/entry/'+id(1)).present,false);
 });
 
+test('reconciles deletion during consolidation before preparing any write',async()=>{
+  for (const removed of [1,2]) {
+    const f=await setup([entry(1,'Retained target conditions'),entry(2,'Retained source conditions')]);
+    await authorize(f,[id(1),id(2)]);
+    const deletion=await f.mutations.removeOperations(id(removed),1);
+    let reads=0;
+    f.onRead=key=>{
+      if (key===`memory/entry/${id(removed)}` && ++reads===2) {
+        f.onRead=null;f.apply(deletion.operations);
+      }
+    };
+    const job=await start(f,'consolidate',{id:id(1),expected_revision:1,title:'Combined intent',
+      body:'Retain both conditions and the new intent',sources:[{id:id(2),revision:1}]});
+    const result=job.transition.result;
+    assert.equal(result.status,'changed');assert.equal(result.saved,false);
+    assert.equal(job.transition.call,undefined);
+    assert.deepEqual(plain(result.deleted),[id(removed)]);
+    const remaining=await f.storage.readMemory(id(removed===1 ? 2 : 1));
+    assert.equal(remaining.summary.revision,1);
+    assert.equal(remaining.summary.archived,false);
+    assert.equal(remaining.body,removed===1 ? 'Retained source conditions' : 'Retained target conditions');
+    assert.equal(f.get('memory/catalog').value.active,1);
+    assert.equal(f.indexes.size,1);
+  }
+});
+
 test('bounds repeated zero-write conflicts without claiming saved',async()=>{
   const f=await setup(), job=await start(f,'save',argumentsFor('Never committed'));
   for (let step=0;step<8;step++) {

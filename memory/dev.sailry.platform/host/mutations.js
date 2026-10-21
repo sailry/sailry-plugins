@@ -113,8 +113,8 @@ async function mergeSnapshot(input,sources,project) {
   if (entry.summary.archived || !Array.isArray(sources) || !sources.length) fail('invalid memory consolidation');
   const [current,target,now] = await Promise.all([head(),record(entry.summary.id,project),clock()]);
   await writable(project);
-  const previous = metadata(target);
   expected(target,entry.summary.revision);
+  const previous = metadata(target);
   if (previous.summary.archived) throw new RecordChanged([previous.summary.id]);
   if (previous.summary.project !== entry.summary.project) fail('memory scope cannot be changed');
   const excluded = new Set([entry.summary.id]), originals = [];
@@ -122,8 +122,9 @@ async function mergeSnapshot(input,sources,project) {
     const id = identifier(source.id);
     if (excluded.has(id)) fail('consolidation requires distinct memories in the same scope');
     excluded.add(id);
-    const stored = await record(id,project), value = metadata(stored);
+    const stored = await record(id,project);
     expected(stored,source.revision);
+    const value = metadata(stored);
     if (value.summary.project !== entry.summary.project) fail('consolidation requires distinct memories in the same scope');
     if (value.summary.archived) throw new RecordChanged([value.summary.id]);
     const original = await body(value,await ownedPage(current,value.body_page));

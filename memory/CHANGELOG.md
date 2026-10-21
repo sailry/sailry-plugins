@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Preserve deletions during concurrent memory consolidation
+
 ## 0.1.8
 
 - Retry catalog contention in memory management without losing drafts

@@ -11624,7 +11624,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -12212,7 +12212,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Retry catalog contention in memory management without losing drafts"
+        "text": "- Preserve deletions during concurrent memory consolidation"
       }
     },
     {
