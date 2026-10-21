@@ -6,10 +6,11 @@ import {SettingsGroup, IconButton} from 'sailry/ui';
 
 export function render(view) {
   const text = view.text, colors = theme().colors, value = view.value();
+  const available = view.permissionRows();
   const rows = [
     ['screen_capture','computer_screen_capture','screen','screen-recording'],
     ['accessibility','computer_accessibility','accessibility','accessibility']
-  ].map(([permission,key,selector,icon]) => {
+  ].filter(([permission]) => available.includes(permission)).map(([permission,key,selector,icon]) => {
     const status = view.status(permission), canRequest = view.canRequest(permission);
     const control = canRequest
       ? new Button(`computer-authorize-${selector}`).label(text.permission_request)
@@ -24,7 +25,8 @@ export function render(view) {
         .h_flex().flex_shrink(0).min_w_0().max_w_full().justify_end().child(control));
   });
   let help;
-  if (value?.platform && value.platform !== 'macos') help = 'computer_permissions_unsupported';
+  if (value?.platform === 'windows') help = 'computer_permissions_windows';
+  else if (value?.platform && value.platform !== 'macos') help = 'computer_permissions_unsupported';
   else if (value && !value.local && (value.screen_capture !== true || value.accessibility !== true)) {
     help = 'computer_permissions_remote';
   }

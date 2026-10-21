@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "desktop": {
+      "type": "stdio",
+      "command": "${SAILRY_COMPUTER_USE}",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "OPEN_COMPUTER_USE_AGENT_SOCKET_NAMESPACE": "${PLUGIN_DATA}",
+        "OPEN_COMPUTER_USE_CONFIG_FILE": "${PLUGIN_ROOT}/ocu.json"
+      },
+      "exclusive": true,
+      "keep_images": 3,
+      "reuse": false
+    }
+  }
+}

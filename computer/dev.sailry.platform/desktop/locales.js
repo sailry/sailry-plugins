@@ -12,6 +12,7 @@ const en = {
   computer_permissions_refresh:'Check again',
   permission_request:'Request access',
   computer_permissions_remote:'Open Sailry settings on the execution computer to grant access',
+  computer_permissions_windows:'Permissions are managed by Windows',
   computer_permissions_unsupported:'Permission checks and guidance are unavailable on this system',
   plugins_disconnected:'Host disconnected'
 };
@@ -28,6 +29,7 @@ const zh = {
   computer_permissions_refresh:'重新检测',
   permission_request:'请求授权',
   computer_permissions_remote:'请在执行电脑上打开 Sailry 设置并授权',
+  computer_permissions_windows:'由 Windows 管理系统权限',
   computer_permissions_unsupported:'此系统暂不支持权限检测与授权引导',
   plugins_disconnected:'主机连接已断开'
 };

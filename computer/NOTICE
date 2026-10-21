@@ -6,9 +6,12 @@ plugins/builtin/computer/desktop/view.rs
 plugins/builtin/computer/desktop/messages.rs
 locales/en.yml and locales/zh-CN.yml
 
-Native execution, tool metadata, descriptions, and input schemas use
-unmodified Cua Driver 0.32.0 from trycua/cua
-58aba84b5b83d77e7e2b0f006547699eb594e50d (MIT), with its default cursor.
+Execution uses Open Computer Use from ifuryst/open-computer-use at
+8fdda42639c94fa2ce22ea2d9d706b5919a83b42 (MIT), built and packaged by Sailry.
+The application packaging notices retain its license and upstream Cua Driver
+and yabai notices. Sailry's macOS helper patches scope window and cursor
+cleanup to the owning connection and apply the Sailry helper identity.
 
-Sailry adapts Node admission, session ownership, transport, and ADK media.
-Settings reuse Kit controls and the shared Reicon permission assets.
+This package declares the MCP service, instructions, tool display metadata and
+permission settings. Native helper selection, protected execution resources,
+ordinary approvals, cancellation and media projection stay in the Node.

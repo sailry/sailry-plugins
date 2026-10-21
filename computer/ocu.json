@@ -1,0 +1,10 @@
+{
+  "image": {
+    "format": "png",
+    "jpegQuality": 0.8,
+    "maxLongEdgePixels": 1280,
+    "scaleDownAfterMaxSize": true,
+    "discardBelowPixelCount": 64,
+    "captureTimeout": 5
+  }
+}

@@ -37,6 +37,10 @@ export default class Settings extends View {
     });
   }
   value() { return this.connected ? this.permissions : null; }
+  permissionRows() {
+    const platform = this.value()?.platform;
+    return !platform || platform === 'macos' ? ['screen_capture','accessibility'] : [];
+  }
   canRequest(permission) {
     const value = this.value();
     return !!value && !this.error && value.local && value.platform === 'macos' && value[permission] === false;

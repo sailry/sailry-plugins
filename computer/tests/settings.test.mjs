@@ -71,6 +71,24 @@ test('remote and unsupported Nodes expose status without local permission action
   }
 });
 
+test('permission rows follow the execution platform', async () => {
+  for (const platform of ['macos','windows','linux']) {
+    let requests = 0;
+    const {view,cx,ready,act} = await settings({
+      readComputerPermissions:async () => ({...permissions(),platform}),
+      requestComputerPermission:async () => { requests++; return null; }
+    });
+    await ready();
+    assert.deepEqual([...view.permissionRows()],platform === 'macos' ? ['screen_capture','accessibility'] : []);
+    if (platform !== 'macos') {
+      await act(() => view.read('accessibility',cx));
+      assert.equal(requests,0);
+      assert.equal(view.canRequest('screen_capture'),false);
+      assert.equal(view.canRequest('accessibility'),false);
+    }
+  }
+});
+
 test('coalesces refreshes during an explicit request without repeating the request', async () => {
   let reads = 0, requests = 0, resolve;
   const {view,cx,ready,act} = await settings({
