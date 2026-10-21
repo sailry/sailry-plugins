@@ -20,6 +20,7 @@ export function settings(record) {
 export async function readMemorySettings() { return settings(await getValue(settingsKey)); }
 export async function prepareMemorySettings(value) {
   validate(value);
+  if ((await readMemorySettings()).revision !== value.revision) fail('memory settings changed','revision_conflict');
   const current = await head(), stored = clone(value);
   delete stored.revision;
   // Settings changes invalidate a mutation already waiting on approval or admission.

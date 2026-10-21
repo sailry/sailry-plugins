@@ -2,7 +2,7 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
 import {newId as newMemoryId,readProjectCatalog,
-  completeRequest,forgetRequest,nextChange} from 'sailry/sdk';
+  completeRequest,forgetRequest,nextChange,isValueConflict} from 'sailry/sdk';
 import {createText,readText,setText,releaseText,nextTextEvent} from 'sailry/forms';
 import {modal_closed,toast,nextControlEvent} from 'sailry/ui';
 import {messages} from './locales.js';
@@ -110,15 +110,18 @@ export default class Settings extends View {
     owner.pending = true; owner.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
-        owner.request ??= await prepareMemorySettings(clone(this.draft));
-        const result = await completeRequest(owner.request);
+        const draft = clone(this.draft);
+        const result = await this.complete(owner,()=>prepareMemorySettings(draft));
         if (result.Err) {
           owner.error = result.Err.code === 'revision_conflict' ? 'memory_settings_conflict' : errorKey(result.Err.code);
-          if (!uncertain(result.Err.code)) { forgetRequest(owner.request); owner.request = null; }
+          if (!uncertain(result.Err.code)) { forgetRequest(owner.request); owner.request = null; owner.prepare = null; }
         } else if (result.Ok?.kind === 'plugin_transaction') {
-          this.saved = outcome(result.Ok); this.draft = clone(this.saved); forgetRequest(owner.request); owner.request = null;
+          this.saved = outcome(result.Ok); this.draft = clone(this.saved); forgetRequest(owner.request); owner.request = null; owner.prepare = null;
         } else owner.error = 'memory_unknown';
-      } catch { owner.error = owner.request ? 'memory_unknown' : 'memory_failed'; }
+      } catch (error) {
+        owner.error = owner.request ? 'memory_unknown' : error.code === 'revision_conflict' ? 'memory_settings_conflict' : errorKey(error.code ?? 'internal');
+        if (!owner.request) owner.prepare = null;
+      }
       finally { owner.pending = false;if(owner.error)this.fail(owner,owner.error);cx.notify(); }
     });
   }
@@ -179,21 +182,32 @@ export default class Settings extends View {
     if (!owner || owner.pending || !this.connected) return;
     this.perform(owner,cx,()=>prepareRemoveMemory(owner.summary.id,owner.summary.revision));
   }
+  async complete(owner,prepare) {
+    owner.prepare ??= prepare;
+    for (let attempt=0; ; attempt++) {
+      owner.request ??= await owner.prepare();
+      const result = await completeRequest(owner.request);
+      if (attempt === 7 || !isValueConflict({isError:true,error:result.Err})) return result;
+      forgetRequest(owner.request); owner.request = null;
+    }
+  }
   perform(owner,cx,prepare) {
     owner.pending = true; owner.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
-        if (!owner.request) owner.request = await prepare();
-        const result = await completeRequest(owner.request);
+        const result = await this.complete(owner,prepare);
         if (result.Err) {
           owner.error = errorKey(result.Err.code);
-          if (!uncertain(result.Err.code)) { forgetRequest(owner.request); owner.request = null; }
+          if (!uncertain(result.Err.code)) { forgetRequest(owner.request); owner.request = null; owner.prepare = null; }
         } else if (['memory_results','memory_removed'].includes(memoryOutput(result.Ok).kind)) {
-          forgetRequest(owner.request); owner.request = null; owner.pending = false;
+          forgetRequest(owner.request); owner.request = null; owner.prepare = null; owner.pending = false;
           if (this.editing === owner || this.removal === owner) this.close(cx);
           this.refresh(cx);
         } else owner.error = 'memory_unknown';
-      } catch (error) { owner.error = owner.request ? 'memory_unknown' : errorKey(error.code ?? 'internal'); }
+      } catch (error) {
+        owner.error = owner.request ? 'memory_unknown' : errorKey(error.code ?? 'internal');
+        if (!owner.request) owner.prepare = null;
+      }
       finally { owner.pending = false;if(owner.error)this.fail(owner,owner.error);cx.notify(); }
     });
   }

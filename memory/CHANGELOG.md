@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Retry catalog contention in memory management without losing drafts
+
 ## 0.1.7
 
 - Reconcile concurrent memory reads and writes automatically

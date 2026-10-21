@@ -22,6 +22,7 @@ async function fixture() {
     prepareRemoveMemory:(id,revision)=>prepare('remove',{id,revision}), prepareMergeMemories:(value,sources)=>prepare('merge',{value,sources}),
     newId:()=>id,readProjectCatalog:async()=>({projects:[],worktrees:[]}),
     completeRequest:async id=>{completed.push(id);return complete(id);},forgetRequest:id=>forgotten.push(id),nextChange:pending,
+    isValueConflict:outcome=>outcome?.isError===true && outcome.error?.code==='revision_conflict' && outcome.error.details?.kind==='plugin_value_conflict',
   };
   function prepare(kind,value) { const id=`request-${prepared.length}`; prepared.push({id,kind,value:plain(value)});return id; }
   const forms = {createText:(value,props)=>{const id=`text-${count++}`;fields.set(id,value);options.set(id,plain(props));return id;},readText:id=>fields.get(id),setText:(id,value)=>fields.set(id,value),releaseText:id=>fields.delete(id),nextTextEvent:pending};
@@ -135,6 +136,73 @@ test('retries an uncertain mutation with its original immutable request',async()
   assert.equal(f.prepared.length,1);
   assert.equal(f.prepared[0].value.value.body,'Use 中文 🙂');
   assert.equal(f.view.editing,null);
+});
+
+test('reprepares aggregate contention across every management write',async()=>{
+  const conflict={Err:{code:'revision_conflict',details:{kind:'plugin_value_conflict'}}};
+  for (const operation of ['create','update','archive','merge','delete','settings']) {
+    const f=await fixture();
+    let work;
+    if (operation==='settings') {
+      f.view.draft.context_bytes=4096;
+      work=()=>f.view.saveConfiguration(f.cx);
+    } else if (operation==='delete') {
+      f.view.remove(entry.summary,f.cx);work=()=>f.view.confirmRemoval(f.cx);
+    } else {
+      await f.act(()=>f.view.edit(operation==='create' ? null : entry.summary,f.cx));
+      f.fields.set(f.view.editing.title,'Original intent');
+      f.fields.set(f.view.editing.body,'Preserve confirmed conditions');
+      if (operation==='archive') f.view.editing.entry.summary.archived=true;
+      if (operation==='merge') {
+        const source={summary:{...entry.summary,id:'22222222-2222-4222-8222-222222222222',revision:3},body:'Additional condition'};
+        f.read=source;
+        await f.act(()=>f.view.merge(source.summary.id,f.cx));
+      }
+      work=()=>f.view.save(f.cx);
+    }
+    f.complete=async()=>f.completed.length<3 ? conflict : {Ok:{kind:'plugin_transaction',data:{
+      settings:{...defaults,revision:1,context_bytes:4096},outcome:{kind:operation==='delete' ? 'memory_removed' : 'memory_results'}}}};
+    await f.act(work);
+    assert.equal(f.prepared.length,3,operation);
+    assert.equal(new Set(f.completed).size,3,operation);
+    assert.deepEqual(f.prepared.map(value=>value.value),Array(3).fill(f.prepared[0].value),operation);
+    assert.equal(f.notices.length,0,operation);
+    assert.equal(f.forgotten.length,3,operation);
+    if (operation==='settings') assert.equal(f.view.saved.revision,1);
+    else assert.equal(f.view.editing ?? f.view.removal,null);
+  }
+});
+
+test('retains frozen intent across known contention and uncertain receipt',async()=>{
+  const f=await fixture(),conflict={Err:{code:'revision_conflict',details:{kind:'plugin_value_conflict'}}};
+  f.view.edit(null,f.cx);const owner=f.view.editing;
+  f.fields.set(owner.title,'Original title');f.fields.set(owner.body,'Original intent');
+  f.complete=async()=>f.completed.length===1 ? conflict : {Err:{code:'outcome_unknown'}};
+  await f.act(()=>f.view.save(f.cx));
+  assert.equal(owner.request,'request-1');
+  assert.equal(owner.error,'memory_unknown');
+  f.fields.set(owner.body,'Edited after admission');
+  f.complete=async()=>f.completed.length===3 ? conflict : {Ok:{kind:'plugin_transaction',data:{outcome:{kind:'memory_results'}}}};
+  await f.act(()=>f.view.save(f.cx));
+  assert.deepEqual(f.completed,['request-0','request-1','request-1','request-2']);
+  assert.ok(f.prepared.every(value=>value.value.value.body==='Original intent'));
+  assert.ok(f.prepared.every(value=>value.value.value.summary.id===id));
+  assert.equal(f.view.editing,null);
+});
+
+test('bounds contention and never retries other management failures',async()=>{
+  for (const error of [{code:'revision_conflict',details:{kind:'plugin_value_conflict'}},
+    {code:'revision_conflict'},{code:'permission_denied'},{code:'internal'},{code:'cancelled'}]) {
+    const f=await fixture();
+    f.view.edit(null,f.cx);const owner=f.view.editing;
+    f.fields.set(owner.title,'Retained draft');f.fields.set(owner.body,'Retained body');
+    f.complete=async()=>({Err:error});
+    await f.act(()=>f.view.save(f.cx));
+    assert.equal(f.prepared.length,error.details ? 8 : 1);
+    assert.equal(f.notices.length,1);
+    assert.equal(f.fields.get(owner.body),'Retained body');
+    assert.equal(owner.request,null);
+  }
 });
 
 test('late completion from a closed editor cannot close its replacement',async()=>{

@@ -6,6 +6,24 @@ import {readFile} from 'node:fs/promises';
 const plain=value=>JSON.parse(JSON.stringify(value));
 const commit=async(f,input,revision=0)=>f.apply((await f.mutations.putOperations(input,revision)).operations);
 
+test('reprepares settings after head contention without overwriting changes',async()=>{
+  const f=await fixture(),initial=await f.settings.readMemorySettings();
+  const draft={...initial,context_bytes:4096};
+  const request=await f.settings.prepareMemorySettings(draft);
+  await commit(f,entry(1,'Independent entry'));
+  const conflict=await f.sdk.completeRequest(request);
+  assert.deepEqual(plain(conflict.Err.details),{kind:'plugin_value_conflict'});
+  assert.equal((await f.settings.readMemorySettings()).revision,0);
+  const next=await f.settings.prepareMemorySettings(draft);
+  const saved=await f.sdk.completeRequest(next);
+  assert.equal(f.settings.outcome(saved.Ok).context_bytes,4096);
+  assert.equal(f.get('memory/catalog').value.active,1);
+  const attempts=f.prepared.length;
+  await assert.rejects(f.settings.prepareMemorySettings({...draft,enabled:false}),error=>error.code==='revision_conflict');
+  assert.equal(f.prepared.length,attempts);
+  assert.equal((await f.settings.readMemorySettings()).enabled,true);
+});
+
 test('opts only metadata into semantic indexing',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const collections=manifest.extensions['dev.sailry.platform'].storage.collections;
