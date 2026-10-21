@@ -8656,7 +8656,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10298,7 +10298,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Open branch choices immediately and share active reads without blocking unrelated requests"
+        "text": "- Keep the session Git sidebar compact until a diff is opened\n- Preserve open diffs when reopening the sidebar"
       }
     },
     {

@@ -13,25 +13,83 @@ const contextSource = (await readFile(new URL('../dev.sailry.platform/desktop/co
 const deferred = () => { let resolve,reject; const promise=new Promise((done,fail)=>{resolve=done;reject=fail;}); return {promise,resolve,reject}; };
 const settle = async () => { for (let index=0;index<12;index++) await Promise.resolve(); };
 
-function fixture(discovery) {
+function fixture(discovery, options = {}) {
   const changes = [deferred(),deferred(),deferred()]; let reads=0, queries=0, cursor=0;
+  const targets = [deferred(),deferred(),deferred()]; let target = 0;
   const shortcuts=[];
   const globals = {View:class {}, Surfaces, DiffState:()=>({}), EditorState:text=>({text}), context:()=>'{"locale":"en"}',
-    messages:()=>({}), workspaceMode:()=> 'main', createText:()=> 'message', Repository,
-    Actions:class {}, Menus:class {}, readResourceTarget:()=>null,
+    messages:()=>({}), workspaceMode:()=>options.mode ?? 'main', createText:()=> 'message', Repository,
+    Actions:class {}, Menus:class {}, readResourceTarget:()=>options.target ?? null,
+    nextResourceTarget:()=>targets[target++].promise,focusEntry:()=>{},
     nextWindowActivation:()=>new Promise(()=>{}),registerShortcuts:bindings=>{shortcuts.push(bindings);return 'FixtureGitKeys';},
     canInvokeContribution:()=>{queries++;return discovery.promise;},
-    sdk:{nextChange:()=>changes[cursor++].promise}};
+    sdk:{nextChange:()=>changes[cursor++].promise,...options.api}};
   for (const name of ['nextMenuEvent','nextContextMenuEvent','nextControlEvent','nextTreeEvent',
     'nextNavigationTabEvent','nextPickerEvent','modal_closed','nextTextEvent']) globals[name]=()=>{};
   const Git=vm.runInNewContext(`${source}\nGit`,globals);
-  const owner=new Git(); owner.watch=()=>{}; owner.invalidate=async()=>{reads++;};
+  const owner=new Git(); owner.watch=()=>{};
+  if (!options.observe) owner.invalidate=async()=>{reads++;};
   const tasks=[];let notifications=0;
   const live={notify:()=>{notifications++;},spawn:task=>{const pending=task(live);tasks.push(pending);return pending;}};
   const cx={notify:()=>{},spawn:live.spawn,focus_handle:()=>({focus(){}})};
   owner.init({},cx);
-  return {owner,changes,tasks,cx,live,shortcuts,notifications:()=>notifications,reads:()=>reads,queries:()=>queries};
+  return {owner,changes,targets,tasks,cx,live,shortcuts,notifications:()=>notifications,reads:()=>reads,queries:()=>queries};
 }
+
+test('empty resource targets keep document selection unchanged',async()=>{
+  for (const mode of ['embedded','main']) for (const value of [null,{}, {path:null}]) {
+    let diffs=0;
+    const state=fixture(deferred(),{mode,target:{cursor:'0',value},api:{
+      inspectGit:async()=>({kind:'directory',entries:[]}),
+      readGitDiff:async path=>{diffs++;return {path,text:'diff'};},
+    }});
+    await settle();
+    assert.equal(state.owner.repo.selected,null);
+    assert.equal(state.owner.repo.tabs.length,0);
+    assert.equal(state.owner.repo.documents.size,0);
+    assert.equal(diffs,0);
+
+    state.targets[0].resolve({cursor:'1',value:{path:'first.txt'}});await settle();
+    assert.equal(state.owner.repo.selected,'first.txt');assert.equal(diffs,1);
+    state.owner.nodes.set('second',{row:{entry:{path:'second.txt'}},scope:'all'});
+    state.owner.tree({tree:'git-tree',kind:'select',id:'second'},state.live);await settle();
+    assert.equal(state.owner.repo.selected,'second.txt');assert.equal(diffs,2);
+
+    state.targets[1].resolve({cursor:'2',value:{path:null}});await settle();
+    assert.equal(state.owner.repo.selected,'second.txt');
+    assert.deepEqual(Array.from(state.owner.repo.tabs),['first.txt','second.txt']);
+    state.owner.closeDocument('first.txt');assert.equal(state.owner.repo.selected,'second.txt');
+    state.owner.closeDocument('second.txt');assert.equal(state.owner.repo.selected,null);
+    assert.equal(state.owner.repo.documents.size,0);
+    state.owner.repo.status={kind:'ready',entries:[{path:'first.txt'}]};
+    state.owner.control('git-open-changes',state.live);await settle();
+    assert.equal(state.owner.repo.selected,'changes:');
+    assert.equal(state.owner.repo.documents.get('changes:').files.length,1);
+    state.owner.release();
+  }
+});
+
+test('plain directories do not issue diff requests',async()=>{
+  for (const value of [null, {path:null}]) {
+    const requests=[],reported=[];
+    const state=fixture(deferred(),{mode:'embedded',target:{cursor:'0',value},observe:true,api:{
+      inspectGit:async()=>{
+        requests.push('status');
+        return {kind:'directory',head:null,branch:null,index_revision:null,entries:[],truncated:false,omitted_paths:0};
+      },
+      listGitBranches:async()=>{requests.push('branches');assert.fail('a plain directory has no branches');},
+      readGitDiff:async()=>{requests.push('diff');assert.fail('no diff was selected');},
+    }});
+    state.owner.report=key=>reported.push(key);
+    state.changes[0].resolve({cursor:'1',connected:true});await settle();
+    assert.deepEqual(requests,['status']);
+    assert.equal(state.owner.repo.status.kind,'directory');
+    assert.equal(state.owner.repo.selected,null);
+    assert.equal(state.owner.repo.error,null);
+    assert.deepEqual(reported,[]);
+    state.owner.release();
+  }
+});
 
 test('renderer owns scoped shortcuts including native text input submission',()=>{
   const state=fixture(deferred());

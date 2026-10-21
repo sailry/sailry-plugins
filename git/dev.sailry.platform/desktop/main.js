@@ -78,7 +78,7 @@ export default class Git extends View {
     if (!this.overlay) cx.spawn(async cx => {
       let target = readResourceTarget();
       try { while (target) {
-        if (target.value) await this.repo.open(target.value.path ? {kind:'file',path:target.value.path,scope:'all'} : {kind:'changes'});
+        if (target.value?.path) await this.repo.open({kind:'file',path:target.value.path,scope:'all'});
         target = await nextResourceTarget(target.cursor); cx.notify();
       } } catch (_) { /* Resource routing retains the captured checkout. */ }
     });
