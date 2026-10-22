@@ -16143,7 +16143,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -16816,7 +16816,7 @@
         "notifications.publish"
       ],
       "release_notes": {
-        "text": "- Use the WorkBuddy logo for the package and its channel types"
+        "text": "- Preserve structured upstream error diagnostics for model recovery."
       }
     },
     {

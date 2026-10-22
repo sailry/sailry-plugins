@@ -68,7 +68,7 @@ export const cases = [
   }},
   {name:'preserves declared quota failures without replay',handler:'classify',input:{status:403,body:'{"error":{"code":14018,"displayTips":"Fixture quota exhausted"}}'},check(output){
     // HTTP permission semantics take precedence over a proprietary quota code.
-    assert.deepEqual(output,{class:'permission',message:'Fixture quota exhausted'});
+    assert.deepEqual(output,{class:'permission',code:'14018',error_type:null,message:'Fixture quota exhausted'});
   }},
   {name:'normalizes token fields only in the authentication script',script:'auth',handler:'exchange',input:{code:0,data:{AccessToken:'fixture-access',RefreshToken:'fixture-refresh',Domain:'fixture-domain',expires_in:3600}},check(output){
     assert.deepEqual(output,{access:'fixture-access',refresh:'fixture-refresh',expires_in:3600,domain:'fixture-domain'});
@@ -194,7 +194,9 @@ for(const [name,status,body,kind,message] of [
   ['empty business display',429,{error:{displayTips:{zh:' '}}},'rate_limited','HTTP 429'],
   ['non JSON failure',503,'not JSON','unavailable','HTTP 503'],
 ]) cases.push({name:`preserves ${name}`,handler:'classify',input:{status,body:typeof body==='string'?body:JSON.stringify(body)},check(output){
-  assert.deepEqual(output,{class:kind,message});
+  assert.equal(output.class,kind);
+  assert.equal(output.message,message);
+  assert.equal(output.error_type,null);
 }});
 const accounts=[{PackageName:'Cycle',CycleCapacityRemainPrecise:'12.25',CycleCapacitySizePrecise:'30.5'},
   {PackageName:'Gift',CapacityRemain:3.5}];
@@ -342,3 +344,7 @@ for(const [parallel,terminal,region,endpoint] of [
     assert.equal(messages.length,index+(terminal?1:2));
   },
 });
+
+cases.push({name:'retains upstream error identity',handler:'classify',input:{status:429,body:JSON.stringify({error:{code:'relay_busy',type:'capacity_error',message:'Capacity unavailable'}})},check(output){
+  assert.deepEqual(output,{class:'rate_limited',code:'relay_busy',error_type:'capacity_error',message:'Capacity unavailable'});
+}});

@@ -27,7 +27,8 @@ export function failure(body) {
     message = layers.flatMap(value=>names.map(name=>display(value[name]))).find(Boolean) ?? null;
     if (message) break;
   }
-  return {code,message};
+  const type = layers.map(value=>value.type).find(value=>typeof value === 'string') ?? null;
+  return {code,message,type};
 }
 
 export class ResponseError extends Error {

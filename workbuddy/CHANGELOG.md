@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Preserve structured upstream error diagnostics for model recovery.
+
 ## 0.1.13
 
 - Use the WorkBuddy logo for the package and its channel types

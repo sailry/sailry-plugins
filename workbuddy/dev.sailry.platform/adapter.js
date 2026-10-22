@@ -158,7 +158,7 @@ export function decode(input) {
     if (!state.model && typeof chunk.model === 'string' && chunk.model) state.model = chunk.model;
     if (chunk.error) {
       flush(state,deltas,false);
-      deltas.push({kind: 'error', ...classify({status: input.status ?? 200, body: event.data})});
+      deltas.push({kind: 'error', ...classify({status: input.status ?? 200, body: event.data}), event_type: typeof chunk.type === 'string' ? chunk.type : 'error'});
       state.finished = true;
       continue;
     }
@@ -196,7 +196,7 @@ export function decode(input) {
 }
 
 export function classify(input) {
-  const {code,message} = failure(input.body);
+  const {code,message,type} = failure(input.body);
   let kind = 'unknown';
   if (input.status === 401) kind = 'authentication';
   else if (input.status === 403 || code === '11140') kind = 'permission';
@@ -206,7 +206,7 @@ export function classify(input) {
   else if (input.status >= 500) kind = 'unavailable';
   else if (input.status >= 400) kind = 'invalid_request';
   const numeric = /^[0-9]+$/.test(code ?? '') ? ` (${code})` : '';
-  return {class: kind, message:message ?? `HTTP ${input.status}${numeric}`};
+  return {class: kind, code, error_type: type, message:message ?? `HTTP ${input.status}${numeric}`};
 }
 
 export function prepare_discovery(input) {
