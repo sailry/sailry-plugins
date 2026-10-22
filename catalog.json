@@ -8868,7 +8868,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10510,7 +10510,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Keep branch controls visible while repository inspection recovers"
+        "text": "Hide the branch control until repository information is available."
       }
     },
     {
@@ -15400,7 +15400,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15475,6 +15475,20 @@
                 "order": 40
               },
               {
+                "id": "composer_context",
+                "slot": "statistics",
+                "kind": "metric",
+                "label": {
+                  "label": "Context",
+                  "locales": {
+                    "zh-CN": "上下文"
+                  }
+                },
+                "icon": "circle-gauge",
+                "order": 35,
+                "handler": "context"
+              },
+              {
                 "id": "context",
                 "slot": "composer",
                 "kind": "indicator",
@@ -15485,8 +15499,7 @@
                   }
                 },
                 "align": "end",
-                "order": 90,
-                "handler": "context"
+                "order": 90
               }
             ],
             "display": {
@@ -15544,7 +15557,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation."
+        "text": "Keep the composer ring passive and show compact context details from the statistics row on hover. Hide unavailable measurements."
       }
     },
     {

@@ -15,7 +15,7 @@ test('context pairs each observation with its captured limit',()=>{
   assert.equal(measured().percent,50);
   delete state.statistics.context_limit;
   assert.equal(measured().percent,null);
-  assert.equal(measured().hint,text.composer_context_unknown);
+  assert.equal(measured().hint,'0');
   state.statistics={context_tokens:'500',context_limit:1_000};
   assert.equal(measured().percent,50);
   assert.deepEqual(before.statistics,{context_tokens:'100',context_limit:200});
@@ -99,10 +99,10 @@ test('filter reads retain prior reports until current data arrives',()=>{
 });
 test('composer preserves unknown measurements and context thresholds',()=>{
   const state={has_messages:true},before=structuredClone(state),unknown=metrics(state,text);
-  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
-  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.details.map(detail=>detail.value)),
+  assert.deepEqual(unknown.slice(0,5).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
+  assert.deepEqual(unknown.slice(0,5).map(metric=>metric.details.map(detail=>detail.value)),
     [2,3,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
-  assert.equal(unknown.at(-1).value.percent,null);assert.equal(unknown.at(-1).value.hint,text.composer_context_unknown);
+  assert.equal(unknown.at(-1).value.percent,null);assert.equal(unknown.at(-1).value.hint,'0');
   assert.deepEqual(state,before);
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
   assert.equal(zero[0].value,'0');assert.equal(zero.at(-1).value.tone,'danger');assert(zero.at(-1).value.loading);

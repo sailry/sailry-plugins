@@ -98,9 +98,9 @@ export default class Context extends Git {
     const targeted = state.project !== null && !!this.worktree && state.node === this.node && state.worktree === this.worktree && !this.repo?.closed;
     const kind = !scoped ? 'unknown' : state.surface === 'composer' ? state.git_status
       : this.repo?.status ? (this.repo.status.kind === 'directory' ? 'plain_directory' : 'repository') : 'unknown';
-    const unknown = kind === 'unknown', repository = kind === 'repository';
+    const repository = kind === 'repository';
     publishContributions([
-      {id:'branch',...(targeted && kind !== 'plain_directory' ? {label:{label:unknown ? this.text.git_loading : state.branch || this.text.git_detached}} : {}),icon:'network',loading:unknown,enabled:scoped && repository && state.can_move,visible:targeted && state.main && kind !== 'plain_directory',dropdown:true,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
+      {id:'branch',...(targeted && repository ? {label:{label:state.branch || this.text.git_detached}} : {}),icon:'network',loading:false,enabled:scoped && repository && state.can_move,visible:targeted && state.main && repository,dropdown:true,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
       {id:'manage',enabled:scoped && repository && state.can_move,visible:targeted && repository,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})},
       {id:'changes',enabled:true,visible:scoped && repository && state.surface === 'composer' && !!this.counts,value:this.counts?.partial ? this.text.tool_partial : null,
         segments:this.counts ? [{label:{label:`+${this.counts.added}`},tone:'success'},{label:{label:`-${this.counts.removed}`},tone:'danger'}] : [],

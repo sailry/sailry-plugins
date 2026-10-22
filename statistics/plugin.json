@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -76,6 +76,20 @@
           "order": 40
         },
         {
+          "id": "composer_context",
+          "slot": "statistics",
+          "kind": "metric",
+          "label": {
+            "label": "Context",
+            "locales": {
+              "zh-CN": "上下文"
+            }
+          },
+          "icon": "circle-gauge",
+          "order": 35,
+          "handler": "context"
+        },
+        {
           "id": "context",
           "slot": "composer",
           "kind": "indicator",
@@ -86,8 +100,7 @@
             }
           },
           "align": "end",
-          "order": 90,
-          "handler": "context"
+          "order": 90
         }
       ],
       "display": {

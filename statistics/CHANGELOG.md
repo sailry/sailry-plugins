@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+Keep the composer ring passive and show compact context details from the statistics row on hover. Hide unavailable measurements.
+
 ## 0.1.9
 
 Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation.

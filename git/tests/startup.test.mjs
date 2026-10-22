@@ -266,9 +266,9 @@ test('scope changes and disconnect clear badge counts',async()=>{
   const state=badgeFixture();state.owner.counts={added:2,removed:1,partial:false};
   state.repo.connected=false;state.owner.refreshWorktrees({});
   assert.equal(state.owner.counts,null);
-  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[true,false,false]);
+  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
   const branch=state.published.at(-1).find(entry=>entry.id==='branch');
-  assert.equal(branch.enabled,false);assert.equal(branch.loading,true);
+  assert.equal(branch.enabled,false);assert.equal(branch.loading,false);
 });
 
 test('repository observation continues while optional worktree discovery is pending',async()=>{
@@ -395,16 +395,16 @@ test('hidden repository controls omit initial path labels',()=>{
   assert.equal(visible.label.label,'feature/visible-label');
 });
 
-test('unknown inspection keeps a disabled loading branch',()=>{
+test('unknown inspection hides the branch',()=>{
   const state=badgeFixture();
   state.owner.text.git_loading='Loading';
   state.owner.location={...state.owner.location,project:'project',git:false,git_status:'unknown'};
   state.owner.publish();
   let branch=state.published.at(-1).find(item=>item.id==='branch');
-  assert.equal(branch.visible,true);assert.equal(branch.enabled,false);assert.equal(branch.loading,true);
-  assert.equal(branch.label.label,'Loading');
+  assert.equal(branch.visible,false);assert.equal(branch.enabled,false);assert.equal(branch.loading,false);
+  assert.equal(branch.label,undefined);
   state.owner.location={...state.owner.location,connected:false};state.owner.publish();
-  assert.equal(state.published.at(-1).find(item=>item.id==='branch').visible,true);
+  assert.equal(state.published.at(-1).find(item=>item.id==='branch').visible,false);
   state.owner.location={...state.owner.location,connected:true,git:true,git_status:'repository'};state.owner.publish();
   branch=state.published.at(-1).find(item=>item.id==='branch');
   assert.equal(branch.visible,true);assert.equal(branch.enabled,true);assert.equal(branch.loading,false);

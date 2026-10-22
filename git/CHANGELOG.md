@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Hide the branch control until repository information is available.
+
 ## 0.1.13
 
 - Keep branch controls visible while repository inspection recovers

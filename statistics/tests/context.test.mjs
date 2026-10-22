@@ -45,15 +45,30 @@ test('canonical references retain exact turn cursors',()=>{
 });
 test('metrics avoid double counting cache and reasoning',()=>{
   const state={has_messages:true,statistics:{usage:{input:'100',output:'25',cached_input:'60',reasoning:'10'}}};
-  const entries=metrics(state,text,true,{id:'context',sequence:'9'});
+  const entries=metrics(state,text);
   assert.equal(entries.find(entry=>entry.id==='composer_tokens').value,'125');
   assert.equal(entries.find(entry=>entry.id==='composer_cost').value,text.composer_metric_unknown);
-  assert.equal(entries.find(entry=>entry.id==='context').value.open,true);
-  assert.equal(entries.find(entry=>entry.id==='context').reply_to,'9');
+  assert.equal(entries.find(entry=>entry.id==='composer_cost').visible,false);
+  assert.equal(entries.find(entry=>entry.id==='context').value.open,undefined);
 });
-test('context copy exists in every supported locale',()=>{
+test('copy exists in every supported locale',()=>{
   for(const locale of ['en','zh-CN','zh-TW','de','es','fr','ja','ko','pt-BR','ru']) {
     const localized=messages(locale);
     assert.ok(localized.context_basis && localized.context_reserve && localized.context_view_record);
   }
+});
+
+test('empty measurements hide metrics but keep the ring',()=>{
+  const state={has_messages:false,statistics:null};
+  const entries=metrics(state,text);
+  assert.deepEqual(entries.filter(entry=>entry.visible).map(entry=>entry.id),['context']);
+  assert.equal(indicator(state).value.hint,'0');
+  assert.equal(indicator(state).value.percent,null);
+});
+test('cache retains its distinct measurement',()=>{
+  const state={has_messages:true,statistics:{context_tokens:'400',context_limit:'1000',
+    usage:{input:'100',output:'25',cached_input:'89'},turns:'1'}};
+  const entries=metrics(state,text);
+  assert.equal(entries.find(entry=>entry.id==='composer_context').value,'40%');
+  assert.equal(entries.find(entry=>entry.id==='composer_cache').value,'89%');
 });
