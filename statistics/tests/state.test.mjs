@@ -23,7 +23,7 @@ test('context pairs each observation with its captured limit',()=>{
 test('speed details use latest own first text latency',()=>{
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
-    for (const [first,value] of [[null,'0'],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
+    for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
       const statistics={first_token_us:first,generation:{output_tokens:'20',elapsed_us:'1000000',responses:'1'},
         delegated:{first_token_us:'1',generation:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};
       const before=structuredClone(statistics),speed=metrics({has_messages:true,statistics},text).find(value=>value.id==='composer_speed');
@@ -97,17 +97,17 @@ test('filter reads retain prior reports until current data arrives',()=>{
     assert.equal(state.data(),replacement);assert(state.ready());
   }
 });
-test('composer defaults empty displays and preserves context thresholds',()=>{
+test('composer preserves unknown measurements and context thresholds',()=>{
   const state={has_messages:true},before=structuredClone(state),unknown=metrics(state,text);
-  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.value),['0','0','0.00','0','0']);
-  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.details.map(detail=>detail.value)),[
-    ['0','0'],['0','0','0'],['$0.00','$0.00'],['0','0','0'],['0']]);
+  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
+  assert.deepEqual(unknown.slice(0,-1).map(metric=>metric.details.map(detail=>detail.value)),
+    [2,3,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
   assert.equal(unknown.at(-1).value.percent,null);assert.equal(unknown.at(-1).value.hint,text.composer_context_unknown);
   assert.deepEqual(state,before);
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
   assert.equal(zero[0].value,'0');assert.equal(zero.at(-1).value.tone,'danger');assert(zero.at(-1).value.loading);
 });
-test('footer keeps units counts and empty money displays',async()=>{
+test('footer keeps units counts and unknown prices',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const icons=Object.fromEntries(manifest.extensions['dev.sailry.platform'].ui.map(entry=>[entry.id,entry.icon]));
   assert.equal(icons.composer_speed,'gauge');assert.equal(icons.composer_cost,'dollar-sign');assert.equal(icons.composer_turns,'messages-square');
@@ -116,13 +116,13 @@ test('footer keeps units counts and empty money displays',async()=>{
     const before=structuredClone(statistics),values=metrics({has_messages:true,statistics},text);
     const metric=id=>values.find(value=>value.id===id);
     assert.equal(metric('composer_speed').value,'21.5/s');assert.equal(metric('composer_turns').value,'7');
-    assert.equal(metric('composer_turns').details[0].value,'12');assert.equal(metric('composer_cost').value,'0.00');
+    assert.equal(metric('composer_turns').details[0].value,'12');assert.equal(metric('composer_cost').value,text.composer_metric_unknown);
     assert.deepEqual(metric('composer_cost').details,[
-      {label:{label:text.composer_this_session},value:'$0.00'},
-      {label:{label:text.composer_subagents},value:'$0.00'}]);
+      {label:{label:text.composer_this_session},value:text.composer_metric_unknown},
+      {label:{label:text.composer_subagents},value:text.composer_metric_unknown}]);
     assert.deepEqual(statistics,before);
     const zero=metrics({has_messages:true,statistics:{...statistics,cost:{usd_micros:'0',responses:'12',breakdown:{input:'0',output:'0',cache_read:'0',cache_write:'0'}}}},text).find(value=>value.id==='composer_cost');
-    assert.equal(zero.value,'0.00');assert.equal(zero.details[0].value,'$0.00');assert.equal(zero.details[1].value,'$0.00');
+    assert.equal(zero.value,'0.00');assert.equal(zero.details[0].value,'$0.00');assert.equal(zero.details[1].value,text.composer_metric_unknown);
   }
 });
 
@@ -147,7 +147,7 @@ test('composer combines child totals and preserves own metrics',()=>{
       {label:{label:text.composer_this_session},value:'$0.01'},
       {label:{label:text.composer_subagents},value:'$0.01'}]);
     assert.equal(metric('composer_speed').value,'21.5/s');
-    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43','0']);
+    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43',text.composer_metric_unknown]);
     assert.equal(metric('composer_cache').value,'25%');
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
     assert.equal(metric('composer_turns').value,'7');
@@ -172,9 +172,9 @@ test('composer defaults absent children without changing own values',()=>{
   assert.deepEqual(absent,empty);
   const metric=id=>absent.find(value=>value.id===id);
   assert.equal(metric('composer_tokens').value,'120');
-  assert.deepEqual(metric('composer_tokens').details.map(detail=>detail.value),['120','0']);
+  assert.deepEqual(metric('composer_tokens').details.map(detail=>detail.value),['120',text.composer_metric_unknown]);
   assert.equal(metric('composer_cost').value,'0.03+');
-  assert.deepEqual(metric('composer_cost').details.map(detail=>detail.value),['$0.03+','$0.00']);
+  assert.deepEqual(metric('composer_cost').details.map(detail=>detail.value),['$0.03+',text.composer_metric_unknown]);
 });
 
 test('composer retains partial prices and exact microdollar sums',()=>{
@@ -188,7 +188,7 @@ test('composer retains partial prices and exact microdollar sums',()=>{
     delegated:{responses:'3',cost:{usd_micros:'20000',responses:'3'}}}},text);
   charge=values.find(value=>value.id==='composer_cost');
   assert.equal(charge.value,'0.02+');
-  assert.deepEqual(charge.details.map(detail=>detail.value),['$0.00','$0.02']);
+  assert.deepEqual(charge.details.map(detail=>detail.value),[text.composer_metric_unknown,'$0.02']);
 });
 
 function zone(name,body) {

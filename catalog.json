@@ -15400,7 +15400,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15485,7 +15485,8 @@
                   }
                 },
                 "align": "end",
-                "order": 90
+                "order": 90,
+                "handler": "context"
               }
             ],
             "display": {
@@ -15509,6 +15510,8 @@
                 "dev.sailry.platform/desktop/breakdown.js",
                 "dev.sailry.platform/desktop/charts.js",
                 "dev.sailry.platform/desktop/composer.js",
+                "dev.sailry.platform/desktop/context.js",
+                "dev.sailry.platform/desktop/context_view.js",
                 "dev.sailry.platform/desktop/format.js",
                 "dev.sailry.platform/desktop/locales.js",
                 "dev.sailry.platform/desktop/metrics.js",
@@ -15541,7 +15544,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Show an estimated current context after compaction without changing recorded usage or cost"
+        "text": "Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation."
       }
     },
     {

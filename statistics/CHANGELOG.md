@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.9
+
+Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation.
+
+
 ## 0.1.8
 
 - Show an estimated current context after compaction without changing recorded usage or cost
