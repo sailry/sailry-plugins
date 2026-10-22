@@ -15400,7 +15400,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15564,7 +15564,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Show scoped context, session usage, active time, connection observations and composition in the session header\n- Keep unknown measurements distinct from zero and history selection separate from current occupancy\n\n# Changes"
+        "text": "- Keep compaction budgets in the meter and explain partial source attribution on hover"
       }
     },
     {

@@ -104,11 +104,10 @@ function occupancy(view,data) {
       .child(muted(tokens(chosen.tokens,chosen.estimated)))]:[]);
   const detail=column().gap(8)
     .children((chosen?.parts??[]).map(part=>row(text[part.label],tokens(part.tokens,true),part.color,
-      null,text.context_items.replace('%{count}',grouped(part.items)??'—'))))
+      part.method==='identified_source_characters_quarter'?text.context_identified_note:null,
+      text.context_items.replace('%{count}',grouped(part.items)??'—'))))
     .children(chosen?[muted(`${chosen.model} · ${number(chosen.limit)}`),
-      ...(chosen.complete?[]:[muted(text.context_payload_partial)])]:[])
-    .child(row(text.context_threshold,number(used.threshold)))
-    .child(row(text.context_reserve,number(used.reserve)));
+      ...(chosen.complete?[]:[muted(text.context_payload_partial)])]:[]);
   const record=view.state.statistics?.last_compaction;
   if(record?.id && record.turn && record.turn_sequence) detail.child(Button.new('context-record').w_full().py(3)
     .child(row(text.context_last_compaction,text[record.outcome==='succeeded'?'context_succeeded':'context_failed']))

@@ -1,3 +1,7 @@
+## 0.1.12
+
+- Keep compaction budgets in the meter and explain partial source attribution on hover
+
 ## 0.1.11
 
 - Show scoped context, session usage, active time, connection observations and composition in the session header
