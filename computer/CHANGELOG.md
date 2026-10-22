@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.3
+
+- Contribute computer permissions to Settings → Permissions with one shared onboarding flow
+
 ## 0.1.2
 
 - Use the packaged Open Computer Use backend and isolate each turn’s tool session
