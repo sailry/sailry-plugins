@@ -1,4 +1,5 @@
-import {compact,total,integer,cost,cache,speed,duration,context,severity} from './format.js';
+import {compact,total,integer,cost,cache,speed,duration,severity} from './format.js';
+import {current} from './context.js';
 
 function sum(left,right) {
   return left == null && right == null ? null : integer(left ?? 0n) + integer(right ?? 0n);
@@ -32,14 +33,11 @@ export function metrics(state,text) {
       row('composer_cached_input',number(cached)),row('composer_uncached_input',number(uncached)),row('composer_input_tokens',number(input))]],
     ['composer_turns',state.has_messages ? compact(statistics?.turns) : null,[row('composer_responses',number(statistics?.responses))]],
   ];
-  const limit = statistics?.context_limit;
-  const estimated = statistics?.context_tokens == null && statistics?.context_estimate != null;
-  const tokens = statistics?.context_tokens ?? statistics?.context_estimate;
-  const percent = context(tokens,limit);
+  const {tokens,limit,estimated,percent}=current(state);
   const hint = state.compacting ? text.chat_compacting : percent == null ? '0'
     : (estimated ? text.composer_context_estimate : text.composer_context_usage)
       .replace('%{used}',number(tokens)).replace('%{limit}',number(limit));
   return [...values.map(([id,value,details])=>({id,value:value ?? text.composer_metric_unknown,visible:state.has_messages && value != null,details})),
-    {id:'composer_context',value:percent == null ? text.composer_metric_unknown : `${estimated ? text.context_approximately : ''}${percent.toFixed(0)}%`,visible:percent != null},
+    {id:'context_panel',visible:true,enabled:state.connected!==false},
     {id:'context',value:{percent,loading:state.compacting,tone:severity(percent),hint},visible:true}];
 }

@@ -1,3 +1,8 @@
+## 0.1.11
+
+- Show scoped context, session usage, active time, connection observations and composition in the session header
+- Keep unknown measurements distinct from zero and history selection separate from current occupancy
+
 # Changes
 
 ## 0.1.10

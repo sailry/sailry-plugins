@@ -15400,7 +15400,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.10",
+        "version": "0.1.11",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15475,18 +15475,24 @@
                 "order": 40
               },
               {
-                "id": "composer_context",
-                "slot": "statistics",
-                "kind": "metric",
+                "id": "context_panel",
+                "slot": "header",
+                "kind": "popover",
                 "label": {
                   "label": "Context",
                   "locales": {
                     "zh-CN": "上下文"
                   }
                 },
-                "icon": "circle-gauge",
-                "order": 35,
-                "handler": "context"
+                "icon": "chart-pie",
+                "order": 20,
+                "handler": "context",
+                "width": 480,
+                "hover": {
+                  "open_ms": 120,
+                  "close_ms": 230
+                },
+                "align": "end"
               },
               {
                 "id": "context",
@@ -15524,6 +15530,7 @@
                 "dev.sailry.platform/desktop/charts.js",
                 "dev.sailry.platform/desktop/composer.js",
                 "dev.sailry.platform/desktop/context.js",
+                "dev.sailry.platform/desktop/context_locales.js",
                 "dev.sailry.platform/desktop/context_view.js",
                 "dev.sailry.platform/desktop/format.js",
                 "dev.sailry.platform/desktop/locales.js",
@@ -15557,7 +15564,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "Keep the composer ring passive and show compact context details from the statistics row on hover. Hide unavailable measurements."
+        "text": "- Show scoped context, session usage, active time, connection observations and composition in the session header\n- Keep unknown measurements distinct from zero and history selection separate from current occupancy\n\n# Changes"
       }
     },
     {

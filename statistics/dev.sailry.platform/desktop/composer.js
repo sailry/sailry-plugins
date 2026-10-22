@@ -10,6 +10,8 @@ export default class Composer extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale);
     this.state=readComposer();
+    this.expanded=new Set();
+    this.selected=null;
     this.publish();
     cx.spawn(async cx=>{
       try {while(true) {
@@ -17,6 +19,10 @@ export default class Composer extends View {
         this.publish(); cx.notify();
       }} catch (_) { /* The captured composer owns the observation lifetime. */ }
     });
+  }
+  toggle(id) {
+    if(this.expanded.has(id)) this.expanded.delete(id);
+    else this.expanded.add(id);
   }
   publish() { publishContributions(metrics(this.state,this.text)); }
   reveal(target) {
