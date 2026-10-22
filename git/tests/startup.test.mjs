@@ -112,7 +112,7 @@ function contributions() {
       choose(title,items){const picker={title,items};choices.push(picker);this.picker=picker;return picker;}
       update(picker,items){if(this.picker===picker){picker.items=items;picker.loading=false;}}
     },registerShortcuts:()=> 'FixtureGitKeys',
-    readScope:()=>({worktree:'captured'}),readLocation:()=>({surface:'project',worktree:'captured',branch:'main',main:true,git:true,can_move:true}),
+    readScope:()=>({worktree:'captured'}),readLocation:()=>({surface:'project',worktree:'captured',branch:'main',main:true,git:true,git_status:'repository',can_move:true}),
     nextLocationChange:never,nextWindowActivation:never,readResourceTarget:()=>null,canInvokeContribution:async()=>true,
     nextContributionEvent:()=>events++===0 ? event.promise : never(),publishContributions:states=>published.push(states),toast:()=>{},
     sdk:{faultCode:()=> 'unavailable',nextChange:()=>changes++===0 ? change.promise : never(),
@@ -129,7 +129,7 @@ function contributions() {
 function badgeFixture(options={}) {
   const published=[],reported=[];
   const location={cursor:'0',surface:'composer',node:'captured-node',worktree:'captured',branch:'main',
-    main:true,git:true,connected:true,can_move:true};
+    main:true,git:true,git_status:'repository',connected:true,can_move:true};
   const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt'}],truncated:false,omitted_paths:0},
     refresh:options.refresh ?? (async()=>true),invalidate(){return this.refresh();}};
   const globals={
@@ -266,7 +266,9 @@ test('scope changes and disconnect clear badge counts',async()=>{
   const state=badgeFixture();state.owner.counts={added:2,removed:1,partial:false};
   state.repo.connected=false;state.owner.refreshWorktrees({});
   assert.equal(state.owner.counts,null);
-  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
+  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[true,false,false]);
+  const branch=state.published.at(-1).find(entry=>entry.id==='branch');
+  assert.equal(branch.enabled,false);assert.equal(branch.loading,true);
 });
 
 test('repository observation continues while optional worktree discovery is pending',async()=>{
@@ -292,7 +294,7 @@ test('composer location exists before eager repository observation starts',async
   const contextSource = (await readFile(new URL('../dev.sailry.platform/desktop/context.js', import.meta.url), 'utf8'))
     .replace(/^import[\s\S]*?;\n/gm, '').replace('export default class', 'class');
   let reads = 0;
-  const location = {surface:'composer',worktree:'captured-checkout',branch:'main',main:true,git:true,can_move:true};
+  const location = {surface:'composer',worktree:'captured-checkout',branch:'main',main:true,git:true,git_status:'repository',can_move:true};
   const globals = {
     Git:class {
       init() {
@@ -327,7 +329,7 @@ test('unassigned controllers do not read or publish a repository contribution',a
     },
     readScope:()=>({worktree:null}),
     // A later presentation update cannot grant a retained controller a checkout.
-    readLocation:()=>({surface:'composer',worktree:'new-checkout',branch:'main',main:true,git:true,can_move:true}),
+    readLocation:()=>({surface:'composer',worktree:'new-checkout',branch:'main',main:true,git:true,git_status:'repository',can_move:true}),
     publishContributions:states=>{published=states;},
   };
   const Context=vm.runInNewContext(`${contextSource}\nContext`,globals);
@@ -343,7 +345,7 @@ test('composer controllers skip repository reads until location metadata confirm
   for (const project of [null,'plain-directory']) {
     let reads=0,published;
     const updates=[deferred(),deferred()]; let cursor=0;
-    const location={cursor:'0',surface:'composer',project,worktree:'captured',main:true,git:false,can_move:true};
+    const location={cursor:'0',surface:'composer',project,worktree:'captured',main:true,git:false,git_status:'plain_directory',can_move:true};
     const globals={Git:class {init(){this.text={};this.repo={invalidate:async()=>{reads++;return false;}};this.invalidate();}},
       readScope:()=>({worktree:'captured'}),readLocation:()=>location,
       nextLocationChange:()=>updates[cursor++].promise,nextContributionEvent:()=>new Promise(()=>{}),
@@ -352,7 +354,7 @@ test('composer controllers skip repository reads until location metadata confirm
     const live={notify:()=>{},spawn:task=>task(live)};
     owner.init({},live);await owner.invalidate();await settle();
     assert.equal(reads,0);assert.deepEqual(Array.from(published,state=>state.visible),[false,false,false]);
-    updates[0].resolve({...location,cursor:'1',project:'initialized',git:true});await settle();
+    updates[0].resolve({...location,cursor:'1',project:'initialized',git:true,git_status:'repository'});await settle();
     assert.equal(reads,1,'a newly detected repository starts normal observation');
     owner.counts={added:1,removed:2};
     updates[1].resolve({...location,cursor:'2'});await settle();
@@ -364,7 +366,7 @@ test('composer controllers skip repository reads until location metadata confirm
 test('hidden repository controls omit initial path labels',()=>{
   const path = `/isolated/${'workspace/'.repeat(24)}session`;
   const location = {surface:'composer',project:null,worktree:'captured-checkout',branch:path,
-    main:true,git:false,can_move:true};
+    main:true,git:false,git_status:'plain_directory',can_move:true};
   let published;
   const globals = {
     Git:class {init() {this.text = {git_detached:'Detached HEAD'};}},
@@ -386,11 +388,30 @@ test('hidden repository controls omit initial path labels',()=>{
   assert.equal(owner.location.branch,path);
   assert.equal(owner.worktree,location.worktree);
 
-  owner.location = {...location,project:'project',git:true,branch:'feature/visible-label'};
+  owner.location = {...location,project:'project',git:true,git_status:'repository',branch:'feature/visible-label'};
   owner.publish();
   const visible = published.find(state=>state.id === 'branch');
   assert.equal(visible.visible,true);
   assert.equal(visible.label.label,'feature/visible-label');
+});
+
+test('unknown inspection keeps a disabled loading branch',()=>{
+  const state=badgeFixture();
+  state.owner.text.git_loading='Loading';
+  state.owner.location={...state.owner.location,project:'project',git:false,git_status:'unknown'};
+  state.owner.publish();
+  let branch=state.published.at(-1).find(item=>item.id==='branch');
+  assert.equal(branch.visible,true);assert.equal(branch.enabled,false);assert.equal(branch.loading,true);
+  assert.equal(branch.label.label,'Loading');
+  state.owner.location={...state.owner.location,connected:false};state.owner.publish();
+  assert.equal(state.published.at(-1).find(item=>item.id==='branch').visible,true);
+  state.owner.location={...state.owner.location,connected:true,git:true,git_status:'repository'};state.owner.publish();
+  branch=state.published.at(-1).find(item=>item.id==='branch');
+  assert.equal(branch.visible,true);assert.equal(branch.enabled,true);assert.equal(branch.loading,false);
+  state.owner.location={...state.owner.location,git:false,git_status:'plain_directory'};state.owner.publish();
+  assert.equal(state.published.at(-1).find(item=>item.id==='branch').visible,false);
+  state.owner.location={...state.owner.location,worktree:'different',git_status:'unknown'};state.owner.publish();
+  assert.equal(state.published.at(-1).find(item=>item.id==='branch').visible,false);
 });
 
 test('repository notifications use a spawned context after initialization returns',async()=>{

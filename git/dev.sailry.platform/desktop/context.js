@@ -20,7 +20,7 @@ export default class Context extends Git {
         if (!this.sameScope()) { this.actions.picker = null; this.clearCounts(); }
         else {
           this.publish();
-          if (this.location.git !== previous.git) await this.invalidate();
+          if (this.location.git_status !== previous.git_status) await this.invalidate();
         }
         cx.notify();
       } } catch (_) { /* The controller retains its original checkout. */ }
@@ -65,7 +65,7 @@ export default class Context extends Git {
   }
   async invalidate() {
     const sequence = this.badgeRead = (this.badgeRead ?? 0) + 1;
-    if (!this.sameScope() || this.location.surface === 'composer' && !this.location.git) {
+    if (!this.sameScope() || this.location.surface === 'composer' && this.location.git_status !== 'repository') {
       this.counts = null; this.publish(); return;
     }
     if (!await this.repo.invalidate()) {
@@ -95,10 +95,14 @@ export default class Context extends Git {
     const state = this.location;
     if (!state) return;
     const scoped = this.sameScope();
+    const targeted = state.project !== null && !!this.worktree && state.node === this.node && state.worktree === this.worktree && !this.repo?.closed;
+    const kind = !scoped ? 'unknown' : state.surface === 'composer' ? state.git_status
+      : this.repo?.status ? (this.repo.status.kind === 'directory' ? 'plain_directory' : 'repository') : 'unknown';
+    const unknown = kind === 'unknown', repository = kind === 'repository';
     publishContributions([
-      {id:'branch',...(scoped && state.git ? {label:{label:state.branch || this.text.git_detached}} : {}),icon:'network',enabled:state.can_move,visible:scoped && state.main && state.git,dropdown:true,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
-      {id:'manage',enabled:state.can_move,visible:scoped && state.git,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})},
-      {id:'changes',enabled:true,visible:scoped && state.git && state.surface === 'composer' && !!this.counts,value:this.counts?.partial ? this.text.tool_partial : null,
+      {id:'branch',...(targeted && kind !== 'plain_directory' ? {label:{label:unknown ? this.text.git_loading : state.branch || this.text.git_detached}} : {}),icon:'network',loading:unknown,enabled:scoped && repository && state.can_move,visible:targeted && state.main && kind !== 'plain_directory',dropdown:true,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
+      {id:'manage',enabled:scoped && repository && state.can_move,visible:targeted && repository,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})},
+      {id:'changes',enabled:true,visible:scoped && repository && state.surface === 'composer' && !!this.counts,value:this.counts?.partial ? this.text.tool_partial : null,
         segments:this.counts ? [{label:{label:`+${this.counts.added}`},tone:'success'},{label:{label:`-${this.counts.removed}`},tone:'danger'}] : [],
         ...(event?.id === 'changes' ? {reply_to:event.sequence} : {})}
     ]);

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Keep branch controls visible while repository inspection recovers
+
 ## 0.1.12
 
 - Keep the session Git sidebar compact until a diff is opened
