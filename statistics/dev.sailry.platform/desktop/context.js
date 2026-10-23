@@ -1,9 +1,9 @@
 import {integer,total,context,cost} from './format.js';
 
 export const CATEGORIES = [
-  ['system','context_system','chart_2'], ['tools','context_tools','chart_4'],
+  ['system','context_system','chart_4'], ['tools','context_tools','chart_1'],
   ['user','context_user','chart_3'], ['skills','context_skills','chart_5'],
-  ['injected','context_injected','chart_2'], ['assistant','context_assistant','chart_1'],
+  ['injected','context_injected','chart_4'], ['assistant','context_assistant','chart_2'],
   ['results','context_results','chart_3'],
 ];
 const sum = values => values.some(value=>value==null) ? null : values.reduce((value,item)=>value+integer(item),0n);
@@ -75,22 +75,22 @@ export function overview(state,selected) {
 export function composition(values,reasoning,output) {
   const input=(...kinds)=>sum(kinds.map(kind=>category(values,kind)?.tokens));
   return [
-    {kind:'dialogue',label:'context_dialogue',color:'chart_1',tokens:input('user','assistant'),estimated:true},
+    {kind:'dialogue',label:'context_dialogue',color:'chart_2',tokens:input('user','assistant'),estimated:true},
     {kind:'tools',label:'context_tool_content',color:'chart_3',tokens:input('tools','results'),estimated:true},
-    {kind:'system',label:'context_system_skills',color:'chart_2',tokens:input('system','skills','injected'),estimated:true},
+    {kind:'system',label:'context_system_skills',color:'chart_4',tokens:input('system','skills','injected'),estimated:true},
     {kind:'reasoning',label:'usage_column_reasoning',color:'chart_5',tokens:reasoning,estimated:false},
-    {kind:'output',label:'context_reply',color:'chart_4',tokens:difference(output,reasoning),estimated:false},
+    {kind:'output',label:'context_reply',color:'chart_1',tokens:difference(output,reasoning),estimated:false},
   ];
 }
 
 export function timing(observations) {
   const phases=observations?.phases;
   const rows=[
-    ['waiting','context_waiting','chart_1',phases?.waiting_us],
-    ['thinking','context_thinking','chart_2',null],
+    ['waiting','context_waiting','chart_2',phases?.waiting_us],
+    ['thinking','context_thinking','chart_4',null],
     ['output','context_reply','chart_5',phases?.output_us],
     ['tools','context_tool_execution','chart_3',phases?.tools_us],
-    ['arguments','context_tool_arguments','chart_4',null],
+    ['arguments','context_tool_arguments','chart_1',null],
     ['other','context_other','muted_foreground',phases?.other_us],
   ].map(([id,label,color,value])=>({id,label,color,value:integer(value)}));
   return {active:integer(phases?.active_us),rows,

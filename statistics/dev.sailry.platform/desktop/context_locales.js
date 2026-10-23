@@ -55,7 +55,17 @@ export const contextLocales = {
     "context_freshness": "Latest content",
     "context_route_local": "Local",
     "context_route_p2p": "Direct",
-    "context_route_relay": "Relay"
+    "context_route_relay": "Relay",
+    "context_wait_label": "Wait",
+    "context_thinking_label": "Thinking",
+    "context_tools_label": "Tools",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Cost",
+    "context_cache_hit": "Cache hit",
+    "context_first_response": "First text",
+    "context_output_speed": "Output speed",
+    "context_request_time": "Request time"
   },
   "zh-CN": {
     "context_title": "上下文",
@@ -113,7 +123,17 @@ export const contextLocales = {
     "context_freshness": "最近内容",
     "context_route_local": "本机",
     "context_route_p2p": "直连",
-    "context_route_relay": "中继"
+    "context_route_relay": "中继",
+    "context_wait_label": "等待",
+    "context_thinking_label": "思考",
+    "context_tools_label": "工具",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "费用",
+    "context_cache_hit": "缓存命中",
+    "context_first_response": "首字响应",
+    "context_output_speed": "输出速度",
+    "context_request_time": "请求耗时"
   },
   "zh-TW": {
     "context_title": "上下文",
@@ -171,7 +191,17 @@ export const contextLocales = {
     "context_freshness": "最近內容",
     "context_route_local": "本機",
     "context_route_p2p": "直連",
-    "context_route_relay": "中繼"
+    "context_route_relay": "中繼",
+    "context_wait_label": "等待",
+    "context_thinking_label": "思考",
+    "context_tools_label": "工具",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "費用",
+    "context_cache_hit": "快取命中",
+    "context_first_response": "首字回應",
+    "context_output_speed": "輸出速度",
+    "context_request_time": "請求耗時"
   },
   "de": {
     "context_title": "Kontext",
@@ -229,7 +259,17 @@ export const contextLocales = {
     "context_freshness": "Letzter Inhalt",
     "context_route_local": "Lokal",
     "context_route_p2p": "Direkt",
-    "context_route_relay": "Relay"
+    "context_route_relay": "Relay",
+    "context_wait_label": "Warten",
+    "context_thinking_label": "Denken",
+    "context_tools_label": "Werkzeuge",
+    "context_token_count": "%{count} Token",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Kosten",
+    "context_cache_hit": "Cache-Treffer",
+    "context_first_response": "Erster Text",
+    "context_output_speed": "Ausgaberate",
+    "context_request_time": "Anfragedauer"
   },
   "es": {
     "context_title": "Contexto",
@@ -287,7 +327,17 @@ export const contextLocales = {
     "context_freshness": "Contenido reciente",
     "context_route_local": "Local",
     "context_route_p2p": "Directa",
-    "context_route_relay": "Retransmisión"
+    "context_route_relay": "Retransmisión",
+    "context_wait_label": "Espera",
+    "context_thinking_label": "Razonamiento",
+    "context_tools_label": "Herramientas",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Coste",
+    "context_cache_hit": "Aciertos de caché",
+    "context_first_response": "Primer texto",
+    "context_output_speed": "Velocidad de salida",
+    "context_request_time": "Tiempo de solicitud"
   },
   "fr": {
     "context_title": "Contexte",
@@ -345,7 +395,17 @@ export const contextLocales = {
     "context_freshness": "Contenu récent",
     "context_route_local": "Local",
     "context_route_p2p": "Direct",
-    "context_route_relay": "Relais"
+    "context_route_relay": "Relais",
+    "context_wait_label": "Attente",
+    "context_thinking_label": "Réflexion",
+    "context_tools_label": "Outils",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Coût",
+    "context_cache_hit": "Succès du cache",
+    "context_first_response": "Premier texte",
+    "context_output_speed": "Débit de sortie",
+    "context_request_time": "Durée de requête"
   },
   "ja": {
     "context_title": "コンテキスト",
@@ -403,7 +463,17 @@ export const contextLocales = {
     "context_freshness": "最近の内容",
     "context_route_local": "ローカル",
     "context_route_p2p": "直接",
-    "context_route_relay": "リレー"
+    "context_route_relay": "リレー",
+    "context_wait_label": "待機",
+    "context_thinking_label": "思考",
+    "context_tools_label": "ツール",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "費用",
+    "context_cache_hit": "キャッシュ命中",
+    "context_first_response": "最初の応答",
+    "context_output_speed": "出力速度",
+    "context_request_time": "リクエスト時間"
   },
   "ko": {
     "context_title": "컨텍스트",
@@ -461,7 +531,17 @@ export const contextLocales = {
     "context_freshness": "최근 내용",
     "context_route_local": "로컬",
     "context_route_p2p": "직접",
-    "context_route_relay": "릴레이"
+    "context_route_relay": "릴레이",
+    "context_wait_label": "대기",
+    "context_thinking_label": "추론",
+    "context_tools_label": "도구",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "비용",
+    "context_cache_hit": "캐시 적중",
+    "context_first_response": "첫 텍스트",
+    "context_output_speed": "출력 속도",
+    "context_request_time": "요청 시간"
   },
   "pt-BR": {
     "context_title": "Contexto",
@@ -519,7 +599,17 @@ export const contextLocales = {
     "context_freshness": "Conteúdo recente",
     "context_route_local": "Local",
     "context_route_p2p": "Direta",
-    "context_route_relay": "Retransmissão"
+    "context_route_relay": "Retransmissão",
+    "context_wait_label": "Espera",
+    "context_thinking_label": "Raciocínio",
+    "context_tools_label": "Ferramentas",
+    "context_token_count": "%{count} tokens",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Custo",
+    "context_cache_hit": "Acertos de cache",
+    "context_first_response": "Primeiro texto",
+    "context_output_speed": "Velocidade de saída",
+    "context_request_time": "Tempo da solicitação"
   },
   "ru": {
     "context_title": "Контекст",
@@ -577,6 +667,16 @@ export const contextLocales = {
     "context_freshness": "Последний контент",
     "context_route_local": "Локально",
     "context_route_p2p": "Напрямую",
-    "context_route_relay": "Ретранслятор"
+    "context_route_relay": "Ретранслятор",
+    "context_wait_label": "Ожидание",
+    "context_thinking_label": "Размышление",
+    "context_tools_label": "Инструменты",
+    "context_token_count": "%{count} токенов",
+    "context_minutes": "%{minutes}m %{seconds}s",
+    "context_cost": "Стоимость",
+    "context_cache_hit": "Попадания в кэш",
+    "context_first_response": "Первый текст",
+    "context_output_speed": "Скорость вывода",
+    "context_request_time": "Время запроса"
   }
 };

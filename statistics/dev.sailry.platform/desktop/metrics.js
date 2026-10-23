@@ -8,6 +8,10 @@ function sum(left,right) {
 export function metrics(state,text) {
   const statistics = state.statistics, usage = statistics?.usage, generation = statistics?.generation;
   const delegated = statistics?.delegated;
+  // Message pages may still be loading; persisted statistics cover the whole session.
+  const recorded = state.has_messages || [statistics?.turns,statistics?.responses,delegated?.responses,
+    usage?.input,usage?.output,delegated?.tokens?.input,delegated?.tokens?.output]
+    .some(value=>value!=null && integer(value)>0n);
   const number = value => compact(value) ?? text.composer_metric_unknown;
   const charge = value => value==null ? text.composer_metric_unknown : '$'+value;
   const row = (key,value) => ({label:{label:text[key]},value:value ?? text.composer_metric_unknown});
@@ -31,13 +35,13 @@ export function metrics(state,text) {
       row('composer_subagents',charge(cost(delegated)))]],
     ['composer_cache',cache(usage),[
       row('composer_cached_input',number(cached)),row('composer_uncached_input',number(uncached)),row('composer_input_tokens',number(input))]],
-    ['composer_turns',state.has_messages ? compact(statistics?.turns) : null,[row('composer_responses',number(statistics?.responses))]],
+    ['composer_turns',recorded ? compact(statistics?.turns) : null,[row('composer_responses',number(statistics?.responses))]],
   ];
   const {tokens,limit,estimated,percent}=current(state);
   const hint = state.compacting ? text.chat_compacting : percent == null ? '0'
     : (estimated ? text.composer_context_estimate : text.composer_context_usage)
       .replace('%{used}',number(tokens)).replace('%{limit}',number(limit));
-  return [...values.map(([id,value,details])=>({id,value:value ?? text.composer_metric_unknown,visible:state.has_messages && value != null,details})),
+  return [...values.map(([id,value,details])=>({id,value:value ?? text.composer_metric_unknown,visible:recorded && value != null,details})),
     {id:'context_panel',visible:true,enabled:state.connected!==false},
     {id:'context',value:{percent,loading:state.compacting,tone:severity(percent),hint},visible:true}];
 }

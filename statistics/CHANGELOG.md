@@ -1,3 +1,7 @@
+## 0.1.13
+
+- Match the approved context panel spacing, metric baselines and connection layout; expand details below their controls and restore saved session metrics before message pages load
+
 ## 0.1.12
 
 - Keep compaction budgets in the meter and explain partial source attribution on hover

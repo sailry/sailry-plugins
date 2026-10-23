@@ -130,3 +130,16 @@ test('partial pricing never becomes the whole session cost',()=>{
   statistics.cost.responses='3';
   assert.equal(overview({statistics}).usage.cost,'1.00');
 });
+
+
+test('restored statistics appear before message pages arrive',()=>{
+  const statistics={turns:'2',responses:'3',usage:{input:'100',output:'25',cached_input:'50',reasoning:'0'},
+    generation:{responses:'3',output_tokens:'25',elapsed_us:'1000000'},cost:{responses:'3',usd_micros:'1200000'}};
+  const initial={has_messages:false,statistics};
+  const visible=state=>metrics(state,text).filter(entry=>entry.visible).map(entry=>entry.id);
+  assert.deepEqual(visible(initial),visible({...initial,has_messages:true}));
+  assert.deepEqual(visible(initial),['composer_tokens','composer_speed','composer_cost','composer_cache','composer_turns','context_panel','context']);
+  for(const statistics of [null,{turns:'0',responses:'0'},{turns:'0',responses:'0',usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'}}]) {
+    assert.deepEqual(visible({has_messages:false,statistics}),['context_panel','context']);
+  }
+});

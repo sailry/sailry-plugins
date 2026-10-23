@@ -1448,7 +1448,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1815,7 +1815,7 @@
         "code.settings.write"
       ],
       "release_notes": {
-        "text": "- Align package contract tests with the current release metadata"
+        "text": "- Read independent language settings data concurrently\n- Show loading and empty cards for language server lists"
       }
     },
     {
@@ -15400,7 +15400,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15488,10 +15488,6 @@
                 "order": 20,
                 "handler": "context",
                 "width": 480,
-                "hover": {
-                  "open_ms": 120,
-                  "close_ms": 230
-                },
                 "align": "end"
               },
               {
@@ -15564,7 +15560,18 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Keep compaction budgets in the meter and explain partial source attribution on hover"
+        "text": "- Match the approved context panel spacing, metric baselines and connection layout; expand details below their controls and restore saved session metrics before message pages load",
+        "locales": {
+          "zh-CN": "- 对齐上下文面板的间距、数值基线与连接布局；明细在入口下方展开，历史消息加载前即可显示已保存的会话统计\n\n# Changes",
+          "zh-TW": "- 對齊上下文面板的間距、數值基線與連線配置；明細在入口下方展開，歷史訊息載入前即可顯示已儲存的會話統計\n\n# Changes",
+          "ja": "- コンテキストパネルの間隔、数値のベースライン、接続表示を調整。明細を操作の下に展開し、メッセージの読み込み前に保存済みの統計を表示\n\n# Changes",
+          "ko": "- 컨텍스트 패널의 간격, 수치 기준선과 연결 배치를 조정하고 상세 내용을 버튼 아래에 펼치며 메시지를 읽기 전에 저장된 통계를 표시\n\n# Changes",
+          "fr": "- Aligner les espacements, les valeurs et les connexions du panneau ; ouvrir les détails sous leurs commandes et afficher les statistiques enregistrées avant le chargement des messages\n\n# Changes",
+          "de": "- Abstände, Zahlen und Verbindungen im Kontextbereich angleichen; Details unter den Steuerelementen öffnen und gespeicherte Sitzungswerte vor dem Laden der Nachrichten anzeigen\n\n# Changes",
+          "es": "- Ajustar el espaciado, las líneas base y las conexiones del panel; abrir los detalles debajo de sus controles y mostrar las estadísticas guardadas antes de cargar los mensajes\n\n# Changes",
+          "pt-BR": "- Ajustar o espaçamento, o alinhamento dos valores e as conexões do painel; abrir os detalhes abaixo dos controles e mostrar as estatísticas salvas antes de carregar as mensagens\n\n# Changes",
+          "ru": "- Выровнять отступы, значения и соединения панели; раскрывать сведения под кнопками и показывать сохранённую статистику до загрузки сообщений\n\n# Changes"
+        }
       }
     },
     {
