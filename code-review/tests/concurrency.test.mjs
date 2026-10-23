@@ -45,7 +45,7 @@ test('completion verifies independent files before publishing',async()=>{
   const code=(await source('complete')).replace(/^import .*;\n/gm,'');
   const prepare=vm.runInNewContext(`${code}\nprepare`,{
     fields:value=>value,identifier:value=>value,open(){},
-    head:async()=>({record:{revision:'1'},value:{creator:current.captured.session,reviewed_groups:[],receipts:[]}}),
+    head:async()=>({record:{revision:'1'},value:{creator:current.captured.session,reviewed_groups:[],receipts:[],findings:[]}}),
     manifest:async()=>({files:scope.files,groups:scope.groups}),
     path(){},revision(){},size:()=>1,limits:{page:100,output:128*1024},
     verify:(_value,file)=>new Promise(resolve=>held.push({path:file.path,resolve})),
