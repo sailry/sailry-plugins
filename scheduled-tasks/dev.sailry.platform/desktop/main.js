@@ -41,29 +41,29 @@ export default class ScheduledTasks extends View {
     cx.spawn(async cx => {
       try { do {
         this.dirty = false;
-        const items = []; let after = null;
-        do {
-          const page = unwrap(await list({after}));
-          items.push(...page.items); after = page.after;
-        } while (after !== null);
         // Records belong to the task open in the details panel only.
-        const task = this.panel?.task ?? null, runs = []; let before = null;
-        if (task !== null) for (let index = 0; index < this.pages; index++) {
-          const page = unwrap(await history({before,handler:task}));
-          runs.push(...page.items); before = page.next_before;
-          if (before === null) break;
-        }
-        const status = items.length ? await states() : {};
-        this.catalog = await readProjectCatalog();
+        const task = this.panel?.task ?? null,pages=this.pages;
+        const [items,records,status,catalog,models] = await Promise.all([
+          (async()=>{const items=[];let after=null;do {
+            const page=unwrap(await list({after}));items.push(...page.items);after=page.after;
+          }while(after!==null);return items;})(),
+          (async()=>{const runs=[];let before=null;if(task!==null)for(let index=0;index<pages;index++){
+            const page=unwrap(await history({before,handler:task}));runs.push(...page.items);before=page.next_before;
+            if(before===null)break;
+          }return {runs,before};})(),
+          states(),readProjectCatalog(),
+          listModels().then(catalog=>catalog.models.filter(model=>model.kind==='provider')).catch(()=>null),
+        ]);
+        this.catalog = catalog;
         this.items = items.map(item => ({...item,status:status[item.id]?.status ?? null,started_ms:status[item.id]?.started_ms ?? null}));
         if (this.panel && !this.items.some(item => item.id === this.panel.task)) this.panel = null;
         if (task === (this.panel?.task ?? null)) {
-          this.history = runs; this.historyTask = task; this.historyLoaded = task !== null; this.more = before !== null;
+          this.history = records.runs; this.historyTask = task; this.historyLoaded = task !== null; this.more = records.before !== null;
         }
         this.loaded = true;
         if (this.error === "loadFailed") this.error = null;
-        try { this.models = (await listModels()).models.filter(model => model.kind === "provider"); this.modelsError = false; }
-        catch (_) { this.modelsError = true; this.report("modelsFailed"); }
+        this.modelsError = models === null;
+        if(models===null)this.report("modelsFailed");else this.models=models;
         cx.notify();
       } while (this.dirty); }
       catch (_) { this.report("loadFailed"); }

@@ -6,7 +6,7 @@ function owned(item, project) {
   if (project !== undefined && item.project !== project) throw fault("permission_denied", "Task belongs to another project");
 }
 export async function listing(input, project) {
-  const records = await page(input ?? {}, project), schedules = await query("list_schedules");
+  const [records,schedules] = await Promise.all([page(input ?? {},project),query("list_schedules")]);
   return {...records,items:records.items.map(item => ({...item,next_ms:schedules.find(schedule => schedule.id === item.id)?.next_ms ?? null}))};
 }
 export async function saveOperations(input, project) {

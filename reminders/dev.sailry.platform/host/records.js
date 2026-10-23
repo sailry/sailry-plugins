@@ -71,8 +71,10 @@ export async function page(input = {}, scope) {
   let scanned = 0, size = 0;
   do {
     const batch = await listKeys("reminder/", after, 32);
-    for (const name of batch.keys) {
-      const id = name.slice(9), entry = await read(id);
+    const entries=await Promise.allSettled(batch.keys.map(name=>read(name.slice(9))));
+    for (const [index,name] of batch.keys.entries()) {
+      const result=entries[index];if(result.status==='rejected')throw result.reason;
+      const id = name.slice(9), entry = result.value;
       if (entry.present && (scope === undefined || entry.value.project === scope)
           && (input.completed === undefined || entry.value.completed === input.completed)) {
         const item = {...stored(entry.value, id), revision:entry.revision};

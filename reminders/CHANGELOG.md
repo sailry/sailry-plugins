@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Read reminders, delivery records and project choices concurrently
+
 ## 0.1.6
 
 - Reduce status tags in lists and details by one size

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Read independent activity preview batches concurrently
+
 ## 0.1.4
 
 - Add marketplace category and icon color

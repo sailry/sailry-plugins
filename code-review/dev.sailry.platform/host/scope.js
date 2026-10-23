@@ -94,7 +94,7 @@ export async function prepare(input, actor) {
       findings:[],reviewed_groups:[],receipts:[]};
     const output = await page(value,0,limit,{rows,files,groups,skipped});
     // Recheck the entire inventory and every strong content revision before publishing.
-    for (const file of files) await change(actor.worktree,listed.snapshot,file);
+    await Promise.all(files.map(file=>change(actor.worktree,listed.snapshot,file)));
     await inventory(actor.worktree,null,listed.snapshot);
     await flush(owner);
     await finish(owner,[write(key(id,'head'),value)]);

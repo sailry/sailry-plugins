@@ -43,8 +43,8 @@ export function open(value) {
 }
 export async function manifest(value) {
   const rows = [];
-  for (const page of value.pages) {
-    const current = await record(key(value.id, `scope/${page}`));
+  const pages=await Promise.all(value.pages.map(page=>record(key(value.id,`scope/${page}`))));
+  for (const current of pages) {
     if (!current.present || current.value?.v !== 1 || current.value?.kind !== 'scope'
         || !Array.isArray(current.value.rows)) fail('Review scope is incomplete', 'internal');
     rows.push(...current.value.rows);

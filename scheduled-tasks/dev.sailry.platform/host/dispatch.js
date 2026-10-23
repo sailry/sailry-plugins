@@ -25,8 +25,7 @@ export function exact(value) {
 }
 export async function changes(task) {
   requireConfig(task.config);
-  const schedules = await query("list_schedules");
-  const handlers = await query("list_handlers");
+  const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
   const schedule = schedules.find(item => item.id === task.id);
   const handler = handlers.find(item => item.name === task.id);
   return [
@@ -40,8 +39,7 @@ export async function changes(task) {
   ];
 }
 export async function removal(id) {
-  const schedules = await query("list_schedules");
-  const handlers = await query("list_handlers");
+  const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
   const schedule = schedules.find(item => item.id === id);
   const handler = handlers.find(item => item.name === id);
   return [

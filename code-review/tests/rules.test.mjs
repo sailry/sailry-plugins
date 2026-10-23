@@ -47,7 +47,7 @@ test('generated metadata preserves rule order and original hashes', async () => 
 test('tools declare captured storage ownership', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.9');
+  assert.equal(manifest.version,'0.1.10');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','read_review_change','report_finding','review_complete','delegate_review']);
   assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');

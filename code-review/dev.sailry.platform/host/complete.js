@@ -67,10 +67,7 @@ export async function prepare(input, actor, intent) {
   if (args.finalize && (pending.counts.files || pending.counts.groups)) {
     fail('Review coverage is incomplete','invalid_request',pending);
   }
-  for (const file of scope.files) {
-    if (!args.finalize && !incoming.files.has(file.path)) continue;
-    await verify(current.value,file);
-  }
+  await Promise.all(scope.files.filter(file=>args.finalize||incoming.files.has(file.path)).map(file=>verify(current.value,file)));
   const operations = [];
   current.value.reviewed_groups = scope.groups.map(group => group.id).filter(id => covered.has(id));
   if (incoming.groups.size) {

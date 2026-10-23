@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Read independent memory body pages concurrently while retaining snapshot validation
+
 ## 0.1.9
 
 - Preserve deletions during concurrent memory consolidation

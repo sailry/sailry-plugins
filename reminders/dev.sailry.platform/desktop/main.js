@@ -46,15 +46,16 @@ export default class Reminders extends View {
       try {
         do {
           this.dirty = false;
-          const items = []; let after = null;
-          do {
-            const batch = await page({after});
-            items.push(...batch.items); after = batch.after;
-          } while (after !== null);
           // Deliveries belong to the reminder open in the details panel only.
           const reminder = this.panel?.reminder ?? null;
-          const jobs = reminder === null ? [] : unwrap(await history({handler:reminder})).items;
-          this.catalog = await readProjectCatalog(); this.items = items; this.loaded = true;
+          const [items,jobs,catalog] = await Promise.all([
+            (async()=>{const items=[];let after=null;do {
+              const batch=await page({after});items.push(...batch.items);after=batch.after;
+            }while(after!==null);return items;})(),
+            (async()=>reminder===null?[]:unwrap(await history({handler:reminder})).items)(),
+            readProjectCatalog(),
+          ]);
+          this.catalog = catalog; this.items = items; this.loaded = true;
           if (this.panel && !items.some(item => item.id === this.panel.reminder)) this.panel = null;
           if (reminder === (this.panel?.reminder ?? null)) {
             this.history = jobs; this.historyId = reminder; this.historyLoaded = reminder !== null;

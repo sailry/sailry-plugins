@@ -15,8 +15,7 @@ function exact(value) {
   return String(value);
 }
 export async function changes(item, nextRevision) {
-  const schedules = await query("list_schedules");
-  const handlers = await query("list_handlers");
+  const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
   const operations = [];
   let schedule = schedules.find(schedule => schedule.id === item.id);
   const handler = handlers.find(handler => handler.name === item.id);
@@ -38,8 +37,7 @@ export async function changes(item, nextRevision) {
   return operations;
 }
 export async function removal(id) {
-  const schedules = await query("list_schedules");
-  const handlers = await query("list_handlers");
+  const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
   const schedule = schedules.find(schedule => schedule.id === id);
   const handler = handlers.find(handler => handler.name === id);
   return [
@@ -57,14 +55,13 @@ export async function history(input = {}) {
     let before = null;
     do {
       const page = await query("list_jobs", {before, limit:100});
-      for (const job of page.jobs) {
-        if (job.handler !== handler) continue;
-        if (job.status === "completed") {
-          const receipt = await query("read_result", {id:job.id});
-          if (receipt?.kind === "completed" && receipt.data?.Ok?.data?.skipped === true) continue;
-        }
-        items.push(job);
-      }
+      const jobs=page.jobs.filter(job=>job.handler===handler);
+      const visible=await Promise.all(jobs.map(async job=>{
+        if(job.status!=="completed")return job;
+        const receipt=await query("read_result",{id:job.id});
+        return receipt?.kind==="completed"&&receipt.data?.Ok?.data?.skipped===true?null:job;
+      }));
+      items.push(...visible.filter(job=>job!==null));
       before = page.next_before;
     } while (before !== null);
     return {items};

@@ -98,8 +98,10 @@ export async function page(input = {}, project) {
   const page = await listKeys("task/", input.after ?? null, 32);
   const items = [];
   let size = 0, after = input.after ?? null;
-  for (const name of page.keys) {
-    const entry = await getValue(name);
+  const entries=await Promise.allSettled(page.keys.map(name=>getValue(name)));
+  for (const [index,name] of page.keys.entries()) {
+    const result=entries[index];if(result.status==='rejected')throw result.reason;
+    const entry = result.value;
     if (entry.present && (project === undefined || entry.value.project === project)) {
       const item = {...entry.value, revision:entry.revision};
       const length = bytes(JSON.stringify(item));

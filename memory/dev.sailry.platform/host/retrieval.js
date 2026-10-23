@@ -30,12 +30,9 @@ export async function listMemories(project) {
   return stable(async()=>(await catalog(project)).entries.map(entry=>entry.summary).sort(ordered));
 }
 async function indexSnapshot(project) {
-  const captured = await catalog(project), pages = new Map(), entries = [];
-  for (const entry of captured.entries) {
-    if (!entry.summary.archived && ["user","feedback"].includes(entry.summary.kind) && !pages.has(entry.body_page)) {
-      pages.set(entry.body_page,await page(entry.body_page));
-    }
-  }
+  const captured = await catalog(project), entries = [];
+  const ids=[...new Set(captured.entries.filter(entry=>!entry.summary.archived&&["user","feedback"].includes(entry.summary.kind)).map(entry=>entry.body_page))];
+  const pages=new Map(await Promise.all(ids.map(async id=>[id,await page(id)])));
   // A deletion can remove an entire page. Check the head before pairing the
   // captured metadata with its body, preserving real corruption diagnostics.
   if (captured.revision !== (await head()).record.revision) changed('memory catalog changed during indexing');
@@ -73,12 +70,9 @@ export async function browseMemories(filter) {
 }
 export async function searchMemories(project,query) {
   return stable(async()=>{
-    const current=await head(), captured=[], pages=new Map();
-    for (const stored of await find({project,query,recall:true})) {
-      const value=metadata(stored);
-      captured.push(value);
-      if (!pages.has(value.body_page)) pages.set(value.body_page,await page(value.body_page));
-    }
+    const current=await head(), captured=(await find({project,query,recall:true})).map(metadata);
+    const ids=[...new Set(captured.map(value=>value.body_page))];
+    const pages=new Map(await Promise.all(ids.map(async id=>[id,await page(id)])));
     await unchanged(current.record.revision);
     return Promise.all(captured.map(value=>body(value,pages.get(value.body_page))));
   });

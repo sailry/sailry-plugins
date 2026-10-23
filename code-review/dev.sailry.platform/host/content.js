@@ -9,12 +9,12 @@ export function available(file) {
   })) fail('Review content is unavailable; create a new review scope','not_found');
 }
 
-export async function* pages(value,file,part) {
+export async function* pages(value,file,part,captured=null) {
   available(file);
   const range=file.content[part];
   let offset=0;
   for (let index=0;index<range.count;index++) {
-    const current=await record(key(value.id,`data/${range.start+index}`));
+    const name=key(value.id,`data/${range.start+index}`),current=captured===null?await record(name):captured.get(name);
     const page=current.value;
     if (!current.present || current.revision !== '1' || page?.v !== 1 || page.kind !== 'content'
         || page.capture !== value.id || page.path !== file.path || page.part !== part
@@ -37,7 +37,10 @@ export async function* pages(value,file,part) {
 }
 
 export async function verify(value,file) {
-  for (const part of ['diff','old','new']) for await (const _page of pages(value,file,part)) { /* Validate every captured page. */ }
+  available(file);
+  const parts=['diff','old','new'],names=parts.flatMap(part=>Array.from({length:file.content[part].count},(_,index)=>key(value.id,`data/${file.content[part].start+index}`)));
+  const captured=new Map(await Promise.all(names.map(async name=>[name,await record(name)])));
+  for (const part of parts) for await (const _page of pages(value,file,part,captured)) { /* Validate every captured page. */ }
 }
 
 export async function read(input) {

@@ -315,7 +315,7 @@ test("desktop navigation and project tool share the host package without contrac
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.6");
+  assert.equal(manifest.version, "0.1.7");
   assert.equal(extension.desktop.navigation_options.details, true);
   assert.ok(extension.host.handlers.includes("history"));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);

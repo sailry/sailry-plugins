@@ -63,13 +63,13 @@ export async function history(input = {}) {
     let before = input.before ?? null;
     do {
       const page = await query("list_jobs",{before,limit:handler === null ? limit : 100});
-      for (const job of page.jobs) {
-        if (handler !== null && job.handler !== handler) continue;
+      const entries=await Promise.all(page.jobs.filter(job=>handler===null||job.handler===handler).map(async job=>{
         const receipt = await query("read_result",{id:job.id});
         const output = receipt.kind === "completed" ? receipt.data.Ok : null;
         const turn = output?.kind === "queued_turn" ? output.data : null;
-        items.push({job,name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null});
-      }
+        return {job,name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null};
+      }));
+      items.push(...entries);
       before = page.next_before;
     } while (handler !== null && items.length < limit && before !== null);
     return {items,next_before:before};

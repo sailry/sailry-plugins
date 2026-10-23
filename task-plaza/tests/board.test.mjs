@@ -126,7 +126,7 @@ test('failed refresh reports once and retains the current board',async()=>{
   fail=false;await state.refresh();assert.equal(state.error,false);assert.equal(notices.length,1);
 });
 
-test('preview reads use bounded batches and stop after the active catalog changes', async () => {
+test('preview batches run concurrently and discard superseded results', async () => {
   const cards = Array.from({length:18},(_,index) => session(`card-${index}`));
   cards.push({...session('archived'),archived:true},{...session('child'),delegation:{session:'parent'}});
   const reads = [];
@@ -134,11 +134,15 @@ test('preview reads use bounded batches and stop after the active catalog change
   await state.refresh();await state.previewTask;
   assert.deepEqual(reads.map(batch => batch.length),[8,8,2]);
   assert.ok(reads.flat().every(id => !['archived','child'].includes(id)));
-  let finish;
-  state.readPreviews = ids => {reads.push(plain(ids));return new Promise(resolve => {finish = resolve;});};
-  await state.refresh();const pending = state.previewTask;state.generation += 1;
-  finish([{session:cards[0].id,turn:cards[0].activity.run.turn,text:'Late'}]);await pending;
-  assert.equal(state.previews.has(cards[0].id),false);assert.equal(reads.length,4);
+  const held=[];
+  state.readPreviews = ids => {reads.push(plain(ids));return new Promise(resolve => {held.push(resolve);});};
+  await state.refresh();const pending = state.previewTask;
+  assert.equal(held.length,3,'all bounded batches start before any preview settles');
+  assert.deepEqual(reads.slice(3).map(batch=>batch.length),[8,8,2]);
+  state.generation += 1;
+  for(const finish of held)finish([{session:cards[0].id,turn:cards[0].activity.run.turn,text:'Late'}]);
+  await pending;
+  assert.equal(state.previews.has(cards[0].id),false);assert.equal(reads.length,6);
 });
 
 test('catalog updates bypass optional previews and discard stale generations', async () => {

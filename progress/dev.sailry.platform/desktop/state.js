@@ -134,15 +134,16 @@ export class State {
   }
   async loadPreviews(catalog,generation) {
     const ids = catalog.sessions.filter(session => !session.archived && !session.delegation).reverse().map(session => session.id);
-    for (let offset = 0;offset < ids.length;offset += 8) {
+    const batches=Array.from({length:Math.ceil(ids.length/8)},(_,index)=>ids.slice(index*8,index*8+8));
+    await Promise.all(batches.map(async sessions=>{
       if (generation !== this.generation) return;
       let result;
-      try {result = await this.readPreviews(ids.slice(offset,offset + 8));}
+      try {result = await this.readPreviews(sessions);}
       catch (_) {return; /* Summaries remain usable when optional previews fail. */}
       if (generation !== this.generation) return;
       for (const preview of result) this.previews.set(preview.session,preview);
       this.changed();
-    }
+    }));
   }
   hosts(value) {
     const resumed = value.visible && !this.visible;

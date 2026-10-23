@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Read and verify independent frozen review records concurrently
+
 ## 0.1.9
 
 - Recompute parallel finding and review receipt updates after a confirmed storage conflict
