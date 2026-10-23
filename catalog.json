@@ -13964,7 +13964,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -14609,7 +14609,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Read tasks, job records, models and project choices concurrently"
+        "text": "- Align the last-run failure icon with its title and remove its open-session shortcut"
       }
     },
     {

@@ -131,9 +131,6 @@ export default class ScheduledTasks extends View {
       if (event.value === "load" && this.more && !this.loading) { this.pages++; this.refresh(cx); }
     } else if (event.id === "task-prompt-copy") {
       writeClipboard(task.prompt); toast({id:"scheduled-tasks-copy",message:this.text.copied,kind:"info"});
-    } else if (event.id === "task-failure-open") {
-      const failed = this.history.find(run => run.job.handler === task.id);
-      if (failed?.session) openSession(failed.session);
     } else {
       const run = this.history.find(run => event.id === `task-open-${run.job.id}` || event.id === `task-stop-${run.job.id}`);
       if (!run) return false;

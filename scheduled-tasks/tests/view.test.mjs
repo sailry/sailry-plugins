@@ -294,8 +294,9 @@ test("details show the failure streak, facts, prompt copy and recent runs", () =
   const failure = texts(setup.nodes.get("task-failure"));
   assert.ok(failure.includes("Last run failed")); assert.ok(failure.includes("Timed out"));
   assert.ok(failure.some(line => line.endsWith("· 2 failures in a row")));
+  assert.equal(setup.nodes.has("task-failure-open"), false);
   setup.view.control({id:"task-failure-open"}, setup.cx);
-  assert.deepEqual(plain(setup.calls.at(-1)), ["open", "failed-session"]);
+  assert.equal(setup.calls.some(call => call[0] === "open"), false);
   assert.deepEqual(texts(setup.nodes.get("task-plan-hero")), ["09:00"]);
   assert.equal(setup.nodes.get("task-plan-days").items.length, 7);
   assert.deepEqual(texts(setup.nodes.get("task-plan-timezone")), ["Timezone", "Asia/Shanghai"]);
@@ -384,7 +385,7 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.9");
+  assert.equal(manifest.version, "0.1.10");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);

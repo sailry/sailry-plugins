@@ -137,13 +137,13 @@ function overview(view, item, runs, now, font) {
     const failed = runs[0], at = failed.job.started_ms ?? failed.job.created_ms;
     body.child(div().id("task-failure").h_flex().items_start().gap_2p5().p_3().rounded_lg().border_1()
       .border_color(tint(colors.destructive, "59")).bg(tint(colors.destructive, "14"))
-      .child(new Icon("icons/circle-alert.svg").size("small").text_color(colors.destructive))
+      .child(div().h_5().flex_none().h_flex().items_center()
+        .child(new Icon("icons/circle-alert.svg").size("small").text_color(colors.destructive)))
       .child(div().flex_1().min_w_0().v_flex().gap_1()
-        .child(div().text_sm().font_semibold().child(text.lastFailed))
+        .child(div().text_sm().line_height("1.25rem").font_semibold().child(text.lastFailed))
         .children(failed.job.error?.message ? [div().text_xs().whitespace_normal().child(failed.job.error.message)] : [])
         .child(div().text_xs().text_color(colors.muted_foreground)
-          .child(failures > 1 ? `${when(at, now, text)} · ${text.failedStreak(failures)}` : when(at, now, text))))
-      .children(failed.session ? [IconButton.new("task-failure-open", {icon:"external-link", label:text.open, size:"small"})] : []));
+          .child(failures > 1 ? `${when(at, now, text)} · ${text.failedStreak(failures)}` : when(at, now, text)))));
   }
   body.child(plan(view, item, now, font)).child(facts(view, item, runs, now));
   body.child(section("task-prompt", text.prompt, IconButton.new("task-prompt-copy", {icon:"copy", label:text.copy, size:"small"}))
