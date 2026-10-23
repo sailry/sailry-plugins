@@ -27,7 +27,7 @@ const {render}=vm.runInNewContext(source+'\n({render})',{
   SettingsGroup:{new:(id,props)=>element('group',{id,...props})},
   SegmentedTabs:{new:(id,props)=>element('tabs',{id,...props})},
   IconButton:{new:(id,props)=>element('icon-button',{id,...props})},
-  EmptyState:{new:(id,props)=>element('empty',{id,...props})},
+  CardList:{new:(id,props)=>element('card-list',{id,...props})},
   Modal:{new:(id,props)=>element('modal',{id,...props})},
 });
 function descendants(value) {

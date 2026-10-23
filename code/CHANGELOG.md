@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.5
+
+- Read independent language settings data concurrently
+- Show loading and empty cards for language server lists
+
 ## 0.1.4
 
 - Align package contract tests with the current release metadata

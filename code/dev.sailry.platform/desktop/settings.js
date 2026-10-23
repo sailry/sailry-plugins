@@ -77,10 +77,10 @@ export default class Settings extends View {
     cx.notify();
     cx.spawn(async cx => {
       try {
-        const settings = await read('read_code_settings');
-        const catalog = await read('read_code_catalog');
-        const installations = await read('list_code_installations');
-        const rules = await read('read_code_rules');
+        const [settings,catalog,installations,rules] = await Promise.all([
+          read('read_code_settings'),read('read_code_catalog'),
+          read('list_code_installations'),read('read_code_rules')
+        ]);
         this.saved = settings; this.catalog = catalog; this.installations = installations; this.rules = rules;
         this.ready = true;
       } catch (error) {

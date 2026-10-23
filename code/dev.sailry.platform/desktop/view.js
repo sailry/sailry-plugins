@@ -3,7 +3,7 @@ import {div} from 'gpui-kit';
 import {Button,Switch,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
-import {SettingsGroup,SegmentedTabs,IconButton,EmptyState,Modal,Toggle} from 'sailry/ui';
+import {SettingsGroup,SegmentedTabs,IconButton,CardList,Modal,Toggle} from 'sailry/ui';
 import {installed,installing,available} from './model.js';
 
 function button(id,label,action,disabled=false) {
@@ -100,8 +100,8 @@ export function render(view) {
     .child(div().v_flex().gap_4()
       .child(div().id('code-server-toolbar').h_flex().child(SegmentedTabs.new('code-tabs',{selected:view.tab,
         items:[{id:'installed',label:text.code_installed},{id:'available',label:text.code_not_installed}]})))
-      .child(SettingsGroup.new('code_languages',{heading:false}).children(items.length ? items.map(item=>server(view,item))
-        : view.ready ? [EmptyState.new('code-empty',{icon:'cpu',variant:'list',label:text[view.tab==='installed'
-          ? 'code_installations_empty':'code_languages_empty']})] : [])))
+      .child(items.length ? SettingsGroup.new('code_languages',{heading:false}).children(items.map(item=>server(view,item)))
+        : CardList.new('code_languages',{loaded:view.ready,loading:view.loading && !view.ready,empty_icon:'cpu',
+          empty_label:text[view.tab==='installed' ? 'code_installations_empty':'code_languages_empty']})))
     .child(dialog(view));
 }

@@ -52,6 +52,20 @@ async function fixture(locale='en') {
     inventory:values=>{const observer=observers.shift();if(observer)observer(plain(values));else inventory.push(plain(values));}};
 }
 
+test('independent reads start before settings completes',async()=>{
+  const state=await fixture();
+  const start=state.commands.length;
+  state.hold();state.view.load(state.cx);
+  await tick();
+  assert.deepEqual(state.commands.slice(start).map(command=>command.kind),[
+    'read_code_settings','read_code_catalog','list_code_installations','read_code_rules'
+  ]);
+  assert.equal(state.view.loading,true);
+  state.release();await state.settle();
+  assert.equal(state.view.loading,false);
+  assert.equal(state.view.ready,true);
+});
+
 test('editor switch preserves shared service settings',async()=>{
   const state=await fixture();
   assert.equal(state.saved().editor_enabled,false);
