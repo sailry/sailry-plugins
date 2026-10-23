@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Load independent repository, document, history and diff reads concurrently
+
 ## 0.1.14
 
 Hide the branch control until repository information is available.

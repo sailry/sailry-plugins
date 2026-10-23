@@ -11,6 +11,18 @@ const source = (await readFile(new URL('dev.sailry.platform/desktop/main.js',roo
 const actionSource = (await readFile(new URL('dev.sailry.platform/desktop/actions.js',root),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 
+test('directory refresh starts while composer eligibility remains pending', async () => {
+  let resolve;
+  const eligibility = new Promise(done => { resolve = done; });
+  const Files = vm.runInNewContext(`${source}\nFiles`,{View:class {},canInsertFileReferences:() => eligibility});
+  const view = new Files(); let reads = 0;
+  view.explorer = {refresh:async () => { reads++; }};
+  const task = view.refresh({notify(){}});
+  assert.equal(reads,1);
+  resolve(true); await task;
+  assert.equal(view.canInsert,true);
+});
+
 test('completed directory work prepares menus before notifying the renderer', async () => {
   const Files = vm.runInNewContext(`${source}\nFiles`,{View:class {}});
   const view = new Files(), events = [], tasks = [];

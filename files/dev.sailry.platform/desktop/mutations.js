@@ -16,6 +16,7 @@ export class Mutation {
     this.kind = kind; this.paths = [...paths]; this.directory = directory;
     this.pending = null; this.busy = false; this.error = null; this.done = false;
     this.completed = []; this.closed = false;
+    this.batch = null;
   }
 
   arguments(name) {
@@ -28,6 +29,7 @@ export class Mutation {
 
   async submit(name,cx) {
     if (this.busy || this.closed || this.done) return;
+    if (this.kind === 'trash') return this.trash(cx);
     const actions = this.pending ? this.pending.actions : this.arguments(name);
     if (!actions) { cx.notify(); return; }
     this.busy = true; this.error = null; cx.notify();
@@ -49,5 +51,35 @@ export class Mutation {
       this.done = true;
     } catch (error) { this.error = failure(this.kind,this.pending ? 'outcome_unknown' : faultCode(error.message ?? String(error))); }
     finally { this.busy = false; cx.notify(); }
+  }
+
+  async trash(cx) {
+    if (!this.batch) {
+      const actions = this.pending ? this.pending.actions : this.arguments('');
+      this.batch = actions.map((action,index) => ({action,id:index === 0 ? this.pending?.id ?? null : null,done:false,error:null}));
+    }
+    this.busy = true; this.error = null; cx.notify();
+    try {
+      await Promise.all(this.batch.filter(entry => !entry.done).map(async entry => {
+        entry.error = null;
+        try {
+          if (!entry.id) entry.id = prepareFileAction(entry.action);
+          const result = await completeRequest(entry.id);
+          if (result.Err) {
+            entry.error = result.Err.code;
+            if (entry.error === 'outcome_unknown') return;
+          } else entry.done = true;
+          forgetRequest(entry.id); entry.id = null;
+        } catch (error) {
+          entry.error = entry.id ? 'outcome_unknown' : faultCode(error.message ?? String(error));
+        }
+      }));
+      this.completed = this.batch.filter(entry => entry.done).map(entry => entry.action);
+      const unresolved = this.batch.find(entry => entry.id);
+      this.pending = unresolved ? {id:unresolved.id,actions:this.batch.map(entry => entry.action)} : null;
+      const error = this.batch.find(entry => entry.error === 'outcome_unknown') ?? this.batch.find(entry => entry.error);
+      this.error = error ? failure(this.kind,error.error) : null;
+      this.done = this.batch.every(entry => entry.done);
+    } finally { this.busy = false; cx.notify(); }
   }
 }

@@ -61,10 +61,12 @@ export class Repository {
     const sequence = current.sequence;
     this.loading = true; this.notify();
     try {
-      const status = await this.api.inspectGit();
-      let branches = null, branchError = null;
-      try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
-      catch (_) { branchError = 'git_branches_failed'; }
+      const statusRead = this.api.inspectGit();
+      const branchRead = this.api.listGitBranches().then(value => ({value}),error => ({error}));
+      const status = await statusRead;
+      const branch = status.kind === 'directory' ? null : await branchRead;
+      const branches = branch?.value ?? null;
+      const branchError = branch && Object.hasOwn(branch,'error') ? 'git_branches_failed' : null;
       if (this.closed || sequence !== this.read) return this.latest(sequence);
       if (current.invalidated) {
         current.active = false;
@@ -78,8 +80,10 @@ export class Repository {
       }
       this.loading = false;
       const document = this.documents.get(this.selected);
-      if (document) await this.open(document.request,false);
-      if (this.view === 'history') await this.loadHistory();
+      await Promise.all([
+        document ? this.open(document.request,false) : Promise.resolve(),
+        this.view === 'history' ? this.loadHistory() : Promise.resolve(),
+      ]);
       return !this.closed && sequence === this.read ? true : this.latest(sequence);
     } catch (error) {
       if (!this.closed && sequence === this.read && current.invalidated) {
@@ -227,8 +231,9 @@ export class Repository {
       else {
         const status = this.status ?? await this.api.inspectGit();
         const files = []; let size = 0, truncated = false;
-        for (const entry of status.entries) {
-          const diff = await this.api.readGitDiff(entry.path,'all'); files.push(diff);
+        const diffs = await Promise.all(status.entries.map(entry => this.api.readGitDiff(entry.path,'all')));
+        for (const diff of diffs) {
+          files.push(diff);
           size += utf8Length(diff.text);
           if (size >= 1024 * 1024) { truncated = true; break; }
         }

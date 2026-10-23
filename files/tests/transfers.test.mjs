@@ -18,10 +18,11 @@ function fixture(options = {}) {
   };
   const {Transfers,status} = vm.runInNewContext(`${source}\n({Transfers,status})`,{
     join:(directory,name) => directory ? `${directory}/${name}` : name,
+    within:(path,parent) => path === parent || path.startsWith(`${parent}/`),
     readTransfers:() => state,readClipboard:() => clipboard,
     preparePaste:async (...args) => {calls.push(['preparePaste',...args]); await options.preparePaste?.(...args); return add(args[2],'move');},
     prepareMove:async (...args) => {calls.push(['prepareMove',...args]); return add(args[1],'move');},
-    transferAction:async (...args) => {calls.push(['action',...args]); return state.transfers.find(value => value.id === args[0]);},
+    transferAction:async (...args) => {calls.push(['action',...args]); const value = state.transfers.find(value => value.id === args[0]); return options.action ? await options.action(...args,value) : value;},
     captureClipboard:async (...args) => {calls.push(['capture',...args]); if (options.capture) clipboard = await options.capture; return clipboard;},
     nextTransferChange:options.nextChange ?? (async () => {throw new Error('closed');}),
   });
@@ -69,13 +70,48 @@ test('a failed pending capture never prepares a paste from the previous owner', 
 
 test('paste freezes source clipboard and never begins before confirmation', async () => {
   const f = fixture(); await f.transfers.paste('target',cx);
-  assert.deepEqual(plain(f.calls),[['preparePaste','captured','a.txt','target/a.txt']]);
+  assert.deepEqual(plain(f.calls),[['preparePaste','captured','a.txt','target/a.txt'],['preparePaste','captured','b.txt','target/b.txt']]);
   const id = f.transfers.current;
   await f.transfers.action('start','target/edited.txt',cx);
   f.update(id,{stage:'uncertain',can_start:false,can_check:true,can_cancel:false}); f.transfers.refresh(cx);
   await f.transfers.action('check',undefined,cx);
   assert.deepEqual(plain(f.calls.at(-1)),['action',id,{kind:'check'}]);
-  assert.equal(f.calls.filter(call => call[0] === 'preparePaste').length,1);
+  assert.equal(f.calls.filter(call => call[0] === 'preparePaste').length,2);
+});
+
+test('independent paste drafts prepare together before per-file confirmation',async()=>{
+  const pending=new Map();
+  const f=fixture({preparePaste:(_clipboard,path)=>new Promise(resolve=>pending.set(path,resolve))});
+  const pasted=f.transfers.paste('target',cx);
+  assert.deepEqual(f.calls.filter(call=>call[0]==='preparePaste').map(call=>call[2]),['a.txt','b.txt']);
+  pending.get('a.txt')();await pasted;
+  assert.equal(f.transfers.value().path,'target/a.txt');
+  assert.equal(f.calls.some(call=>call[0]==='action'),false);
+  pending.get('b.txt')();
+});
+
+test('confirmed independent paste continues before earlier writes finish',async()=>{
+  let f;
+  f=fixture({action:async(id)=>{f.update(id,{stage:'transferring'});return f.snapshot().transfers.find(value=>value.id===id);}});
+  await f.transfers.paste('target',cx);const first=f.transfers.current;
+  await f.transfers.action('start',undefined,cx);const second=f.transfers.current;
+  assert.notEqual(second,first);assert.equal(f.transfers.value().path,'target/b.txt');
+  assert.equal(f.snapshot().transfers.find(value=>value.id===first).stage,'transferring');
+  await f.transfers.action('start',undefined,cx);
+  assert.deepEqual(f.calls.filter(call=>call[0]==='action').map(call=>call[1]),[first,second]);
+});
+
+test('overlapping paste destinations keep their confirmation order',async()=>{
+  let f;
+  f=fixture({action:async(id)=>{f.update(id,{stage:'transferring'});return f.snapshot().transfers.find(value=>value.id===id);}});
+  f.clipboard.paths=[{path:'one/shared.txt',kind:'file'},{path:'two/shared.txt',kind:'file'}];
+  await f.transfers.paste('target',cx);const first=f.transfers.current;
+  assert.equal(f.calls.filter(call=>call[0]==='preparePaste').length,1);
+  await f.transfers.action('start',undefined,cx);
+  assert.equal(f.transfers.current,first);assert.equal(f.transfers.queue.paths.length,1);
+  f.update(first,{stage:'done'});f.transfers.refresh(cx);await f.transfers.next(cx);
+  assert.notEqual(f.transfers.current,first);
+  assert.equal(f.calls.filter(call=>call[0]==='preparePaste').length,2);
 });
 
 test('observer and action completion advance a batch only once', async () => {

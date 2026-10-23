@@ -29,6 +29,17 @@ const inputs = {revision:'release',branch:'topic/new',path:'/checkouts/new'};
 const deferred = () => {let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail;});return {promise,resolve,reject};};
 const settle = async () => {for(let index=0;index<8;index++)await Promise.resolve();};
 
+test('native discovery starts before the catalog returns',async()=>{
+  const {model,api}=fixture();const catalog=deferred(),native=deferred();let reads=0;
+  api.readWorktreeCatalog=()=>catalog.promise;
+  api.listWorktrees=()=>{reads++;return native.promise;};
+  const task=model.open();assert.equal(reads,1);
+  native.resolve({kind:'repository',entries:[{path:'/main',main:true,available:true}],truncated:false,omitted_paths:'0'});
+  catalog.resolve({projects:[{id:'project-a',name:'Project'}],worktrees:[{id:'tree-a',path:'/main',main:true}]});
+  await task;assert.equal(model.dialog.loading,false);
+  assert.equal(model.dialog.choices.length,1);
+});
+
 test('registered choices appear before native discovery completes',async()=>{
   const {model,api,state}=fixture();const native=deferred();let reads=0;
   api.listWorktrees=()=>{reads++;return native.promise;};

@@ -33,7 +33,7 @@ export default class Files extends View {
     this.search = null; this.editing = null; this.dialogId = 0; this.canInsert = false;
     this.transferInput = null; this.transferId = null;
     this.documents.observe(cx); this.transfers.observe(cx);
-    this.run(async cx => { this.canInsert = await canInsertFileReferences(); await this.explorer.refresh(cx); },cx);
+    this.run(cx => this.refresh(cx),cx);
     this.watch(nextControlEvent,(event,cx) => this.control(event.id,cx),cx);
     this.watch(nextNavigationTabEvent,(event,cx) => {
       if (event.bar !== 'file-tabs') return;
@@ -53,10 +53,18 @@ export default class Files extends View {
         const change = await next_change(seen); seen = change;
         const state = JSON.parse(change);
         this.explorer.connected = state.connected;
-        if (state.connected) { refreshDocuments(); await this.explorer.refresh(cx); }
-        this.canInsert = await canInsertFileReferences(); this.actions.prepareTree(); cx.notify();
+        if (state.connected) refreshDocuments();
+        await this.refresh(cx,state.connected);
+        this.actions.prepareTree(); cx.notify();
       } } catch (_) { /* Releasing the view stops observation, not Node work. */ }
     });
+  }
+
+  async refresh(cx,connected = true) {
+    await Promise.all([
+      canInsertFileReferences().then(value => { this.canInsert = value; cx.notify(); }),
+      connected ? this.explorer.refresh(cx) : Promise.resolve(),
+    ]);
   }
 
   watch(read,handle,cx) {

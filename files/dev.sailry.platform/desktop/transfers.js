@@ -1,7 +1,7 @@
 // Clipboard selection and transfer dialogs retain the original Files workflow.
 import {captureClipboard, readClipboard, preparePaste, prepareMove, selectUpload, startDownload,
   readTransfers, nextTransferChange, transferAction} from 'sailry/file-transfers';
-import {join} from './explorer.js';
+import {join, within} from './explorer.js';
 
 export class Transfers {
   constructor(report,changed = () => {},text = {}) {
@@ -10,7 +10,7 @@ export class Transfers {
     this.changed = changed;
     this.state = readTransfers();
     this.clipboard = readClipboard();
-    this.current = null; this.queue = null; this.busy = false; this.advancing = null; this.capturing = null;
+    this.current = null; this.queue = null; this.busy = false; this.advancing = null; this.advancingQueue = null; this.capturing = null;
   }
 
   value() { return this.state.transfers.find(value => value.id === this.current); }
@@ -55,22 +55,47 @@ export class Transfers {
   async paste(directory,cx) {
     if (this.capturing) await this.capturing;
     if (!this.canPaste()) { this.report('files_paste_unavailable'); return; }
-    this.queue = {clipboard:this.clipboard.id,paths:[...this.clipboard.paths],directory};
+    this.queue = {clipboard:this.clipboard.id,paths:[...this.clipboard.paths],directory,prepared:new Map(),started:new Set()};
+    const destinations = [];
+    for (const entry of this.queue.paths) {
+      const destination = join(directory,entry.path.split('/').at(-1));
+      if (destinations.every(path => !within(destination,path) && !within(path,destination))) this.prepare(this.queue,entry);
+      destinations.push(destination);
+    }
     await this.next(cx);
   }
 
+  prepare(queue,entry) {
+    if (!queue.prepared.has(entry.path)) {
+      queue.prepared.set(entry.path,preparePaste(queue.clipboard,entry.path,join(queue.directory,entry.path.split('/').at(-1)))
+        .then(value => ({value}),error => ({error})));
+    }
+    return queue.prepared.get(entry.path);
+  }
+
   async next(cx) {
-    if (this.advancing) return this.advancing;
     const queue = this.queue, entry = queue?.paths[0];
+    if (this.advancing && this.advancingQueue === queue) return this.advancing;
     if (!entry) return;
-    this.advancing = (async () => {
-      const transfer = await preparePaste(queue.clipboard,entry.path,join(queue.directory,entry.path.split('/').at(-1)));
+    const advancing = (async () => {
+      const prepared = await this.prepare(queue,entry);
+      if (Object.hasOwn(prepared,'error')) { queue.prepared.delete(entry.path); throw prepared.error; }
       if (this.queue !== queue) return;
-      queue.paths.shift();
-      this.current = transfer.id; this.refresh(cx);
+      queue.paths.shift(); queue.prepared.delete(entry.path);
+      this.current = prepared.value.id; this.refresh(cx);
     })();
-    try { await this.advancing; }
-    finally { this.advancing = null; }
+    this.advancing = advancing; this.advancingQueue = queue;
+    try { await advancing; }
+    finally { if (this.advancing === advancing) { this.advancing = null; this.advancingQueue = null; } }
+  }
+
+  independentNext() {
+    const queue = this.queue, entry = queue?.paths[0];
+    if (!entry) return false;
+    const destination = join(queue.directory,entry.path.split('/').at(-1));
+    return this.state.transfers.every(value => !queue.started.has(value.id)
+      || !['preparing','transferring','publishing','recycling'].includes(value.stage)
+      || !within(destination,value.path) && !within(value.path,destination));
   }
 
   async upload(directory,cx) {
@@ -98,7 +123,11 @@ export class Transfers {
     try {
       await transferAction(id,{kind,...(path === undefined ? {} : {path})});
       this.refresh(cx);
-      if (this.current === id && this.value()?.stage === 'done' && this.queue?.paths.length) await this.next(cx);
+      if (this.current === id && this.queue?.paths.length) {
+        const stage = this.value()?.stage;
+        if (['start','replace'].includes(kind) && ['preparing','transferring','publishing','recycling','done'].includes(stage)) this.queue.started.add(id);
+        if (stage === 'done' || this.queue.started.has(id) && this.independentNext()) await this.next(cx);
+      }
     } finally { this.busy = false; cx.notify(); }
   }
 

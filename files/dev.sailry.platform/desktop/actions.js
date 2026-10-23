@@ -95,7 +95,12 @@ export class Actions {
       case 'paste': return view.transfers.paste(target.directory,cx);
       case 'upload': return view.transfers.upload(target.directory,cx);
       case 'download': return view.transfers.download(target.paths[0],cx);
-      case 'open_system': for (const path of target.paths) await openSystem(path); return;
+      case 'open_system': {
+        const results = await Promise.allSettled(target.paths.map(path => openSystem(path)));
+        const failure = results.find(result => result.status === 'rejected');
+        if (failure) throw failure.reason;
+        return;
+      }
       case 'reveal_system':
         try { await revealSystem(target.paths[0]); }
         catch (_) { view.report('files_reveal_failed'); }

@@ -50,13 +50,15 @@ export class Controller {
   }
   async load(owner,entry) {
     try {
+      const discovery = this.api.listWorktrees().then(value => ({value}),error => ({error}));
       const catalog = await this.api.readWorktreeCatalog();
       if (this.dialog !== owner || !this.valid(owner) || this.disposed) return;
       this.catalog = catalog;
       owner.choices = registered(catalog,owner.bound,this.text); this.notify();
-      const found = await this.api.listWorktrees();
+      const found = await discovery;
+      if (Object.hasOwn(found,'error')) throw found.error;
       if (this.dialog !== owner || !this.valid(owner) || this.disposed || owner.kind !== 'list') return;
-      owner.choices = listing(catalog,found,owner.bound,this.text);
+      owner.choices = listing(catalog,found.value,owner.bound,this.text);
       if (entry) return this.create(entry);
     } catch (_) { if (this.dialog === owner && this.valid(owner) && !this.disposed) this.fail(owner,'worktree_load_failed'); }
     finally { owner.loading = false; this.notify(); }

@@ -17,6 +17,54 @@ function fixture(extra = {}) {
   const owner=new Repository(api,()=>{},key=>reported.push(key));owner.status=status();return {owner,prepared,completed,forgotten,reported};
 }
 
+test('independent repository reads start together and preserve directory handling',async()=>{
+  for (const directory of [false,true]) {
+    const inspected=deferred(),branches=deferred();let reads=0;
+    const {owner,reported}=fixture({inspectGit:()=>inspected.promise,listGitBranches:()=>{reads++;return branches.promise;}});
+    const refresh=owner.refresh();assert.equal(reads,1);
+    branches.reject(Error('not a repository'));
+    inspected.resolve(directory ? {...status(),kind:'directory'} : status());
+    await refresh;
+    assert.equal(owner.error,directory ? null : 'git_branches_failed');
+    assert.deepEqual(reported,directory ? [] : ['git_branches_failed']);
+  }
+});
+
+test('directory observation does not await an irrelevant branch read',async()=>{
+  const branch=deferred();
+  const {owner}=fixture({inspectGit:async()=>({...status(),kind:'directory'}),listGitBranches:()=>branch.promise});
+  assert.equal(await owner.refresh(),true);
+  assert.equal(owner.status.kind,'directory');
+  branch.reject(Error('not a repository'));await settle();
+  assert.equal(owner.error,null);
+});
+
+test('diff reads overlap while the display budget preserves path order',async()=>{
+  const pending=new Map(),calls=[];
+  const {owner}=fixture({readGitDiff:path=>{calls.push(path);return new Promise(resolve=>pending.set(path,resolve));}});
+  owner.status={...status(),entries:['a','b','c'].map(path=>({path}))};
+  const opened=owner.open({kind:'changes'});
+  assert.deepEqual(calls,['a','b','c']);
+  pending.get('c')({path:'c',text:'last'});
+  pending.get('b')({path:'b',text:'b'.repeat(512*1024)});
+  pending.get('a')({path:'a',text:'a'.repeat(512*1024)});
+  await opened;
+  const document=owner.documents.get('changes:');
+  assert.deepEqual(document.files.map(file=>file.path),['a','b']);
+  assert.equal(document.truncated,true);
+});
+
+test('document and history refresh do not wait for each other',async()=>{
+  const diff=deferred(),history=deferred(),calls=[];
+  const {owner}=fixture({readGitDiff:()=>{calls.push('diff');return diff.promise;},
+    readGitLog:()=>{calls.push('history');return history.promise;}});
+  owner.documents.set('a.txt',{request:{kind:'file',path:'a.txt'}});owner.tabs=['a.txt'];owner.selected='a.txt';owner.view='history';
+  const refreshed=owner.refresh();await settle();
+  assert.deepEqual(calls,['diff','history']);
+  history.resolve({entries:[]});diff.resolve({path:'a.txt',text:'done'});
+  assert.equal(await refreshed,true);
+});
+
 test('starts with a tree and preserves explicit navigation choices',async()=>{
   const {owner}=fixture();
   assert.deepEqual(owner.navigation,{hierarchical:true,grouping:'tracked',sort:'path'});

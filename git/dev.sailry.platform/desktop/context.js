@@ -78,10 +78,9 @@ export default class Context extends Git {
     if (this.location.surface !== 'composer' || this.repo.status.kind === 'directory') { this.counts = null; this.publish(); return; }
     let added = 0, removed = 0, partial = this.repo.status.truncated || this.repo.status.omitted_paths > 0;
     try {
-      for (const entry of this.repo.status.entries) {
-        if (this.badgeRead !== sequence || !this.sameScope()) return;
-        const diff = await readGitDiff(entry.path,'all');
-        if (this.badgeRead !== sequence || !this.sameScope()) return;
+      const diffs = await Promise.all(this.repo.status.entries.map(entry => readGitDiff(entry.path,'all')));
+      if (this.badgeRead !== sequence || !this.sameScope()) return;
+      for (const diff of diffs) {
         added += diff.additions; removed += diff.deletions; partial ||= diff.truncated;
       }
       if (this.badgeRead === sequence) { this.counts = {added,removed,partial}; this.publish(); this.notify(); }

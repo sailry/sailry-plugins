@@ -532,3 +532,19 @@ test('released controllers cannot recreate surfaces after late notifications',()
   state.owner.repo.notify();
   assert.equal(state.owner.surfaces.states.size,0);
 });
+
+
+test('badge reads independent diffs together',async()=>{
+  const started=[],pending=new Map();
+  const state=badgeFixture({read:path=>{
+    started.push(path);
+    return new Promise(resolve=>pending.set(path,resolve));
+  }});
+  state.repo.status.entries=[{path:'one.txt'},{path:'two.txt'}];
+  const refreshed=state.owner.invalidate();await settle();
+  assert.deepEqual(started,['one.txt','two.txt']);
+  pending.get('two.txt')({additions:3,deletions:1,truncated:false});
+  pending.get('one.txt')({additions:2,deletions:4,truncated:true});
+  await refreshed;
+  assert.deepEqual(JSON.parse(JSON.stringify(state.owner.counts)),{added:5,removed:5,partial:true});
+});

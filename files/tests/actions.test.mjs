@@ -127,3 +127,25 @@ test('native reveal retains the original selected item', async () => {
   await actions.invoke(captured,{});
   assert.equal(revealed.at(-1),'file-0.txt');
 });
+
+
+test('system opens overlap and retain each result',async()=>{
+  const started=[],pending=new Map();
+  const {Actions}=vm.runInNewContext(`${source}\n({Actions})`,{
+    openSystem:path=>{
+      started.push(path);
+      return new Promise((resolve,reject)=>pending.set(path,{resolve,reject}));
+    },
+  });
+  const actions=new Actions({text:{}});
+  const item=actions.item('open_system','files_open_system',{paths:['one.txt','two.txt']});
+  let settled=false;
+  const opened=actions.invoke(item.id,{}).finally(()=>{settled=true;});
+  assert.deepEqual(started,['one.txt','two.txt']);
+  pending.get('one.txt').reject(Error('open failed'));
+  await Promise.resolve();await Promise.resolve();
+  assert.equal(settled,false,'the other requested open remains observable');
+  pending.get('two.txt').resolve();
+  await assert.rejects(opened,/open failed/);
+  assert.deepEqual(started,['one.txt','two.txt']);
+});

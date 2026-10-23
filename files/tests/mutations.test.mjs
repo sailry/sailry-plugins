@@ -14,7 +14,7 @@ function fixture(results,prepareError) {
     parent:path => path.includes('/') ? path.slice(0,path.lastIndexOf('/')) : '',
     join:(parent,name) => parent ? `${parent}/${name}` : name,
     prepareFileAction:args => {if (prepareError) throw prepareError; prepared.push(plain(args)); return `request-${prepared.length}`;},
-    completeRequest:async id => {called.push(id); const result = results.shift(); if (result instanceof Error) throw result; return result;},
+    completeRequest:async id => {called.push(id); const result = typeof results === 'function' ? await results(id) : results.shift(); if (result instanceof Error) throw result; return result;},
     forgetRequest:id => forgotten.push(id),faultCode:message => { assert.equal(typeof message,'string'); return JSON.parse(message).code; },
   });
   return {Mutation,prepared,called,forgotten};
@@ -51,7 +51,7 @@ test('unknown receipt retries the same frozen rename despite edited draft text',
   assert.equal(operation.done,true);
 });
 
-test('sequential deletion resumes only the remaining captured targets', async () => {
+test('trash resumes only the unresolved captured targets', async () => {
   const {Mutation,called,prepared} = fixture([{Ok:{}},new Error('receipt lost'),{Ok:{}}]);
   const operation = new Mutation('trash',['one.txt','two.txt']);
   await operation.submit('',cx);
@@ -60,6 +60,30 @@ test('sequential deletion resumes only the remaining captured targets', async ()
   assert.deepEqual(called,['request-1','request-2','request-2']);
   assert.deepEqual(prepared,[{kind:'trash',path:'one.txt'},{kind:'trash',path:'two.txt'}]);
   assert.equal(operation.done,true);
+});
+
+test('independent trash retains each partial outcome and request', async () => {
+  const pending = new Map();
+  const {Mutation,called,prepared,forgotten} = fixture(id => new Promise(resolve => pending.set(id,resolve)));
+  const operation = new Mutation('trash',['one.txt','two.txt','three.txt']);
+  const first = operation.submit('',cx);
+  assert.deepEqual(called,['request-1','request-2','request-3']);
+  pending.get('request-3')({Err:{code:'outcome_unknown'}});
+  pending.get('request-1')({Ok:{}});
+  pending.get('request-2')({Err:{code:'permission_denied'}});
+  await first;
+  assert.deepEqual(plain(operation.completed),[{kind:'trash',path:'one.txt'}]);
+  assert.deepEqual(forgotten,['request-1','request-2']);
+  assert.equal(operation.pending.id,'request-3');
+  assert.equal(operation.error,'files_trash_unknown');
+  const retry = operation.submit('',cx);
+  assert.deepEqual(called,['request-1','request-2','request-3','request-4','request-3']);
+  assert.deepEqual(prepared,[{kind:'trash',path:'one.txt'},{kind:'trash',path:'two.txt'},
+    {kind:'trash',path:'three.txt'},{kind:'trash',path:'two.txt'}]);
+  pending.get('request-4')({Ok:{}}); pending.get('request-3')({Ok:{}});
+  await retry;
+  assert.equal(operation.done,true); assert.equal(operation.pending,null);
+  assert.deepEqual(plain(operation.completed),['one.txt','two.txt','three.txt'].map(path => ({kind:'trash',path})));
 });
 
 test('definite conflicts release the request while terminal uncertainty remains pinned', async () => {
