@@ -33,19 +33,26 @@ export function categories(values) {
   });
 }
 
-/** Every bar is a retained real request, not interpolation between observations. */
+function snapshot(request) {
+  if(!request)return null;
+  const attempt=request.attempts.at(-1),parts=categories(attempt?.categories);
+  const reported=total(attempt?.usage);
+  const estimate=attempt?.complete_context ? sum(parts.map(part=>part.tokens)) : null;
+  return {id:request.turn,request:request.id,step:measured(request.turn_index),model:request.model,
+    limit:integer(request.context_limit),timestamp:request.timestamp_ms,attempt,parts,
+    tokens:reported??estimate,estimated:reported==null,complete:attempt?.complete_context===true};
+}
+
+/** Each task round retains its latest real request, never a sum of its requests. */
 export function history(statistics) {
-  const recent=statistics?.observations?.recent??[];
-  const count=integer(statistics?.observations?.calls)??BigInt(recent.length);
-  const first=count>=BigInt(recent.length) ? count-BigInt(recent.length)+1n : 1n;
-  return recent.map((request,index)=>{
-    const attempt=request.attempts.at(-1),parts=categories(attempt?.categories);
-    const measured=total(attempt?.usage);
-    const estimate=parts.length && attempt?.complete_context ? sum(parts.map(part=>part.tokens)) : null;
-    return {id:request.id,step:first+BigInt(index),model:request.model,limit:integer(request.context_limit),
-      timestamp:request.timestamp_ms,attempt,parts,tokens:measured??estimate,estimated:measured==null,
-      complete:attempt?.complete_context===true};
-  });
+  const turns=new Map();
+  for(const request of statistics?.observations?.recent??[]) {
+    const value=snapshot(request);
+    // Missing membership or round attribution cannot become an invented step.
+    if(typeof value.id!=='string' || !value.id || value.step==null || value.step<1n)continue;
+    turns.set(value.id,value);
+  }
+  return [...turns.values()].sort((left,right)=>left.step<right.step?-1:left.step>right.step?1:0);
 }
 
 /** Occupancy always retains the observation's model and window ownership. */
@@ -65,8 +72,8 @@ export function current(state) {
 /** Historical selection never changes current occupancy or the current connection. */
 export function overview(state,selected) {
   const statistics=state.statistics, observations=statistics?.observations;
-  const snapshots=history(statistics),latest=snapshots.at(-1)??null;
-  const chosen=snapshots.find(item=>item.id===selected)??latest;
+  const snapshots=history(statistics),latest=snapshot(observations?.recent?.at(-1));
+  const chosen=snapshots.find(item=>item.id===selected)??snapshots.at(-1)??null;
   const used=current(state);
   const usage=statistics?.usage;
   const priced=statistics?.cost && integer(statistics.cost.responses)===integer(statistics.responses);
@@ -77,7 +84,7 @@ export function overview(state,selected) {
   return {used,snapshots,chosen,latest,
     usage:{input,output,total:sum([input,output]),cached,reasoning,
       cache:input!=null && input>0n && cached!=null ? Number(cached)*100/Number(input) : null,
-      cost:priced?cost(statistics):null,turns:integer(statistics?.turns),steps:integer(observations?.calls),
+      cost:priced?cost(statistics):null,turns:integer(statistics?.turns),steps:integer(statistics?.turns),
       replies:integer(observations?.replies),compactions:integer(observations?.compactions),tools,
       toolCount:observations ? sum(tools.map(tool=>tool.count)) : null,
       // Payload attribution counts repeated consumption, not unique executions.

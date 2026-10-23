@@ -1,3 +1,7 @@
+## 0.1.15
+
+- Show one context history step per conversation round, keep metric units and capacity subordinate, and align context and elapsed-time bars
+
 ## 0.1.14
 
 - Show per-request API response timing and latency colors, restore connection icons, and align context figures and expandable rows, with session composition directly below usage

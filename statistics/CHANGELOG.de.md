@@ -1,3 +1,7 @@
+## 0.1.15
+
+- Ein Kontextschritt pro Gesprächsrunde, klarere Größenverhältnisse für Werte und Einheiten sowie ausgerichtete Kontext- und Zeitbalken
+
 ## 0.1.14
 
 - API-Antwortzeiten und Latenzfarben pro Anfrage anzeigen, Verbindungssymbole wiederherstellen und Kontextwerte sowie aufklappbare Zeilen ausrichten; die Sitzungszusammensetzung folgt direkt auf die Nutzung

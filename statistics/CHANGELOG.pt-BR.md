@@ -1,3 +1,7 @@
+## 0.1.15
+
+- Uma etapa de contexto por turno, hierarquia mais clara entre valores e unidades e alinhamento das barras de contexto e duração
+
 ## 0.1.14
 
 - Mostrar tempo de resposta API e cores de latência por solicitação, restaurar ícones e alinhar números de contexto e linhas expansíveis, com a composição da sessão logo abaixo do uso

@@ -8,7 +8,7 @@ const indicator=state=>metrics(state,text).find(entry=>entry.id==='context');
 const parts=value=>CATEGORIES.map(([kind])=>({kind,items:'1',tokens:value,method:'estimate'}));
 const attempt=(values={})=>({index:'1',transport:'http',complete_context:true,categories:parts('10'),usage:null,
   headers_us:null,first_text_us:null,elapsed_us:null,reasoning_reported:false,cache_reported:false,...values});
-const request=(id,values={})=>({id,model:'previous',context_limit:'1000',attempts:[attempt()],...values});
+const request=(id,values={})=>({id,turn:id,turn_index:'1',model:'previous',context_limit:'1000',attempts:[attempt()],...values});
 
 test('unknown occupancy stays unknown while entry remains available',()=>{
   for(const sidebar of [true,false]) {
@@ -45,8 +45,8 @@ test('new observation replaces the estimate',()=>{
 });
 test('history selection leaves current occupancy and connection intact',()=>{
   const state={statistics:{context_tokens:'300',context_limit:'1000',context_model:'previous',observations:{calls:'9007199254740995',recent:[
-    request('old',{attempts:[attempt({headers_us:'10'})]}),
-    request('latest',{attempts:[attempt({headers_us:'20'})]}),
+    request('old',{turn_index:'9007199254740994',attempts:[attempt({headers_us:'10'})]}),
+    request('latest',{turn_index:'9007199254740995',attempts:[attempt({headers_us:'20'})]}),
   ]}}};
   const selected=overview(state,'old');
   assert.equal(selected.chosen.id,'old');
@@ -54,6 +54,46 @@ test('history selection leaves current occupancy and connection intact',()=>{
   assert.equal(selected.used.tokens,300n);
   assert.equal(selected.connection.headers,20n);
   assert.equal(overview(state,'removed').chosen.id,'latest');
+});
+test('each round keeps its latest request and attempt',()=>{
+  const usage=(input,output='5')=>({input,output});
+  const recent=[
+    request('first-start',{turn:'first',turn_index:'1',attempts:[attempt({usage:usage('100')})]}),
+    request('first-tools',{turn:'first',turn_index:'1',attempts:[attempt({usage:usage('200')})]}),
+    request('second-start',{turn:'second',turn_index:'2',attempts:[attempt({usage:usage('300')})]}),
+    request('second-recovery',{turn:'second',turn_index:'2',attempts:[
+      attempt({index:'1',usage:usage('400'),outcome:'failed'}),
+      attempt({index:'2',usage:usage('500'),outcome:'succeeded'}),
+    ]}),
+  ];
+  const statistics={turns:'2',observations:{calls:'4',recent}};
+  const before=overview({statistics},'first');
+  assert.deepEqual(before.snapshots.map(value=>[value.id,value.step,value.tokens]),[
+    ['first',1n,205n],['second',2n,505n],
+  ]);
+  assert.equal(before.usage.steps,2n);
+  assert.equal(before.chosen.request,'first-tools');
+  recent.push(request('second-end',{turn:'second',turn_index:'2',attempts:[attempt({usage:usage('600')})]}));
+  const updated=overview({statistics},'second');
+  assert.equal(updated.chosen.id,'second');
+  assert.equal(updated.chosen.request,'second-end');
+  assert.equal(updated.chosen.tokens,605n);
+  assert.equal(updated.snapshots.length,2);
+  assert.equal(overview({statistics},'first').chosen.request,'first-tools');
+});
+test('bounded requests retain canonical round numbers',()=>{
+  const recent=Array.from({length:64},(_,index)=>request(`call-${index}`,{
+    turn:index<60?'earlier':'latest',turn_index:index<60?'99':'100',
+  }));
+  assert.deepEqual(history({turns:'100',observations:{calls:'9000',recent}}).map(value=>value.step),[99n,100n]);
+});
+test('missing round attribution never invents steps',()=>{
+  for(const values of [{turn:null},{turn:''},{turn:undefined},{turn_index:null},{turn_index:undefined},{turn_index:'0'}]) {
+    const statistics={turns:'2',observations:{calls:'4',recent:[request('unknown',values)]}};
+    assert.deepEqual(history(statistics),[]);
+    assert.equal(overview({statistics}).chosen,null);
+    assert.equal(overview({statistics}).connection.transport,'http');
+  }
 });
 test('partial payloads never become a complete window estimate',()=>{
   const values=history({observations:{recent:[request('partial',{attempts:[attempt({complete_context:false})]})]}});

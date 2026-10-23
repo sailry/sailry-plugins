@@ -47,7 +47,7 @@ function fold(view,id,body,label=view.text.context_details,value=null) {
 }
 
 function section(id,label,right,body,details) {
-  let result=column().gap(8).id(`context-section-${id}`).py(14)
+  let result=column().gap(12).id(`context-section-${id}`).py(14)
     .child(div().h_flex().items_center().justify_between().gap(12)
       .child(div().text_size(14).font_medium().child(label))
       .children(right==null?[]:[muted(right)]))
@@ -63,22 +63,22 @@ function bars(id,parts,whole=null) {
   const sum=known?parts.reduce((sum,part)=>sum+Number(part.value),0):0;
   const denominator=whole==null?sum:Number(whole);
   // Unknown categories are not normalized into a fabricated complete distribution.
-  return div().id(id).h_flex().w_full().h(8).rounded(3).overflow_hidden().bg(colors().muted)
+  return div().id(id).h_flex().items_stretch().w_full().h(8).flex_shrink_0().rounded(3).overflow_hidden().bg(colors().muted)
     .children(known && denominator>0?parts.filter(part=>Number(part.value)>0).map(part=>div().h_full()
-      .flex_basis(0).flex_grow(Number(part.value)/denominator).bg(colors()[part.color])):[])
-    .children(known && denominator>sum?[div().flex_basis(0).flex_grow((denominator-sum)/denominator)]:[]);
+      .min_w(0).flex_shrink_0().w(`${Math.min(100,Number(part.value)/denominator*100)}%`).bg(colors()[part.color])):[]);
 }
 
-function metric(value,size=23) {
+function metric(value,size=23,tone='foreground') {
   const match=String(value).match(/^([≈\s]*[\d.,]+)\s*(.*)$/);
-  const label=new Label(match?match[1]:String(value)).text_size(size).font_medium();
-  // Kit shapes primary and secondary text together on one shared baseline.
-  return match?.[2]?label.secondary(match[2]):label;
+  // Kit's secondary label keeps its primary font size, so compose sized labels.
+  return div().h_flex().items_baseline().gap(3)
+    .child(new Label(match?match[1]:String(value)).text_size(size).line_height(1.2).font_medium().text_color(colors()[tone]))
+    .children(match?.[2]?[new Label(match[2]).text_size(12).line_height(1.2).text_color(colors().muted_foreground)]:[]);
 }
 
 function grid(values) {
   return div().h_flex().w_full().gap(12).children(values.map(([label,value,note])=>{
-    let cell=div().v_flex().flex_1().min_w_0().gap(5)
+    let cell=div().v_flex().flex_1().min_w_0().gap(8)
       .child(div().text_size(14).text_color(colors().muted_foreground).child(label)).child(metric(value));
     return note?cell.tooltip(note):cell;
   }));
@@ -88,18 +88,19 @@ function occupancy(view,data) {
   const {text}=view,{used,chosen,snapshots}=data;
   const peak=Math.max(1,...snapshots.map(item=>Number(item.tokens??0n)));
   const history=div().h_flex().h(47).w_full().items_end().gap(5)
-    .children(snapshots.map(item=>Button.new(`context-snapshot-${item.id}`).flex_1().min_w(0).h(47)
+    .children(snapshots.map(item=>Button.new(`context-snapshot-${item.id}`).flex_1().min_w(0).h(47).p(0).items_end()
       .selected(item.id===chosen?.id).accessibility_label(`${text.context_step.replace('%{count}',String(item.step))}: ${tokens(item.tokens,item.estimated)}`)
       .tooltip(`${item.model} · ${tokens(item.tokens,item.estimated)}`)
-      .child(div().h_full().w_full().v_flex().justify_end().child(div().w_full()
-        .h(item.tokens==null||item.tokens===0n?0:Math.max(1,Number(item.tokens)/peak*44)).rounded(2)
-        .bg(colors().chart_2).opacity(item.id===chosen?.id?1:0.38)))
+      .child(div().w_full().flex_shrink_0()
+        .h(item.tokens==null||item.tokens===0n?0:Math.max(1,Number(item.tokens)/peak*47)).rounded_t(2)
+        .bg(colors().chart_2).opacity(item.id===chosen?.id?1:0.38))
       .on_click((_,cx)=>{view.selected=item.id;view.expanded.add('occupancy');cx.notify();})));
   const basis=used.basis?text[used.basis]:text.composer_metric_unknown;
   const header=div().h_flex().items_baseline().gap(5)
-    .child(new Label(tokens(used.tokens,used.estimated)).secondary(`/ ${number(used.limit)}`).text_size(30).font_medium())
+    .child(metric(tokens(used.tokens,used.estimated),30))
+    .child(new Label(`/ ${number(used.limit)}`).text_size(14).line_height(1.2).text_color(colors().muted_foreground))
     .child(div().flex_1())
-    .child(metric(percent(used.percent),22)).tooltip([used.model,basis].filter(Boolean).join(' · '));
+    .child(metric(percent(used.percent),22,'muted_foreground')).tooltip([used.model,basis].filter(Boolean).join(' · '));
   const remaining=used.threshold==null||used.tokens==null?null:used.threshold>used.tokens?used.threshold-used.tokens:0n;
   const meter=div().relative().w_full().child(bars('context-occupancy-bar',[{value:used.tokens,color:'chart_2'}],used.limit).h(9));
   if(used.limit>0n && used.threshold!=null) meter.child(div().absolute().top(-3).bottom(-3).w(1)
