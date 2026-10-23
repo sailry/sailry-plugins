@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -43,7 +43,7 @@
       "tools": [
         {
           "name": "git_status",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read Git status without modifying the index or checkout. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
           "contexts": [
             "workspace"
@@ -709,7 +709,7 @@
         },
         {
           "name": "git_log",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read a page of Git commit history. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor returned by this tool. Never construct a cursor from a short commit hash, HEAD or a branch name. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
           "contexts": [
             "workspace"
@@ -943,17 +943,128 @@
             "icon": "reicon:newicons/hierarchy2",
             "input": {
               "summary": {
-                "path": "/path"
+                "path": "/path",
+                "result_path": "/data/path"
               },
               "context": {
                 "path": "/revision"
+              },
+              "target": {
+                "path": "/path"
               }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/text"
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/files"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/path"
+                            }
+                          },
+                          {
+                            "text": "\n"
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/text"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Partial results",
+                    "locales": {
+                      "en": "Partial results",
+                      "zh-CN": "仅显示部分结果",
+                      "zh-TW": "僅顯示部分結果",
+                      "ja": "一部の結果",
+                      "ko": "일부 결과",
+                      "fr": "Résultats partiels",
+                      "de": "Teilergebnisse",
+                      "es": "Resultados parciales",
+                      "pt-BR": "Resultados parciais",
+                      "ru": "Частичные результаты"
+                    }
+                  },
+                  "when": {
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/truncated"
+                        },
+                        "equals": true
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/next"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Binary file",
+                    "locales": {
+                      "en": "Binary file",
+                      "zh-CN": "二进制文件",
+                      "zh-TW": "二進位檔案",
+                      "ja": "バイナリファイル",
+                      "ko": "바이너리 파일",
+                      "fr": "Fichier binaire",
+                      "de": "Binärdatei",
+                      "es": "Archivo binario",
+                      "pt-BR": "Arquivo binário",
+                      "ru": "Двоичный файл"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/binary"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           }
         },
         {
           "name": "git_blame",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read committed line authorship without changing the checkout. path is literal and worktree-relative; revision defaults to HEAD, excluding uncommitted changes. offset is zero-based and limit defaults to 200, at most 500. Use the returned immutable commit and next offset for continuation. Pages contain at most 48 KiB of line text; individual truncated lines are marked. Files must be committed regular UTF-8 text files at most 32 MiB. Select only registered worktrees in this session project.",
           "contexts": [
             "workspace"
@@ -1028,7 +1139,7 @@
         },
         {
           "name": "list_git_changes",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List changed file metadata without reading source bodies. Omit target and cursor for all working changes; select an explicit worktree, commit or range target otherwise. Exactly one target or cursor is accepted. Continue using next verbatim; use cursor {snapshot,after_path:null} to repeat from the same frozen target. Commits and ranges resolve once to full SHAs. Each page has at most 500 entries and 48 KiB encoded JSON. Only exhausted=true and omitted_paths=0 proves complete inventory. No patches, statistics or rename similarity are computed. Select only registered worktrees in this session project.",
           "contexts": [
             "workspace"
@@ -1532,8 +1643,173 @@
             "icon": "reicon:newicons/hierarchy2",
             "input": {
               "summary": {
+                "path": "/path",
+                "result_path": "/data/path"
+              },
+              "context": {
+                "path": "/revision"
+              },
+              "target": {
                 "path": "/path"
               }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/old_path"
+                    },
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "result",
+                            "path": "/data/old_path"
+                          },
+                          "equals": null,
+                          "negate": true
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/lines"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "text": "+",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "added"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "text": "-",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "deleted"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "text": " ",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "context"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/text"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/skip_reason"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Partial results",
+                    "locales": {
+                      "en": "Partial results",
+                      "zh-CN": "仅显示部分结果",
+                      "zh-TW": "僅顯示部分結果",
+                      "ja": "一部の結果",
+                      "ko": "일부 결과",
+                      "fr": "Résultats partiels",
+                      "de": "Teilergebnisse",
+                      "es": "Resultados parciales",
+                      "pt-BR": "Resultados parciais",
+                      "ru": "Частичные результаты"
+                    }
+                  },
+                  "when": {
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/truncated"
+                        },
+                        "equals": true
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/next"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Binary file",
+                    "locales": {
+                      "en": "Binary file",
+                      "zh-CN": "二进制文件",
+                      "zh-TW": "二進位檔案",
+                      "ja": "バイナリファイル",
+                      "ko": "바이너리 파일",
+                      "fr": "Fichier binaire",
+                      "de": "Binärdatei",
+                      "es": "Archivo binario",
+                      "pt-BR": "Arquivo binário",
+                      "ru": "Двоичный файл"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/binary"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           }
         }

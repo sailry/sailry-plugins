@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Separate memory lookup activity from confirmed memory changes and readable snapshots
+
 ## 0.1.11
 
 - Retrieve relevant preferences and decisions before relying on earlier context

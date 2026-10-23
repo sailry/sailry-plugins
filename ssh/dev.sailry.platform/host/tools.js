@@ -2,7 +2,7 @@
 export const definitions = {
   ssh_connections:{
     description:"List saved SSH connections available to this session, including IDs and revisions. Passwords, private keys and passphrases are never returned.",
-    handler:'connections',operation:'ssh.connections',presentation:'details',
+    handler:'connections',operation:'ssh.connections',presentation:'summary',
   },
   ssh_save_connection:{
     description:"Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication: password, private_key, key_path or agent. Supply credentials only for the requested save; key paths must be absolute on the execution Node. Update requires connection and expected_revision from ssh_connections. Omitted credentials remain unchanged; a supplied credential replaces them, and an omitted passphrase clears the replacement's passphrase. Do not echo credentials or supply host keys. Use the returned ID for SSH tools in this turn. First use requires runtime host-fingerprint approval. Do not automatically repeat a denied or uncertain save.",

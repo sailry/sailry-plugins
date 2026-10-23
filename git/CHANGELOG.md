@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Show ordinary repository queries as concise activity while retaining actual differences
+
 ## 0.1.16
 
 - Read branches only after confirming the directory contains a repository

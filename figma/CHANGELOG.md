@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Show ordinary design queries as concise activity
+
 ## 0.1.7
 
 - Reuse the shared HTTP flow helpers

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Show ordinary lookups as concise activity while retaining diagnostics and service details
+
 ## 0.1.5
 
 - Read independent language settings data concurrently

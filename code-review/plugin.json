@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -98,7 +98,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Capture every eligible mapped diff and full old/new changed-file context before publishing an immutable review. Inventory and strong revisions are checked throughout capture and again before publication. Later repository changes do not invalidate published content. Read it with read_review_change, never live Git or readFile. Binary or unsupported files have explicit skips. Omit target for worktree all; use review_id with offset/limit to page an existing review. Follow next until null; limit bounds the response, never samples the captured scope. Incomplete capture fails without publishing; a fresh invocation in the same session can capture again.",
           "handler": {
             "name": "scope",
@@ -290,7 +290,120 @@
               "pt-BR": "Ler alteração revisada",
               "ru": "Читать проверяемое изменение"
             },
-            "icon": "reicon:it/code"
+            "icon": "reicon:it/code",
+            "input": {
+              "summary": {
+                "path": "/path"
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/text"
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/lines"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "text": "+",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "added"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "text": "-",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "deleted"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "text": " ",
+                            "when": {
+                              "all": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/kind"
+                                  },
+                                  "equals": "context"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/text"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Partial results",
+                    "locales": {
+                      "en": "Partial results",
+                      "zh-CN": "仅显示部分结果",
+                      "zh-TW": "僅顯示部分結果",
+                      "ja": "一部の結果",
+                      "ko": "일부 결과",
+                      "fr": "Résultats partiels",
+                      "de": "Teilergebnisse",
+                      "es": "Resultados parciales",
+                      "pt-BR": "Resultados parciais",
+                      "ru": "Частичные результаты"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/next"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -386,7 +499,65 @@
               "pt-BR": "Relatar problema",
               "ru": "Сообщить о проблеме"
             },
-            "icon": "reicon:it/code"
+            "icon": "reicon:it/code",
+            "input": {
+              "summary": {
+                "path": "/title",
+                "result_path": "/finding/title"
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/severity"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/path"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/line"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/title"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/explanation"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/evidence"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/finding/snippet"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              }
+            }
           }
         },
         {

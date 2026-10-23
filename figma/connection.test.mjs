@@ -17,7 +17,7 @@ const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.st
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.7');
+  assert.equal(manifest.version, '0.1.8');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);

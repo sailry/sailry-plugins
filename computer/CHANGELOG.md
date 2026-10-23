@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.4
+
+- Keep app snapshots and action results inspectable while app lists and element searches stay concise
+
 ## 0.1.3
 
 - Contribute computer permissions to Settings → Permissions with one shared onboarding flow

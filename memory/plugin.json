@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
@@ -296,7 +296,7 @@
       "tools": [
         {
           "name": "search_memory",
-          "presentation": "details",
+          "presentation": "summary",
           "contexts": [
             "plugin",
             "workspace"
@@ -332,12 +332,17 @@
               "ru": "Поиск в памяти",
               "en": "Search memory"
             },
-            "icon": "reicon:devices/cpu"
+            "icon": "reicon:devices/cpu",
+            "input": {
+              "summary": {
+                "path": "/query"
+              }
+            }
           }
         },
         {
           "name": "review_memories",
-          "presentation": "details",
+          "presentation": "summary",
           "contexts": [
             "plugin",
             "workspace"
@@ -377,7 +382,7 @@
             "plugin",
             "workspace"
           ],
-          "description": "Save useful lasting facts from explicit remember requests, stable corrections/preferences or user-confirmed decisions when writing is available and authorized. Search first; update a matching entry instead of duplicating it. To create, omit id and use expected_revision=0; to update, search the exact ID and read its complete current body, then pass id and revision. Default to project scope shared across worktrees; global is only for cross-project preferences/corrections. Scope cannot change. Preserve conditions, versions and exceptions. Leave temporary tasks, progress, transcripts and unaccepted proposals in history. Claim saved only after tool success.",
+          "description": "Save useful lasting facts from explicit remember requests, stable corrections/preferences or user-confirmed decisions when writing is available and authorized. Search first; update a matching entry instead of duplicating it. To create, omit id and use expected_revision=0; to update, search the exact ID and read its complete current body, then pass id and revision. Default to project scope shared across worktrees; global is only for cross-project preferences/corrections. Scope cannot change. Preserve conditions, versions and exceptions. Leave temporary tasks, progress, transcripts and unaccepted proposals in history. Claim saved only after tool success. Confirmed transactions also return receipt with action, title, project, kind and a bounded body snapshot; body_truncated reports omitted content. Other outcomes have no receipt.",
           "handler": {
             "name": "save",
             "parameters": {
@@ -443,7 +448,327 @@
               "ru": "Сохранить память",
               "en": "Save memory"
             },
-            "icon": "reicon:devices/cpu"
+            "icon": "reicon:devices/cpu",
+            "input": {
+              "summary": {
+                "path": "/title",
+                "result_path": "/receipt/title"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/title"
+                    },
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "result",
+                            "path": "/receipt/title"
+                          },
+                          "equals": null,
+                          "negate": true
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/body"
+                    }
+                  }
+                ],
+                "separator": "\n\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Created",
+                    "locales": {
+                      "en": "Created",
+                      "zh-CN": "已创建",
+                      "zh-TW": "已建立",
+                      "ja": "作成済み",
+                      "ko": "생성됨",
+                      "fr": "Créée",
+                      "de": "Erstellt",
+                      "es": "Creada",
+                      "pt-BR": "Criada",
+                      "ru": "Создано"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/action"
+                        },
+                        "equals": "created"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Updated",
+                    "locales": {
+                      "en": "Updated",
+                      "zh-CN": "已更新",
+                      "zh-TW": "已更新",
+                      "ja": "更新済み",
+                      "ko": "업데이트됨",
+                      "fr": "Mise à jour",
+                      "de": "Aktualisiert",
+                      "es": "Actualizada",
+                      "pt-BR": "Atualizada",
+                      "ru": "Обновлено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/action"
+                        },
+                        "equals": "updated"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Global",
+                    "locales": {
+                      "en": "Global",
+                      "zh-CN": "全局",
+                      "zh-TW": "全域",
+                      "ja": "グローバル",
+                      "ko": "전역",
+                      "fr": "Globale",
+                      "de": "Global",
+                      "es": "Global",
+                      "pt-BR": "Global",
+                      "ru": "Глобальная"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/title"
+                        },
+                        "equals": null,
+                        "negate": true
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Project",
+                    "locales": {
+                      "en": "Project",
+                      "zh-CN": "项目",
+                      "zh-TW": "專案",
+                      "ja": "プロジェクト",
+                      "ko": "프로젝트",
+                      "fr": "Projet",
+                      "de": "Projekt",
+                      "es": "Proyecto",
+                      "pt-BR": "Projeto",
+                      "ru": "Проект"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Partial content",
+                    "locales": {
+                      "en": "Partial content",
+                      "zh-CN": "部分内容",
+                      "zh-TW": "部分內容",
+                      "ja": "一部の内容",
+                      "ko": "일부 내용",
+                      "fr": "Contenu partiel",
+                      "de": "Teilinhalt",
+                      "es": "Contenido parcial",
+                      "pt-BR": "Conteúdo parcial",
+                      "ru": "Частичное содержимое"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/body_truncated"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved",
+                    "locales": {
+                      "en": "Not saved",
+                      "zh-CN": "未保存",
+                      "zh-TW": "未儲存",
+                      "ja": "未保存",
+                      "ko": "저장되지 않음",
+                      "fr": "Non enregistrée",
+                      "de": "Nicht gespeichert",
+                      "es": "No guardada",
+                      "pt-BR": "Não salva",
+                      "ru": "Не сохранено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "pending"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "pending"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved · review memory",
+                    "locales": {
+                      "en": "Not saved · review memory",
+                      "zh-CN": "未保存 · 请检查记忆",
+                      "zh-TW": "未儲存 · 請檢查記憶",
+                      "ja": "未保存 · メモリを確認",
+                      "ko": "저장되지 않음 · 메모리 확인",
+                      "fr": "Non enregistrée · vérifier la mémoire",
+                      "de": "Nicht gespeichert · Erinnerung prüfen",
+                      "es": "No guardada · revisar memoria",
+                      "pt-BR": "Não salva · revisar memória",
+                      "ru": "Не сохранено · проверьте память"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "changed"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "changed"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Already deleted",
+                    "locales": {
+                      "en": "Already deleted",
+                      "zh-CN": "已被删除",
+                      "zh-TW": "已被刪除",
+                      "ja": "削除済み",
+                      "ko": "이미 삭제됨",
+                      "fr": "Déjà supprimée",
+                      "de": "Bereits gelöscht",
+                      "es": "Ya eliminada",
+                      "pt-BR": "Já excluída",
+                      "ru": "Уже удалено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "deleted"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "deleted"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -453,7 +778,7 @@
             "plugin",
             "workspace"
           ],
-          "description": "Permanently delete a memory only at the user's request, by ID and last-read revision. Prefer archiving stale facts with save_memory. Only global and current-project memories are accessible.",
+          "description": "Permanently delete a memory only at the user's request, by ID and last-read revision. Prefer archiving stale facts with save_memory. Only global and current-project memories are accessible. Confirmed transactions also return receipt with action, title, project, kind and a bounded body snapshot; body_truncated reports omitted content. Other outcomes have no receipt.",
           "handler": {
             "name": "forget",
             "parameters": {
@@ -493,7 +818,299 @@
               "ru": "Удалить запись памяти",
               "en": "Forget memory"
             },
-            "icon": "reicon:devices/cpu"
+            "icon": "reicon:devices/cpu",
+            "input": {
+              "summary": {
+                "path": "/title",
+                "result_path": "/receipt/title"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/title"
+                    },
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "result",
+                            "path": "/receipt/title"
+                          },
+                          "equals": null,
+                          "negate": true
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/body"
+                    }
+                  }
+                ],
+                "separator": "\n\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Deleted",
+                    "locales": {
+                      "en": "Deleted",
+                      "zh-CN": "已删除",
+                      "zh-TW": "已刪除",
+                      "ja": "削除済み",
+                      "ko": "삭제됨",
+                      "fr": "Supprimée",
+                      "de": "Gelöscht",
+                      "es": "Eliminada",
+                      "pt-BR": "Excluída",
+                      "ru": "Удалено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/action"
+                        },
+                        "equals": "deleted"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Global",
+                    "locales": {
+                      "en": "Global",
+                      "zh-CN": "全局",
+                      "zh-TW": "全域",
+                      "ja": "グローバル",
+                      "ko": "전역",
+                      "fr": "Globale",
+                      "de": "Global",
+                      "es": "Global",
+                      "pt-BR": "Global",
+                      "ru": "Глобальная"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/title"
+                        },
+                        "equals": null,
+                        "negate": true
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Project",
+                    "locales": {
+                      "en": "Project",
+                      "zh-CN": "项目",
+                      "zh-TW": "專案",
+                      "ja": "プロジェクト",
+                      "ko": "프로젝트",
+                      "fr": "Projet",
+                      "de": "Projekt",
+                      "es": "Proyecto",
+                      "pt-BR": "Projeto",
+                      "ru": "Проект"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Partial content",
+                    "locales": {
+                      "en": "Partial content",
+                      "zh-CN": "部分内容",
+                      "zh-TW": "部分內容",
+                      "ja": "一部の内容",
+                      "ko": "일부 내용",
+                      "fr": "Contenu partiel",
+                      "de": "Teilinhalt",
+                      "es": "Contenido parcial",
+                      "pt-BR": "Conteúdo parcial",
+                      "ru": "Частичное содержимое"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/body_truncated"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved",
+                    "locales": {
+                      "en": "Not saved",
+                      "zh-CN": "未保存",
+                      "zh-TW": "未儲存",
+                      "ja": "未保存",
+                      "ko": "저장되지 않음",
+                      "fr": "Non enregistrée",
+                      "de": "Nicht gespeichert",
+                      "es": "No guardada",
+                      "pt-BR": "Não salva",
+                      "ru": "Не сохранено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "pending"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "pending"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved · review memory",
+                    "locales": {
+                      "en": "Not saved · review memory",
+                      "zh-CN": "未保存 · 请检查记忆",
+                      "zh-TW": "未儲存 · 請檢查記憶",
+                      "ja": "未保存 · メモリを確認",
+                      "ko": "저장되지 않음 · 메모리 확인",
+                      "fr": "Non enregistrée · vérifier la mémoire",
+                      "de": "Nicht gespeichert · Erinnerung prüfen",
+                      "es": "No guardada · revisar memoria",
+                      "pt-BR": "Não salva · revisar memória",
+                      "ru": "Не сохранено · проверьте память"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "changed"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "changed"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Already deleted",
+                    "locales": {
+                      "en": "Already deleted",
+                      "zh-CN": "已被删除",
+                      "zh-TW": "已被刪除",
+                      "ja": "削除済み",
+                      "ko": "이미 삭제됨",
+                      "fr": "Déjà supprimée",
+                      "de": "Bereits gelöscht",
+                      "es": "Ya eliminada",
+                      "pt-BR": "Já excluída",
+                      "ru": "Уже удалено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "deleted"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "deleted"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -503,7 +1120,7 @@
             "plugin",
             "workspace"
           ],
-          "description": "Atomically replace an existing memory with a merged fact and archive its source entries. Read every complete body with search_memory before merging. Keep distinct conditions and conflicting facts separate. All entries must have the same scope. Pass the current revisions. Sources remain recoverable in management.",
+          "description": "Atomically replace an existing memory with a merged fact and archive its source entries. Read every complete body with search_memory before merging. Keep distinct conditions and conflicting facts separate. All entries must have the same scope. Pass the current revisions. Sources remain recoverable in management. Confirmed transactions also return receipt with action, title, project, kind and a bounded body snapshot; body_truncated reports omitted content. Other outcomes have no receipt.",
           "handler": {
             "name": "consolidate",
             "parameters": {
@@ -573,7 +1190,299 @@
               "ru": "Объединить записи памяти",
               "en": "Merge memories"
             },
-            "icon": "reicon:devices/cpu"
+            "icon": "reicon:devices/cpu",
+            "input": {
+              "summary": {
+                "path": "/title",
+                "result_path": "/receipt/title"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/title"
+                    },
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "result",
+                            "path": "/receipt/title"
+                          },
+                          "equals": null,
+                          "negate": true
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/receipt/body"
+                    }
+                  }
+                ],
+                "separator": "\n\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Merged",
+                    "locales": {
+                      "en": "Merged",
+                      "zh-CN": "已合并",
+                      "zh-TW": "已合併",
+                      "ja": "統合済み",
+                      "ko": "병합됨",
+                      "fr": "Fusionnée",
+                      "de": "Zusammengeführt",
+                      "es": "Combinada",
+                      "pt-BR": "Mesclada",
+                      "ru": "Объединено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/action"
+                        },
+                        "equals": "merged"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Global",
+                    "locales": {
+                      "en": "Global",
+                      "zh-CN": "全局",
+                      "zh-TW": "全域",
+                      "ja": "グローバル",
+                      "ko": "전역",
+                      "fr": "Globale",
+                      "de": "Global",
+                      "es": "Global",
+                      "pt-BR": "Global",
+                      "ru": "Глобальная"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/title"
+                        },
+                        "equals": null,
+                        "negate": true
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Project",
+                    "locales": {
+                      "en": "Project",
+                      "zh-CN": "项目",
+                      "zh-TW": "專案",
+                      "ja": "プロジェクト",
+                      "ko": "프로젝트",
+                      "fr": "Projet",
+                      "de": "Projekt",
+                      "es": "Proyecto",
+                      "pt-BR": "Projeto",
+                      "ru": "Проект"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/project"
+                        },
+                        "equals": null,
+                        "negate": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Partial content",
+                    "locales": {
+                      "en": "Partial content",
+                      "zh-CN": "部分内容",
+                      "zh-TW": "部分內容",
+                      "ja": "一部の内容",
+                      "ko": "일부 내용",
+                      "fr": "Contenu partiel",
+                      "de": "Teilinhalt",
+                      "es": "Contenido parcial",
+                      "pt-BR": "Conteúdo parcial",
+                      "ru": "Частичное содержимое"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt/body_truncated"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved",
+                    "locales": {
+                      "en": "Not saved",
+                      "zh-CN": "未保存",
+                      "zh-TW": "未儲存",
+                      "ja": "未保存",
+                      "ko": "저장되지 않음",
+                      "fr": "Non enregistrée",
+                      "de": "Nicht gespeichert",
+                      "es": "No guardada",
+                      "pt-BR": "Não salva",
+                      "ru": "Не сохранено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "pending"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "pending"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Not saved · review memory",
+                    "locales": {
+                      "en": "Not saved · review memory",
+                      "zh-CN": "未保存 · 请检查记忆",
+                      "zh-TW": "未儲存 · 請檢查記憶",
+                      "ja": "未保存 · メモリを確認",
+                      "ko": "저장되지 않음 · 메모리 확인",
+                      "fr": "Non enregistrée · vérifier la mémoire",
+                      "de": "Nicht gespeichert · Erinnerung prüfen",
+                      "es": "No guardada · revisar memoria",
+                      "pt-BR": "Não salva · revisar memória",
+                      "ru": "Не сохранено · проверьте память"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "changed"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "changed"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Already deleted",
+                    "locales": {
+                      "en": "Already deleted",
+                      "zh-CN": "已被删除",
+                      "zh-TW": "已被刪除",
+                      "ja": "削除済み",
+                      "ko": "이미 삭제됨",
+                      "fr": "Déjà supprimée",
+                      "de": "Bereits gelöscht",
+                      "es": "Ya eliminada",
+                      "pt-BR": "Já excluída",
+                      "ru": "Уже удалено"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/receipt"
+                        },
+                        "equals": null
+                      }
+                    ],
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/status"
+                        },
+                        "equals": "deleted"
+                      },
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/context/status"
+                        },
+                        "equals": "deleted"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         }
       ],

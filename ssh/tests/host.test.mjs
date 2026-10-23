@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {definitions} from '../dev.sailry.platform/host/tools.js';
 const plain=value=>JSON.parse(JSON.stringify(value));
 async function fixture() {
   let state;
@@ -108,6 +109,7 @@ test('saves accept typed credentials without exposing read or trust inputs',asyn
   const extension=manifest.extensions['dev.sailry.platform'];
   for(const name of management) {
     const tool=extension.tools.find(tool=>tool.name===name);
+    assert.equal(tool.presentation,definitions[name].presentation);
     assert.equal(tool.handler.operation,name==='ssh_connections'?'ssh.connections':'ssh.save');
     assert.equal(tool.handler.result,name==='ssh_save_connection'?'saved':undefined);
     assert.deepEqual(tool.handler.parameters,plain(initialized.parameters[name]));

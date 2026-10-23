@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Show agent lists as concise activity while retaining delegated task interactions
+
 ## 0.1.17
 
 - Capitalize the selected Super label

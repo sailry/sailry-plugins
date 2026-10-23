@@ -36,7 +36,7 @@ test('three tools preserve schemas, descriptions and operation declarations', ()
     assert.equal(tool.handler.operation,`media.${handler}`);
     assert.equal(tool.handler.name,handler);
     assert.equal(tool.handler.result,'result');
-    assert.equal(tool.presentation,'details');
+    assert.equal(tool.presentation,handler === 'inspect' ? 'summary' : 'details');
     assert.ok(tool.display.locales['zh-CN']);
     assert.match(tool.display.icon.svg,/<line x1="22"/);
   }

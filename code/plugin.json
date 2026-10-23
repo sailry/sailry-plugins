@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -78,6 +78,118 @@
               "pt-BR": "Diagnósticos",
               "ru": "Диагностика",
               "en": "Diagnostics"
+            },
+            "input": {
+              "summary": {
+                "path": "/path"
+              },
+              "target": {
+                "path": "/path"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/status"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/notice"
+                    }
+                  },
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/content/data"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/severity"
+                            }
+                          },
+                          {
+                            "text": " "
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/location/path"
+                            }
+                          },
+                          {
+                            "text": ":"
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/location/start/line"
+                            }
+                          },
+                          {
+                            "text": ":"
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/location/start/column"
+                            }
+                          },
+                          {
+                            "text": " "
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/message"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "Partial results",
+                    "locales": {
+                      "en": "Partial results",
+                      "zh-CN": "仅显示部分结果",
+                      "zh-TW": "僅顯示部分結果",
+                      "ja": "一部の結果",
+                      "ko": "일부 결과",
+                      "fr": "Résultats partiels",
+                      "de": "Teilergebnisse",
+                      "es": "Resultados parciales",
+                      "pt-BR": "Resultados parciais",
+                      "ru": "Частичные результаты"
+                    }
+                  },
+                  "when": {
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/partial"
+                        },
+                        "equals": true
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           }
         },
@@ -87,7 +199,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Locate a literal symbol on a one-based line. Returns confined relative paths and one-based positions. Read the returned files for surrounding code.",
           "display": {
             "label": "Definition",
@@ -111,7 +223,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Find at most 100 references to a literal symbol on a one-based line. Partial or indexing results do not establish the absence of other references.",
           "display": {
             "label": "References",
@@ -135,7 +247,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read a literal symbol signature and documentation from its one-based line. Output is limited to 8 KiB.",
           "display": {
             "label": "Hover",
@@ -159,7 +271,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List document symbols using path, or search symbols on an already running project server using query. A project query does not scan or start arbitrary servers.",
           "display": {
             "label": "Symbols",
@@ -183,7 +295,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Set installed=false to list project language candidates and exact install descriptors. Set installed=true to list Node-managed installations and actual versions for removal. This does not install or start anything.",
           "display": {
             "label": "Language packages",
@@ -207,7 +319,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List the Node language registry, available package install descriptors and installed executable availability. Installed is not Running; use code_packages for managed actual versions and code_servers for running instances.",
           "display": {
             "label": "Language catalog",
@@ -231,7 +343,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List actual language server instances owned by the current worktree. Copy the exact Startup descriptor for start or stop; catalog package availability does not prove a server is running.",
           "display": {
             "label": "Running language services",
@@ -270,6 +382,45 @@
               "pt-BR": "Iniciar serviço de linguagem",
               "ru": "Запустить языковую службу",
               "en": "Start language service"
+            },
+            "input": {
+              "summary": {
+                "path": "/server"
+              },
+              "context": {
+                "path": "/root"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/startup/server"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/startup/root"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/status"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/progress"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              }
             }
           }
         },
@@ -294,6 +445,45 @@
               "pt-BR": "Parar serviço de linguagem",
               "ru": "Остановить языковую службу",
               "en": "Stop language service"
+            },
+            "input": {
+              "summary": {
+                "path": "/server"
+              },
+              "context": {
+                "path": "/root"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/startup/server"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/startup/root"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/status"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/progress"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              }
             }
           }
         },
@@ -318,6 +508,57 @@
               "pt-BR": "Instalar serviço de linguagem",
               "ru": "Установить языковую службу",
               "en": "Install language service"
+            },
+            "input": {
+              "summary": {
+                "path": "/package"
+              },
+              "context": {
+                "path": "/version"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/package"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/version"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/receipt/version"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/status"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/progress"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/error"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              }
             }
           }
         },
@@ -342,6 +583,57 @@
               "pt-BR": "Desinstalar serviço de linguagem",
               "ru": "Удалить языковую службу",
               "en": "Uninstall language service"
+            },
+            "input": {
+              "summary": {
+                "path": "/package"
+              },
+              "context": {
+                "path": "/version"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/package"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/version"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/receipt/version"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/status"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/progress"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/error"
+                    }
+                  }
+                ],
+                "separator": "\n"
+              }
             }
           }
         }

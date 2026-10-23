@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "databases",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -50,7 +50,7 @@
       "tools": [
         {
           "name": "database_catalog",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List databases, or tables in a selected database, using a saved connection. Credentials remain on the execution Node.",
           "contexts": [
             "workspace",
@@ -265,13 +265,38 @@
                   "missing": "NULL",
                   "bytes": "hex"
                 }
+              },
+              "preview": {
+                "parts": [
+                  {
+                    "text": "affected_rows: ",
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "result",
+                            "path": "/data/data/affected_rows"
+                          },
+                          "equals": null,
+                          "negate": true
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/data/affected_rows"
+                    }
+                  }
+                ]
               }
             }
           }
         },
         {
           "name": "database_connections",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List saved database connections available to this session, including IDs, revisions, engines and whether credentials are required. No passwords are returned.",
           "contexts": [
             "workspace",
@@ -452,7 +477,28 @@
             "icon": "reicon:ui/database",
             "input": {
               "summary": {
-                "path": "/name"
+                "path": "/name",
+                "result_path": "/data/name"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/name"
+                    }
+                  },
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data/connection"
+                    },
+                    "format": "json"
+                  }
+                ],
+                "separator": "\n"
               }
             }
           }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "worktrees",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -39,7 +39,7 @@
       "tools": [
         {
           "name": "list_worktrees",
-          "presentation": "details",
+          "presentation": "summary",
           "description": "List Git worktrees in this project with registered IDs. Entries without an ID must be registered before delegation. Use git_status with a registered worktree ID to inspect changes. File and command tools remain bound to this turn's directory.",
           "contexts": [
             "workspace"

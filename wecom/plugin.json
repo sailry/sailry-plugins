@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wecom",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Workplace services",
   "homepage": "https://github.com/WecomTeam/wecom-cli",
   "extensions": {
@@ -159,7 +159,39 @@
               "pt-BR": "WeCom",
               "ru": "WeCom"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "reicon:files/file-text",
+            "input": {
+              "summary": {
+                "path": "/service"
+              },
+              "context": {
+                "path": "/action"
+              }
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "value": {
+                      "source": "result",
+                      "path": "/data"
+                    },
+                    "format": "json",
+                    "when": {
+                      "all": [
+                        {
+                          "value": {
+                            "source": "arguments",
+                            "path": "/action"
+                          },
+                          "equals": "invoke"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
           }
         }
       ],

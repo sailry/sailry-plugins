@@ -160,7 +160,7 @@ test('search, replacement, scope policy and live revocation share one captured t
   assert.equal((await save({...create,kind:'user'})).result.error.code,'permission_denied');
 });
 
-test('formats mutations without disclosing bodies or replacing authoritative faults',async () => {
+test('uncaptured mutations preserve fields and authoritative faults',async () => {
   const {main} = await load();
   const output = {kind:'plugin_transaction',data:[{kind:'plugin_value',data:{value:{summary}}}]};
   assert.deepEqual(plain(main.result({output})),{updated:[summary]});

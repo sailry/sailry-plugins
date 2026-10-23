@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "yuque",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Knowledge bases and documents",
   "homepage": "https://github.com/yuque/yuque-mcp-server",
   "extensions": {
@@ -58,7 +58,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read knowledge bases and documents. Search accepts Yuque's doc/repo type and a page number. A repository is its numeric ID or exact owner/slug. Document reads request raw Markdown. User repository lists use offset pages; preserve provider total and pagination metadata instead of guessing the end. The document list and table of contents preserve the API's result; do not claim an inaccessible document was read. Credentials are configured on the execution Node; never pass tokens, headers or arbitrary URLs as arguments.",
           "handler": {
             "name": "request",

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Show review discovery as concise activity while retaining findings and changes
+
 ## 0.1.10
 
 - Read and verify independent frozen review records concurrently

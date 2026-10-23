@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Show ordinary knowledge queries as concise activity
+
 ## 0.1.6
 
 - Reuse the shared HTTP flow helpers

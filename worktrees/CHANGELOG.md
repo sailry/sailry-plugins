@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Show worktree lists as concise activity while retaining changes
+
 ## 0.1.6
 
 - Start registered and native worktree discovery together while showing registered choices first

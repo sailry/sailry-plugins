@@ -63,6 +63,8 @@ test('replans unrelated updates and deletion without lost bodies',async()=>{
     let outcome=first[index];
     while ((await resume(f,job,outcome)).call) outcome=commit(f,job);
     assert.equal(job.transition.result.isError,undefined);
+    assert.equal(job.transition.result.receipt.action,job.name==='save' ? 'updated' : 'deleted');
+    if (job.name==='save') assert.equal(job.transition.result.receipt.body,job.args.body);
   }
   assert.equal((await f.storage.readMemory(id(1))).body,'Updated first');
   assert.equal((await f.storage.readMemory(id(2))).body,'Updated second');
@@ -78,6 +80,7 @@ test('recognizes equivalent concurrent creates without duplicating them',async()
   await resume(f,second,rejected);
   assert.equal(second.transition.result.context.status,'changed');
   assert.equal(second.transition.result.context.saved,false);
+  assert.equal(second.transition.result.receipt,undefined);
   const latest=JSON.parse(second.transition.result.context.latest[0].parts[0].text);
   assert.equal(latest.summary.id,first.transition.result.updated[0].id);
   assert.equal(latest.body,'Use concise replies');
@@ -112,6 +115,7 @@ test('preserves deletion when an older save loses CAS',async()=>{
   const done=await resume(f,job,commit(f,job));
   assert.equal(done.result.context.status,'deleted');
   assert.equal(done.result.context.saved,false);
+  assert.equal(done.result.receipt,undefined);
   assert.deepEqual(plain(done.result.context.deleted),[id(1)]);
   assert.equal(f.get('memory/entry/'+id(1)).present,false);
   assert.equal(f.get('memory/catalog').value.active,0);
@@ -132,11 +136,14 @@ test('never reuses a tombstoned create identifier',async()=>{
 test('deletion wins over a concurrently changed body',async()=>{
   const f=await setup([entry(1,'The original fact')]);
   const job=await start(f,'forget',{id:id(1),expected_revision:1});
-  const current=await f.storage.readMemory(id(1)); current.body='A newer fact';
+  const current=await f.storage.readMemory(id(1)); current.summary.title='A newer title'; current.body='A newer fact';
   f.apply((await f.mutations.putOperations(current,1)).operations);
   assert.ok((await resume(f,job,commit(f,job))).call);
   await resume(f,job,commit(f,job));
   assert.deepEqual(plain(job.transition.result.removed),[id(1)]);
+  assert.deepEqual(plain(job.transition.result.receipt),{
+    action:'deleted',title:'A newer title',project,kind:'project',body:'A newer fact',body_truncated:false,
+  });
   assert.equal(f.get('memory/entry/'+id(1)).present,false);
 });
 
@@ -176,6 +183,7 @@ test('bounds repeated zero-write conflicts without claiming saved',async()=>{
     assert.equal(Boolean(job.transition.call),step<7);
   }
   assert.deepEqual(plain(job.transition.result.context),{status:'pending',saved:false});
+  assert.equal(job.transition.result.receipt,undefined);
   assert.equal(f.get('memory/catalog').value.active,0);
   assert.equal(f.indexes.size,0);
 });
@@ -190,3 +198,70 @@ for (const code of ['outcome_unknown','cancelled','permission_denied','unavailab
     assert.equal(job.transition.call,undefined);
   });
 }
+
+test('confirmed snapshots preserve scope and accepted content',async()=>{
+  for (const global of [false,true]) {
+    const f=await setup();
+    const args=argumentsFor('Keep the exact Unicode condition 中文 🙂',{title:'Accepted preference',kind:'feedback',global});
+    const job=await start(f,'save',args);
+    assert.equal(job.transition.result,undefined);
+    const outcome=commit(f,job), before=f.reads.length;
+    await resume(f,job,outcome);
+    assert.equal(f.reads.length,before);
+    assert.equal(job.transition.result.updated.length,1);
+    assert.deepEqual(plain(job.transition.result.receipt),{
+      action:'created',title:args.title,project:global ? null : project,kind:'feedback',body:args.body,body_truncated:false,
+    });
+    assert.equal((await f.storage.readMemory(job.transition.result.updated[0].id)).body,args.body);
+  }
+});
+
+test('merge snapshots select the retained target',async()=>{
+  const f=await setup([entry(1,'Target condition',{title:'Target'}),entry(2,'Source condition',{title:'Source'})]);
+  await authorize(f,[id(1),id(2)]);
+  const args={id:id(1),expected_revision:1,title:'Combined conditions',body:'Target and source conditions 中文 🙂',sources:[{id:id(2),revision:1}]};
+  const job=await start(f,'consolidate',args);
+  await resume(f,job,commit(f,job));
+  assert.equal(job.transition.result.updated[0].id,id(2));
+  assert.equal(job.transition.result.updated[0].archived,true);
+  assert.deepEqual(plain(job.transition.result.receipt),{
+    action:'merged',title:args.title,project,kind:'project',body:args.body,body_truncated:false,
+  });
+  assert.equal((await f.storage.readMemory(id(1))).body,args.body);
+});
+
+test('snapshots require the exact committed target and revision',async()=>{
+  for (const changed of ['target','revision']) {
+    const f=await setup(),job=await start(f,'save',argumentsFor('Accepted condition'));
+    const outcome=commit(f,job),target=job.transition.state.id;
+    const stored=outcome.data.find(value=>value.data?.key===`memory/entry/${target}`);
+    if (changed==='target') {
+      stored.data.key=`memory/entry/${id(123)}`;
+      stored.data.value.summary.id=id(123);
+    } else stored.data.revision=String(BigInt(stored.data.revision)+1n);
+    await resume(f,job,outcome);
+    assert.equal(job.transition.result.updated.length,1);
+    assert.equal(job.transition.result.receipt,undefined);
+    assert.equal(job.transition.result.updated[0].id,changed==='target' ? id(123) : target);
+  }
+});
+
+test('snapshot bodies reuse the existing Unicode budget',async()=>{
+  const f=await setup();f.configure({...settings,context_bytes:2048});
+  await f.main.initialize({tools:['save_memory'],project,resources:false});
+  const body='Retain conditions 中文 🙂 '.repeat(4000),job=await start(f,'save',argumentsFor(body,{title:'Complete conditions'}));
+  await resume(f,job,commit(f,job));
+  const snapshot=job.transition.result.receipt;
+  assert.equal(snapshot.body_truncated,true);
+  assert.ok(snapshot.body.length>0);
+  assert.ok(body.startsWith(snapshot.body));
+  assert.ok(Buffer.byteLength(snapshot.body)<=2048);
+  assert.equal(snapshot.body.includes('\ufffd'),false);
+  assert.equal((await f.storage.readMemory(job.transition.result.updated[0].id)).body,body);
+});
+
+test('missing deletions have no confirmed snapshot',async()=>{
+  const f=await setup(),job=await start(f,'forget',{id:id(1),expected_revision:1});
+  assert.deepEqual(plain(job.transition.result),{status:'deleted',saved:false,deleted:[id(1)]});
+  assert.equal(job.transition.call,undefined);
+});

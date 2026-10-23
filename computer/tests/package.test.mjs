@@ -15,7 +15,7 @@ test('declares metadata without replacing backend tool authority', async () => {
   ]);
   for (const tool of extension.tools) {
     assert.equal(tool.server,'desktop');
-    assert.deepEqual(Object.keys(tool).sort(),['display','name','server']);
+    assert.deepEqual(Object.keys(tool).sort(),['display','name','presentation','server']);
   }
   const mcp = await document('mcp.json');
   assert.equal(mcp.$schema,'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json');
@@ -32,4 +32,24 @@ test('declares metadata without replacing backend tool authority', async () => {
   assert.equal(server.keep_images,3);
   assert.equal(server.reuse,false);
   assert.equal((await document('ocu.json')).image.maxLongEdgePixels,1280);
+});
+
+test('keeps snapshots and actions inspectable', async () => {
+  const extension = (await document('plugin.json')).extensions['dev.sailry.platform'];
+  const detailed = new Set([
+    'get_app_state','click','perform_secondary_action','scroll',
+    'drag','type_text','press_key','set_value'
+  ]);
+  for (const tool of extension.tools) {
+    if (detailed.has(tool.name)) {
+      assert.equal(tool.presentation,'details');
+      assert.deepEqual(tool.display.input,{summary:{path:'/app'}});
+      assert.deepEqual(tool.display.output,{
+        preview:{parts:[{value:{source:'result',path:'/output'}}]}
+      });
+    } else {
+      assert.equal(tool.presentation,'summary');
+      assert.equal(tool.display.output,undefined);
+    }
+  }
 });

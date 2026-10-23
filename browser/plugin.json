@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "browser",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -810,7 +810,7 @@
         },
         {
           "name": "browser_screenshot",
-          "presentation": "summary",
+          "presentation": "details",
           "description": "Capture the built-in browser viewport on supported controllers and save a JPEG artifact in the execution worktree. Returns its path for image inspection.",
           "handler": {
             "name": "screenshot",
@@ -844,7 +844,22 @@
               "ru": "Снимок страницы",
               "en": "Capture page"
             },
-            "icon": "reicon:map/globe"
+            "icon": "reicon:map/globe",
+            "input": {
+              "summary": {
+                "path": "/path",
+                "result_path": "/path",
+                "code": true
+              }
+            },
+            "output": {
+              "paths": {
+                "value": {
+                  "source": "result",
+                  "path": "/path"
+                }
+              }
+            }
           }
         }
       ],

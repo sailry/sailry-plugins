@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "microsoft-365",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Outlook and OneDrive",
   "homepage": "https://learn.microsoft.com/graph/overview",
   "extensions": {
@@ -58,7 +58,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read outlook and onedrive. Use messages or events to identify a target, then message or event to read the current record. CalendarView requires both time boundaries and includes recurring occurrences; events alone does not establish complete recurrence coverage. Files reads metadata and folder children or native OneDrive search, not arbitrary binary downloads. Follow the exact next URL returned for the same operation; it is confined to Microsoft Graph and that operation's path. Do not infer a write capability from a read result. Credentials are configured on the execution Node; never pass tokens, headers or arbitrary URLs as arguments.",
           "handler": {
             "name": "request",

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Keep service discovery concise and expose explicitly invoked business responses
+
 ## 0.1.7
 
 - Reuse the shared HTTP flow helpers

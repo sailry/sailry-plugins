@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Show connection lists as concise activity while retaining command and transfer details
+
 ## 0.1.10
 
 - Run independent file changes concurrently while retaining every request outcome

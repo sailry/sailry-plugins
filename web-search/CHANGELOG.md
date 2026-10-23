@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Show fetched pages as concise activity
+
 ## 0.1.5
 
 - Align package contract tests with the current release metadata

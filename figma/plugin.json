@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "figma",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Design context",
   "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
   "extensions": {
@@ -27,7 +27,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read Figma REST file or node JSON. Supply the exact file key and optional version. Nodes requires node IDs. Depth limits descendants; missing nodes remain null. This is not Figma MCP design context. Credentials belong in Node settings, never arguments.",
           "handler": {
             "name": "read",

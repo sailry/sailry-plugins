@@ -33,7 +33,7 @@ test('all eighteen tools retain approval groups and captured action dispatch', (
     const original = structuredClone(args);
     assert.equal(tool.handler.name,action);
     assert.equal(tool.handler.operation,`browser.${read.has(action) ? 'read' : 'control'}`);
-    assert.equal(tool.presentation,'summary');
+    assert.equal(tool.presentation,action === 'screenshot' ? 'details' : 'summary');
     const prepared = ['open','navigate'].includes(action) ? {...original,background:false} : original;
     assert.deepEqual(host[action](args),{action,arguments:prepared});
     assert.deepEqual(args,original);

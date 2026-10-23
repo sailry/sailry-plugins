@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dingtalk",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Knowledge spaces and files",
   "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
   "extensions": {
@@ -59,7 +59,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read knowledge spaces and files. Workspaces returns the current operator's knowledge spaces. Use nodes to browse the returned root node and node for its current metadata. Files lists one Drive folder in a known space. Preserve nextToken and hasMore; these metadata operations do not return full document bodies or grant access to arbitrary workspace content. Credentials are configured on the execution Node; never pass tokens, headers or arbitrary URLs as arguments.",
           "handler": {
             "name": "request",

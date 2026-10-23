@@ -9,10 +9,40 @@ export async function enabled(write) {
   if (!state.settings.enabled || !current.enabled || (write && (!state.settings.auto_write || !current.auto_write))) fail('memory access is disabled','permission_denied');
   return state;
 }
-export function result({output}) {
+function capture(prepared,entry,action,turn) {
+  const id=entry.summary.id.toLowerCase();
+  const changed=prepared.operations?.find(operation=>operation.data?.key===`memory/entry/${id}`);
+  if (!changed) return null;
+  // Display snapshots share the existing UTF-8 budget without granting read authority.
+  const visible=retrieve([entry],{remaining:turn.settings.context_bytes})[0];
+  const snapshot=visible ? JSON.parse(visible.parts[0].text) : null;
+  return {id,revision:String(BigInt(changed.data.expected_revision)+1n),
+    summary_revision:entry.summary.revision+1,action,
+    title:entry.summary.title,project:entry.summary.project,kind:entry.summary.kind,
+    body:snapshot?.body ?? '',body_truncated:snapshot?.body_truncated ?? true};
+}
+function receipt(output,snapshot) {
+  if (!snapshot) return null;
+  // Only the matching confirmed CAS outcome can expose the captured snapshot.
+  const changed=output.data?.find(value=>value.kind==='plugin_value'
+    && value.data?.key===`memory/entry/${snapshot.id}`
+    && value.data.revision===snapshot.revision)?.data;
+  if (!changed || changed.present!==(snapshot.action!=='deleted')) return null;
+  if (changed.present) {
+    const summary=changed.value?.summary;
+    if (summary?.id!==snapshot.id || summary.revision!==snapshot.summary_revision
+      || summary.title!==snapshot.title || summary.project!==snapshot.project
+      || summary.kind!==snapshot.kind) return null;
+  }
+  const {action,title,project,kind,body,body_truncated}=snapshot;
+  return {action,title,project,kind,body,body_truncated};
+}
+export function result({output},snapshot) {
   if (output.isError) return output;
   const outcome=memoryOutput(output);
-  return outcome.kind==='memory_removed' ? {removed:outcome.data} : {updated:outcome.data};
+  const value=outcome.kind==='memory_removed' ? {removed:outcome.data} : {updated:outcome.data};
+  const confirmed=receipt(output,snapshot);
+  return confirmed ? {...value,receipt:confirmed} : value;
 }
 async function latest(ids,turn) {
   const captured=await stable(async()=>{
@@ -33,7 +63,7 @@ const finish=(value,failed)=>({result:failed ? {context:value} : value});
 function writer(prepare) {
   return async ({arguments:input,step,state,outcome})=>{
     const retry=step>0 && isValueConflict(outcome);
-    if (step>0 && !retry) return {result:result({output:outcome}),output:step-1};
+    if (step>0 && !retry) return {result:result({output:outcome},state?.receipt),output:step-1};
     try {
       const turn=await enabled(true);
       if (step===8) return finish({status:'pending',saved:false},retry);
@@ -64,8 +94,9 @@ export const save=writer(async(input,turn,state)=>{
   }
   if (project===null && ((!value.global && value.id==null) || !['user','feedback'].includes(value.kind))) fail('global memory requires an explicit cross-project preference or correction; project facts require a project');
   const id=value.id ?? state?.id ?? newId();
-  const arguments_=await putOperations({summary:{id,project,title:value.title,kind:value.kind,revision:value.expected_revision,updated_at_ms:0,archived:value.archived ?? false},body:value.body},value.expected_revision,turn.project);
-  return {arguments:arguments_,state:{id}};
+  const entry={summary:{id,project,title:value.title,kind:value.kind,revision:value.expected_revision,updated_at_ms:0,archived:value.archived ?? false},body:value.body};
+  const arguments_=await putOperations(entry,value.expected_revision,turn.project);
+  return {arguments:arguments_,state:{id,receipt:capture(arguments_,entry,value.expected_revision===0 ? 'created' : 'updated',turn)}};
 });
 export const forget=writer(async(input,turn)=>{
   const value=argumentsFor(input,['id','expected_revision'],['id','expected_revision']);
@@ -73,7 +104,8 @@ export const forget=writer(async(input,turn)=>{
   for (let attempt=0; ; attempt++) {
     try {
       const current=await readMemory(value.id,turn.project);
-      return {arguments:await removeOperations(value.id,current.summary.revision,turn.project)};
+      const arguments_=await removeOperations(value.id,current.summary.revision,turn.project);
+      return {arguments:arguments_,state:{receipt:capture(arguments_,current,'deleted',turn)}};
     } catch (error) {
       if (error.code==='not_found') return {done:{status:'deleted',saved:false,deleted:[value.id]}};
       if (!(error instanceof RecordChanged) || attempt===2) throw error;
@@ -95,6 +127,8 @@ export const consolidate=writer(async(input,turn)=>{
   }
   if (current.some((entry,index)=>entry.summary.revision!==expected[index].revision || entry.summary.archived)) throw new RecordChanged(expected.map(value=>value.id));
   const entry=current[0]; entry.summary.title=value.title; entry.body=value.body;
-  try { return {arguments:await mergeOperations(entry,value.sources,turn.project)}; }
-  catch (error) { if (error instanceof RecordChanged) throw new RecordChanged(expected.map(value=>value.id)); throw error; }
+  try {
+    const arguments_=await mergeOperations(entry,value.sources,turn.project);
+    return {arguments:arguments_,state:{receipt:capture(arguments_,entry,'merged',turn)}};
+  } catch (error) { if (error instanceof RecordChanged) throw new RecordChanged(expected.map(value=>value.id)); throw error; }
 });

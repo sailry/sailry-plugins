@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "google-workspace",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Mail, calendars and Drive files",
   "homepage": "https://developers.google.com/workspace",
   "extensions": {
@@ -58,7 +58,7 @@
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
+          "presentation": "summary",
           "description": "Read mail, calendars and drive files. Mail lists contain IDs, not full bodies; use message for the selected IDs. Gmail bodies use provider base64url encoding. Calendar defaults to the authorized primary calendar and returns expanded single events. Drive query uses its native query syntax; next is an opaque page token. Document export returns bounded plain text for supported Google Docs; binary files and exports over the core HTTP limit are unavailable. Preserve incompleteSearch and do not claim complete coverage from one page. Credentials are configured on the execution Node; never pass tokens, headers or arbitrary URLs as arguments.",
           "handler": {
             "name": "request",

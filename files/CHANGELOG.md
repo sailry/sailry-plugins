@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Show OCR model lists as concise activity while retaining file and notebook changes
+
 ## 0.1.9
 
 - Read file capabilities and directories together
