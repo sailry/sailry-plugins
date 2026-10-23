@@ -16,6 +16,16 @@ const measured = value => {
   catch { return null; }
 };
 
+/** Known values may share an observed whole without inventing unknown categories. */
+export function shares(parts,whole=null) {
+  const measured=parts.filter(part=>part.value!=null);
+  if(whole==null && measured.length!==parts.length)return [];
+  const denominator=whole==null ? measured.reduce((sum,part)=>sum+Number(part.value),0) : Number(whole);
+  if(!Number.isFinite(denominator) || denominator<=0)return [];
+  return measured.filter(part=>Number(part.value)>0).map(part=>({...part,
+    share:Math.min(100,Number(part.value)/denominator*100)}));
+}
+
 /** Response receipt over one second is slow; over three seconds is very slow. */
 const RESPONSE_WARNING = 1000000n, RESPONSE_DANGER = 3000000n;
 export function latency(value,phase='response') {

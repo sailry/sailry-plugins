@@ -9,6 +9,12 @@ export function compact(value) {
   }
   return String(value);
 }
+/** Unscaled token counts retain their unit while compact counts keep their scale. */
+export function tokenCount(value,template) {
+  if(value==null)return null;
+  const count=compact(value);
+  return integer(value)<1000n ? template.replace('%{count}',count) : count;
+}
 /** Exact integer with thousands separators. */
 export function grouped(value) {
   return value == null ? null : String(integer(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');

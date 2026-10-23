@@ -24,6 +24,12 @@ test('formatting retains original compact units and context thresholds',()=>{
   assert.equal(format.context('20','0'),null);
   assert.deepEqual([null,79.9,80,99.9,100,120].map(format.severity),['muted','muted','warning','warning','danger','danger']);
 });
+test('unscaled token counts include their unit',()=>{
+  const withUnit=value=>format.tokenCount(value,'%{count} tokens');
+  assert.deepEqual([null,'0','400','999','1000','2500000'].map(withUnit),
+    [null,'0 tokens','400 tokens','999 tokens','1.0k','2.5M']);
+  assert.equal(format.tokenCount('400','Tokens: %{count}'),'Tokens: 400');
+});
 test('grouping, shares and request prices stay exact',()=>{
   assert.deepEqual([null,'0','999','1712','18446744073709551615'].map(format.grouped),[null,'0','999','1,712','18,446,744,073,709,551,615']);
   assert.equal(format.ratio('1','4'),25);

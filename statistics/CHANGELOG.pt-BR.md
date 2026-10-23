@@ -2,6 +2,10 @@
 
 - Uma etapa de contexto por turno, hierarquia mais clara entre valores e unidades e alinhamento das barras de contexto e duração
 
+## 0.1.16
+
+- Alinha os gráficos de contexto, as unidades e a ordem das seções ao layout de estatísticas.
+
 ## 0.1.14
 
 - Mostrar tempo de resposta API e cores de latência por solicitação, restaurar ícones e alinhar números de contexto e linhas expansíveis, com a composição da sessão logo abaixo do uso

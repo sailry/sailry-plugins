@@ -17584,7 +17584,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17744,17 +17744,17 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Show one context history step per conversation round, keep metric units and capacity subordinate, and align context and elapsed-time bars",
+        "text": "- Align context charts, metric units and section order with the shared statistics layout.",
         "locales": {
-          "zh-CN": "- 每轮会话显示一个上下文历史步骤，优化数值与单位层级，并对齐上下文和耗时图表",
-          "zh-TW": "- 每輪對話顯示一個上下文歷史步驟，改善數值與單位層級，並對齊上下文與耗時圖表",
-          "ja": "- 会話の各ターンを1つのコンテキスト履歴として表示し、数値と単位の強弱、コンテキストと所要時間のバー配置を調整",
-          "ko": "- 대화 턴마다 컨텍스트 이력을 하나씩 표시하고, 수치와 단위의 계층 및 컨텍스트·소요 시간 막대 정렬 개선",
-          "fr": "- Une étape de contexte par tour, une hiérarchie plus claire des valeurs et unités et des barres de contexte et de durée alignées",
-          "de": "- Ein Kontextschritt pro Gesprächsrunde, klarere Größenverhältnisse für Werte und Einheiten sowie ausgerichtete Kontext- und Zeitbalken",
-          "es": "- Un paso de contexto por turno, mejor jerarquía de valores y unidades, y barras de contexto y tiempo alineadas",
-          "pt-BR": "- Uma etapa de contexto por turno, hierarquia mais clara entre valores e unidades e alinhamento das barras de contexto e duração",
-          "ru": "- Один шаг контекста на ход беседы, более чёткая иерархия чисел и единиц и выравнивание полос контекста и времени"
+          "zh-CN": "- 对齐上下文图表、指标单位和统计区域顺序",
+          "zh-TW": "- 對齊上下文圖表、指標單位和統計區域順序",
+          "ja": "- コンテキストのグラフ、指標の単位、セクションの順序を統計表示に合わせて調整",
+          "ko": "- 컨텍스트 차트, 지표 단위와 섹션 순서를 통계 레이아웃에 맞게 조정",
+          "fr": "- Aligne les graphiques de contexte, les unités et les sections sur la présentation des statistiques.",
+          "de": "- Kontextdiagramme, Metrikeinheiten und Abschnittsreihenfolge an das gemeinsame Statistiklayout anpassen.",
+          "es": "- Alinea los gráficos de contexto, las unidades y el orden de las secciones con el diseño de estadísticas.",
+          "pt-BR": "- Alinha os gráficos de contexto, as unidades e a ordem das seções ao layout de estatísticas.",
+          "ru": "- Согласованы графики контекста, единицы измерения и порядок разделов статистики."
         }
       }
     },

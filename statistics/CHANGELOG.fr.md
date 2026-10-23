@@ -2,6 +2,10 @@
 
 - Une étape de contexte par tour, une hiérarchie plus claire des valeurs et unités et des barres de contexte et de durée alignées
 
+## 0.1.16
+
+- Aligne les graphiques de contexte, les unités et les sections sur la présentation des statistiques.
+
 ## 0.1.14
 
 - Afficher les temps de réponse API et les couleurs de latence par requête, restaurer les icônes et aligner les chiffres et les lignes dépliables, avec la composition de session juste sous l’utilisation

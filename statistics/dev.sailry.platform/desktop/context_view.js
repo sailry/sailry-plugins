@@ -1,9 +1,11 @@
 import {div} from 'gpui-kit';
 import {Button} from 'gpui-base';
-import {Collapsible,Icon,Label} from 'gpui-component';
+import {Collapsible,Icon} from 'gpui-component';
 import {theme} from 'sailry';
-import {compact,grouped,duration} from './format.js';
-import {overview,latency} from './context.js';
+import {compact,grouped,duration,tokenCount} from './format.js';
+import {overview,latency,shares} from './context.js';
+
+const HISTORY_SLOTS=12;
 
 const colors=()=>theme().colors;
 const column=()=>div().v_flex().w_full().min_w_0().gap(10);
@@ -59,21 +61,18 @@ function section(id,label,right,body,details) {
 }
 
 function bars(id,parts,whole=null) {
-  const known=parts.length>0 && parts.every(part=>part.value!=null);
-  const sum=known?parts.reduce((sum,part)=>sum+Number(part.value),0):0;
-  const denominator=whole==null?sum:Number(whole);
-  // Unknown categories are not normalized into a fabricated complete distribution.
   return div().id(id).h_flex().items_stretch().w_full().h(8).flex_shrink_0().rounded(3).overflow_hidden().bg(colors().muted)
-    .children(known && denominator>0?parts.filter(part=>Number(part.value)>0).map(part=>div().h_full()
-      .min_w(0).flex_shrink_0().w(`${Math.min(100,Number(part.value)/denominator*100)}%`).bg(colors()[part.color])):[]);
+    .children(shares(parts,whole).map(part=>div().h_full()
+      .min_w(0).flex_shrink_0().w(`${part.share}%`).bg(colors()[part.color])));
 }
 
 function metric(value,size=23,tone='foreground') {
   const match=String(value).match(/^([≈\s]*[\d.,]+)\s*(.*)$/);
-  // Kit's secondary label keeps its primary font size, so compose sized labels.
+  // The script Label styles its wrapper; native Label restores foreground.
+  // Direct Kit text children retain independent colors on the same baseline.
   return div().h_flex().items_baseline().gap(3)
-    .child(new Label(match?match[1]:String(value)).text_size(size).line_height(1.2).font_medium().text_color(colors()[tone]))
-    .children(match?.[2]?[new Label(match[2]).text_size(12).line_height(1.2).text_color(colors().muted_foreground)]:[]);
+    .child(div().text_size(size).line_height(1.2).font_medium().text_color(colors()[tone]).child(match?match[1]:String(value)))
+    .children(match?.[2]?[div().text_size(12).line_height(1.2).text_color(colors().muted_foreground).child(match[2])]:[]);
 }
 
 function grid(values) {
@@ -88,7 +87,7 @@ function occupancy(view,data) {
   const {text}=view,{used,chosen,snapshots}=data;
   const peak=Math.max(1,...snapshots.map(item=>Number(item.tokens??0n)));
   const history=div().h_flex().h(47).w_full().items_end().gap(5)
-    .children(snapshots.map(item=>Button.new(`context-snapshot-${item.id}`).flex_1().min_w(0).h(47).p(0).items_end()
+    .children(snapshots.map(item=>Button.new(`context-snapshot-${item.id}`).flex_1().max_w(`${100/HISTORY_SLOTS}%`).min_w(0).h(47).p(0).items_end()
       .selected(item.id===chosen?.id).accessibility_label(`${text.context_step.replace('%{count}',String(item.step))}: ${tokens(item.tokens,item.estimated)}`)
       .tooltip(`${item.model} · ${tokens(item.tokens,item.estimated)}`)
       .child(div().w_full().flex_shrink_0()
@@ -98,7 +97,7 @@ function occupancy(view,data) {
   const basis=used.basis?text[used.basis]:text.composer_metric_unknown;
   const header=div().h_flex().items_baseline().gap(5)
     .child(metric(tokens(used.tokens,used.estimated),30))
-    .child(new Label(`/ ${number(used.limit)}`).text_size(14).line_height(1.2).text_color(colors().muted_foreground))
+    .child(div().text_size(14).line_height(1.2).text_color(colors().muted_foreground).child(`/ ${number(used.limit)}`))
     .child(div().flex_1())
     .child(metric(percent(used.percent),22,'muted_foreground')).tooltip([used.model,basis].filter(Boolean).join(' · '));
   const remaining=used.threshold==null||used.tokens==null?null:used.threshold>used.tokens?used.threshold-used.tokens:0n;
@@ -134,9 +133,9 @@ function usage(view,data) {
   const disclosure=value.tools.length>0;
   const item=(label,value)=>row(label,value,{disclosure});
   const body=column().child(grid([
-    [text.usage_column_input,number(value.input),text.context_input_note],
-    [text.usage_column_output,number(value.output),text.context_output_note],
-    [text.context_cache_read,number(value.cached),text.context_cache_note],
+    [text.usage_column_input,tokenCount(value.input,text.context_token_count)??'—',text.context_input_note],
+    [text.usage_column_output,tokenCount(value.output,text.context_token_count)??'—',text.context_output_note],
+    [text.context_cache_read,tokenCount(value.cached,text.context_token_count)??'—',text.context_cache_note],
     [text.context_cache_hit,percent(value.cache)],
   ])).child(div().h_flex().items_baseline().gap(6).pt(2)
     .child(muted(text.context_cost)).child(div().text_size(14).font_medium().child(value.cost==null?'—':`≈ $${value.cost}`)));
@@ -220,6 +219,6 @@ function composition(view,data) {
 export function render(view) {
   const data=overview(view.state,view.selected);
   return div().id('context-details').v_flex().w_full().max_w_full().min_h_0().px(20).text_size(14)
-    .child(occupancy(view,data)).child(usage(view,data)).child(composition(view,data))
-    .child(timing(view,data)).child(connection(view,data));
+    .child(occupancy(view,data)).child(usage(view,data))
+    .child(timing(view,data)).child(connection(view,data)).child(composition(view,data));
 }

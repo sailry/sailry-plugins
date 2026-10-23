@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {overview,history,connection,timing,latency,CATEGORIES} from '../dev.sailry.platform/desktop/context.js';
+import {overview,history,connection,timing,latency,shares,CATEGORIES} from '../dev.sailry.platform/desktop/context.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
@@ -9,6 +9,20 @@ const parts=value=>CATEGORIES.map(([kind])=>({kind,items:'1',tokens:value,method
 const attempt=(values={})=>({index:'1',transport:'http',complete_context:true,categories:parts('10'),usage:null,
   headers_us:null,first_text_us:null,elapsed_us:null,reasoning_reported:false,cache_reported:false,...values});
 const request=(id,values={})=>({id,turn:id,turn_index:'1',model:'previous',context_limit:'1000',attempts:[attempt()],...values});
+
+test('partial categories keep their observed share',()=>{
+  const parts=[{id:'measured',value:20n},{id:'unknown',value:null}];
+  assert.deepEqual(shares(parts,100n),[{id:'measured',value:20n,share:20}]);
+  assert.deepEqual(shares(parts),[]);
+  assert.deepEqual(shares(parts,0n),[]);
+  assert.deepEqual(parts,[{id:'measured',value:20n},{id:'unknown',value:null}]);
+});
+
+test('complete categories can use their recorded total',()=>{
+  assert.deepEqual(shares([{value:20n},{value:30n},{value:0n}]),[
+    {value:20n,share:40},{value:30n,share:60},
+  ]);
+});
 
 test('unknown occupancy stays unknown while entry remains available',()=>{
   for(const sidebar of [true,false]) {
