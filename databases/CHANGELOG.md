@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Remove unused tool definition copies and retain the manifest declarations
+
 ## 0.1.10
 
 - Show catalog queries as concise activity while retaining SQL results and changes

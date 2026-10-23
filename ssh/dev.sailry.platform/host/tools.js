@@ -1,22 +1,4 @@
-// Tool definitions belong to the ordinary package; sessions and SSH stay native.
-export const definitions = {
-  ssh_connections:{
-    description:"List saved SSH connections available to this session, including IDs and revisions. Passwords, private keys and passphrases are never returned.",
-    handler:'connections',operation:'ssh.connections',presentation:'summary',
-  },
-  ssh_save_connection:{
-    description:"Create or update an SSH connection under the session permission policy. Create requires name, host, port, username and authentication: password, private_key, key_path or agent. Supply credentials only for the requested save; key paths must be absolute on the execution Node. Update requires connection and expected_revision from ssh_connections. Omitted credentials remain unchanged; a supplied credential replaces them, and an omitted passphrase clears the replacement's passphrase. Do not echo credentials or supply host keys. Use the returned ID for SSH tools in this turn. First use requires runtime host-fingerprint approval. Do not automatically repeat a denied or uncertain save.",
-    handler:'save',operation:'ssh.save',presentation:'details',
-  },
-  ssh_run:{
-    description:"Run a command on a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. A first connection requires the user to confirm the exact host fingerprint in the runtime approval. Do not request credentials, accept host keys or bypass verification.",
-    handler:'run',result:'completed',operation:'ssh.run',presentation:'details',
-  },
-  ssh_transfer:{
-    description:"Upload or download a file using a saved SSH connection available to this session. Resolve the connection ID with ssh_connections; do not recreate an existing connection when it is unavailable. The local path is relative to the session worktree. Do not request credentials.",
-    handler:'transfer',result:'completed',operation:'ssh.transfer',presentation:'details',
-  },
-};
+// Dynamic schemas retain captured connection choices; declarations live in plugin.json.
 export function parameters(name,profiles) {
   if (name === 'ssh_connections') return {type:'object',properties:{},required:[],additionalProperties:false};
   if (name === 'ssh_save_connection') return saveParameters();

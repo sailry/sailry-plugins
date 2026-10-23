@@ -3812,7 +3812,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.10",
+        "version": "0.1.11",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4388,7 +4388,7 @@
         "ssh.read"
       ],
       "release_notes": {
-        "text": "- Show catalog queries as concise activity while retaining SQL results and changes"
+        "text": "- Remove unused tool definition copies and retain the manifest declarations"
       }
     },
     {
@@ -16741,7 +16741,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17576,7 +17576,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Show connection lists as concise activity while retaining command and transfer details"
+        "text": "- Remove unused tool definition copies and retain the manifest declarations"
       }
     },
     {

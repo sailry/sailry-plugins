@@ -1,27 +1,4 @@
-// Tool definitions and SQL presentation policy belong to the ordinary package.
-export const definitions = {
-  database_connections:{
-    description:"List saved database connections available to this session, including IDs, revisions, engines and whether credentials are required. No passwords are returned.",
-    handler:"connections",operation:"databases.connections",presentation:"details",
-  },
-  database_save_connection:{
-    description:"Create or update a database connection under the session permission policy. Create requires name and engine, plus path for SQLite or host, port, username and database for MySQL/PostgreSQL. If database_connections returns no profiles, create without connection or expected_revision; do not reuse an ID from earlier conversation history. Saving records configuration only and does not create a SQLite file. New connections default to read_only=true; use read_only=false only for requested writes. Update requires connection and expected_revision from database_connections and preserves omitted fields and credentials. Never accept or request passwords; when credentials_required is true, the user supplies them in protected settings. Use the returned ID directly for catalog or SQL tools in this turn. Do not automatically repeat a denied or uncertain save.",
-    handler:"save",operation:"databases.save",presentation:"details",
-  },
-  database_catalog:{
-    description:"List databases, or tables in a selected database, using a saved connection. Credentials remain on the execution Node.",
-    handler:"catalog",operation:"databases.catalog",presentation:"details",
-  },
-  database_query:{
-    description:"Run one read-only SQL statement without approval. The execution connection is forced read-only. Use this for SELECT, inspecting schema, and analysis. Results also appear in the database workspace. Use database_execute for writes; never try to disable read-only protection.",
-    handler:"query",operation:"databases.query",presentation:"content",
-  },
-  database_execute:{
-    description:"Execute one SQL write statement under the session permission policy. Use for INSERT, UPDATE, DELETE, and schema changes. For a missing writable SQLite file, an authorized schema write initializes it and creates missing parent directories; do not create the folder or an empty file separately. Explicit writable connection checks can also initialize a missing file. Reads, catalog, read-only connection checks, and PRAGMAs do not initialize a file. The saved connection's read-only setting still applies. Invoke this tool directly instead of asking for approval in chat. Do not retry a denied or uncertain write automatically.",
-    handler:"execute",operation:"databases.execute",presentation:"details",
-  },
-};
-
+// Dynamic schemas retain captured connection choices; declarations live in plugin.json.
 export function label(profile) {
   const engine = {sqlite:'SQLite',mysql:'MySQL',postgres:'PostgreSQL'}[profile.engine];
   const quoting = profile.engine === 'mysql'

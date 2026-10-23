@@ -31,6 +31,8 @@ test('keeps exact captured choices and engine policy in the declared schemas',as
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   assert.ok(manifest.extensions['dev.sailry.platform'].desktop.conversations[0].context.includes('database workspace assistant'));
   for(const name of tools) {
+    const tool=manifest.extensions['dev.sailry.platform'].tools.find(tool=>tool.name===name);
+    assert.equal(tool.presentation,name==='database_catalog'?'summary':name==='database_query'?'content':'details');
     const schema=initialized.parameters[name];
     assert.equal(schema.properties.connection.enum,undefined);
     assert.match(created,new RegExp(schema.properties.connection.pattern));
@@ -88,6 +90,7 @@ test('connection tools remain available without initial profiles',async()=>{
   const extension=manifest.extensions['dev.sailry.platform'];
   for(const name of management) {
     const tool=extension.tools.find(tool=>tool.name===name);
+    assert.equal(tool.presentation,name==='database_connections'?'summary':'details');
     assert.equal(tool.handler.operation,name==='database_connections'?'databases.connections':'databases.save');
     assert.deepEqual(tool.handler.parameters,plain(initialized.parameters[name]));
     assert.ok(extension.desktop.conversations[0].tools.some(tool=>tool.name===name));
@@ -151,12 +154,9 @@ test('describes safe writable SQLite initialization',async()=>{
   const api=await fixture();
   const initialized=api.initialize({tools:[...tools,...management],connections:{databases:[],ssh:[]}});
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  const source=await readFile(new URL('../dev.sailry.platform/host/tools.js',import.meta.url),'utf8');
   const extension=manifest.extensions['dev.sailry.platform'];
   const save=extension.tools.find(tool=>tool.name==='database_save_connection');
   const execute=extension.tools.find(tool=>tool.name==='database_execute');
-  assert.ok(source.includes(save.description));
-  assert.ok(source.includes(execute.description));
   assert.match(save.description,/Saving records configuration only and does not create a SQLite file/);
   assert.match(save.description,/default to read_only=true/);
   assert.match(save.description,/If database_connections returns no profiles, create without connection or expected_revision/);

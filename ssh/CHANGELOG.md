@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Remove unused tool definition copies and retain the manifest declarations
+
 ## 0.1.11
 
 - Show connection lists as concise activity while retaining command and transfer details
