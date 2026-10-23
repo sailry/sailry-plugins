@@ -62,10 +62,9 @@ export default class Poker extends View {
     this.error = null;
     cx.spawn(async cx => {
       try {
-        const settings = await readSettings();
+        const [settings,catalog] = await Promise.all([readSettings(),listModels()]);
         this.names[0] = settings.values.player_name?.trim() || this.text.you;
         if (settings.values.player_1_enabled === false) { this.error = "configure"; return; }
-        const catalog = await listModels();
         const name = settings.values.player_1?.trim();
         if (name) this.names[1] = name;
         this.player = resolveModel(settings, catalog, "player_1_model");

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "liars-dice",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Play Liar's Dice with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {

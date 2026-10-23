@@ -78,11 +78,10 @@ export default class CityTrader extends View {
     this.error = null;
     cx.spawn(async cx => {
       try {
-        const settings = await readSettings();
+        const [settings,catalog,saved] = await Promise.all([readSettings(),listModels(),getValue("match")]);
         this.names[0] = settings.values.player_name?.trim() || this.text.you;
         this.enabled = [true, settings.values.player_1_enabled !== false, settings.values.player_2_enabled !== false];
         if (!(this.enabled.slice(1).some(Boolean))) { this.error = "configure"; return; }
-        const catalog = await listModels();
         this.players = [1, 2].map(seat => {
           const key = `player_${seat}`;
           if (!this.enabled[seat]) return null;
@@ -91,7 +90,7 @@ export default class CityTrader extends View {
           if (name) this.names[seat] = name;
           return player;
         });
-        this.saved = await getValue("match");
+        this.saved = saved;
         this.available = true;
       } catch (error) {
         if (errorCode(error.message) === "configure") this.error = "configure";

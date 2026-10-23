@@ -60,10 +60,9 @@ export default class Gomoku extends View {
     this.error = null;
     cx.spawn(async cx => {
       try {
-        const settings = await readSettings();
+        const [settings,catalog] = await Promise.all([readSettings(),listModels()]);
         this.text.you = settings.values.player_name?.trim() || messages(JSON.parse(context()).locale).you;
         if (settings.values.ai_enabled === false) { this.error = "configure"; return; }
-        const catalog = await listModels();
         this.model = resolveModel(settings, catalog, "ai_model");
         this.name = settings.values.ai_name?.trim() || this.text.opponent;
         this.available = true;

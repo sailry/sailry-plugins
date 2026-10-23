@@ -54,11 +54,10 @@ export default class DouDizhu extends View {
     this.error = null;
     cx.spawn(async cx => {
       try {
-        const settings = await readSettings();
+        const [settings,catalog] = await Promise.all([readSettings(),listModels()]);
         this.names[0] = settings.values.player_name?.trim() || this.text.you;
         this.enabled = [true, settings.values.player_1_enabled !== false, settings.values.player_2_enabled !== false];
         if (!(this.enabled.slice(1).every(Boolean))) { this.error = "configure"; return; }
-        const catalog = await listModels();
         this.players = [1, 2].map(player => {
           const key = `player_${player}`;
           if (!this.enabled[player]) return null;
