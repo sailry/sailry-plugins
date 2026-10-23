@@ -61,12 +61,10 @@ export class Repository {
     const sequence = current.sequence;
     this.loading = true; this.notify();
     try {
-      const statusRead = this.api.inspectGit();
-      const branchRead = this.api.listGitBranches().then(value => ({value}),error => ({error}));
-      const status = await statusRead;
-      const branch = status.kind === 'directory' ? null : await branchRead;
-      const branches = branch?.value ?? null;
-      const branchError = branch && Object.hasOwn(branch,'error') ? 'git_branches_failed' : null;
+      const status = await this.api.inspectGit();
+      let branches = null, branchError = null;
+      try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
+      catch (_) { branchError = 'git_branches_failed'; }
       if (this.closed || sequence !== this.read) return this.latest(sequence);
       if (current.invalidated) {
         current.active = false;

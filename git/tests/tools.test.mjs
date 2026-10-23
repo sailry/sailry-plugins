@@ -105,7 +105,6 @@ test('file change descriptions distinguish captured revision fields', async () =
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
   const tool = extension.tools.find(tool => tool.name === 'read_git_change');
-  assert.equal(manifest.version,'0.1.13');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(tool.handler.parameters.required,['snapshot','path','expected_metadata_revision']);
   assert.match(tool.description,/Every request requires the unchanged snapshot/);

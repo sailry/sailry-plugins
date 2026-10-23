@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Read branches only after confirming the directory contains a repository
+
 ## 0.1.15
 
 - Load independent repository, document, history and diff reads concurrently

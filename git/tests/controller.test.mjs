@@ -17,26 +17,19 @@ function fixture(extra = {}) {
   const owner=new Repository(api,()=>{},key=>reported.push(key));owner.status=status();return {owner,prepared,completed,forgotten,reported};
 }
 
-test('independent repository reads start together and preserve directory handling',async()=>{
+test('branch reads wait for repository applicability',async()=>{
   for (const directory of [false,true]) {
     const inspected=deferred(),branches=deferred();let reads=0;
     const {owner,reported}=fixture({inspectGit:()=>inspected.promise,listGitBranches:()=>{reads++;return branches.promise;}});
-    const refresh=owner.refresh();assert.equal(reads,1);
-    branches.reject(Error('not a repository'));
+    const refresh=owner.refresh();assert.equal(reads,0);
     inspected.resolve(directory ? {...status(),kind:'directory'} : status());
+    await settle();
+    assert.equal(reads,directory ? 0 : 1);
+    if (!directory) branches.reject(Error('branch read failed'));
     await refresh;
     assert.equal(owner.error,directory ? null : 'git_branches_failed');
     assert.deepEqual(reported,directory ? [] : ['git_branches_failed']);
   }
-});
-
-test('directory observation does not await an irrelevant branch read',async()=>{
-  const branch=deferred();
-  const {owner}=fixture({inspectGit:async()=>({...status(),kind:'directory'}),listGitBranches:()=>branch.promise});
-  assert.equal(await owner.refresh(),true);
-  assert.equal(owner.status.kind,'directory');
-  branch.reject(Error('not a repository'));await settle();
-  assert.equal(owner.error,null);
 });
 
 test('diff reads overlap while the display budget preserves path order',async()=>{
