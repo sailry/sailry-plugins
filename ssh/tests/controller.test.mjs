@@ -48,17 +48,38 @@ const plain=value=>JSON.parse(JSON.stringify(value));
 function deferred(){let resolve,reject;const promise=new Promise((accept,fail)=>{resolve=accept;reject=fail;});return {promise,resolve,reject};}
 
 test('initial inventory stays unconfirmed until all reads finish',async()=>{
-  const setup=await fixture(),profiles=deferred(),catalog=deferred();
+  const setup=await fixture(),profiles=deferred(),catalog=deferred();let changes,terminals=0;
   setup.host.listProfiles=()=>profiles.promise;setup.host.readCatalog=()=>catalog.promise;
-  setup.view.watch=()=>{};setup.view.init({},setup.cx);
+  setup.host.listTerminals=async()=>{terminals++;return [setup.terminal];};
+  setup.view.watch=(_read,handle,_cx,cursor)=>{if(cursor&&!changes)changes=handle;};setup.view.init({},setup.cx);
+  changes({connected:true,entry:'0'},setup.cx);
   assert.equal(setup.view.loaded,false);assert.equal(setup.view.terminals.length,0);
-  await Promise.resolve();profiles.resolve([setup.profile]);
-  for(let step=0;step<20&&!setup.host.catalogReads;step++)await Promise.resolve();
+  await Promise.resolve();assert.equal(setup.host.catalogReads,1,'project choices start before profiles settle');
+  profiles.resolve([setup.profile]);
+  for(let step=0;step<20&&!terminals;step++)await Promise.resolve();
+  assert.equal(terminals,1,'terminals do not wait for independent project choices');
   assert.equal(setup.host.catalogReads,1);assert.equal(setup.view.loaded,false);
   assert.equal(setup.view.terminals.length,0);
   catalog.resolve(setup.host.catalog);await setup.settle();
   assert.equal(setup.view.loaded,true);assert.equal(setup.view.terminal,setup.terminal.id);
   assert.equal(setup.view.profiles[0],setup.profile);
+});
+
+test('subscription retains initial, scope, and connection changes',async()=>{
+  const {view,cx,host,profile,settle}=await fixture(),first=deferred(),latest=deferred();let changes,reads=0;
+  host.listProfiles=()=>++reads===1?first.promise:latest.promise;
+  view.watch=(_read,handle,_cx,cursor)=>{if(cursor&&!changes)changes=handle;};
+  view.init({},cx);await settle();assert.equal(reads,0);
+  changes({connected:false,entry:'0'},cx);await settle();assert.equal(reads,0);
+  changes({connected:true,entry:'0'},cx);await Promise.resolve();assert.equal(reads,1);
+  view.selected=profile.id;changes({connected:true,entry:'1'},cx);await Promise.resolve();
+  first.resolve([]);
+  for(let step=0;step<30&&reads<2;step++)await Promise.resolve();
+  assert.equal(reads,2);assert.equal(view.loaded,false,'superseded inventory is not published');
+  latest.resolve([profile]);await settle();assert.equal(view.loaded,true);assert.equal(view.selected,profile.id);
+  changes({connected:true,entry:'1'},cx);await settle();assert.equal(reads,3,'the first real host update remains observable');
+  changes({connected:false,entry:'1'},cx);await settle();assert.equal(reads,3);
+  changes({connected:true,entry:'1'},cx);await settle();assert.equal(reads,4,'reconnection refreshes without a new entry');
 });
 
 test('initial failures stay unconfirmed and later reads recover',async()=>{
@@ -95,7 +116,7 @@ test('coalesces overlapping refreshes and awaits the latest inventory',async()=>
 test('retained entry refreshes newly registered project choices',async()=>{
   const {view,cx,host,settle}=await fixture();let changes;
   view.watch=(_read,handle,_cx,cursor)=>{if(cursor&&!changes)changes=handle;};
-  view.init({},cx);await settle();assert.equal(host.catalogReads,1);
+  view.init({},cx);changes({connected:true,entry:'1'},cx);await settle();assert.equal(host.catalogReads,1);
   host.catalog={projects:[{id:'new-project',name:'New'}],worktrees:[{id:'new-tree',project:'new-project',path:'/new'}]};
   changes({connected:true,entry:'2'},cx);await settle();view.transferDialog(cx);
   assert.equal(host.catalogReads,2);assert.deepEqual(plain(view.projects),host.catalog.projects);
@@ -126,20 +147,31 @@ test('refresh failures remain visible and allow a later read',async()=>{
   await view.refresh(cx);assert.equal(reads,2);
 });
 
-test('restoring multiple profiles stays within the host request capacity',async()=>{
-  const {view,cx,host,terminal,settle}=await fixture();let active=0,maximum=0,reads=0;
+test('restores every profile terminal list concurrently',async()=>{
+  const {view,cx,host,terminal,settle}=await fixture(),held=[];let reads=0;
   host.profiles=Array.from({length:6},(_,index)=>({id:`host-${index}`,revision:1,name:`Host ${index}`}));
   host.terminals=host.profiles.map(profile=>({...terminal,id:`terminal-${profile.id}`,ssh:profile.id}));
   view.terminals=[...host.terminals];
-  host.listTerminals=async id=>{
-    reads++;active++;maximum=Math.max(maximum,active);
-    try{
-      if(active>4)throw new Error('plugin request capacity exhausted');
-      await Promise.resolve();return host.terminals.filter(info=>info.ssh===id);
-    }finally{active--;}
-  };
-  await view.refresh(cx);await settle();
-  assert.equal(reads,6);assert.equal(view.terminals.length,6);assert.ok(maximum<=4);
+  host.listTerminals=id=>{reads++;const wait=deferred();held.push({id,...wait});return wait.promise;};
+  const restoring=view.refresh(cx);
+  for(let step=0;step<20&&reads<6;step++)await Promise.resolve();
+  assert.equal(reads,6,'all independent profiles start before any terminal list settles');
+  assert.equal(view.loaded,false);
+  for(const wait of held)wait.resolve(host.terminals.filter(info=>info.ssh===wait.id));
+  await restoring;await settle();
+  assert.equal(view.terminals.length,6);
+});
+
+test('inspects missing terminal snapshots concurrently',async()=>{
+  const {view,cx,host,terminal}=await fixture(),held=[];
+  view.terminals=Array.from({length:6},(_,index)=>({...terminal,id:`terminal-${index}`}));
+  host.listTerminals=async()=>[];
+  host.inspect=command=>{const wait=deferred();held.push({id:command.data.terminal,...wait});return wait.promise;};
+  const restoring=view.refresh(cx);
+  for(let step=0;step<30&&held.length<6;step++)await Promise.resolve();
+  assert.equal(held.length,6,'missing snapshots start without waiting for one another');
+  for(const wait of held)wait.resolve({Ok:{kind:'terminal_snapshot',data:{info:view.terminals.find(info=>info.id===wait.id)}}});
+  await restoring;assert.equal(view.terminals.length,6);
 });
 
 test('transfer outcomes use one toast and cancellation remains neutral',async()=>{

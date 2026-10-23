@@ -39,17 +39,13 @@ for(const packageName of ['databases','ssh']) {
   });
 }
 
-test('database startup and cached entries coalesce refreshes within host capacity',async()=>{
-  const calls=[],held=[];let active=0,maximum=0,revision=0;
+test('database startup coalesces entries and reads resources concurrently',async()=>{
+  const calls=[],held=[];let revision=0;
   const read=async(kind)=>{
-    active++;maximum=Math.max(maximum,active);calls.push(kind);
-    try {
-      if(active>4)throw new Error('plugin request capacity exhausted');
-      await new Promise(resolve=>held.push(resolve));
-      if(kind==='databases')return [{id:'saved',revision:++revision}];
-      if(kind==='projects')return {projects:[{id:`project-${revision}`}]};
-      return [];
-    }finally{active--;}
+    calls.push(kind);await new Promise(resolve=>held.push(resolve));
+    if(kind==='databases')return [{id:'saved',revision:++revision}];
+    if(kind==='projects')return {projects:[{id:`project-${revision}`}]};
+    return [];
   };
   const nextChange=()=>{},globals={context:()=>'{"locale":"en"}',messages:()=>({db_sql:'SQL'}),createText:()=>({draft:'retained'}),
     listDatabases:()=>read('databases'),listSsh:()=>read('ssh'),readProjectCatalog:()=>read('projects'),nextChange};
@@ -64,15 +60,43 @@ test('database startup and cached entries coalesce refreshes within host capacit
   for(let entry=1;entry<=8;entry++)change({connected:true,entry:String(entry)},setup.live);
   await settle();
   assert.equal(calls.filter(kind=>kind==='databases').length,1,'one initial inventory read must own the overlapping entries');
+  assert.deepEqual(calls,['databases','ssh','projects'],'all independent resources start before any read settles');
   assert.deepEqual(setup.errors,[]);
   for(let turn=0;held.length&&turn<32;turn++){held.splice(0).forEach(resolve=>resolve());await settle();}
   await Promise.all(setup.tasks);
-  assert.ok(maximum<=2,`refresh used ${maximum} concurrent host requests`);
   assert.deepEqual(calls,['databases','ssh','projects','databases','ssh','projects']);
   assert.equal(owner.profiles[0].revision,2);assert.equal(owner.projects[0].id,'project-2');
   assert.deepEqual(loads,[[null,setup.live],['main',setup.live]]);
   assert.equal(owner.catalog,catalog);assert.equal(owner.result,result);assert.equal(owner.origin,origin);assert.equal(owner.logs,logs);
   assert.equal(owner.sql.draft,'retained');assert.equal(owner.refreshing,null);assert.deepEqual(setup.errors,[]);assert.deepEqual(setup.notices,[]);
+});
+
+test('database subscription retains offline startup and real updates',async()=>{
+  const calls=[],held=[];let revision=0,change;
+  const nextChange=()=>{},globals={context:()=>'{"locale":"en"}',messages:()=>({db_sql:'SQL'}),createText:()=>({draft:'retained'}),nextChange,
+    listDatabases:async()=>{calls.push('databases');const current=++revision;if(current===1)await new Promise(resolve=>held.push(resolve));return [{id:'saved',revision:current}];},
+    listSsh:async()=>{calls.push('ssh');return [];},readProjectCatalog:async()=>{calls.push('projects');return {projects:[{id:'project'}]};}};
+  for(const name of ['nextTableEvent','nextTreeEvent','nextContextMenuEvent','header_action','nextNavigationTabEvent','nextPickerEvent','nextControlEvent','nextTextEvent','modal_closed','nextAssistantTools'])globals[name]=()=>{};
+  const setup=await fixture('databases',globals),owner=setup.owner;setup.live.focus_handle=()=>({});
+  owner.watch=(read,handle)=>{if(read===nextChange)change=handle;};owner.init({},setup.live);
+  assert.deepEqual(calls,[]);change({connected:false,entry:'0'},setup.live);assert.deepEqual(calls,[]);
+  change({connected:true,entry:'0'},setup.live);assert.deepEqual(calls,['databases','ssh','projects']);
+  change({connected:true,entry:'1'},setup.live);held.shift()();await Promise.all(setup.tasks);
+  assert.equal(owner.profiles[0].revision,2);assert.equal(calls.filter(kind=>kind==='projects').length,2);
+  change({connected:true,entry:'1'},setup.live);await Promise.all(setup.tasks);assert.equal(owner.profiles[0].revision,3);
+  change({connected:false,entry:'1'},setup.live);await Promise.all(setup.tasks);assert.equal(owner.profiles[0].revision,3);
+  change({connected:true,entry:'1'},setup.live);await Promise.all(setup.tasks);assert.equal(owner.profiles[0].revision,4);
+  assert.equal(calls.filter(kind=>kind==='projects').length,2,'ordinary updates preserve project entry demand');
+  assert.deepEqual(setup.errors,[]);
+});
+
+test('database catalog branches load concurrently',async()=>{
+  const calls=[],held=[];
+  const setup=await fixture('databases',{listDatabases:async()=>[{id:'saved'}],listSsh:async()=>[]}),owner=setup.owner;
+  const catalog={loading:new Set(),expanded:new Set(['one','two','three']),load:database=>{calls.push(database);return new Promise(resolve=>held.push(resolve));}};
+  Object.assign(owner,{opened:'saved',catalog});const loading=owner.refresh(setup.live,false,true);
+  await settle();assert.deepEqual(calls,[null,'one','two','three'],'every independent catalog starts before any result settles');
+  held.forEach(resolve=>resolve());await loading;assert.equal(owner.catalog,catalog);
 });
 
 for(const failedRead of ['databases','ssh','projects','catalog','expanded']) {
@@ -90,7 +114,7 @@ for(const failedRead of ['databases','ssh','projects','catalog','expanded']) {
     assert.equal(owner.refreshProjects,['databases','ssh','projects'].includes(failedRead));assert.equal(owner.refreshCatalog,true);
     const previous=calls.length;await settle();assert.equal(calls.length,previous,'a failed refresh must not retry by itself');
     await owner.refresh(setup.live);assert.equal(owner.projects[0].id,'project');assert.equal(owner.refreshing,null);
-    assert.equal(calls.filter(kind=>kind==='projects').length,failedRead==='projects'?2:1);
+    assert.equal(calls.filter(kind=>kind==='projects').length,['databases','ssh','projects'].includes(failedRead)?2:1);
     assert.deepEqual(loads.slice(-2),[[null,setup.live],['main',setup.live]]);
     assert.equal(owner.refreshProjects,false);assert.equal(owner.refreshCatalog,false);
   });

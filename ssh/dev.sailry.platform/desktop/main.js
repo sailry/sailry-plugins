@@ -19,7 +19,6 @@ export default class Ssh extends View {
     this.terminalSelection=0;this.terminalClose=null;this.home=false;
     this.editor=null;this.picker=false;this.pickerProfile=null;this.pickerRevision=0;this.confirmation=null;this.fileEdit=null;this.commandOpen=false;this.transfer=null;this.dialog=0;this.jobs=[];this.transfersObserved=false;this.installing=null;
     this.command=createText('',{multiline:true,rows:[2,6],placeholder:this.text.ssh_command_hint});this.output=[createText('',{multiline:true,rows:[2,12]}),createText('',{multiline:true,rows:[2,12]})];
-    this.run(cx=>this.refresh(cx),cx);
     this.watch(nextChange,(change,cx)=>{this.connected=change.connected;if(change.connected)this.run(cx=>this.refresh(cx),cx);},cx,true);
     this.watch(nextTransfers,(value,cx)=>this.transfers(value,cx),cx,true);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
@@ -75,11 +74,16 @@ export default class Ssh extends View {
     if(!this.refreshing)this.refreshing=(async()=>{try{while(this.refreshAgain){this.refreshAgain=false;await this.readInventory(this.refreshRevision,cx);}}finally{this.refreshing=null;}})();
     return this.refreshing;
   }
-  async readInventory(revision,cx){const known=[...this.terminals],terminalIndex=known.findIndex(info=>info.id===this.terminal),profiles=await listSsh(),selected=this.selected??profiles[0]?.id??null;const ids=new Set(known.map(info=>info.ssh));if(selected)ids.add(selected);
-    const terminals=new Map();
-    for(const id of ids){if(!profiles.some(profile=>profile.id===id))continue;for(const info of await listSshTerminals(id))terminals.set(info.id,info);}
-    for(const previous of known){if(terminals.has(previous.id))continue;const info=await this.readTerminal(previous);if(info&&info.status.kind!=='closed')terminals.set(info.id,info);}
-    const catalog=await readProjectCatalog();
+  async readInventory(revision,cx){const known=[...this.terminals],terminalIndex=known.findIndex(info=>info.id===this.terminal);
+    const inventory=(async()=>{const profiles=await listSsh();
+      const selected=this.selected??profiles[0]?.id??null,ids=new Set(known.map(info=>info.ssh));if(selected)ids.add(selected);
+      const lists=await Promise.all([...ids].filter(id=>profiles.some(profile=>profile.id===id)).map(id=>listSshTerminals(id)));
+      const terminals=new Map(lists.flat().map(info=>[info.id,info]));
+      const missing=await Promise.all(known.filter(previous=>!terminals.has(previous.id)).map(previous=>this.readTerminal(previous)));
+      for(const info of missing)if(info&&info.status.kind!=='closed')terminals.set(info.id,info);
+      return {profiles,selected,terminals};
+    })();
+    const [{profiles,selected,terminals},catalog]=await Promise.all([inventory,readProjectCatalog()]);
     if(revision!==this.refreshRevision)return;this.projects=catalog.projects;this.worktrees=catalog.worktrees;
     if(this.transfer?.worktree&&!this.worktrees.some(tree=>tree.project&&tree.id===this.transfer.worktree))this.transfer.worktree=null;
     this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];this.loaded=true;if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);

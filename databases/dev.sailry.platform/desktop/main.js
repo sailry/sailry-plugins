@@ -24,8 +24,7 @@ export default class Databases extends View {
     this.pending=null; this.error=null; this.status=null; this.editor=null; this.confirmation=null; this.picker=false; this.pickerProfile=null; this.pickerRevision=0; this.dialog=0;
     this.sql=createText('',{multiline:true,rows:[2,6],placeholder:this.text.db_sql});
     this.histories=new Map();
-    this.refreshing=null;this.refreshAgain=false;this.refreshProjects=false;this.refreshCatalog=false;
-    this.run(cx=>this.refresh(cx,true),cx);
+    this.refreshing=null;this.refreshAgain=false;this.refreshProjects=true;this.refreshCatalog=false;
     let entry=null;
     this.watch(nextChange,(change,cx)=>{
       const entered=entry!==null&&entry!==change.entry;entry=change.entry;
@@ -59,13 +58,12 @@ export default class Databases extends View {
       let projects=this.refreshProjects,catalog=this.refreshCatalog;
       this.refreshProjects=false;this.refreshCatalog=false;
       try {
-        const [profiles,ssh]=await Promise.all([listDatabases(),listSsh()]);this.profiles=profiles;this.ssh=ssh;
+        const [profiles,ssh,choices]=await Promise.all([listDatabases(),listSsh(),projects?readProjectCatalog():null]);this.profiles=profiles;this.ssh=ssh;
         if(this.opened&&!this.profile()){this.opened=null;this.catalog=null;this.result=null;this.origin=null;this.epoch++;}
-        if(projects){this.projects=(await readProjectCatalog()).projects;projects=false;}
+        if(projects){this.projects=choices.projects;projects=false;}
         const current=this.catalog,profile=this.profile();
         if(catalog&&current&&profile&&!this.pending&&!current.loading.size){
-          current.profile=profile;await current.load(null,cx);
-          for(const database of current.expanded)await current.load(database,cx);
+          current.profile=profile;await Promise.all([null,...current.expanded].map(database=>current.load(database,cx)));
         }
       }catch(error){this.refreshProjects ||= projects;this.refreshCatalog ||= catalog;throw error;}
     }while(this.refreshAgain);
