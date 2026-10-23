@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -472,6 +472,7 @@
           "dev.sailry.platform/desktop/editor.js",
           "dev.sailry.platform/desktop/files.js",
           "dev.sailry.platform/desktop/requests.js",
+          "dev.sailry.platform/desktop/mutations.js",
           "dev.sailry.platform/desktop/locales.js"
         ],
         "navigation": {

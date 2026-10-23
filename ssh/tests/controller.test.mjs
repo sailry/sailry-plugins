@@ -17,24 +17,25 @@ async function fixture() {
     'gpui-kit':{View:class{}},
     sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id)},
     'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return host.readCatalog();},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
-    'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);}},
+    'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);},requestOutcome:id=>host.outcome(id)},
     'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),nextTextEvent(){}},
     'sailry/credentials':{createSecret(){},releaseSecret(){},describeSecret(){},chooseSecretFile(){}},
     'sailry/ui':{nextTreeEvent(){},nextContextMenuEvent(){},nextNavigationTabEvent(){},nextPickerEvent(){},nextControlEvent(){},modal_closed(){},writeClipboard(){},toast:value=>notices.push(plain(value))},
     'sailry/ssh-transfers':{uploadDropped(){},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args)},
     './editor.js':{draft(){},prepare(){}},
-    './requests.js':{Request:class{},failure(){}},
     './locales.js':{messages:()=>({}),format(){}},
     './view.js':{render(){}},
   };
   const cache=new Map();
   const resolve=async name=>{
     if(cache.has(name))return cache.get(name);
-    const module=name==='./files.js'
-      ?new vm.SourceTextModule(await readFile(new URL('../dev.sailry.platform/desktop/files.js',import.meta.url),'utf8'),{context})
+    const local=['./files.js','./requests.js','./mutations.js'].includes(name);
+    const module=local
+      ?new vm.SourceTextModule(await readFile(new URL(`../dev.sailry.platform/desktop/${name.slice(2)}`,import.meta.url),'utf8'),{context})
       :new vm.SyntheticModule(Object.keys(exports[name]),function(){for(const [key,value] of Object.entries(exports[name]))this.setExport(key,value);},{context});
-    cache.set(name,module);if(name==='./files.js')await module.link(resolve);return module;
+    cache.set(name,module);if(local)await module.link(resolve);return module;
   };
+  await resolve('./mutations.js');
   const module=new vm.SourceTextModule(await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'),{context});
   await module.link(resolve);await module.evaluate();
   const view=new module.namespace.default();const pending=[];
@@ -235,31 +236,51 @@ test('delete confirmation refuses a changed browser or captured revision',async(
 });
 
 test('delete confirmation retains original profile and selected paths',async()=>{
-  const {view,cx,profile,settle}=await browsing(),files=view.files(),commands=[];
+  const {view,cx,host,profile,reads,settle}=await browsing(),files=view.files();
   files.selected=['/remote/a','/remote/b'];
-  view.execute=async(value,_cx,_after,_id,target)=>{commands.push({value,target});return {kind:'ssh_outcome',data:{kind:'files_changed'}};};
+  host.inspect=async()=>({Ok:{kind:'ssh_outcome',data:{kind:'files_changed'}}});
   await view.fileAction(view.fileId('delete','/remote/a'),cx);
   files.selected.push('/remote/later');view.confirm(cx);
   await settle();
-  assert.deepEqual(plain(commands),['/remote/a','/remote/b'].map(path=>({value:{kind:'modify_ssh_file',data:{profile:profile.id,expected_revision:profile.revision,path,action:{operation:'remove'}}},target:profile})));
+  assert.deepEqual(plain(reads),['/remote/a','/remote/b'].map(path=>({kind:'modify_ssh_file',data:{profile:profile.id,expected_revision:profile.revision,path,action:{operation:'remove'}}})));
+  assert.equal(files.mutation.requests.length,2);assert.equal(files.mutation.done,true);
 });
 
-test('multi-file mutation stops after awaited scope changes',async()=>{
+test('independent mutations retain captured scope after admission',async()=>{
   for(const change of ['browser','directory','profile']){
-    const {view,cx,profile,opened}=await browsing(),files=view.files(),wait=deferred(),commands=[];
-    view.execute=async(value,_cx,_after,_id,target)=>{commands.push({value,target});return wait.promise;};
+    const {view,cx,host,profile,opened,reads}=await browsing(),files=view.files(),held=[];
+    host.inspect=()=>{const wait=deferred();held.push(wait);return wait.promise;};
     const result=view.mutate(view.fileScope(),['/remote/a','/remote/b'].map(path=>({path,action:{operation:'remove'}})),cx);
-    assert.equal(commands.length,1);
+    assert.equal(held.length,2,'all independent writes start before either settles');
     if(change==='browser')view.files=()=>({...files});
     if(change==='directory')files.revision++;
     if(change==='profile')view.profiles=[{...profile,revision:profile.revision+1}];
-    wait.resolve({kind:'ssh_outcome',data:{kind:'files_changed'}});
+    for(const wait of held)wait.resolve({Ok:{kind:'ssh_outcome',data:{kind:'files_changed'}}});
     assert.equal(await result,false,change);
-    assert.equal(commands.length,1,change);
+    assert.equal(reads.length,2,change);assert.equal(files.mutation.done,true);
     assert.equal(opened.length,1,'a stale browser is not reloaded');
-    assert.equal(commands[0].target,profile);
-    assert.equal(commands[0].value.data.profile,profile.id);
+    for(const value of reads){assert.equal(value.data.profile,profile.id);assert.equal(value.data.expected_revision,profile.revision);}
   }
+});
+
+test('partial results remain inspectable without replay',async()=>{
+  const {view,cx,host,reads,forgotten,opened}=await browsing(),files=view.files(),held=[];
+  host.inspect=()=>{const wait=deferred();held.push(wait);return wait.promise;};
+  const loading=view.mutate(view.fileScope(),['/remote/a','/remote/b','/remote/c'].map(path=>({path,action:{operation:'remove'}})),cx);
+  assert.equal(held.length,3);
+  held[0].resolve({Ok:{kind:'ssh_outcome',data:{kind:'files_changed'}}});
+  held[1].resolve({Err:{code:'permission_denied',message:'Remote path is read-only'}});
+  held[2].reject(Error('transport lost after admission'));
+  assert.equal(await loading,false);const batch=files.mutation;
+  assert.equal(view.pending.request,batch);assert.equal(batch.requests[0].output.data.kind,'files_changed');
+  assert.equal(batch.requests[1].error.code,'permission_denied');assert.equal(batch.requests[2].unknown,true);
+  const inspections=[];host.outcome=async id=>{inspections.push(id);return {kind:'completed',data:{Ok:{kind:'ssh_outcome',data:{kind:'files_changed'}}}};};
+  await view.inspect(cx);
+  assert.deepEqual(inspections,[batch.requests[2].id]);assert.equal(reads.length,3,'inspection does not repeat writes');
+  assert.equal(view.pending,null);assert.equal(view.error.code,'permission_denied');
+  assert.equal(files.mutation,batch);assert.equal(batch.requests[0].output.data.kind,'files_changed');
+  assert.equal(batch.requests[2].output.data.kind,'files_changed');assert.equal(forgotten.length,3);
+  assert.equal(opened.length,2,'confirmed partial changes refresh the current browser');
 });
 
 test('queued file edits refuse a browser switch before dispatch',async()=>{

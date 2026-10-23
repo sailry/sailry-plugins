@@ -8,6 +8,7 @@ import {nextTreeEvent,nextContextMenuEvent,nextNavigationTabEvent,nextPickerEven
 import {uploadDropped,selectUpload,selectDownload,nextTransfers,transferAction} from 'sailry/ssh-transfers';
 import {draft,prepare} from './editor.js';
 import {Request,failure} from './requests.js';
+import {Mutations} from './mutations.js';
 import {Files,join,parent,name} from './files.js';
 import {messages,format} from './locales.js';
 import {render} from './view.js';
@@ -89,11 +90,11 @@ export default class Ssh extends View {
     this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];this.loaded=true;if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
   }
   async readTerminal(previous){const id=prepareRequest(command('inspect_terminal',{terminal:previous.id}));try{const result=await completeRequest(id);if(result.Ok?.kind==='terminal_snapshot')return result.Ok.data.info;if(result.Err?.code==='not_found')return null;return previous;}catch(error){return faultCode(error.message??String(error))==='not_found'?null:previous;}finally{forgetRequest(id);}}
-  async execute(value,cx,after=null,id=null,target=this.profile()){
-    if(this.locked())return null;const request=new Request(value,id);this.pending={request,after,target};this.outcome=this.commandOpen&&this.outcome?.kind==='completed'?this.outcome:null;this.error=null;this.target=target?{id:target.id,revision:target.revision}:null;
+  async execute(value,cx,after=null,id=null,target=this.profile(),prepared=null){
+    if(this.locked())return null;const request=prepared??new Request(value,id);this.pending={request,after,target};this.outcome=this.commandOpen&&this.outcome?.kind==='completed'?this.outcome:null;this.error=null;this.target=target?{id:target.id,revision:target.revision}:null;
     await request.start(cx);if(request.unknown)this.report(request.uncertainty??{code:'outcome_unknown'});return this.finish(cx);
   }
-  async finish(cx){const pending=this.pending;if(!pending?.request.done)return null;this.pending=null;const{request,after,target}=pending;request.release();if(request.error){this.report(request.error);return null;}const output=request.output;
+  async finish(cx){const pending=this.pending;if(!pending?.request.done)return null;this.pending=null;const{request,after,target}=pending;request.release();if(request.settled)await request.settled(cx);if(request.error){this.report(request.error);return null;}const output=request.output;
     if(output.kind==='ssh_outcome'){this.outcome=output.data;
       if(output.data.kind==='connected')toast({id:'ssh-success',kind:'info',message:this.text.ssh_connected});
       if(output.data.kind==='transferred')toast({id:'ssh-success',kind:'info',message:format(this.text.ssh_transferred,{size:output.data.bytes})});
@@ -152,7 +153,14 @@ export default class Ssh extends View {
     if(['rename','new_file','new_directory'].includes(action)){this.fileEdit={scope,action,path:paths[0],directory,input:createText(action==='rename'?name(paths[0]):'',{label:this.text.files_entry_name,placeholder:this.text.form_filename_hint})};this.dialog++;cx.notify();return;}
     if(action==='delete'){this.confirmation={label:'settings_delete',text:this.text.ssh_files_delete_confirm+'\n'+paths.join('\n'),run:cx=>this.mutate(scope,paths.map(path=>({path,action:{operation:'remove'}})),cx)};this.dialog++;cx.notify();}
   }
-  async mutate(scope,actions,cx){if(!this.fileCurrent(scope))return false;const{files,profile}=scope;let completed=true;for(const action of actions){if(!this.fileCurrent(scope))return false;const output=await this.execute(command('modify_ssh_file',{profile:profile.id,expected_revision:profile.revision,...action}),cx,null,null,profile);if(!output||output.data?.kind!=='files_changed'){completed=false;break;}}if(!this.fileCurrent(scope))return false;if(!this.pending)await files.load(files.path,cx);return completed;}
+  async mutate(scope,actions,cx){
+    if(this.locked()||!this.fileCurrent(scope))return false;const{files,profile}=scope;
+    const batch=new Mutations(actions.map(action=>command('modify_ssh_file',{profile:profile.id,expected_revision:profile.revision,...action})),()=>this.fileCurrent(scope));
+    files.mutation=batch;let current=false;
+    batch.settled=async cx=>{current=this.fileCurrent(scope);if(current)await files.load(files.path,cx);};
+    const output=await this.execute(null,cx,null,null,profile,batch);
+    return current&&output?.data?.kind==='files_changed';
+  }
   submitFile(cx){const value=this.fileEdit;if(!value||this.locked()||!this.fileCurrent(value.scope))return;const text=readText(value.input);if(!text||/[\/\\\0]/.test(text)||['.','..'].includes(text))return;
     const action=value.action==='rename'?{path:value.path,action:{operation:'move',destination:join(parent(value.path),text)}}:{path:join(value.directory,text),action:{operation:'create',directory:value.action==='new_directory'}};this.close(cx);this.run(cx=>this.mutate(value.scope,[action],cx),cx);}
   async download(paths,cx,scope=this.fileScope()){if(!this.fileCurrent(scope))return;const entries=paths.map(path=>({path,directory:scope.files.entry(path)?.kind==='directory'}));const ids=await selectDownload(scope.profile,entries,this.text.files_download);if(this.fileOwner(scope))for(const id of ids){try{transferAction(id,'start');}catch(_){/* Existing destinations await explicit replace. */}}cx.notify();}

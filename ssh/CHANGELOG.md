@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Run independent file changes concurrently while retaining every request outcome
+
 ## 0.1.9
 
 - Load connection inventories and terminal lists concurrently without duplicate startup reads
