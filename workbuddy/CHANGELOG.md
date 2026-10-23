@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Read provider accounts and new contexts concurrently
+
 ## 0.1.14
 
 - Preserve structured upstream error diagnostics for model recovery.

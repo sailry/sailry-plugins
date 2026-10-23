@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "provider-status",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Account usage for configured OAuth model channels",
   "license": "Apache-2.0",
   "extensions": {

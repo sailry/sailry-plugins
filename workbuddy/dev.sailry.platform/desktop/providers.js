@@ -10,7 +10,7 @@ function measurement(response,_provider,text) {
 // One captured page host batches every declared provider; Node owns HTTP coalescing.
 export default class Providers {
   constructor(cx,text) {
-    this.text=text;this.entries=new Map();this.pending=false;
+    this.text=text;this.entries=new Map();
     this.accept(readProviderContexts(),cx);
     cx.spawn(async cx=>{
       try {while(true) this.accept(await nextProviderContexts(this.state.cursor),cx);}
@@ -40,28 +40,25 @@ export default class Providers {
   }
 
   refresh(cx) {
-    if(this.pending) return;
-    const pending=[...this.entries.entries()].filter(([,entry])=>Date.now()>=entry.refreshAt);
+    const pending=[...this.entries.entries()].filter(([,entry])=>!entry.pending&&Date.now()>=entry.refreshAt);
     if(!pending.length) return;
-    this.pending=true;
+    for(const [,entry] of pending)entry.pending=true;
     cx.spawn(async cx=>{
-      try {
-        for(const [key,entry] of pending) {
-          if(this.entries.get(key)!==entry) continue;
+      await Promise.all(pending.map(async([key,entry])=>{
+        try {
+          if(this.entries.get(key)!==entry) return;
           try {
             const response=await requestProviderHttp(entry.provider.id,entry.provider.revision,'credits',range());
-            if(this.entries.get(key)!==entry) continue;
+            if(this.entries.get(key)!==entry) return;
             entry.measurement=measurement(response,entry.provider,this.text);
             entry.refreshAt=Date.now()+60000;
           } catch (_) {
-            if(this.entries.get(key)!==entry) continue;
+            if(this.entries.get(key)!==entry) return;
             entry.measurement=null;entry.refreshAt=Date.now()+60000;
           }
           this.publish();cx.notify();
-        }
-      } finally {
-        this.pending=false;this.refresh(cx);
-      }
+        } finally {entry.pending=false;this.refresh(cx);}
+      }));
     });
   }
 }

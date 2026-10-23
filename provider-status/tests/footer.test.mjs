@@ -90,6 +90,7 @@ test('discards late replies after provider or session changes',async()=>{
   const setup=await fixture();
   const changed=state('2','chat_gpt_oauth');changed.provider.id='another';changed.provider.model='gpt';
   await setup.update(changed);
+  assert.equal(setup.requests.length,2,'the new provider starts before the old request settles');
   assert.equal(setup.latest().value,null);
   assert.equal(setup.latest().visible,false);
   setup.requests[0].resolve(response(99));await settle();
@@ -109,6 +110,14 @@ test('discards late replies after provider or session changes',async()=>{
   assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.latest().details,[]);
   assert.deepEqual(setup.toasts,[]);
+});
+
+test('new context completes before a stale request',async()=>{
+  const setup=await fixture(),changed=state('2');changed.provider.id='new';
+  await setup.update(changed);assert.equal(setup.requests.length,2);
+  setup.requests[1].resolve(response(20));await settle();assert.equal(setup.latest().value,'80%');
+  setup.requests[0].resolve(response(99));await settle();assert.equal(setup.latest().value,'80%');
+  assert.equal(setup.requests.length,2);assert.deepEqual(setup.failures,[]);
 });
 
 test('clears values on revision changes and unsupported selections',async()=>{
@@ -211,8 +220,9 @@ const current=(setup,id)=>setup.published.flat().findLast(entry=>entry.scope?.pr
 test('batches provider metrics in one page lifetime',async()=>{
   const first=provider('first'),second=provider('second','chat_gpt_oauth');
   const setup=await fixture(state(),batch([first,second]));
-  assert.equal(setup.requests.length,1);
+  assert.equal(setup.requests.length,2,'all providers start before either reply settles');
   assert.equal(setup.requests[0].args[0],'first');
+  assert.equal(setup.requests[1].args[0],'second');
   setup.requests[0].resolve(response(15));await settle();
   assert.equal(setup.requests[1].args[0],'second');
   setup.requests[1].resolve({status:200,body:JSON.stringify({rate_limit:{primary_window:{used_percent:30,limit_window_seconds:18000}},credits:{has_credits:true,unlimited:false,balance:'12.5'}})});await settle();
@@ -233,6 +243,7 @@ test('rejects replies from a replaced provider account',async()=>{
   const setup=await fixture(state(),batch([first]));
   const replacement=provider('same','claude_oauth','2','account-b');
   await setup.update(batch([replacement],'2'));
+  assert.equal(setup.requests.length,2,'the replacement does not wait for the old account');
   assert.equal(current(setup,'same').visible,false);
   assert.deepEqual(current(setup,'same').scope,replacement.scope);
   setup.requests[0].resolve(response(99));await settle();
@@ -244,6 +255,17 @@ test('rejects replies from a replaced provider account',async()=>{
   await setup.update(batch([],'3',false));
   assert.equal(setup.requests.length,2);
   assert.deepEqual(setup.toasts,[]);assert.deepEqual(setup.failures,[]);
+});
+
+test('new provider rows bypass unrelated pending requests',async()=>{
+  const first=provider('slow'),second=provider('new');
+  const setup=await fixture(state(),batch([first]));
+  await setup.update(batch([first,second],'2'));
+  assert.equal(setup.requests.length,2);assert.equal(setup.requests[1].args[0],'new');
+  setup.requests[1].resolve(response(20));await settle();
+  assert.equal(current(setup,'new').value,'80%');assert.equal(current(setup,'slow').visible,false);
+  setup.requests[0].resolve(response(10));await settle();assert.equal(current(setup,'slow').value,'90%');
+  assert.deepEqual(setup.failures,[]);
 });
 
 test('hides failed rows without losing other accounts',async()=>{

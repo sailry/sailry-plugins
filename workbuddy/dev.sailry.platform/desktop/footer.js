@@ -19,7 +19,7 @@ export default class Footer extends View {
     this.locale = JSON.parse(context()).locale;
     this.text = messages(this.locale);
     this.state = readModelContext(); this.key = identity(this.state);
-    this.balance = null; this.pending = false;
+    this.balance = null; this.pending = null;
     this.publish(); this.refresh(cx); this.ensure(cx);
     cx.spawn(async cx => {
       try {while (true) this.accept(await nextModelContext(this.state.cursor),cx);}
@@ -62,9 +62,9 @@ export default class Footer extends View {
   }
 
   refresh(cx) {
-    if (this.pending || !this.key || !this.state.connected) return;
+    if ((this.pending?.key === this.key && this.pending.cursor === this.state.cursor) || !this.key || !this.state.connected) return;
     const key = this.key, cursor = this.state.cursor, provider = this.state.provider;
-    this.pending = true;
+    const pending = {key,cursor};this.pending = pending;
     cx.spawn(async cx => {
       try {
         const response = await requestProviderHttp(provider.id,provider.revision,'credits',range());
@@ -74,9 +74,8 @@ export default class Footer extends View {
         if (this.key !== key || this.state.cursor !== cursor) return;
         this.balance = null;
       } finally {
-        this.pending = false;
+        if(this.pending===pending)this.pending = null;
         this.publish(); cx.notify();
-        if (this.key !== key || this.state.cursor !== cursor) this.refresh(cx);
       }
     });
   }

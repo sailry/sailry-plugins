@@ -96,7 +96,7 @@ test('hides unrelated selections and discards replies from older contexts',async
   const other=state('4');other.provider.model='another';other.provider.revision='9007199254740994';
   await setup.update(other);
   assert.equal(setup.latest().value,'—');
-  assert.equal(setup.requests.length,2);
+  assert.equal(setup.requests.length,3,'the new context starts before the old request settles');
   setup.requests[1].resolve(response(888));await settle();
   assert.equal(setup.requests.length,3);
   assert.equal(setup.requests[2].args[1],'9007199254740994');
@@ -104,6 +104,14 @@ test('hides unrelated selections and discards replies from older contexts',async
   setup.requests[2].resolve(response(7));await settle();
   assert.equal(setup.latest().value,'7');
   assert.deepEqual(setup.failures,[]);
+});
+
+test('new context completes before a stale request',async()=>{
+  const setup=fixture(),changed=state('2');changed.provider.id='new';
+  await setup.update(changed);assert.equal(setup.requests.length,2);
+  setup.requests[1].resolve(response(8));await settle();assert.equal(setup.latest().value,'8');
+  setup.requests[0].resolve(response(999));await settle();assert.equal(setup.latest().value,'8');
+  assert.equal(setup.requests.length,2);assert.deepEqual(setup.failures,[]);
 });
 
 test('clears retained values on disconnection and a new context generation',async()=>{
@@ -199,6 +207,8 @@ const current=(setup,id)=>setup.published.flat().findLast(entry=>entry.scope?.pr
 
 test('shares one provider page loop without registering jobs',async()=>{
   const setup=fixture(state(),batch([provider('china'),provider('global')]));
+  assert.equal(setup.requests.length,2,'all providers start before either reply settles');
+  assert.equal(setup.requests[1].args[0],'global');
   setup.requests[0].resolve(response(12));await settle();
   assert.equal(setup.requests[1].args[0],'global');
   setup.requests[1].resolve(response(0));await settle();
@@ -214,6 +224,7 @@ test('isolates late balances after account replacement',async()=>{
   const setup=fixture(state(),batch([provider('same')]));
   const replacement=provider('same','2','account-b');
   await setup.update(batch([replacement],'2'));
+  assert.equal(setup.requests.length,2,'the replacement does not wait for the old account');
   setup.requests[0].resolve(response(999));await settle();
   assert.equal(current(setup,'same').visible,false);
   assert.deepEqual(current(setup,'same').scope,replacement.scope);
@@ -223,6 +234,17 @@ test('isolates late balances after account replacement',async()=>{
   await setup.update(batch([replacement],'3'));
   assert.equal(setup.requests.length,2);
   assert.deepEqual(setup.registrations,[]);assert.deepEqual(setup.failures,[]);
+});
+
+test('new provider rows bypass unrelated pending requests',async()=>{
+  const first=provider('slow'),second=provider('new');
+  const setup=fixture(state(),batch([first]));
+  await setup.update(batch([first,second],'2'));
+  assert.equal(setup.requests.length,2);assert.equal(setup.requests[1].args[0],'new');
+  setup.requests[1].resolve(response(8));await settle();
+  assert.equal(current(setup,'new').value,'8');assert.equal(current(setup,'slow').visible,false);
+  setup.requests[0].resolve(response(12));await settle();assert.equal(current(setup,'slow').value,'12');
+  assert.deepEqual(setup.failures,[]);
 });
 
 test('discards late balances after same-credential renewal',async()=>{

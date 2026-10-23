@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Read provider accounts and new contexts concurrently
+
 ## 0.1.5
 
 - Label 5-hour and 7-day usage windows as 5h and 7d
