@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {overview,history,connection,timing,CATEGORIES} from '../dev.sailry.platform/desktop/context.js';
+import {overview,history,connection,timing,latency,CATEGORIES} from '../dev.sailry.platform/desktop/context.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
@@ -104,6 +104,54 @@ test('visible output speed requires separately reported reasoning',()=>{
   assert.equal(connection({},latest).waiting,100000n);
   latest.attempt.first_text_us='1000000';latest.attempt.elapsed_us='900000';
   assert.equal(connection({},latest).speed,null);
+});
+
+test('socket response receipt never borrows handshake timing',()=>{
+  const latest={attempt:attempt({transport:'web_socket',headers_us:'20',response_us:'80',
+    first_text_us:'140',elapsed_us:'300'})};
+  let value=connection({},latest);
+  assert.equal(value.headers,20n);
+  assert.equal(value.response,80n);
+  assert.equal(value.waiting,60n);
+  delete latest.attempt.response_us;
+  value=connection({},latest);
+  assert.equal(value.response,null);
+  assert.equal(value.waiting,null);
+  latest.attempt.transport='http';
+  assert.equal(connection({},latest).response,20n);
+});
+
+test('recovery stages share the selected attempt clock',()=>{
+  const attempts=[
+    attempt({transport:'web_socket',response_us:'10',first_text_us:'100',elapsed_us:'120',outcome:'failed'}),
+    attempt({transport:'web_socket',response_us:'200',first_text_us:'350',elapsed_us:'400'}),
+  ];
+  const state={statistics:{first_token_us:'9000',observations:{recent:[request('retry',{attempts})]}}};
+  assert.equal(overview(state).connection.response,200n);
+  assert.equal(overview(state).connection.first,350n);
+  assert.equal(overview(state).connection.waiting,150n);
+  attempts[1].response_us='360';
+  assert.equal(overview(state).connection.waiting,null);
+  assert.equal(latency(overview(state).connection.waiting,'waiting'),'muted_foreground');
+  attempts[1].response_us=null;
+  assert.equal(overview(state).connection.response,null);
+});
+
+test('latency colors preserve unknown and stage boundaries',()=>{
+  for(const value of [null,undefined,-1,'invalid',1.5]) {
+    assert.equal(latency(value),'muted_foreground');
+  }
+  assert.equal(latency(0),'success');
+  assert.equal(latency('1000000'),'success');
+  assert.equal(latency('1000001'),'warning');
+  assert.equal(latency('3000000'),'danger');
+  assert.equal(latency('10000000','waiting'),'success');
+  assert.equal(latency('10000001','waiting'),'warning');
+  assert.equal(latency('15000000','waiting'),'danger');
+  const value=connection({}, {attempt:attempt({response_us:'-1',first_text_us:'invalid',elapsed_us:'10'})});
+  assert.equal(value.response,null);
+  assert.equal(value.first,null);
+  assert.equal(value.waiting,null);
 });
 test('active phases never infer thinking from token ratios',()=>{
   const value=timing({model_us:'8000000',output_us:'1000000',output_tokens:'30',output_samples:'1',

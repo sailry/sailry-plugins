@@ -15291,7 +15291,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15451,17 +15451,17 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Match the approved context panel spacing, metric baselines and connection layout; expand details below their controls and restore saved session metrics before message pages load",
+        "text": "- Show per-request API response timing and latency colors, restore connection icons, and align context figures and expandable rows, with session composition directly below usage",
         "locales": {
-          "zh-CN": "- 对齐上下文面板的间距、数值基线与连接布局；明细在入口下方展开，历史消息加载前即可显示已保存的会话统计\n\n# Changes",
-          "zh-TW": "- 對齊上下文面板的間距、數值基線與連線配置；明細在入口下方展開，歷史訊息載入前即可顯示已儲存的會話統計\n\n# Changes",
-          "ja": "- コンテキストパネルの間隔、数値のベースライン、接続表示を調整。明細を操作の下に展開し、メッセージの読み込み前に保存済みの統計を表示\n\n# Changes",
-          "ko": "- 컨텍스트 패널의 간격, 수치 기준선과 연결 배치를 조정하고 상세 내용을 버튼 아래에 펼치며 메시지를 읽기 전에 저장된 통계를 표시\n\n# Changes",
-          "fr": "- Aligner les espacements, les valeurs et les connexions du panneau ; ouvrir les détails sous leurs commandes et afficher les statistiques enregistrées avant le chargement des messages\n\n# Changes",
-          "de": "- Abstände, Zahlen und Verbindungen im Kontextbereich angleichen; Details unter den Steuerelementen öffnen und gespeicherte Sitzungswerte vor dem Laden der Nachrichten anzeigen\n\n# Changes",
-          "es": "- Ajustar el espaciado, las líneas base y las conexiones del panel; abrir los detalles debajo de sus controles y mostrar las estadísticas guardadas antes de cargar los mensajes\n\n# Changes",
-          "pt-BR": "- Ajustar o espaçamento, o alinhamento dos valores e as conexões do painel; abrir os detalhes abaixo dos controles e mostrar as estatísticas salvas antes de carregar as mensagens\n\n# Changes",
-          "ru": "- Выровнять отступы, значения и соединения панели; раскрывать сведения под кнопками и показывать сохранённую статистику до загрузки сообщений\n\n# Changes"
+          "zh-CN": "- 显示逐请求 API 响应时间和延迟配色，恢复连接图标，对齐上下文数值与可展开列表，并将会话组成放在会话用量之后",
+          "zh-TW": "- 顯示逐請求 API 回應時間和延遲配色，恢復連線圖示，對齊內容數值與可展開清單，並將會話組成放在會話用量之後",
+          "ja": "- リクエストごとの API 応答時間と遅延色を表示し、接続アイコンを復元してコンテキスト数値と展開行を整列。会話構成を会話使用量の直後に配置",
+          "ko": "- 요청별 API 응답 시간과 지연 색상을 표시하고 연결 아이콘을 복원하며 컨텍스트 수치와 펼침 행 정렬 및 세션 사용량 바로 아래에 세션 구성 배치",
+          "fr": "- Afficher les temps de réponse API et les couleurs de latence par requête, restaurer les icônes et aligner les chiffres et les lignes dépliables, avec la composition de session juste sous l’utilisation",
+          "de": "- API-Antwortzeiten und Latenzfarben pro Anfrage anzeigen, Verbindungssymbole wiederherstellen und Kontextwerte sowie aufklappbare Zeilen ausrichten; die Sitzungszusammensetzung folgt direkt auf die Nutzung",
+          "es": "- Mostrar tiempos de respuesta API y colores de latencia por solicitud, restaurar iconos y alinear cifras de contexto y filas desplegables, con la composición de la sesión justo debajo del uso",
+          "pt-BR": "- Mostrar tempo de resposta API e cores de latência por solicitação, restaurar ícones e alinhar números de contexto e linhas expansíveis, com a composição da sessão logo abaixo do uso",
+          "ru": "- Показывать время ответа API и цвет задержки каждого запроса, восстановить значки и выровнять показатели контекста и раскрываемые строки; состав сеанса расположен сразу после использования"
         }
       }
     },

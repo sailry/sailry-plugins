@@ -1,4 +1,5 @@
 import {integer,total,context,cost} from './format.js';
+import {SLOW_FIRST_TOKEN,SLOW_RESPONSE} from './requests.js';
 
 export const CATEGORIES = [
   ['system','context_system','chart_4'], ['tools','context_tools','chart_1'],
@@ -10,6 +11,20 @@ const sum = values => values.some(value=>value==null) ? null : values.reduce((va
 const difference = (left,right) => left==null || right==null || integer(left)<integer(right) ? null : integer(left)-integer(right);
 const category = (values,kind) => values?.find(value=>value.kind===kind);
 const rate = (tokens,time) => tokens==null || time==null || integer(time)<=0n ? null : Number(tokens)*1000000/Number(time);
+const measured = value => {
+  try { const number=integer(value); return number!=null && number>=0n ? number : null; }
+  catch { return null; }
+};
+
+/** Response receipt over one second is slow; over three seconds is very slow. */
+const RESPONSE_WARNING = 1000000n, RESPONSE_DANGER = 3000000n;
+export function latency(value,phase='response') {
+  value=measured(value);
+  if(value==null)return 'muted_foreground';
+  const warning=phase==='waiting'?SLOW_FIRST_TOKEN:RESPONSE_WARNING;
+  const danger=phase==='waiting'?SLOW_RESPONSE:RESPONSE_DANGER;
+  return value>=danger?'danger':value>warning?'warning':'success';
+}
 
 export function categories(values) {
   return CATEGORIES.map(([kind,label,color])=>{
@@ -99,9 +114,13 @@ export function timing(observations) {
 
 export function connection(state,latest) {
   const attempt=latest?.attempt;
-  const elapsed=integer(attempt?.elapsed_us),first=integer(attempt?.first_text_us),headers=integer(attempt?.headers_us);
+  const elapsed=measured(attempt?.elapsed_us),headers=measured(attempt?.headers_us);
+  const within=value=>value!=null && (elapsed==null || value<=elapsed)?value:null;
+  const first=within(measured(attempt?.first_text_us));
+  // An old socket's upgrade headers are not this generation's response receipt.
+  const response=within(measured(attempt?.response_us??(attempt?.transport==='http'?headers:null)));
   const output=attempt?.reasoning_reported ? difference(attempt.usage?.output,attempt.usage?.reasoning) : null;
-  return {headers,first,elapsed,waiting:difference(first,headers),speed:rate(output,difference(elapsed,first)),
+  return {headers,response,first,elapsed,waiting:difference(first,response),speed:rate(output,difference(elapsed,first)),
     transport:attempt?.transport??null,status:attempt?.status??null,reused:attempt?.reused??null,
     outcome:attempt?.outcome??null,route:state.connection?.route??null,rtt:state.connection?.rtt_ms??null,
     // The observation contract does not measure handshake or latest-content time.

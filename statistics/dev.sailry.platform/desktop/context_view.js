@@ -1,9 +1,9 @@
 import {div} from 'gpui-kit';
 import {Button} from 'gpui-base';
-import {Collapsible,Icon} from 'gpui-component';
+import {Collapsible,Icon,Label} from 'gpui-component';
 import {theme} from 'sailry';
 import {compact,grouped,duration} from './format.js';
-import {overview} from './context.js';
+import {overview,latency} from './context.js';
 
 const colors=()=>theme().colors;
 const column=()=>div().v_flex().w_full().min_w_0().gap(10);
@@ -20,12 +20,13 @@ const span=(value,text)=>value!=null && Number(value)>=60000000
     .replace('%{seconds}',String(Math.floor(Number(value)/1000000)%60))
   :duration(value,text);
 
-function row(label,value,color=null,note=null,count=null,icons=false) {
+function row(label,value,{color=null,note=null,count=null,icons=false,disclosure=false}={}) {
   let content=div().h_flex().w_full().min_w_0().gap(8).items_center().py(5).text_size(14)
     .children(color||icons?[div().w(14).flex_shrink_0().children(color?[dot(color)]:[])]:[])
     .child(div().flex_1().min_w_0().text_color(colors().muted_foreground).child(label))
     .children(count==null?[]:[muted(count).w(50).flex_shrink_0().text_right()])
-    .child(div().w(count==null?120:80).flex_shrink_0().text_right().child(value)).child(spacer());
+    .child(div().w(count==null?120:80).flex_shrink_0().text_right().child(value))
+    .children(disclosure?[spacer()]:[]);
   if(note) content=content.tooltip(note);
   return content;
 }
@@ -70,10 +71,9 @@ function bars(id,parts,whole=null) {
 
 function metric(value,size=23) {
   const match=String(value).match(/^([≈\s]*[\d.,]+)\s*(.*)$/);
-  if(!match) return div().text_size(size).font_medium().child(value);
-  return div().h_flex().items_baseline().gap(3)
-    .child(div().text_size(size).font_medium().child(match[1]))
-    .children(match[2]?[muted(match[2])]:[]);
+  const label=new Label(match?match[1]:String(value)).text_size(size).font_medium();
+  // Kit shapes primary and secondary text together on one shared baseline.
+  return match?.[2]?label.secondary(match[2]):label;
 }
 
 function grid(values) {
@@ -97,8 +97,8 @@ function occupancy(view,data) {
       .on_click((_,cx)=>{view.selected=item.id;view.expanded.add('occupancy');cx.notify();})));
   const basis=used.basis?text[used.basis]:text.composer_metric_unknown;
   const header=div().h_flex().items_baseline().gap(5)
-    .child(div().text_size(30).font_medium().child(tokens(used.tokens,used.estimated)))
-    .child(div().text_size(14).text_color(colors().muted_foreground).child(`/ ${number(used.limit)}`)).child(div().flex_1())
+    .child(new Label(tokens(used.tokens,used.estimated)).secondary(`/ ${number(used.limit)}`).text_size(30).font_medium())
+    .child(div().flex_1())
     .child(metric(percent(used.percent),22)).tooltip([used.model,basis].filter(Boolean).join(' · '));
   const remaining=used.threshold==null||used.tokens==null?null:used.threshold>used.tokens?used.threshold-used.tokens:0n;
   const meter=div().relative().w_full().child(bars('context-occupancy-bar',[{value:used.tokens,color:'chart_2'}],used.limit).h(9));
@@ -117,19 +117,21 @@ function occupancy(view,data) {
       .child(muted(text.context_step.replace('%{count}',String(chosen.step))))
       .child(muted(text.context_token_count.replace('%{count}',tokens(chosen.tokens,chosen.estimated))))]:[]);
   const detail=column().gap(0)
-    .children((chosen?.parts??[]).map(part=>row(text[part.label],tokens(part.tokens,true),part.color,
-      part.method==='identified_source_characters_quarter'?text.context_identified_note:null,
-      text.context_items.replace('%{count}',grouped(part.items)??'—'))))
+    .children((chosen?.parts??[]).map(part=>row(text[part.label],tokens(part.tokens,true),{
+      color:part.color,note:part.method==='identified_source_characters_quarter'?text.context_identified_note:null,
+      count:text.context_items.replace('%{count}',grouped(part.items)??'—')})))
     .tooltip(chosen?[`${chosen.model} · ${number(chosen.limit)}`,chosen.complete?null:text.context_payload_partial].filter(Boolean).join(' · '):basis);
   const record=view.state.statistics?.last_compaction;
   if(record?.id && record.turn && record.turn_sequence) detail.child(Button.new('context-record').w_full().py(3)
-    .child(row(text.context_last_compaction,text[record.outcome==='succeeded'?'context_succeeded':'context_failed'],null,null,null,true))
+    .child(row(text.context_last_compaction,text[record.outcome==='succeeded'?'context_succeeded':'context_failed'],{icons:true}))
     .on_click(()=>view.reveal({entry:record.id,turn:record.turn,turn_sequence:record.turn_sequence})));
   return section('occupancy',text.context_title,text.context_compactions.replace('%{count}',number(data.usage.compactions)),body,fold(view,'occupancy',detail));
 }
 
 function usage(view,data) {
   const {text}=view,value=data.usage;
+  const disclosure=value.tools.length>0;
+  const item=(label,value)=>row(label,value,{disclosure});
   const body=column().child(grid([
     [text.usage_column_input,number(value.input),text.context_input_note],
     [text.usage_column_output,number(value.output),text.context_output_note],
@@ -138,14 +140,14 @@ function usage(view,data) {
   ])).child(div().h_flex().items_baseline().gap(6).pt(2)
     .child(muted(text.context_cost)).child(div().text_size(14).font_medium().child(value.cost==null?'—':`≈ $${value.cost}`)));
   const detail=column().gap(0)
-    .child(row(text.context_steps,number(value.steps)))
-    .child(row(text.context_replies,number(value.replies)))
+    .child(item(text.context_steps,number(value.steps)))
+    .child(item(text.context_replies,number(value.replies)))
     .child(value.tools.length?fold(view,'tools',column().gap(0).children(value.tools.map(tool=>row(tool.name,number(tool.count)))),text.context_tool_calls,number(value.toolCount))
-      :row(text.context_tool_calls,number(value.toolCount)))
-    .child(row(text.context_skills,number(value.skills)))
-    .child(row(text.context_injected,number(value.injected)));
-  if(value.children>0n) detail.child(row(text.composer_subagents,number(value.children)))
-    .child(row(text.context_child_usage,number(value.delegated)));
+      :item(text.context_tool_calls,number(value.toolCount)))
+    .child(item(text.context_skills,number(value.skills)))
+    .child(item(text.context_injected,number(value.injected)));
+  if(value.children>0n) detail.child(item(text.composer_subagents,number(value.children)))
+    .child(item(text.context_child_usage,number(value.delegated)));
   return section('usage',text.context_session_usage,text.context_turns.replace('%{count}',number(value.turns)),body,fold(view,'usage',detail));
 }
 
@@ -162,13 +164,12 @@ function timing(view,data) {
       .child(div().w(14).flex_shrink_0().children(colored?[dot(part.color)]:[]))
       .child(div().flex_1().min_w_0().child(text[part.label]))
       .child(div().w(90).flex_shrink_0().text_right().child(span(part.value,text)))
-      .child(muted(part.value!=null && value.active>0n?percent(Number(part.value)*100/Number(value.active)):'—').w(64).flex_shrink_0().text_right())
-      .child(spacer());
+      .child(muted(part.value!=null && value.active>0n?percent(Number(part.value)*100/Number(value.active)):'—').w(64).flex_shrink_0().text_right());
     return part.id==='thinking'?line.tooltip(text.context_thinking_note):line;
   })).child(div().h_flex().items_center().gap(8).py(6).text_size(14)
     .child(div().w(14).flex_shrink_0()).child(div().flex_1().child(text.usage_speed))
     .child(div().w(90).flex_shrink_0().text_right().child(speed(value.speed,text)))
-    .child(div().w(64).flex_shrink_0()).child(spacer()));
+    .child(div().w(64).flex_shrink_0()));
   return section('timing',text.context_session_time,span(value.active,text),body,fold(view,'timing',detail));
 }
 
@@ -179,17 +180,20 @@ function connection(view,data) {
       .border_1().border_color(colors().border).bg(colors().muted)
       .child(new Icon(`icons/${icon}.svg`).size('small')))
     .child(div().text_size(14).child(label));
-  const link=(value,label,note)=>div().v_flex().flex_basis(0).flex_grow(0.82).min_w(50).items_center().gap(5)
-    .tooltip(note).child(muted(span(value,text)))
-    .child(div().h_flex().w_full().h(1).relative().bg(colors().chart_3)
-      .child(div().absolute().right(-2).top(-6).text_color(colors().chart_3)
-        .child(new Icon('icons/chevron-right.svg').size('xsmall'))))
-    .child(muted(label));
+  const link=(value,label,note,phase)=>{
+    const color=colors()[latency(value,phase)];
+    return div().v_flex().flex_basis(0).flex_grow(0.82).min_w(50).items_center().gap(5)
+      .tooltip(note).child(muted(span(value,text)))
+      .child(div().h_flex().w_full().h(1).relative().bg(color)
+        .child(div().absolute().right(-2).top(-6).text_color(color)
+          .child(new Icon('icons/chevron-right.svg').size('xsmall'))))
+      .child(muted(label));
+  };
   const body=column().gap(10).child(div().h_flex().items_start().gap(3).pt(2).pb(10)
-    .child(node('monitor',text.context_host)).child(link(value.headers,text.context_api_response,text.context_headers_note))
-    .child(node('code-xml',text.context_api)).child(link(value.waiting,text.context_first_wait,text.context_first_note))
-    .child(node('sparkle',text.context_ai)))
-    .child(grid([[text.context_api_response,span(value.headers,text),text.context_headers_note],
+    .child(node('monitor',text.context_host)).child(link(value.response,text.context_api_response,text.context_headers_note,'response'))
+    .child(node('server',text.context_api)).child(link(value.waiting,text.context_first_wait,text.context_wait_note,'waiting'))
+    .child(node('brain-circuit',text.context_ai)))
+    .child(grid([[text.context_api_response,span(value.response,text),text.context_headers_note],
       [text.context_first_response,span(value.first,text),text.context_first_note],
       [text.context_output_speed,speed(value.speed,text)],[text.context_request_time,span(value.elapsed,text)]]));
   const route=value.route==null?'—':text[`context_route_${value.route}`]??value.route;
@@ -208,13 +212,13 @@ function composition(view,data) {
   const body=column().child(bars('context-composition-bar',parts.map(part=>({...part,value:part.tokens}))))
     .child(div().h_flex().flex_wrap().gap(15).children(parts.map(part=>div().h_flex().items_center().gap(6)
       .child(dot(part.color)).child(muted(text[part.label])))));
-  const detail=column().gap(0).children(parts.map(part=>row(text[part.label],tokens(part.tokens,part.estimated),part.color)));
+  const detail=column().gap(0).children(parts.map(part=>row(text[part.label],tokens(part.tokens,part.estimated),{color:part.color})));
   return section('composition',text.context_composition,text.context_token_count.replace('%{count}',number(data.usage.total)),body,fold(view,'composition',detail));
 }
 
 export function render(view) {
   const data=overview(view.state,view.selected);
   return div().id('context-details').v_flex().w_full().max_w_full().min_h_0().px(20).text_size(14)
-    .child(occupancy(view,data)).child(usage(view,data)).child(timing(view,data))
-    .child(connection(view,data)).child(composition(view,data));
+    .child(occupancy(view,data)).child(usage(view,data)).child(composition(view,data))
+    .child(timing(view,data)).child(connection(view,data));
 }

@@ -1,3 +1,7 @@
+## 0.1.14
+
+- Show per-request API response timing and latency colors, restore connection icons, and align context figures and expandable rows, with session composition directly below usage
+
 ## 0.1.13
 
 - Match the approved context panel spacing, metric baselines and connection layout; expand details below their controls and restore saved session metrics before message pages load
