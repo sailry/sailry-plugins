@@ -18,7 +18,7 @@ function footer(view,owner,submit,cancel) {
 function create(view,owner) {
   const readonly = owner.pending || owner.uncertain;
   const fields = [['revision','worktree_base','live-worktree-base'],['branch','worktree_branch','live-worktree-branch'],['path','worktree_path','live-worktree-path']];
-  const form = new Form().children(fields.map(([name,label,id]) => {
+  const form = new Form().size('large').gap_y(8).children(fields.map(([name,label,id]) => {
     const input = div().id(id).child(TextField.new(owner.fields[name],{readonly}));
     return new Field().label(view.text(label)).required(true).child(input);
   }));

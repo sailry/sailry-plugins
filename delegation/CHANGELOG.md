@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Increase spacing between form labels and controls
+
 ## 0.1.18
 
 - Show agent lists as concise activity while retaining delegated task interactions

@@ -1,3 +1,7 @@
+## 0.1.17
+
+- Mantener la página normal mientras se cargan los datos iniciales
+
 ## 0.1.15
 
 - Un paso de contexto por turno, mejor jerarquía de valores y unidades, y barras de contexto y tiempo alineadas

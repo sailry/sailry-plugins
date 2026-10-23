@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Increase spacing between form labels and controls
+
 ## 0.1.6
 
 - Show ordinary lookups as concise activity while retaining diagnostics and service details

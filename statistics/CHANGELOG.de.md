@@ -1,3 +1,7 @@
+## 0.1.17
+
+- Die normale Seite während des ersten Datenladens beibehalten
+
 ## 0.1.15
 
 - Ein Kontextschritt pro Gesprächsrunde, klarere Größenverhältnisse für Werte und Einheiten sowie ausgerichtete Kontext- und Zeitbalken

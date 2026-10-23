@@ -13,7 +13,7 @@ const click = (view,value) => (_,cx) => view.run(() => view.actions.invoke(value
 
 export function empty(view,changes = false) {
   const repo = view.repo, colors = theme().colors;
-  if (!repo.status) return div().id('git_loading').relative().flex_1().min_h_0().v_flex().child(Loading.new('git-loading-rows'));
+  if (!repo.status) return div().id('git_loading').flex_1().min_h_0();
   let title = !repo.status ? null : repo.status.kind === 'directory' ? 'git_directory_title'
     : repo.status.kind === 'unborn' ? 'git_unborn_title' : changes ? 'git_no_changes' : 'git_diff_empty';
   if (changes && repo.status && repo.status.kind !== 'directory') return div().flex_1().min_h_0().px_4().py_6().text_sm().text_color(colors.muted_foreground).child(view.text.git_no_changes);

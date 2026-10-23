@@ -10,7 +10,7 @@ async function fixture(name) {
     child(node){this.nodes.push(node);return this;}
     children(values){for(const node of values)this.child(node);return this;}
   }
-  const styles=['v_flex','h_flex','gap_2','gap_3','gap_4','w','w_full','max_h','min_h_0','overflow_y_scroll','py_1','flex_wrap','text_sm','text_lg','font_semibold','justify_end'];
+  const styles=['size','gap_y','v_flex','h_flex','gap_2','gap_3','gap_4','w','w_full','max_h','min_h_0','overflow_y_scroll','py_1','flex_wrap','text_sm','text_lg','font_semibold','justify_end'];
   for(const method of styles)Element.prototype[method]=function(...args){this.style[method]=args;return this;};
   const div=()=>{
     const value=new Element('div');

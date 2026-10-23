@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Keep the normal page visible while its initial data loads
+
 ## 0.1.17
 
 - Show ordinary repository queries as concise activity while retaining actual differences

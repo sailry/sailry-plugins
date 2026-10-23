@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.13
+
+- Increase spacing between form labels and controls
+- Keep the normal page visible while its initial data loads
+
 ## 0.1.12
 
 - Remove unused tool definition copies and retain the manifest declarations

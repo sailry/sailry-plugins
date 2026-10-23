@@ -22,7 +22,7 @@ function editor(view) {
   let modal=Modal.new(owner?.id??'search-dialog',{open:!!owner,form:true,width:540,
     title:owner?text[`search_driver_${owner.driver}`]:'',dismissable:!locked});
   if(!owner)return modal;
-  const form=new Form();
+  const form=new Form().size('large').gap_y(8);
   if(owner.driver==='searxng')form.child(new Field().label(text.search_endpoint)
     .child(div().id('search-editor-endpoint').child(TextField.new(owner.endpoint,{readonly:locked}))));
   form.child(new Field().label(text.search_api_key).child(div().id('search-editor-key').child(SecretField.new(owner.key,{disabled:locked}))))

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Increase spacing between form labels and controls
+
 ## 0.1.10
 
 - Align the last-run failure icon with its title and remove its open-session shortcut

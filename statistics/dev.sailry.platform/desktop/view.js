@@ -152,8 +152,7 @@ function requests(view,data) {
 export function render(view) {
   const {state}=view,data=state.data();
   const body=column().id('usage-content').relative().w_full().max_w(1040).mx_auto().p_6().gap_4()
-    .child(filters(view))
-    .children(!data ? [div().relative().w_full().h_64().child(Loading.new('usage-initial-loading'))] : []);
+    .child(filters(view));
   if(data)body.child(card('usage-summary',summary(view,data.totals)))
     .child(card('usage-trend-card',activity(view,data)))
     .child(card('usage-breakdown-card',distribution(view,data)))

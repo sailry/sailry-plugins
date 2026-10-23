@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Augmenter l’espace entre les libellés et les champs des formulaires
+
 ## 0.1.12
 
 - Ajout de la catégorie et de la couleur du catalogue

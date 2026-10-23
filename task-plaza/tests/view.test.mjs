@@ -408,7 +408,8 @@ test('approval groups fit without touching adjacent rooms',()=>{
 
 test('pending catalogs keep room selection unavailable',()=>{
   const setup=fixture();setup.view.board.catalog=null;setup.render();
-  assert.equal(setup.nodes.get('plaza-loading').kind,'Loading');
+  assert.equal(setup.nodes.has('plaza-loading'),false);
+  assert.ok(setup.nodes.has('plaza-header'));assert.ok(setup.nodes.has('plaza-toolbar'));
   assert.equal(setup.nodes.has('plaza-world'),false);
   setup.view.board.error=true;setup.render();
   assert.equal(setup.nodes.get('plaza-retry').kind,'Button');

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Keep the normal page visible while its initial data loads
+
 ## 0.1.8
 
 - Align package contract tests with the current release metadata

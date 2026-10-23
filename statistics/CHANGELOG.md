@@ -1,3 +1,7 @@
+## 0.1.17
+
+- Keep the normal page visible while its initial data loads
+
 ## 0.1.15
 
 - Show one context history step per conversation round, keep metric units and capacity subordinate, and align context and elapsed-time bars

@@ -21,13 +21,13 @@ export function sharing(view,owner) {
           owner.projects=checked?[...new Set([...owner.projects,project.id])]:owner.projects.filter(id=>id!==project.id);
           setSharing(owner,'projects');cx.notify();
         })):[div().text_sm().child(text.sharing_empty)])]:[]);
-  return new VForm().child(new Field().label(text.sharing_title).child(choices));
+  return new VForm().size('large').gap_y(8).child(new Field().label(text.sharing_title).child(choices));
 }
 
 export function editor(view) {
   const {editor:owner,text}=view,locked=view.locked(),network=owner.engine!=='sqlite';
   const field=(index,label)=>new Field().label(text[label]).child(TextField.new(owner.inputs[index],{disabled:locked}));
-  let form=new VForm().child(field(0,'settings_name'));
+  let form=new VForm().size('large').gap_y(8).child(field(0,'settings_name'));
   form=form.child(!network||owner.method==='socket'?field(1,!network?'db_path':owner.engine==='postgres'?'db_socket_directory':'db_socket'):field(2,'db_host'));
   if(network) {
     if(owner.method!=='socket'||owner.engine==='postgres')form=form.child(field(3,'db_port'));
@@ -49,7 +49,7 @@ export function editor(view) {
     selected:owner.method,disabled:locked,fill:true,items:['tcp','socket','ssh'].map(id=>({id,label:text[`db_transport_${id}`]})),
   });
   return div().id('db-editor').v_flex().gap_4().w_full().child(engine).children(network?[transport]:[]).child(form)
-    .child(sharing(view,owner)).child(new VForm().child(new Field().child(new Checkbox('db-read-only').text_sm()
+    .child(sharing(view,owner)).child(new VForm().size('large').gap_y(8).child(new Field().child(new Checkbox('db-read-only').text_sm()
       .label(text.db_read_only).checked(owner.read_only).disabled(locked).on_change((value,cx)=>{
         if(view.editor!==owner||view.locked())return;owner.read_only=value;cx.notify();
       }))));

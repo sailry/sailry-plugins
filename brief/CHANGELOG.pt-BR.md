@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Manter a página normal enquanto os dados iniciais carregam
+
 ## 0.1.7
 
 - Adiciona categoria e cor do ícone ao catálogo

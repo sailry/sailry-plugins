@@ -52,7 +52,7 @@ function transferJob(view,job){const{text}=view,progress=job.progress?job.progre
 function transfer(view){const{text,transfer:value}=view,items=view.worktrees.filter(tree=>tree.project).map(tree=>({id:tree.id,label:`${view.projects.find(project=>project.id===tree.project)?.name??''} · ${tree.path}`}));
   const trees=SelectField.new(`ssh-worktree-${view.dialog}`,{label:text.ssh_worktree,placeholder:text.ssh_no_project,selected:value.worktree,
     disabled:view.locked()||!items.length,items});
-  return div().id('ssh-transfer-editor').v_flex().gap_4().child(new VForm()
+  return div().id('ssh-transfer-editor').v_flex().gap_4().child(new VForm().size('large').gap_y(8)
     .child(new Field().label(text.ssh_worktree).child(trees))
     .child(new Field().label(text.ssh_project_path).child(TextField.new(value.inputs[0],{disabled:view.locked()})))
     .child(new Field().label(text.ssh_remote_path).child(TextField.new(value.inputs[1],{disabled:view.locked()}))))
@@ -91,7 +91,7 @@ export function render(view){const{text}=view,active=view.home?null:view.termina
   const connecting=!opened&&!!view.pending&&!view.pending.request.unknown&&['check_ssh','open_ssh_terminal'].includes(view.pending.request.command?.kind);
   const body=div().id(!view.loaded?'ssh-loading':active?'ssh-page':'ssh-landing').relative().v_flex().size_full().min_h_0().min_w_0()
     .children(!opened&&!connecting&&view.pending?[feedback(view)]:[])
-    .child(!view.loaded?Loading.new('ssh-loading-rows')
+    .child(!view.loaded?div().flex_1().min_h_0()
       :active?div().flex_1().min_h_0().child(Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
     .children(connecting?[Loading.new('ssh-connecting')]:[]);
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})

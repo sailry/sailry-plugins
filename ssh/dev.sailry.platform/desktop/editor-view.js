@@ -21,13 +21,13 @@ function sharing(view,owner) {
           owner.projects=checked?[...new Set([...owner.projects,project.id])]:owner.projects.filter(id=>id!==project.id);
           setSharing(owner,'projects');cx.notify();
         })):[div().text_sm().child(text.sharing_empty)])]:[]);
-  return new VForm().child(new Field().label(text.sharing_title).child(choices));
+  return new VForm().size('large').gap_y(8).child(new Field().label(text.sharing_title).child(choices));
 }
 
 export function editor(view) {
   const {editor:owner,text}=view,locked=view.locked(),key=describeSecret(owner.key),picking=key.picking;
   const field=(index,label)=>new Field().label(text[label]).child(TextField.new(owner.inputs[index],{disabled:locked}));
-  let form=new VForm().child(field(0,'settings_name')).child(field(1,'ssh_host')).child(field(2,'ssh_port')).child(field(3,'ssh_username'));
+  let form=new VForm().size('large').gap_y(8).child(field(0,'settings_name')).child(field(1,'ssh_host')).child(field(2,'ssh_port')).child(field(3,'ssh_username'));
   if(owner.authentication==='password')form=form.child(new Field().label(text.ssh_password).child(SecretField.new(owner.password,{disabled:locked})));
   else {
     form=form.child(owner.authentication==='private_key'

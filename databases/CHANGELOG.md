@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Increase spacing between form labels and controls
+
 ## 0.1.11
 
 - Remove unused tool definition copies and retain the manifest declarations

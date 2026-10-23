@@ -41,11 +41,11 @@ function fixture() {
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
 
-test('initial reads use shared rows without fabricated usage',()=>{
+test('initial reads keep filters without fabricated usage',()=>{
   const setup=fixture();
   for(const error of [null,'usage_read_failed']) {
     setup.view.error=error;setup.render();
-    assert.equal(setup.nodes.get('usage-initial-loading').kind,'Loading');
+    assert.equal(setup.nodes.has('usage-initial-loading'),false);
     assert.equal(setup.nodes.get('usage-content').items[0].selector,'usage-filters');
     assert.equal(setup.nodes.has('usage-summary'),false);
     assert.equal(setup.nodes.has('usage-breakdown'),false);

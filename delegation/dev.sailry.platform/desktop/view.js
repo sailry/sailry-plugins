@@ -32,7 +32,7 @@ function editor(view,owner) {
   const effort = Menu.new('role-effort',{label:effortLabel(view,owner.model?.effort ?? null),form:true,disabled:locked,
     items:efforts(owner).map(value => choice(owner,JSON.stringify(value),effortLabel(view,value),
       JSON.stringify(value) === JSON.stringify(owner.model?.effort === 'default' ? null : owner.model?.effort ?? null)))});
-  const form = new Form()
+  const form = new Form().size('large').gap_y(8)
     .child(new Field().label(text.role_id).child(div().id('role-field-role_id').child(TextField.new(owner.fields.key,props))))
     .child(new Field().label(text.settings_name).child(div().id('role-field-settings_name')
       .child(TextField.new(owner.fields.name,{...props,adornment:'prefix'})
@@ -52,7 +52,7 @@ function editor(view,owner) {
       .child(text.role_instructions)
       .child(Menu.new('role-presets',{label:text.role_presets,small:true,disabled:locked,
         items:['review','research','implement'].map(key => choice(owner,key,text[`role_preset_${key}`],false))})))
-    .child(new Form().child(new Field().label_indent(false)
+    .child(new Form().size('large').gap_y(8).child(new Field().label_indent(false)
       .child(div().id('role-instructions').child(TextField.new(owner.fields.instructions,props)))));
   return div().id('role-editor').v_flex().gap_4()
     .child(div().id('role-editor-scroll').v_flex().min_h_0().max_h(Math.max(160,window.viewport_size().height-230))

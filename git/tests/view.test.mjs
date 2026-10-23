@@ -49,9 +49,9 @@ test('unconfirmed changes and history reserve rows without false empty',()=>{
   const view={repo:{status:null,history:null},text:{git_history_empty:'No commits'}};
   for(const failed of [false,true]) {
     view.repo.failed=failed;
-    for(const body of [empty(view),empty(view,true),history(view)]) {
+    for(const [body,loading] of [[empty(view),false],[empty(view,true),false],[history(view),true]]) {
       const nodes=descendants(body),placeholder=nodes.find(node=>node.kind==='loading');
-      assert.ok(placeholder);
+      assert.equal(!!placeholder,loading);
       assert.equal(nodes.some(node=>node.kind==='empty'),false);
       assert.deepEqual(body.style.flex_1,[]);
     }

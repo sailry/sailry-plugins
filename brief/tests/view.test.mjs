@@ -69,7 +69,9 @@ test('refresh keeps the preview and independent controls available',() => {
   assert(header.actions[0].menu.every(item => item.enabled));
   view.state.revision = 1;
   assert.equal(find(view,'brief-preview-artifact').props.revision,2);
-  view.state.artifact = null;const loader = find(view,'brief-loading');assert(loader);assert.equal(loader.props.label,undefined);
+  view.state.artifact = null;
+  assert.equal(find(view,'brief-loading'),undefined);assert.equal(find(view,'brief-retry'),undefined);
+  assert(find(view,'brief-header'));assert.equal(find(view,'brief-preview-artifact'),undefined);
 });
 test('unavailable reads show a retry control without repeating error feedback',() => {
   const view = setup();view.state.artifact = null;view.state.failed = true;

@@ -109,7 +109,7 @@ function strength(view, disabled) {
 export function render(view) {
   const {text,editing} = view, disabled = view.busy || !!view.pending;
   return [div().id("task-editor").w_full()
-    .child(new VForm().w_full().gap_3()
+    .child(new VForm().size('large').gap_y(8).w_full().gap_3()
       .child(new Field().label(text.name).child(TextField.new(editing.name,{disabled})))
       .child(new Field().label(text.prompt).child(TextField.new(editing.prompt,{disabled})))
       .child(new Field().label(text.schedule).child(SegmentedTabs.new("task-timing",{selected:editing.kind,

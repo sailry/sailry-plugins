@@ -125,7 +125,7 @@ test('page title is published only through the shared Header', async () => {
   assert.equal(nodes.has('settings-header'), false);
   assert.equal(nodes.has('settings-heading'), false);
   assert.ok(nodes.has('usage-content'));
-  assert.equal(nodes.get('usage-initial-loading').kind,'Loading');
+  assert.equal(nodes.has('usage-initial-loading'),false);
 });
 
 function elements(extra={}) {

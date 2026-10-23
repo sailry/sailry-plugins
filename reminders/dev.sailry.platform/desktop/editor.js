@@ -35,7 +35,7 @@ function projects(view, disabled) {
 }
 export function render(view) {
   const {text, editing} = view, disabled = view.busy || !!view.pending;
-  const fields = new VForm().w_full().gap_3()
+  const fields = new VForm().size('large').gap_y(8).w_full().gap_3()
     .child(new Field().label(text.title).child(TextField.new(editing.title, {disabled})))
     .child(new Field().label(text.message).child(TextField.new(editing.message, {disabled})))
     .child(new Field().label(text.project).child(projects(view, disabled)))

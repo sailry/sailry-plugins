@@ -39,8 +39,7 @@ test('initial reads reserve the workspace instead of showing landing',()=>{
   const setup=fixture();
   for(const error of [null,'unavailable']) {
     setup.view.error=error;setup.render();
-    const placeholder=setup.nodes.get('ssh-loading-rows');
-    assert.equal(placeholder.kind,'Loading');
+    assert.equal(setup.nodes.has('ssh-loading-rows'),false);
     assert.deepEqual(plain(setup.nodes.get('ssh-loading').style.size_full),[]);
     assert.equal(setup.nodes.has('ssh_workspace_empty'),false);
     assert.ok(setup.nodes.has('ssh-header'));assert.ok(setup.nodes.has('ssh-workspace'));

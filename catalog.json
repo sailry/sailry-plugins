@@ -6,7 +6,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -176,7 +176,18 @@
         "artifacts.write"
       ],
       "release_notes": {
-        "text": "- Align package contract tests with the current release metadata"
+        "text": "- Keep the normal page visible while its initial data loads",
+        "locales": {
+          "zh-CN": "- 初始数据加载时保留正常页面",
+          "zh-TW": "- 初始資料載入時保留正常頁面",
+          "ja": "- 初期データの読み込み中も通常のページを保持",
+          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+          "fr": "- Conserver la page normale pendant le chargement des données initiales",
+          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+        }
       }
     },
     {
@@ -1441,7 +1452,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2100,7 +2111,18 @@
         "code.settings.write"
       ],
       "release_notes": {
-        "text": "- Show ordinary lookups as concise activity while retaining diagnostics and service details"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -3812,7 +3834,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4388,7 +4410,18 @@
         "ssh.read"
       ],
       "release_notes": {
-        "text": "- Remove unused tool definition copies and retain the manifest declarations"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -4396,7 +4429,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4983,7 +5016,18 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Show agent lists as concise activity while retaining delegated task interactions"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -9605,7 +9649,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11523,7 +11567,18 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Show ordinary repository queries as concise activity while retaining actual differences"
+        "text": "- Keep the normal page visible while its initial data loads",
+        "locales": {
+          "zh-CN": "- 初始数据加载时保留正常页面",
+          "zh-TW": "- 初始資料載入時保留正常頁面",
+          "ja": "- 初期データの読み込み中も通常のページを保持",
+          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+          "fr": "- Conserver la page normale pendant le chargement des données initiales",
+          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+        }
       }
     },
     {
@@ -15457,7 +15512,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -15876,7 +15931,18 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Read reminders, delivery records and project choices concurrently"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -15951,7 +16017,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.10",
+        "version": "0.1.11",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -16596,7 +16662,18 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Align the last-run failure icon with its title and remove its open-session shortcut"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -16741,7 +16818,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17576,7 +17653,18 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Remove unused tool definition copies and retain the manifest declarations"
+        "text": "- Increase spacing between form labels and controls\n- Keep the normal page visible while its initial data loads",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距\n- 初始数据加载时保留正常页面",
+          "zh-TW": "- 增加表單標籤與控制項的間距\n- 初始資料載入時保留正常頁面",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大\n- 初期データの読み込み中も通常のページを保持",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대\n- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires\n- Conserver la page normale pendant le chargement des données initiales",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern\n- Die normale Seite während des ersten Datenladens beibehalten",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario\n- Mantener la página normal mientras se cargan los datos iniciales",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários\n- Manter a página normal enquanto os dados iniciais carregam",
+          "ru": "- Увеличить расстояние между подписями и полями форм\n- Сохранять обычную страницу при загрузке исходных данных"
+        }
       }
     },
     {
@@ -17584,7 +17672,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17744,17 +17832,17 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Align context charts, metric units and section order with the shared statistics layout.",
+        "text": "- Keep the normal page visible while its initial data loads",
         "locales": {
-          "zh-CN": "- 对齐上下文图表、指标单位和统计区域顺序",
-          "zh-TW": "- 對齊上下文圖表、指標單位和統計區域順序",
-          "ja": "- コンテキストのグラフ、指標の単位、セクションの順序を統計表示に合わせて調整",
-          "ko": "- 컨텍스트 차트, 지표 단위와 섹션 순서를 통계 레이아웃에 맞게 조정",
-          "fr": "- Aligne les graphiques de contexte, les unités et les sections sur la présentation des statistiques.",
-          "de": "- Kontextdiagramme, Metrikeinheiten und Abschnittsreihenfolge an das gemeinsame Statistiklayout anpassen.",
-          "es": "- Alinea los gráficos de contexto, las unidades y el orden de las secciones con el diseño de estadísticas.",
-          "pt-BR": "- Alinha os gráficos de contexto, as unidades e a ordem das seções ao layout de estatísticas.",
-          "ru": "- Согласованы графики контекста, единицы измерения и порядок разделов статистики."
+          "zh-CN": "- 初始数据加载时保留正常页面",
+          "zh-TW": "- 初始資料載入時保留正常頁面",
+          "ja": "- 初期データの読み込み中も通常のページを保持",
+          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+          "fr": "- Conserver la page normale pendant le chargement des données initiales",
+          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
         }
       }
     },
@@ -17763,7 +17851,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "task-plaza",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "description": "Project rooms and session activity",
         "extensions": {
           "dev.sailry.platform": {
@@ -17827,7 +17915,18 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Read independent activity preview batches concurrently"
+        "text": "- Keep the normal page visible while its initial data loads",
+        "locales": {
+          "zh-CN": "- 初始数据加载时保留正常页面",
+          "zh-TW": "- 初始資料載入時保留正常頁面",
+          "ja": "- 初期データの読み込み中も通常のページを保持",
+          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+          "fr": "- Conserver la page normale pendant le chargement des données initiales",
+          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+        }
       }
     },
     {
@@ -17951,7 +18050,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -18094,7 +18193,18 @@
         "web.settings.write"
       ],
       "release_notes": {
-        "text": "- Show fetched pages as concise activity"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {
@@ -19056,7 +19166,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -19365,7 +19475,18 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Show worktree lists as concise activity while retaining changes"
+        "text": "- Increase spacing between form labels and controls",
+        "locales": {
+          "zh-CN": "- 增大表单标签与控件的间距",
+          "zh-TW": "- 增加表單標籤與控制項的間距",
+          "ja": "- フォームのラベルと入力欄の間隔を拡大",
+          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+          "ru": "- Увеличить расстояние между подписями и полями форм"
+        }
       }
     },
     {

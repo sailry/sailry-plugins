@@ -50,7 +50,7 @@ function dialog(view) {
   if (owner.kind==='edit') {
     if (owner.blocked) footer.child(button('code-editor-reload',text.code_reload,(_,cx)=>view.reloadEditor(cx),view.busy()));
     const keys=['code_command','code_arguments','code_configuration','code_environment'];
-    return modal.child(div().id('code-command-editor').child(new Form().children(owner.fields.map((field,index)=>
+    return modal.child(div().id('code-command-editor').child(new Form().size('large').gap_y(8).children(owner.fields.map((field,index)=>
       new Field().label(text[keys[index]]).child(div().id(`code-command-${index}`)
         .child(TextField.new(field,{readonly:view.pending}))))))).child(footer);
   }

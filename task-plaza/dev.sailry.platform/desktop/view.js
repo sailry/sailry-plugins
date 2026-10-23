@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,Icon} from 'gpui-component';
 import {Header,theme} from 'sailry';
-import {Workspace,pageInsets,Loading} from 'sailry/ui';
+import {Workspace,pageInsets} from 'sailry/ui';
 import {layout} from './floor.js';
 import {WORLD_WIDTH,WORLD_HEIGHT} from './geometry.js';
 import {scene} from './scene.js';
@@ -42,7 +42,7 @@ export function render(view) {
             ? div().v_flex().items_center().justify_center().w(WORLD_WIDTH * scale).h(WORLD_HEIGHT * scale)
               .child(new Button('plaza-retry').ghost().label(text.retry).disabled(!!board.pending)
                 .on_click((_event,cx) => cx.spawn(async () => view.board.refresh())))
-            : Loading.new('plaza-loading')))))
+            : div().w(WORLD_WIDTH * scale).h(WORLD_HEIGHT * scale)))))
     .child(div().id('plaza-legend').h_flex().flex_none().items_center().flex_wrap().gap_4().px_4().py_2().border_t_1().border_color(colors.border)
       .children(legend.map(([state,label]) => div().h_flex().items_center().gap_2().text_xs()
         .child(div().id(`plaza-legend-${state}`).w(9).h(9).rounded_full().bg(colors[statusColors[state]])).child(label)))

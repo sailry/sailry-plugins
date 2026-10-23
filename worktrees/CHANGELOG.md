@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Increase spacing between form labels and controls
+
 ## 0.1.7
 
 - Show worktree lists as concise activity while retaining changes

@@ -1,6 +1,6 @@
 import {div} from 'gpui-kit';
 import {Header} from 'sailry';
-import {IconButton,Loading} from 'sailry/ui';
+import {IconButton} from 'sailry/ui';
 import {ArtifactSurface} from 'sailry/artifacts';
 
 export function render(view) {
@@ -19,7 +19,7 @@ export function render(view) {
       ? {} : {revision:state.follow ? state.artifact.revision : state.revision}),
     labels:{contents:text.brief_contents,submit:text.brief_submit,required:text.brief_form_required,
       invalid_form:text.brief_form_invalid},
-  }) : state.loading ? Loading.new('brief-loading')
+  }) : state.loading ? div().size_full()
     : div().size_full().h_flex().justify_center().items_center().child(IconButton.new('brief-retry',{
       icon:'rotate-cw',label:text.brief_retry,disabled:!state.resource || !state.connected,show_label:true,
     }));
