@@ -1135,7 +1135,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "city-trader",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Build a city property portfolio against up to two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -1312,18 +1312,7 @@
         "storage.write"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -1823,7 +1812,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -2384,7 +2373,7 @@
         "agents.delegate"
       ],
       "release_notes": {
-        "text": "- Recompute parallel finding and review receipt updates after a confirmed storage conflict\n- Preserve frozen review scope, tool identity and uncertain outcomes during retries"
+        "text": "- Read and verify independent frozen review records concurrently"
       }
     },
     {
@@ -3210,7 +3199,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3740,18 +3729,7 @@
         "ssh.read"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Load connection inventories, project choices and database catalogs concurrently"
       }
     },
     {
@@ -4646,7 +4624,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "doudizhu",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Dou Dizhu with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -4709,18 +4687,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -7111,7 +7078,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8849,18 +8816,7 @@
         "models.install"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Read file capabilities and directories together\n- Run independent opens, trash requests and confirmed transfers concurrently while preserving per-item recovery"
       }
     },
     {
@@ -8868,7 +8824,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.14",
+        "version": "0.1.16",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10510,7 +10466,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "Hide the branch control until repository information is available."
+        "text": "- Read branches only after confirming the directory contains a repository"
       }
     },
     {
@@ -11078,7 +11034,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "gomoku",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Gomoku against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -11137,18 +11093,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -11402,7 +11347,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "liars-dice",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Liar's Dice with two AI opponents",
         "extensions": {
           "dev.sailry.platform": {
@@ -11461,18 +11406,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -11836,7 +11770,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -12424,7 +12358,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Preserve deletions during concurrent memory consolidation"
+        "text": "- Read independent memory body pages concurrently while retaining snapshot validation"
       }
     },
     {
@@ -13164,7 +13098,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "poker",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play heads-up Texas Hold'em with an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -13225,18 +13159,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -13244,7 +13167,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
@@ -13380,18 +13303,7 @@
         "activity.read"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Read independent activity preview batches concurrently"
       }
     },
     {
@@ -13399,7 +13311,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -13550,7 +13462,7 @@
         "http.request"
       ],
       "release_notes": {
-        "text": "- Label 5-hour and 7-day usage windows as 5h and 7d"
+        "text": "- Read provider accounts and new contexts concurrently"
       }
     },
     {
@@ -13558,7 +13470,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -13977,7 +13889,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Reduce status tags in lists and details by one size"
+        "text": "- Read reminders, delivery records and project choices concurrently"
       }
     },
     {
@@ -13985,7 +13897,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reversi",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Reversi against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -14044,18 +13956,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
@@ -14063,7 +13964,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -14708,7 +14609,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Reduce status tags in lists and details by one size"
+        "text": "- Read tasks, job records, models and project choices concurrently"
       }
     },
     {
@@ -14853,7 +14754,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.8",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -15324,6 +15225,7 @@
                 "dev.sailry.platform/desktop/editor.js",
                 "dev.sailry.platform/desktop/files.js",
                 "dev.sailry.platform/desktop/requests.js",
+                "dev.sailry.platform/desktop/mutations.js",
                 "dev.sailry.platform/desktop/locales.js"
               ],
               "navigation": {
@@ -15381,18 +15283,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color\n- Add localized tool names",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
-          "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
-          "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
-        }
+        "text": "- Run independent file changes concurrently while retaining every request outcome"
       }
     },
     {
@@ -15579,7 +15470,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "task-plaza",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "Project rooms and session activity",
         "extensions": {
           "dev.sailry.platform": {
@@ -15643,18 +15534,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read independent activity preview batches concurrently"
       }
     },
     {
@@ -16170,7 +16050,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -16843,7 +16723,7 @@
         "notifications.publish"
       ],
       "release_notes": {
-        "text": "- Preserve structured upstream error diagnostics for model recovery."
+        "text": "- Read provider accounts and new contexts concurrently"
       }
     },
     {
@@ -16851,7 +16731,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17160,7 +17040,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Show registered worktrees before Git discovery and reuse active refreshes"
+        "text": "- Start registered and native worktree discovery together while showing registered choices first"
       }
     },
     {
@@ -17168,7 +17048,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "xiangqi",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Play Chinese chess against an AI opponent",
         "extensions": {
           "dev.sailry.platform": {
@@ -17227,18 +17107,7 @@
         "models.generate"
       ],
       "release_notes": {
-        "text": "- Add marketplace category and icon color",
-        "locales": {
-          "zh-CN": "- 新增市场分类和图标配色",
-          "zh-TW": "- 新增市集分類和圖示配色",
-          "ja": "- マーケットのカテゴリとアイコンカラーを追加",
-          "ko": "- 마켓 분류와 아이콘 색상 추가",
-          "fr": "- Ajout de la catégorie et de la couleur du catalogue",
-          "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
-          "es": "- Añade categoría y color de icono al catálogo",
-          "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
-          "ru": "- Добавлены категория каталога и цвет значка"
-        }
+        "text": "- Read game settings and model choices concurrently"
       }
     },
     {
