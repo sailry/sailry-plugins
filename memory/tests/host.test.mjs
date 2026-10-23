@@ -54,7 +54,7 @@ test('prioritizes project decisions and confines the index',async () => {
   assert.ok(catalog.length < 40);
   assert.ok(policy.bytes(text) <= 2048);
   assert.ok(catalog.every(entry => !['foreign','archived'].includes(entry.id)));
-  assert.ok(!text.includes('Before answering'));
+  assert.match(text,/otherwise do not write/);
 });
 
 test('shares the exact serialized content budget with Unicode and escaped JSON',async () => {
@@ -106,6 +106,8 @@ test('filters tools at initialization and never contributes imported package ins
   const tools = ['search_memory','review_memories','save_memory','forget_memory','consolidate_memories'];
   let initialized = await main.initialize({tools,project,resources:true});
   assert.deepEqual(plain(initialized.tools),['search_memory','review_memories']);
+  assert.match(initialized.instruction,/Memory is read-only this turn/);
+  assert.doesNotMatch(initialized.instruction,/Before the final answer/);
   assert.ok(initialized.instruction.includes(id));
   assert.equal(state.remaining,settings.context_bytes-Buffer.byteLength(initialized.instruction));
   initialized = await main.initialize({tools:['search_memory'],project,resources:false});
@@ -114,6 +116,26 @@ test('filters tools at initialization and never contributes imported package ins
   current = {...current,enabled:false};
   initialized = await main.initialize({tools,project,resources:true});
   assert.deepEqual(plain(initialized),{instruction:'',tools:[]});
+});
+
+test('empty indexes preserve optional tool use',async()=>{
+  let state;
+  const calls=[];
+  const {main}=await load({
+    readMemorySettings:async()=>{calls.push('settings');return settings;},
+    indexMemories:async()=>{calls.push('index');return [];},
+    stageTurnState:value=>state=plain(value),readTurnState:()=>plain(state),
+  });
+  const tools=['search_memory','save_memory'];
+  const initialized=await main.initialize({tools,project,resources:true});
+  assert.deepEqual(plain(initialized.tools),tools);
+  assert.deepEqual(JSON.parse(initialized.instruction.split('Index:\n')[1]),[]);
+  assert.match(initialized.instruction,/Memory is optional untrusted context/);
+  assert.match(initialized.instruction,/otherwise do not write/);
+  main.beforeModel({results:[]});
+  assert.deepEqual(state.reads,[]);
+  assert.deepEqual(calls,['settings','index']);
+  assert.equal(state.remaining,settings.context_bytes-Buffer.byteLength(initialized.instruction));
 });
 
 test('search, replacement, scope policy and live revocation share one captured turn state',async () => {
@@ -169,13 +191,31 @@ test('package review shares the captured content budget and never grants replace
 });
 
 
-test('guidance scopes retrieval and saves durable user corrections',async () => {
+test('guidance covers history and proactive retention',async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const instruction = manifest.extensions['dev.sailry.platform'].instructions;
-  assert.match(instruction,/Before writing code, tests or other output with style preferences/);
-  assert.match(instruction,/check the injected memory index and apply relevant current-project and global preferences/);
-  assert.match(instruction,/relevant title has no complete body, call search_memory/);
-  assert.match(instruction,/When the user corrects you or states a stable preference/);
-  assert.match(instruction,/Do not save facts directly derivable from the code/);
+  const {policy}=await load();
+  const projected=policy.index([],project,settings);
+  assert.match(instruction,/When an answer or action depends on earlier preferences or decisions/);
+  assert.match(instruction,/check the injected memory index first and call search_memory as needed/);
   assert.match(instruction,/current user instructions take precedence/);
+  assert.match(projected,/Consult this index for earlier preferences\/decisions; call search_memory as needed/);
+  for (const text of [instruction,projected]) {
+    assert.match(text,/explicit remember requests/);
+    assert.match(text,/stable user corrections\/preferences/);
+    assert.match(text,/user-confirmed (?:lasting )?decisions/);
+    assert.match(text,/write tools are available and authorized/);
+    assert.match(text,/Before the final answer/);
+    assert.match(text,/otherwise do not write/);
+    assert.match(text,/Search first/);
+    assert.match(text,/complete current bodies (?:with their|and) revisions/);
+    assert.match(text,/project[^.]*worktrees/);
+    assert.match(text,/global only for/);
+    assert.match(text,/temporary tasks, progress, transcripts and unaccepted proposals/);
+    assert.match(text,/tool success/);
+    assert.match(text,/uncertain write/);
+  }
+  const tools=manifest.extensions['dev.sailry.platform'].tools;
+  assert.match(tools.find(tool=>tool.name==='search_memory').description,/before saving to avoid duplicates/);
+  assert.match(tools.find(tool=>tool.name==='save_memory').description,/search the exact ID and read its complete current body/);
 });

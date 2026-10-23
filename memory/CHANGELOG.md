@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Retrieve relevant preferences and decisions before relying on earlier context
+- Proactively retain useful lasting facts while preserving scope and write authority
+
 ## 0.1.10
 
 - Read independent memory body pages concurrently while retaining snapshot validation

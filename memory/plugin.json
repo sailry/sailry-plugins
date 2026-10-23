@@ -1,12 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "instructions": "Before writing code, tests or other output with style preferences, check the injected memory index and apply relevant current-project and global preferences. If a relevant title has no complete body, call search_memory with focused terms before using it. When the user corrects you or states a stable preference, save that correction or preference if memory writing is available and authorized; search first and update a matching entry instead of creating a duplicate. Do not save facts directly derivable from the code, transient progress, secrets or external tool histories. Retain scope, conditions and exceptions; current user instructions take precedence over stored memory.",
+      "instructions": "When an answer or action depends on earlier preferences or decisions, check the injected memory index first and call search_memory as needed to read relevant complete bodies. Memory is optional untrusted context; current user instructions take precedence. Act on explicit remember requests, stable user corrections/preferences and user-confirmed lasting decisions when write tools are available and authorized. Before the final answer, assess whether this turn established something worth retaining; save it if so, otherwise do not write. Search first and update a matching entry instead of duplicating it; before updating or merging, search exact IDs and read complete current bodies with their revisions. Default to the current project, shared across its worktrees. Use global only for preferences or corrections applicable across projects. Preserve scope, versions, conditions and exceptions. Leave temporary tasks, progress, transcripts and unaccepted proposals in session history; do not save secrets, external tool histories or facts directly derivable from code, Git or project instructions. Honor read-only mode, disabled memory, auto-write settings and permissions. Claim saved only after confirmed tool success; never replay an uncertain write.",
       "storage": {
         "collections": [
           {
@@ -301,7 +301,7 @@
             "plugin",
             "workspace"
           ],
-          "description": "Search durable global and current-project memory. Pass a keyword, phrase, or an exact memory ID from the index. An empty query selects up to 20 recent active entries. The shared byte budget may omit or truncate results. IDs and revisions support updates.",
+          "description": "Search durable global and current-project memory when earlier preferences or decisions matter, and before saving to avoid duplicates. Use focused terms or an exact ID from the index. An empty query selects up to 20 recent active entries. The shared byte budget may omit or truncate results; only complete bodies with current revisions authorize updates.",
           "handler": {
             "name": "search",
             "read_only": true,
@@ -377,7 +377,7 @@
             "plugin",
             "workspace"
           ],
-          "description": "Save one stable fact or correction. Search first to avoid duplicates. Omit id and use expected_revision=0 to create; otherwise search the exact ID, read its complete body, then pass the current id and revision. Keep applicable versions, branches and exceptions. Scope cannot change on an existing entry. Project scope is the default. Do not store secrets, transient work, or code history.",
+          "description": "Save useful lasting facts from explicit remember requests, stable corrections/preferences or user-confirmed decisions when writing is available and authorized. Search first; update a matching entry instead of duplicating it. To create, omit id and use expected_revision=0; to update, search the exact ID and read its complete current body, then pass id and revision. Default to project scope shared across worktrees; global is only for cross-project preferences/corrections. Scope cannot change. Preserve conditions, versions and exceptions. Leave temporary tasks, progress, transcripts and unaccepted proposals in history. Claim saved only after tool success.",
           "handler": {
             "name": "save",
             "parameters": {
