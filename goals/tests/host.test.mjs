@@ -11,7 +11,7 @@ test('continuation markers remain localized package declarations',async()=>{
   const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
   assert.deepEqual(manifest.extensions['dev.sailry.platform'].host.read_only,['read']);
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.5');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+  assert.equal(manifest.version,'0.1.6');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;

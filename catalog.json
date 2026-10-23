@@ -11714,7 +11714,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12138,7 +12138,18 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Check paged goal history and advance verified progress atomically"
+        "text": "- Keep inactive goals idle and observe only run status changes",
+        "locales": {
+          "zh-CN": "- 未使用目标时不订阅会话，执行中仅跟踪状态变化",
+          "zh-TW": "- 未使用目標時不訂閱對話，執行中僅追蹤狀態變化",
+          "ja": "- 未使用の目標では会話を購読せず、実行中は状態の変更のみを追跡",
+          "ko": "- 사용하지 않는 목표의 대화 구독을 중지하고 실행 상태 변경만 추적",
+          "fr": "- Suspendre les abonnements des objectifs inactifs et suivre les changements d’état",
+          "de": "- Inaktive Ziele ohne Abfragen belassen und nur Statusänderungen verfolgen",
+          "es": "- Mantener inactivos los objetivos sin uso y observar solo los cambios de estado",
+          "pt-BR": "- Manter objetivos sem uso inativos e observar apenas mudanças de estado",
+          "ru": "- Не опрашивать неиспользуемые цели и отслеживать только изменения состояния"
+        }
       }
     },
     {

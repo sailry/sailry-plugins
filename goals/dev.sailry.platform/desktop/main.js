@@ -35,13 +35,16 @@ export default class Goals extends View {
     });
     this.observeConversation(cx);
   }
+  current() {return !!this.scope.session && this.scope.session===this.state.session && this.state.connected;}
   observeConversation(cx) {
-    if (this.watching || !this.scope.session || this.scope.session!==this.state.session || !this.state.connected) return;
+    const active=()=>this.current() && this.goal?.state==='active';
+    if (this.watching || !active()) return;
     this.watching=true;
     cx.spawn(async cx=>{
       let cursor='',runs=null;
-      try {while(true) {
-        const change=await nextConversation(cursor);cursor=change.cursor;
+      try {while(active()) {
+        const change=await nextConversation(cursor,'runs');cursor=change.cursor;
+        if (!active()) break;
         const page=change.view.snapshot?.page;
         if (!page || page.session!==this.scope.session || page.session!==this.state.session) continue;
         const next=JSON.stringify(page.runs.map(run=>[run.turn,run.status]));
@@ -68,7 +71,7 @@ export default class Goals extends View {
   }
   fail(key) {toast({id:'goal-error',kind:'error',message:this.text[key]});}
   refresh(cx) {
-    if (!this.state.session || !this.state.connected) {this.goal=null;return;}
+    if (!this.current()) {this.goal=null;return;}
     if (this.loading) {this.dirty=true;return;}
     this.loading=true;
     this.publish();cx.notify();
@@ -80,6 +83,7 @@ export default class Goals extends View {
         try {result=await completeRequest(id);}
         finally {forgetRequest(id);}
         if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
+        if (!this.current()) {this.goal=null;break;}
         this.goal=result.Ok.data.goal;
         this.readFailed=false;
         this.readError=null;
@@ -88,7 +92,7 @@ export default class Goals extends View {
         this.readError={code:error.code ?? faultCode(error.message ?? String(error)),message:error.message ?? String(error)};
         if (!this.readFailed) this.fail('readFailed');this.readFailed=true;
       }
-      finally {this.loading=false;this.publish();cx.notify();}
+      finally {this.loading=false;this.observeConversation(cx);this.publish();cx.notify();}
     });
   }
   perform(kind,cx) {

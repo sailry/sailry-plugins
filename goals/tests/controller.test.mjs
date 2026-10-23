@@ -10,10 +10,10 @@ function element(id,props) {
     disabled(value){this.disabledValue=value;return this;},on_click(action){this.action=action;return this;}};
 }
 
-async function fixture() {
+async function fixture(options={}) {
   const host={goal:{id:'goal',description:'Requested work',state:'active',revision:'5'},
-    hold:false,held:[],failure:null,readFailure:null};
-  const prepared=[],completed=[],forgotten=[],contributions=[],notices=[],jobs=[];
+    hold:false,held:[],failure:null,readFailure:null,...options};
+  const prepared=[],completed=[],forgotten=[],contributions=[],notices=[],jobs=[],conversations=[];
   const never=()=>new Promise(()=>{});
   const listeners={change:null,composer:null,conversation:null},ready={},scopes=[];
   const next=kind=>{ready[kind]?.();return new Promise(resolve=>{listeners[kind]=resolve;});};
@@ -28,7 +28,7 @@ async function fixture() {
   const modules=new Map(),context=vm.createContext({});
   const sdk={
     nextChange:(_cursor,scope)=>{scopes.push(scope);return next('change');},
-    nextConversation:()=>next('conversation'),nextContributionEvent:never,
+    nextConversation:(cursor,scope)=>{conversations.push({cursor,scope});return next('conversation');},nextContributionEvent:never,
     publishContributions:value=>contributions.push(plain(value)),
     prepareRequest:request=>{
       if (prepared.length-forgotten.length>=16) throw new Error('Host request capacity exceeded');
@@ -87,8 +87,49 @@ async function fixture() {
     await jobs[first];
     if(!host.hold) await jobs.at(-1);
   }
-  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices,emit,scopes};
+  async function deliver(kind,value) {
+    assert.ok(listeners[kind]);
+    const resolve=listeners[kind];listeners[kind]=null;resolve(value);
+    await new Promise(setImmediate);
+  }
+  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices,emit,deliver,scopes,conversations};
 }
+
+test('unused conversations do not subscribe',async()=>{
+  const setup=await fixture({goal:null});
+  assert.equal(setup.view.goal,null);
+  assert.equal(setup.prepared.length,1);
+  assert.equal(setup.conversations.length,0);
+  await setup.emit('composer',{...setup.view.state,cursor:'2',busy:true});
+  assert.equal(setup.prepared.length,2);
+  assert.equal(setup.conversations.length,0);
+});
+
+test('first goal activates run observations',async()=>{
+  const setup=await fixture({goal:null});
+  setup.host.goal={id:'goal',description:'Requested work',state:'active',revision:'1'};
+  await setup.deliver('change',{cursor:'2',connected:true});
+  assert.equal(setup.view.goal.id,'goal');
+  assert.equal(setup.conversations.length,1);
+  assert.equal(setup.conversations[0].scope,'runs');
+  setup.host.goal=null;
+  await setup.deliver('change',{cursor:'3',connected:true});
+  const count=setup.prepared.length;
+  await setup.deliver('conversation',{cursor:'1',view:{snapshot:{page:{session:'session',runs:[]}}}});
+  assert.equal(setup.conversations.length,1);
+  assert.equal(setup.prepared.length,count);
+});
+
+test('retained sessions stop observing old history',async()=>{
+  const setup=await fixture();
+  assert.equal(setup.conversations.length,1);
+  const count=setup.prepared.length;
+  await setup.deliver('composer',{...setup.view.state,cursor:'2',session:'other'});
+  await setup.deliver('conversation',{cursor:'1',view:{snapshot:{page:{session:'session',runs:[]}}}});
+  assert.equal(setup.view.goal,null);
+  assert.equal(setup.conversations.length,1);
+  assert.equal(setup.prepared.length,count);
+});
 
 test('successful controls use supported notifications',async()=>{
   const setup=await fixture();
@@ -288,6 +329,7 @@ test('external stops refresh without storage changes',async()=>{
   assert.equal(setup.view.goal.state,'paused');
   assert.equal(setup.prepared.length,before+1);
   assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
-  await setup.emit('conversation',change('5','cancelled','session','Unrelated output'));
+  await setup.deliver('conversation',change('5','cancelled','session','Unrelated output'));
   assert.equal(setup.prepared.length,before+1);
+  assert.equal(setup.view.watching,false);
 });
