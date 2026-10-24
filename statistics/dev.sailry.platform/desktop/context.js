@@ -64,6 +64,19 @@ export function history(statistics) {
   return [...turns.values()].sort((left,right)=>left.step<right.step?-1:left.step>right.step?1:0);
 }
 
+/** Sum the plotted step snapshots without treating consumption as one window's occupancy. */
+function aggregate(snapshots) {
+  const parts=CATEGORIES.map(([kind,label,color])=>{
+    const values=snapshots.map(item=>item.parts.find(part=>part.kind===kind));
+    const methods=values.map(value=>value?.method??null);
+    return {kind,label,color,items:values.length?sum(values.map(value=>value?.items)):null,
+      tokens:values.length?sum(values.map(value=>value?.tokens)):null,
+      method:methods.length && methods.every(value=>value===methods[0])?methods[0]:null};
+  });
+  return {parts,tokens:snapshots.length?sum(snapshots.map(item=>item.tokens)):null,
+    estimated:snapshots.some(item=>item.estimated),complete:snapshots.length>0 && snapshots.every(item=>item.complete)};
+}
+
 /** Occupancy always retains the observation's model and window ownership. */
 export function current(state) {
   const statistics=state.statistics;
@@ -82,7 +95,7 @@ export function current(state) {
 export function overview(state,selected) {
   const statistics=state.statistics, observations=statistics?.observations;
   const snapshots=history(statistics),latest=snapshot(observations?.recent?.at(-1));
-  const chosen=snapshots.find(item=>item.id===selected)??snapshots.at(-1)??null;
+  const chosen=snapshots.find(item=>item.id===selected)??null;
   const used=current(state);
   const usage=statistics?.usage;
   const priced=statistics?.cost && integer(statistics.cost.responses)===integer(statistics.responses);
@@ -90,7 +103,9 @@ export function overview(state,selected) {
   const cached=integer(observations?.cache_read),reasoning=integer(observations?.reasoning);
   const tools=Object.entries(observations?.tools??{}).map(([name,count])=>({name,count:integer(count)}))
     .sort((left,right)=>left.count===right.count ? left.name.localeCompare(right.name) : left.count>right.count ? -1 : 1);
-  return {used,snapshots,chosen,latest,
+  return {used,snapshots:snapshots.map(item=>({...item,selected:item===chosen,
+      color:chosen && item!==chosen?'muted_foreground':'chart_2'})),
+    chosen,detail:chosen??aggregate(snapshots),latest,
     usage:{input,output,total:sum([input,output]),cached,reasoning,
       cache:input!=null && input>0n && cached!=null ? Number(cached)*100/Number(input) : null,
       cost:priced?cost(statistics):null,turns:integer(statistics?.turns),steps:integer(statistics?.turns),
@@ -128,13 +143,10 @@ export function timing(observations,generation=null) {
 }
 
 export function connection(state,latest) {
-  const attempt=latest?.attempt;
-  const elapsed=measured(attempt?.elapsed_us),headers=measured(attempt?.headers_us);
-  const within=value=>value!=null && (elapsed==null || value<=elapsed)?value:null;
-  const first=within(measured(attempt?.first_text_us));
-  // An old socket's upgrade headers are not this generation's response receipt.
-  const response=within(measured(attempt?.response_us??(attempt?.transport==='http'?headers:null)));
-  return {headers,response,first,elapsed,waiting:difference(first,response),speed:speed(state.statistics?.generation),
+  const attempt=latest?.attempt,latency=state.statistics?.observations?.latency;
+  return {headers:measured(attempt?.headers_us),response:measured(latency?.response_us),
+    first:measured(latency?.first_text_us),elapsed:measured(latency?.elapsed_us),waiting:measured(latency?.waiting_us),
+    speed:speed(state.statistics?.generation),
     transport:attempt?.transport??null,status:attempt?.status??null,reused:attempt?.reused??null,
     outcome:attempt?.outcome??null,route:state.connection?.route??null,rtt:state.connection?.rtt_ms??null,
     // The observation contract does not measure handshake or latest-content time.

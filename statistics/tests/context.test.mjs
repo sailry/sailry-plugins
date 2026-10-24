@@ -67,7 +67,67 @@ test('history selection leaves current occupancy and connection intact',()=>{
   assert.equal(selected.chosen.step,9007199254740994n);
   assert.equal(selected.used.tokens,300n);
   assert.equal(selected.connection.headers,20n);
-  assert.equal(overview(state,'removed').chosen.id,'latest');
+  assert.equal(overview(state,'removed').chosen,null);
+});
+
+test('all context steps aggregate without retargeting session summaries',()=>{
+  const step=(id,index,value,usage=null)=>request(id,{turn_index:String(index),context_limit:String(index*1000),
+    attempts:[attempt({categories:CATEGORIES.map(([kind])=>({kind,items:String(index),tokens:String(value),method:'estimate'})),usage})]});
+  const state={statistics:{context_tokens:'300',context_limit:'1000',context_model:'previous',
+    usage:{input:'1000',output:'100',reasoning:'5',cached_input:'10'},responses:'2',
+    generation:{responses:'2',output_tokens:'100',elapsed_us:'20000000'},observations:{
+      phases:{active_us:'20',waiting_us:'5',output_us:'5',tools_us:'10',other_us:'0'},
+      composition:CATEGORIES.map(([kind])=>({kind,items:'30',tokens:'100',method:'estimate'})),
+      latency:{response_us:'100',first_text_us:'200',waiting_us:'100',elapsed_us:'400'},
+      recent:[step('first',1,10,{input:'100',output:'5'}),step('second',2,20)],
+    }}};
+  const before=structuredClone(state),all=overview(state);
+  assert.equal(all.chosen,null);
+  assert.equal(all.detail.tokens,245n);
+  assert.equal(all.detail.estimated,true);
+  assert.ok(all.detail.parts.every(part=>part.tokens===30n && part.items===3n));
+  assert.equal(all.used.tokens,300n);
+  assert.equal(all.used.limit,1000n);
+  assert.equal(all.used.percent,30);
+  assert.deepEqual(all.snapshots.map(item=>[item.selected,item.color]),[[false,'chart_2'],[false,'chart_2']]);
+  for(const selected of ['first','second','removed']) {
+    const value=overview(state,selected);
+    for(const key of ['used','usage','composition','timing','connection'])assert.deepEqual(value[key],all[key]);
+    if(selected==='removed') {
+      assert.equal(value.chosen,null);
+      assert.deepEqual(value.detail,all.detail);
+    } else {
+      assert.equal(value.chosen.id,selected);
+      assert.equal(value.detail.parts[0].tokens,selected==='first'?10n:20n);
+      assert.deepEqual(value.snapshots.map(item=>[item.selected,item.color]),
+        selected==='first'?[[true,'chart_2'],[false,'muted_foreground']]:[[false,'muted_foreground'],[true,'chart_2']]);
+    }
+  }
+  assert.deepEqual(state,before);
+});
+
+test('all context steps preserve unknown estimates and observed zero',()=>{
+  const recent=[request('first',{attempts:[attempt({categories:parts('10')})]}),
+    request('second',{turn_index:'2',attempts:[attempt({categories:parts('20')})]})];
+  const state={statistics:{observations:{recent}}};
+  let value=overview(state);
+  assert.equal(value.detail.tokens,210n);
+  assert.equal(value.detail.estimated,true);
+  recent[1].attempts[0].categories[0].tokens=null;
+  recent[1].attempts[0].categories[0].items=null;
+  value=overview(state);
+  assert.equal(value.detail.tokens,null);
+  assert.equal(value.detail.parts[0].tokens,null);
+  assert.equal(value.detail.parts[0].items,null);
+  assert.equal(value.detail.parts[1].tokens,30n);
+  recent[1].attempts[0].complete_context=false;
+  assert.equal(overview(state).detail.complete,false);
+  const empty=overview({});
+  assert.equal(empty.detail.tokens,null);
+  assert.ok(empty.detail.parts.every(part=>part.tokens==null && part.items==null));
+  state.statistics.observations.recent=[request('zero',{attempts:[attempt({categories:parts('0')})]})];
+  assert.equal(overview(state).detail.tokens,0n);
+  assert.equal(overview(state).detail.estimated,true);
 });
 test('each round keeps its latest request and attempt',()=>{
   const usage=(input,output='5')=>({input,output});
@@ -154,6 +214,7 @@ test('session average replaces short request windows',()=>{
     usage:{input:'24200',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:true});
   const state={has_messages:true,statistics:{responses:'1',
     generation:{responses:'1',output_tokens:'14',elapsed_us:'8200000'},observations:{
+      latency:{response_us:'6100000',first_text_us:'6888200',waiting_us:'788200',elapsed_us:'4100000'},
       output_tokens:'13',output_us:'3037',output_samples:'1',recent:[request('last',{attempts:[
         attempt({transport:'web_socket',elapsed_us:'1308763',outcome:'failed'}),latest,
       ]})],
@@ -166,7 +227,7 @@ test('session average replaces short request windows',()=>{
   assert.equal(value.timing.speed,'1.7');
   assert.equal(value.connection.response,6100000n);
   assert.equal(value.connection.first,6888200n);
-  assert.equal(value.connection.elapsed,6891237n);
+  assert.equal(value.connection.elapsed,4100000n);
   assert.equal(value.connection.waiting,788200n);
   assert.deepEqual(state,before);
 });
@@ -174,7 +235,8 @@ test('session average replaces short request windows',()=>{
 test('multiple requests retain full output and session timing',()=>{
   const state={has_messages:true,statistics:{responses:'3',
     usage:{input:'300',output:'56',reasoning:'4',cached_input:'0'},
-    generation:{responses:'3',output_tokens:'56',elapsed_us:'20000000'},observations:{recent:[
+    generation:{responses:'3',output_tokens:'56',elapsed_us:'20000000'},observations:{
+      latency:{response_us:'150000',first_text_us:'300000',waiting_us:'100000',elapsed_us:'6666666'},recent:[
       request('first',{attempts:[attempt({elapsed_us:'10000000',first_text_us:'9000000',
         usage:{input:'100',output:'20',reasoning:'1',cached_input:'0'}})]}),
       request('second',{turn_index:'2',attempts:[attempt({elapsed_us:'3108763',first_text_us:'3000000',
@@ -189,8 +251,8 @@ test('multiple requests retain full output and session timing',()=>{
   assert.equal(value.timing.speed,'2.8');
   assert.equal(value.usage.output,56n);
   state.statistics.observations.recent.at(-1).attempts.push(attempt({index:'2',outcome:'failed'}));
-  assert.equal(overview(state).connection.first,null);
-  assert.equal(overview(state).connection.elapsed,null);
+  assert.equal(overview(state).connection.first,300000n);
+  assert.equal(overview(state).connection.elapsed,6666666n);
   assert.equal(overview(state).connection.speed,'2.8');
 });
 
@@ -215,35 +277,43 @@ test('session averages preserve historical and unknown timing',()=>{
   assert.equal(overview(state).connection.elapsed,null);
 });
 
-test('socket response receipt never borrows handshake timing',()=>{
+test('connection means never borrow latest handshake timing',()=>{
   const latest={attempt:attempt({transport:'web_socket',headers_us:'20',response_us:'80',
     first_text_us:'140',elapsed_us:'300'})};
-  let value=connection({},latest);
+  const state={statistics:{observations:{latency:{response_us:'80',first_text_us:'140',waiting_us:'60',elapsed_us:'300'}}}};
+  let value=connection(state,latest);
   assert.equal(value.headers,20n);
   assert.equal(value.response,80n);
   assert.equal(value.waiting,60n);
   delete latest.attempt.response_us;
-  value=connection({},latest);
-  assert.equal(value.response,null);
-  assert.equal(value.waiting,null);
+  value=connection(state,latest);
+  assert.equal(value.response,80n);
+  assert.equal(value.waiting,60n);
   latest.attempt.transport='http';
-  assert.equal(connection({},latest).response,20n);
+  assert.equal(connection(state,latest).response,80n);
+  assert.equal(connection({},latest).response,null);
 });
 
-test('recovery stages share the selected attempt clock',()=>{
+test('connection means retain independently paired waiting samples',()=>{
   const attempts=[
     attempt({transport:'web_socket',response_us:'10',first_text_us:'100',elapsed_us:'120',outcome:'failed'}),
     attempt({transport:'web_socket',response_us:'200',first_text_us:'350',elapsed_us:'400'}),
   ];
-  const state={statistics:{first_token_us:'9000',observations:{recent:[request('retry',{attempts})]}}};
+  const state={statistics:{first_token_us:'9000',observations:{
+    latency:{response_us:'200',first_text_us:'350',waiting_us:'7',elapsed_us:'100'},recent:[request('retry',{attempts})]}}};
   assert.equal(overview(state).connection.response,200n);
   assert.equal(overview(state).connection.first,350n);
-  assert.equal(overview(state).connection.waiting,150n);
+  assert.equal(overview(state).connection.waiting,7n);
+  assert.equal(overview(state).connection.elapsed,100n);
   attempts[1].response_us='360';
-  assert.equal(overview(state).connection.waiting,null);
-  assert.equal(latency(overview(state).connection.waiting,'waiting'),'muted_foreground');
+  assert.equal(overview(state).connection.waiting,7n);
   attempts[1].response_us=null;
-  assert.equal(overview(state).connection.response,null);
+  assert.equal(overview(state).connection.response,200n);
+  state.statistics.observations.latency.waiting_us=null;
+  assert.equal(overview(state).connection.waiting,null);
+  state.statistics.observations.latency={response_us:'0',first_text_us:'0',waiting_us:'0',elapsed_us:'0'};
+  assert.equal(overview(state).connection.response,0n);
+  assert.equal(overview(state).connection.waiting,0n);
 });
 
 test('latency colors preserve unknown and stage boundaries',()=>{
@@ -275,7 +345,7 @@ test('active phases never infer thinking from token ratios',()=>{
 test('all supported locales include the five sections',()=>{
   for(const locale of ['en','zh-CN','zh-TW','de','es','fr','ja','ko','pt-BR','ru']) {
     const localized=messages(locale);
-    for(const key of ['title','session_usage','session_time','connection','composition','details','payload_partial','output_speed']) {
+    for(const key of ['title','session_usage','session_time','connection','composition','details','payload_partial','output_speed','all','steps_total']) {
       assert.equal(typeof localized[`context_${key}`],'string');
       assert.ok(localized[`context_${key}`].length);
     }

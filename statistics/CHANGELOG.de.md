@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Durchschnittliche Sitzungsverbindungen anzeigen und Kontextdetails aller oder einzelner Schritte umschalten
+
 ## 0.1.19
 
 - In der Fußzeile und den Kontextdetails dieselbe durchschnittliche Sitzungsgeschwindigkeit anzeigen

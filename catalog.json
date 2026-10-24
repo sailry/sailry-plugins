@@ -17730,7 +17730,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17898,17 +17898,17 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Use the same session average speed in the footer and context details",
+        "text": "- Show session connection averages and toggle context step details",
         "locales": {
-          "zh-CN": "- 底栏与上下文详情统一显示会话均速",
-          "zh-TW": "- 底欄與上下文詳細資料統一顯示工作階段平均速度",
-          "ja": "- フッターとコンテキスト詳細で同じセッション平均速度を表示",
-          "ko": "- 하단 표시와 컨텍스트 상세에 동일한 세션 평균 속도 표시",
-          "fr": "- Afficher la même vitesse moyenne de session dans le pied de page et les détails du contexte",
-          "de": "- In der Fußzeile und den Kontextdetails dieselbe durchschnittliche Sitzungsgeschwindigkeit anzeigen",
-          "es": "- Mostrar la misma velocidad media de sesión en el pie y los detalles de contexto",
-          "pt-BR": "- Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto",
-          "ru": "- Показывать одинаковую среднюю скорость сеанса внизу и в сведениях о контексте"
+          "zh-CN": "- 汇总会话连接均值，支持切换全部与单步上下文明细",
+          "zh-TW": "- 彙總工作階段連線平均值，支援切換全部與單步上下文詳細資料",
+          "ja": "- セッションの接続平均を表示し、すべてのステップと単一ステップのコンテキスト詳細を切り替え",
+          "ko": "- 세션 연결 평균을 표시하고 전체 또는 개별 단계의 컨텍스트 상세 전환",
+          "fr": "- Afficher les moyennes de connexion de session et basculer entre tous les détails de contexte et une étape",
+          "de": "- Durchschnittliche Sitzungsverbindungen anzeigen und Kontextdetails aller oder einzelner Schritte umschalten",
+          "es": "- Mostrar promedios de conexión de la sesión y alternar detalles de todos los pasos o de uno",
+          "pt-BR": "- Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma",
+          "ru": "- Показывать средние показатели соединений сеанса и переключать детали контекста всех или одного шага"
         }
       }
     },

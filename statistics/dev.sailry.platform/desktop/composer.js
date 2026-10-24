@@ -4,6 +4,7 @@ import {publishContributions} from 'sailry/sdk';
 import {readComposer,nextComposerChange,revealComposerEntry,toast} from 'sailry/ui';
 import {messages} from './locales.js';
 import {metrics} from './metrics.js';
+import {history} from './context.js';
 import {render} from './context_view.js';
 
 export default class Composer extends View {
@@ -24,7 +25,14 @@ export default class Composer extends View {
     if(this.expanded.has(id)) this.expanded.delete(id);
     else this.expanded.add(id);
   }
-  publish() { publishContributions(metrics(this.state,this.text)); }
+  select(id) {
+    this.selected=this.selected===id || !history(this.state.statistics).some(item=>item.id===id)?null:id;
+    this.expanded.add('occupancy');
+  }
+  publish() {
+    if(this.selected!=null && !history(this.state.statistics).some(item=>item.id===this.selected))this.selected=null;
+    publishContributions(metrics(this.state,this.text));
+  }
   reveal(target) {
     try {revealComposerEntry(target);}
     catch (_) {toast({id:'context-reveal',kind:'error',message:this.text.context_reveal_failed});}

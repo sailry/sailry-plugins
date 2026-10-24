@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Show session connection averages and toggle context step details
+
 ## 0.1.19
 
 - Use the same session average speed in the footer and context details

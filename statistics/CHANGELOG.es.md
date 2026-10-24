@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Mostrar promedios de conexión de la sesión y alternar detalles de todos los pasos o de uno
+
 ## 0.1.19
 
 - Mostrar la misma velocidad media de sesión en el pie y los detalles de contexto

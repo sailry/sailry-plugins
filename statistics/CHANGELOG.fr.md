@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Afficher les moyennes de connexion de session et basculer entre tous les détails de contexte et une étape
+
 ## 0.1.19
 
 - Afficher la même vitesse moyenne de session dans le pied de page et les détails du contexte

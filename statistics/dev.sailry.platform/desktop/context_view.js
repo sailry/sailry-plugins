@@ -84,16 +84,17 @@ function grid(values) {
 }
 
 function occupancy(view,data) {
-  const {text}=view,{used,chosen,snapshots}=data;
+  const {text}=view,{used,chosen,detail,snapshots}=data;
   const peak=Math.max(1,...snapshots.map(item=>Number(item.tokens??0n)));
+  // Pinned Kit charts expose hover; Kit Buttons retain accessible step selection.
   const history=div().h_flex().h(47).w_full().items_end().gap(5)
     .children(snapshots.map(item=>Button.new(`context-snapshot-${item.id}`).flex_1().max_w(`${100/HISTORY_SLOTS}%`).min_w(0).h(47).p(0).items_end()
-      .selected(item.id===chosen?.id).accessibility_label(`${text.context_step.replace('%{count}',String(item.step))}: ${tokens(item.tokens,item.estimated)}`)
+      .selected(item.selected).accessibility_label(`${text.context_step.replace('%{count}',String(item.step))}: ${tokens(item.tokens,item.estimated)}`)
       .tooltip(`${item.model} · ${tokens(item.tokens,item.estimated)}`)
-      .child(div().w_full().flex_shrink_0()
-        .h(item.tokens==null||item.tokens===0n?0:Math.max(1,Number(item.tokens)/peak*47)).rounded_t(2)
-        .bg(colors().chart_2).opacity(item.id===chosen?.id?1:0.38))
-      .on_click((_,cx)=>{view.selected=item.id;view.expanded.add('occupancy');cx.notify();})));
+      .child(item.tokens==null?muted(text.composer_metric_unknown):div().w_full().flex_shrink_0()
+        .h(item.tokens===0n?0:Math.max(1,Number(item.tokens)/peak*47)).rounded_t(2)
+        .bg(colors()[item.color]))
+      .on_click((_,cx)=>{view.select(item.id);cx.notify();})));
   const basis=used.basis?text[used.basis]:text.composer_metric_unknown;
   const header=div().h_flex().items_baseline().gap(5)
     .child(metric(tokens(used.tokens,used.estimated),30))
@@ -114,18 +115,20 @@ function occupancy(view,data) {
       .child(muted(text.context_remaining.replace('%{count}',number(remaining))))
       .child(muted(`${text.context_reserve} ${number(used.reserve)}`)))
     .children(snapshots.length?[div().pt(9).child(history),div().h_flex().justify_between().gap(12)
-      .child(muted(text.context_step.replace('%{count}',String(chosen.step))))
-      .child(muted(text.context_token_count.replace('%{count}',tokens(chosen.tokens,chosen.estimated))))]:[]);
-  const detail=column().gap(0)
-    .children((chosen?.parts??[]).map(part=>row(text[part.label],tokens(part.tokens,true),{
+      .child(muted(chosen?text.context_step.replace('%{count}',String(chosen.step)):text.context_all))
+      .child(muted(text[chosen?'context_token_count':'context_steps_total'].replace('%{count}',tokens(detail.tokens,detail.estimated))))]:[]);
+  const details=column().gap(0)
+    .children(detail.parts.map(part=>row(text[part.label],tokens(part.tokens,true),{
       color:part.color,note:part.method==='identified_source_characters_quarter'?text.context_identified_note:null,
-      count:text.context_items.replace('%{count}',grouped(part.items)??'—')})))
-    .tooltip(chosen?[`${chosen.model} · ${number(chosen.limit)}`,chosen.complete?null:text.context_payload_partial].filter(Boolean).join(' · '):basis);
+      count:text.context_items.replace('%{count}',grouped(part.items)??'—')})));
+  const note=[chosen?`${chosen.model} · ${number(chosen.limit)}`:null,
+    detail.complete?null:text.context_payload_partial].filter(Boolean).join(' · ');
+  if(note)details.tooltip(note);
   const record=view.state.statistics?.last_compaction;
-  if(record?.id && record.turn && record.turn_sequence) detail.child(Button.new('context-record').w_full().py(3)
+  if(record?.id && record.turn && record.turn_sequence) details.child(Button.new('context-record').w_full().py(3)
     .child(row(text.context_last_compaction,text[record.outcome==='succeeded'?'context_succeeded':'context_failed'],{icons:true}))
     .on_click(()=>view.reveal({entry:record.id,turn:record.turn,turn_sequence:record.turn_sequence})));
-  return section('occupancy',text.context_title,text.context_compactions.replace('%{count}',number(data.usage.compactions)),body,fold(view,'occupancy',detail));
+  return section('occupancy',text.context_title,text.context_compactions.replace('%{count}',number(data.usage.compactions)),body,fold(view,'occupancy',details));
 }
 
 function usage(view,data) {

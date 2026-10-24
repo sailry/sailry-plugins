@@ -1,9 +1,11 @@
 export const contextLocales = {
   "en": {
+    "context_all": "All",
+    "context_steps_total": "Steps total %{count} tokens",
     "context_title": "Context",
     "context_session_usage": "Session usage",
     "context_session_time": "Active time",
-    "context_connection": "Connection response",
+    "context_connection": "Connection averages",
     "context_composition": "Session composition",
     "context_details": "Details",
     "context_compactions": "%{count} compactions",
@@ -69,10 +71,12 @@ export const contextLocales = {
     "context_request_time": "Request time"
   },
   "zh-CN": {
+    "context_all": "全部",
+    "context_steps_total": "步骤合计 %{count} tokens",
     "context_title": "上下文",
     "context_session_usage": "会话用量",
     "context_session_time": "会话耗时",
-    "context_connection": "连接响应",
+    "context_connection": "连接均值",
     "context_composition": "会话组成",
     "context_details": "明细",
     "context_compactions": "压缩 %{count} 次",
@@ -138,10 +142,12 @@ export const contextLocales = {
     "context_request_time": "请求耗时"
   },
   "zh-TW": {
+    "context_all": "全部",
+    "context_steps_total": "步驟合計 %{count} tokens",
     "context_title": "上下文",
     "context_session_usage": "工作階段用量",
     "context_session_time": "工作階段耗時",
-    "context_connection": "連線回應",
+    "context_connection": "連線平均值",
     "context_composition": "工作階段組成",
     "context_details": "明細",
     "context_compactions": "壓縮 %{count} 次",
@@ -207,10 +213,12 @@ export const contextLocales = {
     "context_request_time": "請求耗時"
   },
   "de": {
+    "context_all": "Alle",
+    "context_steps_total": "Schrittsumme %{count} Tokens",
     "context_title": "Kontext",
     "context_session_usage": "Sitzungsnutzung",
     "context_session_time": "Aktive Zeit",
-    "context_connection": "Verbindungsantwort",
+    "context_connection": "Verbindungsdurchschnitte",
     "context_composition": "Zusammensetzung",
     "context_details": "Details",
     "context_compactions": "%{count} Komprimierungen",
@@ -276,10 +284,12 @@ export const contextLocales = {
     "context_request_time": "Anfragedauer"
   },
   "es": {
+    "context_all": "Todos",
+    "context_steps_total": "Total de pasos %{count} tokens",
     "context_title": "Contexto",
     "context_session_usage": "Uso de la sesión",
     "context_session_time": "Tiempo activo",
-    "context_connection": "Respuesta de conexión",
+    "context_connection": "Promedios de conexión",
     "context_composition": "Composición de sesión",
     "context_details": "Detalles",
     "context_compactions": "%{count} compactaciones",
@@ -345,10 +355,12 @@ export const contextLocales = {
     "context_request_time": "Tiempo de solicitud"
   },
   "fr": {
+    "context_all": "Tout",
+    "context_steps_total": "Total des étapes %{count} tokens",
     "context_title": "Contexte",
     "context_session_usage": "Utilisation de la session",
     "context_session_time": "Temps actif",
-    "context_connection": "Réponse de connexion",
+    "context_connection": "Moyennes de connexion",
     "context_composition": "Composition de session",
     "context_details": "Détails",
     "context_compactions": "%{count} compressions",
@@ -414,10 +426,12 @@ export const contextLocales = {
     "context_request_time": "Durée de requête"
   },
   "ja": {
+    "context_all": "すべて",
+    "context_steps_total": "ステップ合計 %{count} トークン",
     "context_title": "コンテキスト",
     "context_session_usage": "セッション使用量",
     "context_session_time": "稼働時間",
-    "context_connection": "接続応答",
+    "context_connection": "接続平均",
     "context_composition": "セッション構成",
     "context_details": "詳細",
     "context_compactions": "圧縮 %{count} 回",
@@ -483,10 +497,12 @@ export const contextLocales = {
     "context_request_time": "リクエスト時間"
   },
   "ko": {
+    "context_all": "전체",
+    "context_steps_total": "단계 합계 %{count} 토큰",
     "context_title": "컨텍스트",
     "context_session_usage": "세션 사용량",
     "context_session_time": "활성 시간",
-    "context_connection": "연결 응답",
+    "context_connection": "연결 평균",
     "context_composition": "세션 구성",
     "context_details": "상세",
     "context_compactions": "압축 %{count}회",
@@ -552,10 +568,12 @@ export const contextLocales = {
     "context_request_time": "요청 시간"
   },
   "pt-BR": {
+    "context_all": "Todos",
+    "context_steps_total": "Total das etapas %{count} tokens",
     "context_title": "Contexto",
     "context_session_usage": "Uso da sessão",
     "context_session_time": "Tempo ativo",
-    "context_connection": "Resposta da conexão",
+    "context_connection": "Médias de conexão",
     "context_composition": "Composição da sessão",
     "context_details": "Detalhes",
     "context_compactions": "%{count} compactações",
@@ -621,10 +639,12 @@ export const contextLocales = {
     "context_request_time": "Tempo da solicitação"
   },
   "ru": {
+    "context_all": "Все",
+    "context_steps_total": "Итого по шагам %{count} токенов",
     "context_title": "Контекст",
     "context_session_usage": "Использование сеанса",
     "context_session_time": "Активное время",
-    "context_connection": "Отклик соединения",
+    "context_connection": "Средние показатели соединения",
     "context_composition": "Состав сеанса",
     "context_details": "Подробности",
     "context_compactions": "Сжатий: %{count}",

@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma
+
 ## 0.1.19
 
 - Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto
