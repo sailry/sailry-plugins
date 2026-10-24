@@ -9649,7 +9649,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11567,18 +11567,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Keep the normal page visible while its initial data loads",
-        "locales": {
-          "zh-CN": "- 初始数据加载时保留正常页面",
-          "zh-TW": "- 初始資料載入時保留正常頁面",
-          "ja": "- 初期データの読み込み中も通常のページを保持",
-          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
-          "fr": "- Conserver la page normale pendant le chargement des données initiales",
-          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
-          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
-          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
-          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
-        }
+        "text": "- Add an initialization button to the Git sidebar for plain directories"
       }
     },
     {
@@ -17683,7 +17672,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17843,18 +17832,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Keep the normal page visible while its initial data loads",
-        "locales": {
-          "zh-CN": "- 初始数据加载时保留正常页面",
-          "zh-TW": "- 初始資料載入時保留正常頁面",
-          "ja": "- 初期データの読み込み中も通常のページを保持",
-          "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
-          "fr": "- Conserver la page normale pendant le chargement des données initiales",
-          "de": "- Die normale Seite während des ersten Datenladens beibehalten",
-          "es": "- Mantener la página normal mientras se cargan los datos iniciales",
-          "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
-          "ru": "- Сохранять обычную страницу при загрузке исходных данных"
-        }
+        "text": "- Keep slow connection observations visible using the semantic error color"
       }
     },
     {

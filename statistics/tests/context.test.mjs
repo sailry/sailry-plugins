@@ -198,10 +198,10 @@ test('latency colors preserve unknown and stage boundaries',()=>{
   assert.equal(latency(0),'success');
   assert.equal(latency('1000000'),'success');
   assert.equal(latency('1000001'),'warning');
-  assert.equal(latency('3000000'),'danger');
+  assert.equal(latency('3000000'),'destructive');
   assert.equal(latency('10000000','waiting'),'success');
   assert.equal(latency('10000001','waiting'),'warning');
-  assert.equal(latency('15000000','waiting'),'danger');
+  assert.equal(latency('15000000','waiting'),'destructive');
   const value=connection({}, {attempt:attempt({response_us:'-1',first_text_us:'invalid',elapsed_us:'10'})});
   assert.equal(value.response,null);
   assert.equal(value.first,null);

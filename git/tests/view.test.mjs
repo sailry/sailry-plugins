@@ -307,14 +307,16 @@ test('empty lists fill their viewport without cards', () => {
   assert.ok(descendants(document).some(node => node.items.includes('No changes')));
 });
 
-test('uninitialized main actions fill width while sidebars remain compact', () => {
+test('uninitialized sidebars expose the existing initialization action', () => {
   const {empty} = vm.runInNewContext(`${source}\n({empty})`,{
     div:() => element('div'),theme:() => ({colors:{}}),
     EmptyState:{new:(id,props) => element('empty',{id,...props})},
     IconButton:{new:(id,props) => element('button',{id,...props})},
+    Button:class {constructor(id) {return element('button',{id});}},
   });
+  const calls=[],cx={};
   const view = {text:{git_directory_title:'Not initialized',git_initialize:'Initialize Git'},
-    repo:{status:{kind:'directory'},canInitialize:()=>true}};
+    repo:{status:{kind:'directory'},canInitialize:()=>!view.repo.pending},control:(...args)=>calls.push(args)};
   const main=empty(view),sidebar=empty(view,true);
   const action=descendants(main).find(node=>node.kind==='button');
   assert.equal(action.props.id,'git-initialize');assert.equal(action.props.full_width,true);
@@ -322,7 +324,23 @@ test('uninitialized main actions fill width while sidebars remain compact', () =
   assert.equal(main.props.variant,undefined);
   assert.equal(main.props.id,'git_directory_title');assert.equal(sidebar.props.id,'git_directory_title-sidebar');
   assert.equal(sidebar.props.variant,'list');assert.equal(sidebar.props.fill_height,true);
-  assert.equal(descendants(sidebar).some(node=>node.kind==='button'),false);
+  const initialize=descendants(sidebar).find(node=>node.kind==='button');
+  assert.equal(initialize.props.id,'git-initialize-sidebar');
+  assert.deepEqual(initialize.style.label,['Initialize Git']);
+  assert.deepEqual(initialize.style.size,['small']);
+  assert.deepEqual(initialize.style.primary,[]);
+  assert.deepEqual(initialize.style.disabled,[false]);
+  assert.deepEqual(initialize.style.loading,[false]);
+  assert.equal(initialize.props.full_width,undefined);
+  assert.deepEqual(calls,[]);
+  initialize.style.on_click[0](null,cx);
+  assert.deepEqual(calls,[['git-initialize',cx]]);
+  view.repo.pending={kind:'initialize',busy:true};
+  const pending=descendants(empty(view,true)).find(node=>node.kind==='button');
+  assert.deepEqual(pending.style.disabled,[true]);
+  assert.deepEqual(pending.style.loading,[true]);
+  view.repo.status={kind:'unborn'};
+  assert.equal(descendants(empty(view,true)).some(node=>node.kind==='button'),false);
 });
 
 test('main tabs use the Shell; embedded tabs remain local', () => {

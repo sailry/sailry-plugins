@@ -33,7 +33,7 @@ export function latency(value,phase='response') {
   if(value==null)return 'muted_foreground';
   const warning=phase==='waiting'?SLOW_FIRST_TOKEN:RESPONSE_WARNING;
   const danger=phase==='waiting'?SLOW_RESPONSE:RESPONSE_DANGER;
-  return value>=danger?'danger':value>warning?'warning':'success';
+  return value>=danger?'destructive':value>warning?'warning':'success';
 }
 
 export function categories(values) {

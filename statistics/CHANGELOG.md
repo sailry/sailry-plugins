@@ -1,3 +1,7 @@
+## 0.1.18
+
+- Keep slow connection observations visible using the semantic error color
+
 ## 0.1.17
 
 - Keep the normal page visible while its initial data loads

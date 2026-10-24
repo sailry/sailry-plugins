@@ -19,6 +19,9 @@ export function empty(view,changes = false) {
   if (changes && repo.status && repo.status.kind !== 'directory') return div().flex_1().min_h_0().px_4().py_6().text_sm().text_color(colors.muted_foreground).child(view.text.git_no_changes);
   if (!title) return div().flex_1().min_h_0();
   const empty = EmptyState.new(changes ? `${title}-sidebar` : title,{...(changes ? {variant:'list',fill_height:true} : {}),icon:'network',label:view.text[title]});
+  if (changes && repo.status.kind === 'directory') return empty.child(new Button('git-initialize-sidebar').primary().size('small')
+    .label(view.text.git_initialize).disabled(!repo.canInitialize()).loading(repo.pending?.kind === 'initialize' && !!repo.pending.busy)
+    .on_click((_,cx) => view.control('git-initialize',cx)));
   return !changes && repo.status?.kind === 'directory' ? empty.child(div().w_full().max_w_96()
     .child(IconButton.new('git-initialize',{icon:'plus',label:view.text.git_initialize,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:!repo.canInitialize()}))) : empty;
 }

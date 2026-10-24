@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Add an initialization button to the Git sidebar for plain directories
+
 ## 0.1.18
 
 - Keep the normal page visible while its initial data loads
