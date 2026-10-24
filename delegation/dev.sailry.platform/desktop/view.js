@@ -55,8 +55,7 @@ function editor(view,owner) {
     .child(new Form().size('large').gap_y(8).child(new Field().label_indent(false)
       .child(div().id('role-instructions').child(TextField.new(owner.fields.instructions,props)))));
   return div().id('role-editor').v_flex().gap_4()
-    .child(div().id('role-editor-scroll').v_flex().min_h_0().max_h(Math.max(160,window.viewport_size().height-230))
-      .overflow_y_scroll().p_1().gap_4().child(form).child(instructions));
+    .p_1().child(form).child(instructions);
 }
 function removal(view,owner) {
   const text = view.text;

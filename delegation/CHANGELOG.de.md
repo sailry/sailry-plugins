@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Das gesamte Unteragentenformular scrollen und die Aktionsschaltflächen sichtbar halten
+
 ## 0.1.19
 
 - Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern

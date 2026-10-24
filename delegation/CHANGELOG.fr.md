@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Faire défiler tout le formulaire du sous-agent en gardant les boutons visibles
+
 ## 0.1.19
 
 - Augmenter l’espace entre les libellés et les champs des formulaires

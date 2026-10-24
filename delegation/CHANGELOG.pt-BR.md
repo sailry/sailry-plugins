@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Rolar todo o formulário do subagente mantendo os botões visíveis
+
 ## 0.1.19
 
 - Aumentar o espaço entre rótulos e controles dos formulários

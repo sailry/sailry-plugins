@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Desplazar todo el formulario del subagente manteniendo visibles los botones
+
 ## 0.1.19
 
 - Aumentar el espacio entre las etiquetas y los controles del formulario

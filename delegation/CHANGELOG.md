@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Scroll the complete subagent form above the action buttons
+
 ## 0.1.19
 
 - Increase spacing between form labels and controls
