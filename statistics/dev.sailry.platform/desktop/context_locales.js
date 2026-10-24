@@ -65,7 +65,7 @@ export const contextLocales = {
     "context_cost": "Cost",
     "context_cache_hit": "Cache hit",
     "context_first_response": "First text",
-    "context_output_speed": "Output speed",
+    "context_output_speed": "Session average",
     "context_request_time": "Request time"
   },
   "zh-CN": {
@@ -134,7 +134,7 @@ export const contextLocales = {
     "context_cost": "费用",
     "context_cache_hit": "缓存命中",
     "context_first_response": "首字响应",
-    "context_output_speed": "输出速度",
+    "context_output_speed": "会话均速",
     "context_request_time": "请求耗时"
   },
   "zh-TW": {
@@ -203,7 +203,7 @@ export const contextLocales = {
     "context_cost": "費用",
     "context_cache_hit": "快取命中",
     "context_first_response": "首字回應",
-    "context_output_speed": "輸出速度",
+    "context_output_speed": "工作階段平均速度",
     "context_request_time": "請求耗時"
   },
   "de": {
@@ -272,7 +272,7 @@ export const contextLocales = {
     "context_cost": "Kosten",
     "context_cache_hit": "Cache-Treffer",
     "context_first_response": "Erster Text",
-    "context_output_speed": "Ausgaberate",
+    "context_output_speed": "Sitzungsdurchschnitt",
     "context_request_time": "Anfragedauer"
   },
   "es": {
@@ -341,7 +341,7 @@ export const contextLocales = {
     "context_cost": "Coste",
     "context_cache_hit": "Aciertos de caché",
     "context_first_response": "Primer texto",
-    "context_output_speed": "Velocidad de salida",
+    "context_output_speed": "Promedio de sesión",
     "context_request_time": "Tiempo de solicitud"
   },
   "fr": {
@@ -410,7 +410,7 @@ export const contextLocales = {
     "context_cost": "Coût",
     "context_cache_hit": "Succès du cache",
     "context_first_response": "Premier texte",
-    "context_output_speed": "Débit de sortie",
+    "context_output_speed": "Moyenne de la session",
     "context_request_time": "Durée de requête"
   },
   "ja": {
@@ -479,7 +479,7 @@ export const contextLocales = {
     "context_cost": "費用",
     "context_cache_hit": "キャッシュ命中",
     "context_first_response": "最初の応答",
-    "context_output_speed": "出力速度",
+    "context_output_speed": "セッション平均速度",
     "context_request_time": "リクエスト時間"
   },
   "ko": {
@@ -548,7 +548,7 @@ export const contextLocales = {
     "context_cost": "비용",
     "context_cache_hit": "캐시 적중",
     "context_first_response": "첫 텍스트",
-    "context_output_speed": "출력 속도",
+    "context_output_speed": "세션 평균 속도",
     "context_request_time": "요청 시간"
   },
   "pt-BR": {
@@ -617,7 +617,7 @@ export const contextLocales = {
     "context_cost": "Custo",
     "context_cache_hit": "Acertos de cache",
     "context_first_response": "Primeiro texto",
-    "context_output_speed": "Velocidade de saída",
+    "context_output_speed": "Média da sessão",
     "context_request_time": "Tempo da solicitação"
   },
   "ru": {
@@ -686,7 +686,7 @@ export const contextLocales = {
     "context_cost": "Стоимость",
     "context_cache_hit": "Попадания в кэш",
     "context_first_response": "Первый текст",
-    "context_output_speed": "Скорость вывода",
+    "context_output_speed": "Средняя скорость сеанса",
     "context_request_time": "Время запроса"
   }
 };

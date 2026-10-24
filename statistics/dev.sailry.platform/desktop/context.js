@@ -1,4 +1,4 @@
-import {integer,total,context,cost} from './format.js';
+import {integer,total,context,cost,speed} from './format.js';
 import {SLOW_FIRST_TOKEN,SLOW_RESPONSE} from './requests.js';
 
 export const CATEGORIES = [
@@ -10,7 +10,6 @@ export const CATEGORIES = [
 const sum = values => values.some(value=>value==null) ? null : values.reduce((value,item)=>value+integer(item),0n);
 const difference = (left,right) => left==null || right==null || integer(left)<integer(right) ? null : integer(left)-integer(right);
 const category = (values,kind) => values?.find(value=>value.kind===kind);
-const rate = (tokens,time) => tokens==null || time==null || integer(time)<=0n ? null : Number(tokens)*1000000/Number(time);
 const measured = value => {
   try { const number=integer(value); return number!=null && number>=0n ? number : null; }
   catch { return null; }
@@ -101,7 +100,7 @@ export function overview(state,selected) {
       skills:null,injected:null,
       children:integer(observations?.children),delegated:total(statistics?.delegated?.tokens)},
     composition:composition(observations?.composition,reasoning,output),
-    timing:timing(observations),connection:connection(state,latest)};
+    timing:timing(observations,statistics?.generation),connection:connection(state,latest)};
 }
 
 export function composition(values,reasoning,output) {
@@ -115,7 +114,7 @@ export function composition(values,reasoning,output) {
   ];
 }
 
-export function timing(observations) {
+export function timing(observations,generation=null) {
   const phases=observations?.phases;
   const rows=[
     ['waiting','context_waiting','chart_2',phases?.waiting_us],
@@ -125,8 +124,7 @@ export function timing(observations) {
     ['arguments','context_tool_arguments','chart_1',null],
     ['other','context_other','muted_foreground',phases?.other_us],
   ].map(([id,label,color,value])=>({id,label,color,value:integer(value)}));
-  return {active:integer(phases?.active_us),rows,
-    speed:integer(observations?.output_samples)>0n ? rate(observations.output_tokens,observations.output_us) : null};
+  return {active:integer(phases?.active_us),rows,speed:speed(generation)};
 }
 
 export function connection(state,latest) {
@@ -136,8 +134,7 @@ export function connection(state,latest) {
   const first=within(measured(attempt?.first_text_us));
   // An old socket's upgrade headers are not this generation's response receipt.
   const response=within(measured(attempt?.response_us??(attempt?.transport==='http'?headers:null)));
-  const output=attempt?.reasoning_reported ? difference(attempt.usage?.output,attempt.usage?.reasoning) : null;
-  return {headers,response,first,elapsed,waiting:difference(first,response),speed:rate(output,difference(elapsed,first)),
+  return {headers,response,first,elapsed,waiting:difference(first,response),speed:speed(state.statistics?.generation),
     transport:attempt?.transport??null,status:attempt?.status??null,reused:attempt?.reused??null,
     outcome:attempt?.outcome??null,route:state.connection?.route??null,rtt:state.connection?.rtt_ms??null,
     // The observation contract does not measure handshake or latest-content time.

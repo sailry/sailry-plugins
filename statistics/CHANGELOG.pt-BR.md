@@ -1,3 +1,7 @@
+## 0.1.19
+
+- Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto
+
 ## 0.1.17
 
 - Manter a página normal enquanto os dados iniciais carregam

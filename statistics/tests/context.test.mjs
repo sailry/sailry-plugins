@@ -149,15 +149,70 @@ test('missing cache attribution remains unknown rather than zero',()=>{
   assert.equal(value.usage.cache,null);
   assert.equal(value.composition.at(-1).tokens,null);
 });
-test('visible output speed requires separately reported reasoning',()=>{
-  const latest={attempt:attempt({headers_us:'100000',first_text_us:'200000',elapsed_us:'1200000',
-    usage:{input:'100',output:'30',reasoning:'10',cached_input:'0'}})};
-  assert.equal(connection({},latest).speed,null);
-  latest.attempt.reasoning_reported=true;
-  assert.equal(connection({},latest).speed,20);
-  assert.equal(connection({},latest).waiting,100000n);
-  latest.attempt.first_text_us='1000000';latest.attempt.elapsed_us='900000';
-  assert.equal(connection({},latest).speed,null);
+test('session average replaces short request windows',()=>{
+  const latest=attempt({index:'2',headers_us:'6100000',first_text_us:'6888200',elapsed_us:'6891237',
+    usage:{input:'24200',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:true});
+  const state={has_messages:true,statistics:{responses:'1',
+    generation:{responses:'1',output_tokens:'14',elapsed_us:'8200000'},observations:{
+      output_tokens:'13',output_us:'3037',output_samples:'1',recent:[request('last',{attempts:[
+        attempt({transport:'web_socket',elapsed_us:'1308763',outcome:'failed'}),latest,
+      ]})],
+    }}};
+  const before=structuredClone(state);
+  assert.equal((13*1000000/(Number(latest.elapsed_us)-Number(latest.first_text_us))).toFixed(1),'4280.5');
+  const value=overview(state);
+  assert.equal(metrics(state,text).find(entry=>entry.id==='composer_speed').value,'1.7/s');
+  assert.equal(value.connection.speed,'1.7');
+  assert.equal(value.timing.speed,'1.7');
+  assert.equal(value.connection.response,6100000n);
+  assert.equal(value.connection.first,6888200n);
+  assert.equal(value.connection.elapsed,6891237n);
+  assert.equal(value.connection.waiting,788200n);
+  assert.deepEqual(state,before);
+});
+
+test('multiple requests retain full output and session timing',()=>{
+  const state={has_messages:true,statistics:{responses:'3',
+    usage:{input:'300',output:'56',reasoning:'4',cached_input:'0'},
+    generation:{responses:'3',output_tokens:'56',elapsed_us:'20000000'},observations:{recent:[
+      request('first',{attempts:[attempt({elapsed_us:'10000000',first_text_us:'9000000',
+        usage:{input:'100',output:'20',reasoning:'1',cached_input:'0'}})]}),
+      request('second',{turn_index:'2',attempts:[attempt({elapsed_us:'3108763',first_text_us:'3000000',
+        usage:{input:'100',output:'22',reasoning:'2',cached_input:'0'}})]}),
+      request('third',{turn_index:'3',attempts:[attempt({elapsed_us:'6891237',first_text_us:'6888200',
+        usage:{input:'100',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:false})]}),
+    ]}}};
+  const value=overview(state,'first');
+  assert.equal(value.chosen.id,'first');
+  assert.equal(metrics(state,text).find(entry=>entry.id==='composer_speed').value,'2.8/s');
+  assert.equal(value.connection.speed,'2.8');
+  assert.equal(value.timing.speed,'2.8');
+  assert.equal(value.usage.output,56n);
+  state.statistics.observations.recent.at(-1).attempts.push(attempt({index:'2',outcome:'failed'}));
+  assert.equal(overview(state).connection.first,null);
+  assert.equal(overview(state).connection.elapsed,null);
+  assert.equal(overview(state).connection.speed,'2.8');
+});
+
+test('session averages preserve historical and unknown timing',()=>{
+  const observations={output_tokens:'13',output_us:'3037',output_samples:'1',recent:[request('old',{
+    attempts:[attempt({elapsed_us:'6891237',first_text_us:'6888200',
+      usage:{input:'100',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:true})],
+  })]};
+  for(const generation of [null,undefined,{output_tokens:'14'},{output_tokens:'14',elapsed_us:'0'}]) {
+    const state={has_messages:true,statistics:{generation,observations,first_token_us:'10'}};
+    const footer=metrics(state,text).find(entry=>entry.id==='composer_speed');
+    assert.equal(footer.visible,false);
+    assert.equal(footer.value,text.composer_metric_unknown);
+    assert.equal(overview(state).connection.speed,null);
+    assert.equal(overview(state).timing.speed,null);
+  }
+  const state={has_messages:false,statistics:{responses:'1',
+    generation:{responses:'1',output_tokens:'14',elapsed_us:'8200000'}}};
+  assert.equal(metrics(state,text).find(entry=>entry.id==='composer_speed').value,'1.7/s');
+  assert.equal(overview(state).connection.speed,'1.7');
+  assert.equal(overview(state).timing.speed,'1.7');
+  assert.equal(overview(state).connection.elapsed,null);
 });
 
 test('socket response receipt never borrows handshake timing',()=>{
@@ -209,9 +264,10 @@ test('latency colors preserve unknown and stage boundaries',()=>{
 });
 test('active phases never infer thinking from token ratios',()=>{
   const value=timing({model_us:'8000000',output_us:'1000000',output_tokens:'30',output_samples:'1',
-    phases:{active_us:'4000000',waiting_us:'1000000',output_us:'1000000',tools_us:'2000000',other_us:'0'}});
+    phases:{active_us:'4000000',waiting_us:'1000000',output_us:'1000000',tools_us:'2000000',other_us:'0'}},
+    {elapsed_us:'2000000',output_tokens:'30'});
   assert.equal(value.active,4000000n);
-  assert.equal(value.speed,30);
+  assert.equal(value.speed,'15.0');
   assert.equal(value.rows.find(row=>row.id==='thinking').value,null);
   assert.equal(value.rows.find(row=>row.id==='arguments').value,null);
   assert.equal(timing({model_us:'8000000'}).active,null);
@@ -219,11 +275,13 @@ test('active phases never infer thinking from token ratios',()=>{
 test('all supported locales include the five sections',()=>{
   for(const locale of ['en','zh-CN','zh-TW','de','es','fr','ja','ko','pt-BR','ru']) {
     const localized=messages(locale);
-    for(const key of ['title','session_usage','session_time','connection','composition','details','payload_partial']) {
+    for(const key of ['title','session_usage','session_time','connection','composition','details','payload_partial','output_speed']) {
       assert.equal(typeof localized[`context_${key}`],'string');
       assert.ok(localized[`context_${key}`].length);
     }
   }
+  assert.equal(messages('zh-CN').context_output_speed,'会话均速');
+  assert.equal(messages('en').context_output_speed,'Session average');
 });
 
 test('partial pricing never becomes the whole session cost',()=>{

@@ -16,7 +16,7 @@ const tokens=(value,estimated=false)=>value==null?'—':`${estimated?'≈ ':''}$
 const dot=color=>div().w(7).h(7).flex_shrink_0().rounded(2).bg(colors()[color]);
 const arrow=open=>new Icon(`icons/chevron-${open?'down':'right'}.svg`).size('xsmall');
 const spacer=()=>div().w(14).flex_shrink_0();
-const speed=(value,text)=>value==null?'—':`${value.toFixed(1)} ${text.usage_speed_unit}`;
+const speed=(value,text)=>value==null?'—':`${value} ${text.usage_speed_unit}`;
 const span=(value,text)=>value!=null && Number(value)>=60000000
   ?text.context_minutes.replace('%{minutes}',String(Math.floor(Number(value)/60000000)))
     .replace('%{seconds}',String(Math.floor(Number(value)/1000000)%60))
@@ -167,7 +167,7 @@ function timing(view,data) {
       .child(muted(part.value!=null && value.active>0n?percent(Number(part.value)*100/Number(value.active)):'—').w(64).flex_shrink_0().text_right());
     return part.id==='thinking'?line.tooltip(text.context_thinking_note):line;
   })).child(div().h_flex().items_center().gap(8).py(6).text_size(14)
-    .child(div().w(14).flex_shrink_0()).child(div().flex_1().child(text.usage_speed))
+    .child(div().w(14).flex_shrink_0()).child(div().flex_1().child(text.context_output_speed))
     .child(div().w(90).flex_shrink_0().text_right().child(speed(value.speed,text)))
     .child(div().w(64).flex_shrink_0()));
   return section('timing',text.context_session_time,span(value.active,text),body,fold(view,'timing',detail));

@@ -1,3 +1,7 @@
+## 0.1.19
+
+- Afficher la même vitesse moyenne de session dans le pied de page et les détails du contexte
+
 ## 0.1.17
 
 - Conserver la page normale pendant le chargement des données initiales

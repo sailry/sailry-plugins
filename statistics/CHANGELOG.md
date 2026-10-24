@@ -1,3 +1,7 @@
+## 0.1.19
+
+- Use the same session average speed in the footer and context details
+
 ## 0.1.18
 
 - Keep slow connection observations visible using the semantic error color

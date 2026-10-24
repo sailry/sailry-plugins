@@ -17730,7 +17730,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17757,9 +17757,17 @@
                 "slot": "statistics",
                 "kind": "metric",
                 "label": {
-                  "label": "Speed",
+                  "label": "Session average",
                   "locales": {
-                    "zh-CN": "速度"
+                    "zh-CN": "会话均速",
+                    "zh-TW": "工作階段平均速度",
+                    "de": "Sitzungsdurchschnitt",
+                    "es": "Promedio de sesión",
+                    "fr": "Moyenne de la session",
+                    "ja": "セッション平均速度",
+                    "ko": "세션 평균 속도",
+                    "pt-BR": "Média da sessão",
+                    "ru": "Средняя скорость сеанса"
                   }
                 },
                 "icon": "gauge",
@@ -17890,7 +17898,18 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Keep slow connection observations visible using the semantic error color"
+        "text": "- Use the same session average speed in the footer and context details",
+        "locales": {
+          "zh-CN": "- 底栏与上下文详情统一显示会话均速",
+          "zh-TW": "- 底欄與上下文詳細資料統一顯示工作階段平均速度",
+          "ja": "- フッターとコンテキスト詳細で同じセッション平均速度を表示",
+          "ko": "- 하단 표시와 컨텍스트 상세에 동일한 세션 평균 속도 표시",
+          "fr": "- Afficher la même vitesse moyenne de session dans le pied de page et les détails du contexte",
+          "de": "- In der Fußzeile und den Kontextdetails dieselbe durchschnittliche Sitzungsgeschwindigkeit anzeigen",
+          "es": "- Mostrar la misma velocidad media de sesión en el pie y los detalles de contexto",
+          "pt-BR": "- Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto",
+          "ru": "- Показывать одинаковую среднюю скорость сеанса внизу и в сведениях о контексте"
+        }
       }
     },
     {

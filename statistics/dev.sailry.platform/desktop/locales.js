@@ -79,7 +79,7 @@ const locales = {
     "composer_timed_output": "Timed output",
     "composer_turns": "Turns",
     "composer_cost": "Cost",
-    "composer_speed": "Speed",
+    "composer_speed": "Session average",
     "composer_first_token": "First token time",
     "composer_cache": "Cache",
     "composer_cache_hit": "Cache hit rate",
@@ -193,7 +193,7 @@ const locales = {
     "composer_timed_output": "测速输出",
     "composer_turns": "轮次",
     "composer_cost": "估算费用",
-    "composer_speed": "速度",
+    "composer_speed": "会话均速",
     "composer_first_token": "首字时间",
     "composer_cache": "缓存率",
     "composer_cache_hit": "命中率",
@@ -229,6 +229,7 @@ const locales = {
     "context_no_data": "暂无数据"
   },
   "de": {
+    "composer_speed": "Sitzungsdurchschnitt",
     "composer_context_estimate": "Geschätzter Kontext %{used} / %{limit}",
     "composer_first_token": "Zeit bis zum ersten Token",
     "context_title": "Kontext",
@@ -247,6 +248,7 @@ const locales = {
     "context_no_data": "Keine Daten"
   },
   "es": {
+    "composer_speed": "Promedio de sesión",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
     "composer_first_token": "Tiempo hasta el primer token",
     "context_title": "Contexto",
@@ -265,6 +267,7 @@ const locales = {
     "context_no_data": "Sin datos"
   },
   "fr": {
+    "composer_speed": "Moyenne de la session",
     "composer_context_estimate": "Contexte estimé %{used} / %{limit}",
     "composer_first_token": "Délai du premier token",
     "context_title": "Contexte",
@@ -283,6 +286,7 @@ const locales = {
     "context_no_data": "Aucune donnée"
   },
   "ja": {
+    "composer_speed": "セッション平均速度",
     "composer_context_estimate": "推定コンテキスト %{used} / %{limit}",
     "composer_first_token": "最初のトークンまでの時間",
     "context_title": "コンテキスト",
@@ -301,6 +305,7 @@ const locales = {
     "context_no_data": "データなし"
   },
   "ko": {
+    "composer_speed": "세션 평균 속도",
     "composer_context_estimate": "예상 컨텍스트 %{used} / %{limit}",
     "composer_first_token": "첫 토큰 시간",
     "context_title": "컨텍스트",
@@ -319,6 +324,7 @@ const locales = {
     "context_no_data": "데이터 없음"
   },
   "pt-BR": {
+    "composer_speed": "Média da sessão",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
     "composer_first_token": "Tempo até o primeiro token",
     "context_title": "Contexto",
@@ -337,6 +343,7 @@ const locales = {
     "context_no_data": "Sem dados"
   },
   "ru": {
+    "composer_speed": "Средняя скорость сеанса",
     "composer_context_estimate": "Оценка контекста %{used} / %{limit}",
     "composer_first_token": "Время до первого токена",
     "context_title": "Контекст",
@@ -355,6 +362,7 @@ const locales = {
     "context_no_data": "Нет данных"
   },
   "zh-TW": {
+    "composer_speed": "工作階段平均速度",
     "composer_context_estimate": "估算上下文 %{used} / %{limit}",
     "composer_first_token": "首字時間",
     "context_title": "上下文",

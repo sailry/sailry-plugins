@@ -1,3 +1,7 @@
+## 0.1.19
+
+- In der Fußzeile und den Kontextdetails dieselbe durchschnittliche Sitzungsgeschwindigkeit anzeigen
+
 ## 0.1.17
 
 - Die normale Seite während des ersten Datenladens beibehalten

@@ -1,3 +1,7 @@
+## 0.1.19
+
+- Mostrar la misma velocidad media de sesión en el pie y los detalles de contexto
+
 ## 0.1.17
 
 - Mantener la página normal mientras se cargan los datos iniciales
