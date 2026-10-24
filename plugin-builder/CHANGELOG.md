@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Accept current permission and connector declarations and connector modules in package preflight checks
+
 ## 0.1.5
 
 - Check declared authentication scripts and their credential access

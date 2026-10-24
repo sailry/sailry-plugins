@@ -87,6 +87,29 @@ test('rejects unknown actions and extension fields', () => {
   assert.match(result.output, /unknown extension field: network/);
 });
 
+test('accepts declared system permissions', () => {
+  const result = check(fixture({'plugin.json': manifest({
+    permissions: [{kind: 'microphone', subject: 'sailry'}],
+  })}));
+  assert.equal(result.code, 0, result.output);
+});
+
+test('accepts connector declarations and modules', () => {
+  const result = check(fixture({
+    'plugin.json': manifest({
+      connectors: [],
+      host: {
+        entry: 'dev.sailry.platform/host/main.js',
+        resources: ['dev.sailry.platform/host/main.js'],
+        handlers: ['request'],
+      },
+    }),
+    'dev.sailry.platform/host/main.js':
+      'import * as http from "sailry/http";\nimport * as connectors from "sailry/connectors";\nexport async function request() { return {http, connectors}; }\n',
+  }));
+  assert.equal(result.code, 0, result.output);
+});
+
 test('accepts the registration declaration and module', () => {
   const directory = fixture({
     'plugin.json': manifest({

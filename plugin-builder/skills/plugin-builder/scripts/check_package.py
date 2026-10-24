@@ -23,7 +23,8 @@ IMPORT = re.compile(
 MODULES = {
     "gpui-base", "gpui-component", "gpui-kit", "sailry", "sailry/ui", "sailry/forms",
     "sailry/sdk", "sailry/connections", "sailry/credentials", "sailry/models",
-    "sailry/card", "sailry/cards", "sailry/registration", "sailry/documents",
+    "sailry/card", "sailry/cards", "sailry/connectors", "sailry/http",
+    "sailry/registration", "sailry/documents",
     "sailry/file-transfers", "sailry/ssh-transfers", "sailry/artifacts", "sailry/search",
     "sailry/settings", "sailry/installations",
 }
@@ -31,7 +32,7 @@ FIELDS = {
     "api_version", "scope", "actions", "display", "description", "icon", "instructions",
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
-    "enabled_service", "oauth", "registration", "cards", "category", "tint",
+    "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
     "conversation_options", "model_providers", "model_auth", "model_resources", "model_adapters",
 }
 ACTIONS = {

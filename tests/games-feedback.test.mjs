@@ -33,6 +33,8 @@ async function harness(name, options = {}) {
     completion: options.completion || (async () => { throw new Error("unconfirmed"); }),
     completeRequest: options.completion || (async () => { throw new Error("unconfirmed"); }),
     readSettings: options.readSettings || (async () => { throw new Error("unavailable"); }),
+    listModels: async () => ({ models: [] }),
+    getValue: async () => null,
   };
   vm.runInNewContext(source(new URL("main.js", base)).replace("export default class", "globalThis.Game = class"), scope);
   const view = new scope.Game();

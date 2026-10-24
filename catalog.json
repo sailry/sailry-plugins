@@ -15176,7 +15176,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -15204,7 +15204,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Check declared authentication scripts and their credential access"
+        "text": "- Accept current permission and connector declarations and connector modules in package preflight checks"
       }
     },
     {

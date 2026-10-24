@@ -91,7 +91,7 @@ test('databases: entry refreshes catalogs without SQL execution or losing select
   const owner=new Controller(),cx={notify(){},focus_handle(){},spawn:job=>jobs.push(job)};
   let changed;
   owner.watch=(read,handle)=>{if(read===nextChange)changed=handle;};owner.init(null,cx);
-  await jobs.shift()(cx);
+  assert.equal(jobs.length,0);
   changed({cursor:'7:true:0',entry:'0',connected:true},cx);await jobs.shift()(cx);
   const catalog={profile,loading:new Set(),expanded:new Set(['main']),current:'table:0:0',load:async(database,_cx,reset)=>loads.push([database,reset])};
   const result={rows:[['Retained result']]},editor={draft:'Unsaved connection'};
