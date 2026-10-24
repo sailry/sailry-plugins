@@ -204,7 +204,10 @@ test('terminal read changes reread the shared order', async () => {
 test('navigation metadata validates packaged imports', async () => {
   checkPackage(fileURLToPath(new URL('plugin.json',root)));
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
-  const desktop = manifest.extensions['dev.sailry.platform'].desktop;
+  const extension = manifest.extensions['dev.sailry.platform'], desktop = extension.desktop;
+  assert.equal(manifest.name,'activity-board');assert.deepEqual(extension.actions,['activity.read']);
+  assert.equal(extension.scope,'desktop');
+  for (const field of ['host','tools','instructions','storage']) assert.equal(extension[field],undefined);
   assert.equal(desktop.navigation_options.target,'node');assert.equal(desktop.navigation_options.order,100);
   assert.equal(desktop.navigation_options.pinned,true);
 });

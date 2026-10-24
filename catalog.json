@@ -2,6 +2,78 @@
   "version": 1,
   "packages": [
     {
+      "id": "activity-board",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "activity-board",
+        "version": "0.1.0",
+        "description": "View session and terminal activity",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "scope": "desktop",
+            "actions": [
+              "activity.read"
+            ],
+            "display": {
+              "label": "Activity Board",
+              "locales": {
+                "zh-CN": "活动看板"
+              },
+              "icon": "reicon:ui/grid"
+            },
+            "description": {
+              "label": "View session and terminal activity",
+              "locales": {
+                "zh-CN": "查看会话和终端活动"
+              }
+            },
+            "desktop": {
+              "entry": "dev.sailry.platform/desktop/main.js",
+              "resources": [
+                "dev.sailry.platform/desktop/main.js",
+                "dev.sailry.platform/desktop/state.js",
+                "dev.sailry.platform/desktop/view.js",
+                "dev.sailry.platform/desktop/locales.js"
+              ],
+              "navigation": {
+                "label": "Activity Board",
+                "locales": {
+                  "zh-CN": "活动看板"
+                },
+                "icon": "reicon:ui/grid"
+              },
+              "navigation_options": {
+                "pinned": true,
+                "order": 100,
+                "target": "node"
+              }
+            },
+            "category": "automation",
+            "tint": "amber"
+          }
+        }
+      },
+      "provides_models": false,
+      "permissions": [
+        "activity.read"
+      ],
+      "release_notes": {
+        "text": "- Add the optional Activity Board",
+        "locales": {
+          "zh-CN": "- 新增可选的活动看板",
+          "zh-TW": "- 新增可選的活動看板",
+          "ja": "- 任意で導入できるアクティビティボードを追加",
+          "ko": "- 선택 설치할 수 있는 활동 보드 추가",
+          "fr": "- Ajouter le tableau d’activité facultatif",
+          "de": "- Optionale Aktivitätsübersicht hinzufügen",
+          "es": "- Añadir el tablero de actividad opcional",
+          "pt-BR": "- Adicionar o painel de atividades opcional",
+          "ru": "- Добавить необязательную доску активности"
+        }
+      }
+    },
+    {
       "id": "brief",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -15209,15 +15281,13 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "progress",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "description": "Track task progress",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "instructions": "Use update_plan for substantial multi-step tasks and keep one complete current list with honest statuses. Include affected files, implementation steps and verification; record risks and questions when they matter. Skip plans for direct questions and simple changes. Mark completed only after the described result is verified. Create a persistent goal only when the user requests one. Progress does not approve a plan or grant execution authority.",
-            "actions": [
-              "activity.read"
-            ],
+            "actions": [],
             "display": {
               "label": "Plan",
               "locales": {
@@ -15229,27 +15299,6 @@
               "label": "Track task progress",
               "locales": {
                 "zh-CN": "跟踪任务进度"
-              }
-            },
-            "desktop": {
-              "entry": "dev.sailry.platform/desktop/main.js",
-              "resources": [
-                "dev.sailry.platform/desktop/main.js",
-                "dev.sailry.platform/desktop/state.js",
-                "dev.sailry.platform/desktop/view.js",
-                "dev.sailry.platform/desktop/locales.js"
-              ],
-              "navigation": {
-                "label": "Activity",
-                "locales": {
-                  "zh-CN": "活动看板"
-                },
-                "icon": "reicon:ui/grid"
-              },
-              "navigation_options": {
-                "pinned": true,
-                "order": 100,
-                "target": "node"
               }
             },
             "host": {
@@ -15341,11 +15390,20 @@
         }
       },
       "provides_models": false,
-      "permissions": [
-        "activity.read"
-      ],
+      "permissions": [],
       "release_notes": {
-        "text": "- Read independent activity preview batches concurrently"
+        "text": "- Separate Activity Board from Plan tools",
+        "locales": {
+          "zh-CN": "- 将活动看板与计划工具拆为独立插件",
+          "zh-TW": "- 將活動看板與計畫工具拆為獨立外掛",
+          "ja": "- アクティビティボードと計画ツールを別のプラグインに分離",
+          "ko": "- 활동 보드를 계획 도구와 별도 플러그인으로 분리",
+          "fr": "- Séparer le tableau d’activité des outils de planification",
+          "de": "- Aktivitätsübersicht und Planwerkzeuge in getrennte Plugins aufteilen",
+          "es": "- Separar el tablero de actividad de las herramientas de planificación",
+          "pt-BR": "- Separar o painel de atividades das ferramentas de planejamento",
+          "ru": "- Отделить доску активности от инструментов планирования"
+        }
       }
     },
     {

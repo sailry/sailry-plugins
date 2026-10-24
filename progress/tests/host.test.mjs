@@ -39,7 +39,8 @@ test('complete plans use the total UTF-8 budget', () => {
 test('the ordinary package uses canonical progress presentation without session mutation authority', async () => {
   const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'], tool = extension.tools[0];
-  assert.equal(manifest.name,'progress'); assert.deepEqual(extension.actions,['activity.read']);
+  assert.equal(manifest.name,'progress'); assert.deepEqual(extension.actions,[]);
+  assert.equal(extension.desktop,undefined);
   assert.equal(tool.presentation,'progress'); assert.equal(tool.grouping,'standalone');
   assert.deepEqual(tool.contexts,['plugin','workspace']);
   assert.equal(tool.handler.operation,undefined); assert.equal(tool.handler.name,'update');

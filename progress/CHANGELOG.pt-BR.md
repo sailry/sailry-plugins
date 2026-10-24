@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Separar o painel de atividades das ferramentas de planejamento
+
 ## 0.1.4
 
 - Adiciona categoria e cor do ícone ao catálogo
