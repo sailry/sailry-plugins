@@ -44,7 +44,7 @@ test('connection observations resolve every background through semantic colors',
     return ()=>element();
   }});
   const {connection}=vm.runInNewContext(`${source}\n({connection})`,{
-    div:element,Button:{new:element},Collapsible:class {constructor(){return element();}},
+    div:element,Button:{new:element},TextLine:{new:element},Collapsible:class {constructor(){return element();}},
     Icon:class {constructor(){return element();}},theme:()=>({colors}),latency,compact,duration,
   });
   for(const value of [null,0n,2000000n,15000000n]) {

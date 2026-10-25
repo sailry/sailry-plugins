@@ -1,3 +1,7 @@
+## 0.1.21
+
+- Align context metric values and units using shaped text baselines
+
 ## 0.1.20
 
 - Show session connection averages and toggle context step details

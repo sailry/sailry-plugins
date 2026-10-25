@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Group adjacent child guidance and observation tools while keeping child creation separate
+
 ## 0.1.21
 
 - Resume idle child sessions through explicit guidance

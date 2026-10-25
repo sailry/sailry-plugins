@@ -4052,7 +4052,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4506,7 +4506,7 @@
                 "name": "guide_agent",
                 "operation": "agents.guide",
                 "presentation": "details",
-                "grouping": "standalone",
+                "grouping": "sequence",
                 "description": "Give new directions to a child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Running guidance is durable: the child receives it after its entire current tool batch settles and before its next model request; an in-flight model response yields at that boundary. This returns a queued guidance receipt, not the child's final result. Explicit follow-up to an idle child starts a new task in the same session, preserving its history, role, model, worktree and permissions. The task uses current package settings and the normal bounded child observation window; a pending result keeps running under its returned session and turn IDs. Do not spawn it again. Busy queued or stopping children cannot be restarted.",
                 "display": {
                   "label": "Guide subagent",
@@ -4538,7 +4538,7 @@
                 "name": "wait_agent",
                 "operation": "agents.wait",
                 "presentation": "details",
-                "grouping": "standalone",
+                "grouping": "sequence",
                 "description": "Observe a child owned by this conversation within a bounded observation window and collect its durable final status and answer when available. An admitted, pending response with queued or running status is not failure or completion: the same child continues under its existing session and turn IDs. Do not spawn it again. Use it when the user requests waiting or result collection, or to collect the complete answer from a background notice. Do not poll running background work; its completion arrives as a notice. Guiding background work alone does not request waiting. Copy its exact returned session ID; never reconstruct it. Main-session guidance returns early with guidance_pending so this conversation can apply the user's direction; resume waiting only if the user still requests it. This does not create or replay work.",
                 "display": {
                   "label": "Wait for subagent",
@@ -4639,7 +4639,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Resume idle child sessions through explicit guidance"
+        "text": "- Group adjacent child guidance and observation tools while keeping child creation separate"
       }
     },
     {
@@ -17270,7 +17270,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17438,18 +17438,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Show session connection averages and toggle context step details",
-        "locales": {
-          "zh-CN": "- 汇总会话连接均值，支持切换全部与单步上下文明细",
-          "zh-TW": "- 彙總工作階段連線平均值，支援切換全部與單步上下文詳細資料",
-          "ja": "- セッションの接続平均を表示し、すべてのステップと単一ステップのコンテキスト詳細を切り替え",
-          "ko": "- 세션 연결 평균을 표시하고 전체 또는 개별 단계의 컨텍스트 상세 전환",
-          "fr": "- Afficher les moyennes de connexion de session et basculer entre tous les détails de contexte et une étape",
-          "de": "- Durchschnittliche Sitzungsverbindungen anzeigen und Kontextdetails aller oder einzelner Schritte umschalten",
-          "es": "- Mostrar promedios de conexión de la sesión y alternar detalles de todos los pasos o de uno",
-          "pt-BR": "- Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma",
-          "ru": "- Показывать средние показатели соединений сеанса и переключать детали контекста всех или одного шага"
-        }
+        "text": "- Align context metric values and units using shaped text baselines"
       }
     },
     {

@@ -2,6 +2,7 @@ import {div} from 'gpui-kit';
 import {Button} from 'gpui-base';
 import {Collapsible,Icon} from 'gpui-component';
 import {theme} from 'sailry';
+import {TextLine} from 'sailry/ui';
 import {compact,grouped,duration,tokenCount} from './format.js';
 import {overview,latency,shares} from './context.js';
 
@@ -66,19 +67,18 @@ function bars(id,parts,whole=null) {
       .min_w(0).flex_shrink_0().w(`${part.share}%`).bg(colors()[part.color])));
 }
 
-function metric(value,size=23,tone='foreground') {
+function metric(id,value,size=23,tone='foreground',capacity=null,reference_size=null) {
   const match=String(value).match(/^([≈\s]*[\d.,]+)\s*(.*)$/);
-  // The script Label styles its wrapper; native Label restores foreground.
-  // Direct Kit text children retain independent colors on the same baseline.
-  return div().h_flex().items_baseline().gap(3)
-    .child(div().text_size(size).line_height(1.2).font_medium().text_color(colors()[tone]).child(match?match[1]:String(value)))
-    .children(match?.[2]?[div().text_size(12).line_height(1.2).text_color(colors().muted_foreground).child(match[2])]:[]);
+  const runs=[{text:match?match[1]:String(value),size,weight:500,color:colors()[tone]}];
+  if(match?.[2])runs.push({text:match[2],size:12,weight:400,color:colors().muted_foreground,gap:3});
+  if(capacity!=null)runs.push({text:capacity,size:14,weight:400,color:colors().muted_foreground,gap:5});
+  return TextLine.new(id,{runs,line_height:1.2,reference_size});
 }
 
-function grid(values) {
-  return div().h_flex().w_full().gap(12).children(values.map(([label,value,note])=>{
+function grid(id,values) {
+  return div().h_flex().w_full().gap(12).children(values.map(([label,value,note],index)=>{
     let cell=div().v_flex().flex_1().min_w_0().gap(8)
-      .child(div().text_size(14).text_color(colors().muted_foreground).child(label)).child(metric(value));
+      .child(div().text_size(14).text_color(colors().muted_foreground).child(label)).child(metric(`context-${id}-metric-${index}`,value));
     return note?cell.tooltip(note):cell;
   }));
 }
@@ -97,10 +97,9 @@ function occupancy(view,data) {
       .on_click((_,cx)=>{view.select(item.id);cx.notify();})));
   const basis=used.basis?text[used.basis]:text.composer_metric_unknown;
   const header=div().h_flex().items_baseline().gap(5)
-    .child(metric(tokens(used.tokens,used.estimated),30))
-    .child(div().text_size(14).line_height(1.2).text_color(colors().muted_foreground).child(`/ ${number(used.limit)}`))
+    .child(metric('context-occupancy-tokens',tokens(used.tokens,used.estimated),30,'foreground',`/ ${number(used.limit)}`,30))
     .child(div().flex_1())
-    .child(metric(percent(used.percent),22,'muted_foreground')).tooltip([used.model,basis].filter(Boolean).join(' · '));
+    .child(metric('context-occupancy-percent',percent(used.percent),22,'muted_foreground',null,30)).tooltip([used.model,basis].filter(Boolean).join(' · '));
   const remaining=used.threshold==null||used.tokens==null?null:used.threshold>used.tokens?used.threshold-used.tokens:0n;
   const meter=div().relative().w_full().child(bars('context-occupancy-bar',[{value:used.tokens,color:'chart_2'}],used.limit).h(9));
   if(used.limit>0n && used.threshold!=null) meter.child(div().absolute().top(-3).bottom(-3).w(1)
@@ -135,7 +134,7 @@ function usage(view,data) {
   const {text}=view,value=data.usage;
   const disclosure=value.tools.length>0;
   const item=(label,value)=>row(label,value,{disclosure});
-  const body=column().child(grid([
+  const body=column().child(grid('usage',[
     [text.usage_column_input,tokenCount(value.input,text.context_token_count)??'—',text.context_input_note],
     [text.usage_column_output,tokenCount(value.output,text.context_token_count)??'—',text.context_output_note],
     [text.context_cache_read,tokenCount(value.cached,text.context_token_count)??'—',text.context_cache_note],
@@ -196,7 +195,7 @@ function connection(view,data) {
     .child(node('monitor',text.context_host)).child(link(value.response,text.context_api_response,text.context_headers_note,'response'))
     .child(node('server',text.context_api)).child(link(value.waiting,text.context_first_wait,text.context_wait_note,'waiting'))
     .child(node('brain-circuit',text.context_ai)))
-    .child(grid([[text.context_api_response,span(value.response,text),text.context_headers_note],
+    .child(grid('connection',[[text.context_api_response,span(value.response,text),text.context_headers_note],
       [text.context_first_response,span(value.first,text),text.context_first_note],
       [text.context_output_speed,speed(value.speed,text)],[text.context_request_time,span(value.elapsed,text)]]));
   const route=value.route==null?'—':text[`context_route_${value.route}`]??value.route;
