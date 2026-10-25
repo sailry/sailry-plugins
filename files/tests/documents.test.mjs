@@ -4,7 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/documents.js',import.meta.url),'utf8'))
-  .replace(/^import[\s\S]*?from 'sailry\/documents';\n/m,'').replace(/^export /gm,'');
+  .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
 const plain = value => JSON.parse(JSON.stringify(value));
 const document = (id, fields = {}) => ({id,path:`${id}.txt`,revision:'original',dirty:false,
   saving:false,uncertain:false,truncated:false,mode:'source',markdown:false,can_copy:true,
@@ -15,6 +15,7 @@ function fixture(initial, afterClose = async () => {}, confirm = async () => fal
   const calls = [],errors = [];
   const cx = {notify(){}};
   const api = {
+    faultCode:message => JSON.parse(message).code,
     readDocuments:() => state,
     nextDocumentChange:async () => { throw new Error('closed'); },
     openDocument:async (path,options) => { calls.push(['open',path,options]); },
@@ -32,7 +33,7 @@ function fixture(initial, afterClose = async () => {}, confirm = async () => fal
   };
   const Documents = vm.runInNewContext(`${source}\nDocuments`,api);
   const documents = new Documents((...error) => errors.push(error));
-  return {documents,calls,errors,cx,set:value => {state = value;}};
+  return {documents,calls,errors,cx,api,set:value => {state = value;}};
 }
 
 test('tab order and selection survive snapshots and exact decimal cursor ordering', () => {
@@ -179,4 +180,85 @@ test('uncertain outcomes preserve drafts and report each changed failure once', 
   documents.accept({cursor:'3',documents:[document('a')],reveal:null},cx);
   documents.accept({...state,cursor:'4'},cx);
   assert.equal(errors.length,2);
+});
+
+test('native save failures report once across snapshot ordering', async () => {
+  for (const code of ['revision_conflict','outcome_unknown']) for (const early of [true,false]) {
+    const current = document('draft',{dirty:true,can_save:true});
+    const failure = {code,message:'Save was not confirmed'};
+    const state = {cursor:'2',documents:[{...current,error:failure,uncertain:code === 'outcome_unknown'}],reveal:null};
+    const {documents,cx,errors,api,set} = fixtureState('1',[current]);
+    api.saveDocument = async () => {
+      set(state);
+      if (early) documents.accept(state,cx);
+      throw new Error(JSON.stringify(failure));
+    };
+    await documents.save(cx);
+    documents.accept(state,cx);
+    assert.deepEqual(plain(errors),[[failure,current]]);
+    assert.equal(documents.current().dirty,true);
+    assert.equal(documents.current().uncertain,code === 'outcome_unknown');
+  }
+});
+
+test('transport failures retain one save-specific fallback', async () => {
+  for (const unreadable of [false,true]) {
+    const current = document('draft',{dirty:true,can_save:true});
+    const {documents,cx,errors,api} = fixtureState('1',[current]);
+    api.saveDocument = async () => { throw new Error(JSON.stringify({code:'outcome_unknown'})); };
+    if (unreadable) api.readDocuments = () => { throw new Error('view unavailable'); };
+    await documents.save(cx);
+    assert.deepEqual(plain(errors),[[{code:'outcome_unknown'},current]]);
+    assert.equal(documents.current().dirty,true);
+  }
+});
+
+test('explicit save retries each report their own failure', async () => {
+  const current = document('draft',{dirty:true,can_save:true});
+  const failure = {code:'revision_conflict',message:'File changed'};
+  const {documents,cx,errors,api,set} = fixtureState('1',[current]);
+  let attempts = 0;
+  api.saveDocument = async () => {
+    const state = {cursor:String(++attempts + 1),documents:[{...current,error:failure}],reveal:null};
+    set(state); documents.accept(state,cx);
+    throw new Error(JSON.stringify(failure));
+  };
+  await documents.save(cx);
+  await documents.save(cx);
+  assert.equal(attempts,2);
+  assert.deepEqual(plain(errors.map(([error,document]) => [error,document.id])),[
+    [failure,'draft'],[failure,'draft'],
+  ]);
+});
+
+test('matching failures remain scoped to their documents', async () => {
+  const items = [document('first',{dirty:true,can_save:true}),document('second',{dirty:true,can_save:true})];
+  const failure = {code:'outcome_unknown',message:'Save was not confirmed'};
+  const {documents,cx,errors,api,set} = fixtureState('1',items);
+  let cursor = 1;
+  api.saveDocument = async id => {
+    const state = {cursor:String(++cursor),documents:documents.state.documents.map(item =>
+      item.id === id ? {...item,error:failure,uncertain:true} : item),reveal:null};
+    set(state); documents.accept(state,cx);
+    throw new Error(JSON.stringify(failure));
+  };
+  await documents.save(cx);
+  await documents.select('second',cx);
+  await documents.save(cx);
+  assert.deepEqual(plain(errors.map(([error,document]) => [error,document.id])),[
+    [failure,'first'],[failure,'second'],
+  ]);
+});
+
+test('concurrent save clicks share the active attempt', async () => {
+  const current = document('draft',{dirty:true,can_save:true});
+  const {documents,cx,errors,api} = fixtureState('1',[current]);
+  let reject, attempts = 0;
+  api.saveDocument = () => { attempts++; return new Promise((_,failed) => { reject = failed; }); };
+  const saving = documents.save(cx);
+  await documents.save(cx);
+  reject(new Error(JSON.stringify({code:'outcome_unknown'})));
+  await saving;
+  assert.equal(attempts,1);
+  assert.equal(errors.length,1);
 });

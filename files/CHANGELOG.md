@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Report each save failure once while retaining conflict and uncertain outcomes
+
 ## 0.1.10
 
 - Show OCR model lists as concise activity while retaining file and notebook changes

@@ -2,6 +2,7 @@
 // Native document handles retain text, undo, drafts and pending publications.
 import {readDocuments, nextDocumentChange, openDocument, documentAction,
   saveDocument, closeDocument} from 'sailry/documents';
+import {faultCode} from 'sailry/sdk';
 
 export class Documents {
   constructor(report) {
@@ -12,6 +13,7 @@ export class Documents {
     this.selection = 0;
     this.revealed = '0';
     this.errors = new Map();
+    this.saves = new Map();
     this.accept(readDocuments());
   }
 
@@ -31,7 +33,10 @@ export class Documents {
     for (const document of state.documents) {
       if (!this.order.includes(document.id)) this.order.push(document.id);
       const signature = document.error ? JSON.stringify(document.error) : null;
-      if (signature && this.errors.get(document.id) !== signature) this.report(document.error,document);
+      const save = this.saves.get(document.id);
+      // Explicit saves report after their reply; native shortcuts use snapshots.
+      if (save) save.error = document.error;
+      else if (signature && this.errors.get(document.id) !== signature) this.report(document.error,document);
       if (signature) this.errors.set(document.id,signature);
       else this.errors.delete(document.id);
     }
@@ -83,9 +88,16 @@ export class Documents {
 
   async save(cx) {
     const document = this.current();
-    if (!document?.can_save) return;
-    await saveDocument(document.id);
-    this.refresh(cx);
+    if (!document?.can_save || this.saves.has(document.id)) return;
+    const save = {error:null};
+    this.saves.set(document.id,save);
+    let failure;
+    try { await saveDocument(document.id); }
+    catch (error) { failure = {code:faultCode(error.message ?? String(error))}; }
+    try { this.refresh(cx); }
+    catch (error) { if (!failure) throw error; }
+    finally { this.saves.delete(document.id); }
+    if (failure) this.report(save.error?.code === failure.code ? save.error : failure,document);
   }
 
   async close(id, cx) {

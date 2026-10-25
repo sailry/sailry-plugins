@@ -89,7 +89,8 @@ export default class Files extends View {
   report(key,kind='error') { toast({id:`files-${kind}`,message:this.text[key] ?? this.text.files_read_failed,kind}); }
 
   documentError(error) {
-    this.report(error.code === 'outcome_unknown' ? 'files_outcome_unknown'
+    this.report(error.code === 'busy' ? 'files_operation_busy'
+      : error.code === 'outcome_unknown' ? 'files_outcome_unknown'
       : ['conflict','revision_conflict'].includes(error.code) ? 'files_save_conflict'
       : error.code === 'invalid_request' ? 'files_read_failed' : 'files_save_failed');
   }

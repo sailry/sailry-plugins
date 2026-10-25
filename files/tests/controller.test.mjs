@@ -10,6 +10,8 @@ const source = (await readFile(new URL('dev.sailry.platform/desktop/main.js',roo
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
 const actionSource = (await readFile(new URL('dev.sailry.platform/desktop/actions.js',root),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+const documentSource = (await readFile(new URL('dev.sailry.platform/desktop/documents.js',root),'utf8'))
+  .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
 
 test('directory refresh starts while composer eligibility remains pending', async () => {
   let resolve;
@@ -31,6 +33,57 @@ test('completed directory work prepares menus before notifying the renderer', as
   view.run(async () => events.push('directory'),cx);
   await Promise.all(tasks);
   assert.deepEqual(events,['directory','menus','notify']);
+});
+
+test('save controls retain one classified failure toast', async () => {
+  for (const code of ['revision_conflict','outcome_unknown','busy']) for (const early of [true,false,null]) {
+    const tasks = [], toasts = [];
+    const current = {id:'draft',path:'draft.txt',dirty:true,can_save:true,error:null};
+    const failure = {code,message:'Save failed'};
+    let state = {cursor:'1',documents:[current],reveal:null}, documents;
+    const cx = {spawn:task => tasks.push(task(cx)),notify(){}};
+    const api = {
+      View:class {},readDocuments:() => state,
+      faultCode:message => JSON.parse(message).code,
+      toast:message => toasts.push(message),
+      saveDocument:async () => {
+        if (early !== null) state = {cursor:'2',documents:[{...current,error:failure}],reveal:null};
+        if (early) documents.accept(state,cx);
+        throw new Error(JSON.stringify(failure));
+      },
+    };
+    const {Files,Documents} = vm.runInNewContext(`${source}\n${documentSource}\n({Files,Documents})`,api);
+    const view = new Files();
+    view.text = {files_save_conflict:'Save conflict',files_outcome_unknown:'Save outcome unknown',
+      files_operation_busy:'Operation in progress',files_open_failed:'Open failed'};
+    view.actions = {prepareTree(){}};
+    documents = view.documents = new Documents(error => view.documentError(error));
+    view.control('files_save',cx);
+    await Promise.all(tasks);
+    documents.accept(state,cx);
+    const message = code === 'revision_conflict' ? 'Save conflict'
+      : code === 'outcome_unknown' ? 'Save outcome unknown' : 'Operation in progress';
+    assert.deepEqual(JSON.parse(JSON.stringify(toasts)),[{id:'files-error',message,kind:'error'}]);
+    assert.equal(documents.current().dirty,true);
+  }
+});
+
+test('native save shortcuts retain snapshot feedback', () => {
+  const toasts = [];
+  let state = {cursor:'1',documents:[{id:'draft',path:'draft.txt',dirty:true,error:null}],reveal:null};
+  const {Files,Documents} = vm.runInNewContext(`${source}\n${documentSource}\n({Files,Documents})`,{
+    View:class {},readDocuments:() => state,toast:message => toasts.push(message),
+  });
+  const view = new Files();
+  view.text = {files_save_conflict:'Save conflict',files_outcome_unknown:'Save outcome unknown'};
+  const documents = new Documents(error => view.documentError(error));
+  for (const [index,code] of ['revision_conflict','outcome_unknown'].entries()) {
+    state = {cursor:String(index + 2),documents:[{...state.documents[0],error:{code}}],reveal:null};
+    documents.accept(state);
+    documents.accept(state);
+  }
+  assert.deepEqual(toasts.map(toast => toast.message),['Save conflict','Save outcome unknown']);
+  assert.equal(documents.current().dirty,true);
 });
 
 test('native search options retain package-owned control state', () => {
