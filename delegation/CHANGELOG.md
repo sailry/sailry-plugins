@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Resume idle child sessions through explicit guidance
+
 ## 0.1.20
 
 - Scroll the complete subagent form above the action buttons

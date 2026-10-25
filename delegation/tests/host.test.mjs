@@ -177,8 +177,10 @@ test('comparison skill matches independent worktree implementations',async()=>{
   assert.match(skill,/If the request is only a question, compare the approaches directly without creating worktrees/);
   assert.match(skill,/requested comparison or recommendation requires collecting every final result with wait_agent/);
   assert.match(skill,/user requests background execution instead, acknowledge admission and leave the children running/);
-  assert.match(skill,/Guidance alone does not request foreground waiting/);
+  assert.match(skill,/Guidance to a running child alone does not request foreground waiting/);
   assert.match(skill,/queued receipt without claiming the child has finished/);
+  assert.match(skill,/Explicit follow-up to an idle child through guide_agent starts a new task in that same session with bounded observation/);
+  assert.match(skill,/pending result keeps running under its returned session and turn IDs; do not spawn the same work again/);
   assert.match(skill,/Remove a worktree that has no changes and no new commits/);
   assert.match(skill,/stop and report conflicts to the user without resolving them automatically/);
   assert.match(skill,/never discard work to make removal succeed/);
@@ -194,9 +196,13 @@ test('child controls preserve exact identity and explicit follow-up',async()=>{
     assert.match(description,/never reconstruct/);
   }
   const guide = tools.find(tool => tool.name === 'guide_agent');
-  assert.match(guide.description,/running child owned by this conversation/);
-  assert.match(guide.description,/user requests follow-up work/);
-  assert.match(guide.description,/spawn_agent with that session ID and a new task/);
+  assert.match(guide.description,/child owned by this conversation/);
+  assert.match(guide.description,/Explicit follow-up to an idle child starts a new task in the same session/);
+  assert.match(guide.description,/preserving its history, role, model, worktree and permissions/);
+  assert.match(guide.description,/normal bounded child observation window/);
+  assert.match(guide.description,/pending result keeps running under its returned session and turn IDs/);
+  assert.match(guide.description,/Do not spawn it again/);
+  assert.match(guide.description,/Busy queued or stopping children cannot be restarted/);
   assert.match(guide.description,/entire current tool batch settles/);
 });
 

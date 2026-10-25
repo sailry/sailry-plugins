@@ -4501,7 +4501,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4956,7 +4956,7 @@
                 "operation": "agents.guide",
                 "presentation": "details",
                 "grouping": "standalone",
-                "description": "Give new directions to a running child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Admission is durable; the child receives them only after its entire current tool batch settles, preserving its history, role, model, worktree and permissions. This does not interrupt an in-flight model response or tool. This returns a queued guidance receipt, not the child's final result. If the child has finished and the user requests follow-up work, use spawn_agent with that session ID and a new task instead.",
+                "description": "Give new directions to a child owned by this conversation. Copy its exact returned session ID; never reconstruct it. Running guidance is durable: the child receives it after its entire current tool batch settles and before its next model request; an in-flight model response yields at that boundary. This returns a queued guidance receipt, not the child's final result. Explicit follow-up to an idle child starts a new task in the same session, preserving its history, role, model, worktree and permissions. The task uses current package settings and the normal bounded child observation window; a pending result keeps running under its returned session and turn IDs. Do not spawn it again. Busy queued or stopping children cannot be restarted.",
                 "display": {
                   "label": "Guide subagent",
                   "locales": {
@@ -5088,18 +5088,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Scroll the complete subagent form above the action buttons",
-        "locales": {
-          "zh-CN": "- 完整滚动子代理表单，保留底部操作按钮",
-          "zh-TW": "- 完整捲動子代理表單，保留底部操作按鈕",
-          "ja": "- 操作ボタンを表示したままサブエージェントのフォーム全体をスクロール",
-          "ko": "- 작업 버튼을 유지하면서 하위 에이전트 양식 전체를 스크롤",
-          "fr": "- Faire défiler tout le formulaire du sous-agent en gardant les boutons visibles",
-          "de": "- Das gesamte Unteragentenformular scrollen und die Aktionsschaltflächen sichtbar halten",
-          "es": "- Desplazar todo el formulario del subagente manteniendo visibles los botones",
-          "pt-BR": "- Rolar todo o formulário do subagente mantendo os botões visíveis",
-          "ru": "- Прокрутка всей формы субагента с доступными кнопками действий"
-        }
+        "text": "- Resume idle child sessions through explicit guidance"
       }
     },
     {
