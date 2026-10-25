@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "delegation",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -19,6 +19,14 @@
             "type": "boolean",
             "default": false,
             "x-sailry-import": "delegation_proactive"
+          },
+          "mode": {
+            "type": "string",
+            "default": "",
+            "enum": [
+              "",
+              "multitask"
+            ]
           }
         }
       },
@@ -29,30 +37,6 @@
         "models.read",
         "conversation.read",
         "conversation.control"
-      ],
-      "ui": [
-        {
-          "id": "super",
-          "slot": "model",
-          "kind": "toggle",
-          "label": {
-            "label": "Proactive subagents",
-            "locales": {
-              "zh-CN": "主动使用子代理",
-              "zh-TW": "主動使用子代理",
-              "de": "Proaktive Unteragenten",
-              "es": "Subagentes proactivos",
-              "fr": "Sous-agents proactifs",
-              "ja": "子エージェントを積極的に使用",
-              "ko": "적극적인 하위 에이전트 사용",
-              "pt-BR": "Subagentes proativos",
-              "ru": "Проактивные субагенты"
-            }
-          },
-          "icon": "reicon:ui/sparkles",
-          "handler": "super",
-          "order": 0
-        }
       ],
       "tools": [
         {
@@ -530,7 +514,6 @@
         "entry": "dev.sailry.platform/host/main.js",
         "resources": [
           "dev.sailry.platform/host/main.js",
-          "dev.sailry.platform/host/policy.js",
           "dev.sailry.platform/host/roles.js"
         ],
         "handlers": [
@@ -548,9 +531,7 @@
         }
       },
       "desktop": {
-        "ui_entry": "dev.sailry.platform/desktop/composer.js",
         "resources": [
-          "dev.sailry.platform/desktop/composer.js",
           "dev.sailry.platform/desktop/settings.js",
           "dev.sailry.platform/desktop/capacity.js",
           "dev.sailry.platform/desktop/draft.js",
@@ -573,7 +554,33 @@
         }
       },
       "category": "automation",
-      "tint": "violet"
+      "tint": "violet",
+      "conversation_modes": [
+        {
+          "id": "multitask",
+          "option": "mode",
+          "display": {
+            "label": "Multitask",
+            "icon": "reicon:users/users2",
+            "locales": {
+              "en": "Multitask",
+              "zh-CN": "多任务",
+              "zh-TW": "多工",
+              "ja": "マルチタスク",
+              "ko": "멀티태스크",
+              "de": "Mehrere Aufgaben",
+              "es": "Multitarea",
+              "fr": "Multitâche",
+              "pt-BR": "Multitarefa",
+              "ru": "Многозадачность"
+            }
+          },
+          "permissions": {
+            "write": true
+          },
+          "instructions": "This mode enables autonomous delegation for the authorized task. Identify independent investigation, implementation or review work and assign useful scopes to available child agents while you advance the critical path. Give each child a concrete result, relevant context and explicit file ownership; keep overlapping edits with one owner. Reuse or guide existing children instead of duplicating their work. Handle small or tightly coupled work directly; delegation is a means to finish the task, not a requirement for every turn. Preserve the user's scope, mode restrictions and tool permissions in every child. Children cannot delegate further. Background completion notices carry results; review and integrate those results before claiming completion. Do not poll background work or repeat uncertain side effects. Coordinate shared build and test resources, and run only the relevant verification required by the task."
+        }
+      ]
     }
   },
   "description": "Delegate tasks to subagents"

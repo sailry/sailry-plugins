@@ -54,6 +54,25 @@ test('accepts every official package and example', () => {
   }
 });
 
+test('accepts declared conversation modes', () => {
+  const result = check(fixture({'plugin.json': manifest({
+    scope: 'host',
+    conversation_options: {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object', additionalProperties: false,
+      properties: {mode: {type: 'string', default: '', enum: ['', 'focus', 'review']}},
+    },
+    conversation_modes: [
+      {id: 'focus', option: 'mode', display: {label: 'Focus'},
+        permissions: {write: true}, instructions: 'Complete the requested task'},
+      {id: 'review', option: 'mode', display: {label: 'Review'},
+        permissions: {write: false}, instructions: 'Inspect the requested changes'},
+    ],
+  })}));
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /^ok:/m);
+});
+
 test('accepts supported catalog metadata', () => {
   for (const [category,tint] of [
     ['development','blue'], ['documents','violet'], ['data','teal'],

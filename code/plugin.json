@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -29,28 +29,6 @@
         "locales": {
           "zh-CN": "检索代码符号与源码上下文"
         }
-      },
-      "settings_page": {
-        "navigation": {
-          "label": "Code index",
-          "locales": {
-            "zh-CN": "代码索引",
-            "zh-TW": "程式碼索引",
-            "ja": "コード索引",
-            "ko": "코드 인덱스",
-            "de": "Codeindex",
-            "es": "Índice de código",
-            "fr": "Index du code",
-            "pt-BR": "Índice de código",
-            "ru": "Индекс кода"
-          },
-          "icon": "reicon:it/code"
-        },
-        "placement": {
-          "group": "tools",
-          "order": 300
-        },
-        "enabled_control": true
       },
       "instructions": "Use code_search to find symbols, code_outline for one file's structure, and code_context for bounded symbol and source context. These tools parse saved source, not types or runtime behavior; compilation and tests remain necessary for diagnostics and verification. Use existing text search, file reads, commands, builds and tests when they better match the task or structure extraction is unavailable. First outline parses only its requested file; repository search and context reconcile the current worktree index lazily. Grammar availability does not guarantee every structural capability. Report unsupported, partial and truncated results accurately. Paths are relative to the current worktree. Symbol positions use zero-based lines and UTF-8 byte columns with exclusive byte ends; snippet line numbers are one-based. Use returned file revisions when expanding source. A revision conflict requires a fresh search or outline; never reuse stale ranges against new content. Code context returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON. Respect the Node code-index enable setting; these tools do not install or start language servers.",
       "tools": [

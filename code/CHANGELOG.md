@@ -1,3 +1,7 @@
+## 0.1.10
+
+- Remove the empty code index settings entry while preserving tools and the enable choice.
+
 ## 0.1.9
 
 - Make code tools available in conversation-owned worktrees as well as projects.

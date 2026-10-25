@@ -1524,7 +1524,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1552,28 +1552,6 @@
               "locales": {
                 "zh-CN": "检索代码符号与源码上下文"
               }
-            },
-            "settings_page": {
-              "navigation": {
-                "label": "Code index",
-                "locales": {
-                  "zh-CN": "代码索引",
-                  "zh-TW": "程式碼索引",
-                  "ja": "コード索引",
-                  "ko": "코드 인덱스",
-                  "de": "Codeindex",
-                  "es": "Índice de código",
-                  "fr": "Index du code",
-                  "pt-BR": "Índice de código",
-                  "ru": "Индекс кода"
-                },
-                "icon": "reicon:it/code"
-              },
-              "placement": {
-                "group": "tools",
-                "order": 300
-              },
-              "enabled_control": true
             },
             "instructions": "Use code_search to find symbols, code_outline for one file's structure, and code_context for bounded symbol and source context. These tools parse saved source, not types or runtime behavior; compilation and tests remain necessary for diagnostics and verification. Use existing text search, file reads, commands, builds and tests when they better match the task or structure extraction is unavailable. First outline parses only its requested file; repository search and context reconcile the current worktree index lazily. Grammar availability does not guarantee every structural capability. Report unsupported, partial and truncated results accurately. Paths are relative to the current worktree. Symbol positions use zero-based lines and UTF-8 byte columns with exclusive byte ends; snippet line numbers are one-based. Use returned file revisions when expanding source. A revision conflict requires a fresh search or outline; never reuse stale ranges against new content. Code context returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON. Respect the Node code-index enable setting; these tools do not install or start language servers.",
             "tools": [
@@ -1745,7 +1723,7 @@
         "files.read"
       ],
       "release_notes": {
-        "text": "- Make code tools available in conversation-owned worktrees as well as projects."
+        "text": "- Remove the empty code index settings entry while preserving tools and the enable choice."
       }
     },
     {
@@ -4052,7 +4030,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4070,6 +4048,14 @@
                   "type": "boolean",
                   "default": false,
                   "x-sailry-import": "delegation_proactive"
+                },
+                "mode": {
+                  "type": "string",
+                  "default": "",
+                  "enum": [
+                    "",
+                    "multitask"
+                  ]
                 }
               }
             },
@@ -4080,30 +4066,6 @@
               "models.read",
               "conversation.read",
               "conversation.control"
-            ],
-            "ui": [
-              {
-                "id": "super",
-                "slot": "model",
-                "kind": "toggle",
-                "label": {
-                  "label": "Proactive subagents",
-                  "locales": {
-                    "zh-CN": "主动使用子代理",
-                    "zh-TW": "主動使用子代理",
-                    "de": "Proaktive Unteragenten",
-                    "es": "Subagentes proactivos",
-                    "fr": "Sous-agents proactifs",
-                    "ja": "子エージェントを積極的に使用",
-                    "ko": "적극적인 하위 에이전트 사용",
-                    "pt-BR": "Subagentes proativos",
-                    "ru": "Проактивные субагенты"
-                  }
-                },
-                "icon": "reicon:ui/sparkles",
-                "handler": "super",
-                "order": 0
-              }
             ],
             "tools": [
               {
@@ -4581,7 +4543,6 @@
               "entry": "dev.sailry.platform/host/main.js",
               "resources": [
                 "dev.sailry.platform/host/main.js",
-                "dev.sailry.platform/host/policy.js",
                 "dev.sailry.platform/host/roles.js"
               ],
               "handlers": [
@@ -4599,9 +4560,7 @@
               }
             },
             "desktop": {
-              "ui_entry": "dev.sailry.platform/desktop/composer.js",
               "resources": [
-                "dev.sailry.platform/desktop/composer.js",
                 "dev.sailry.platform/desktop/settings.js",
                 "dev.sailry.platform/desktop/capacity.js",
                 "dev.sailry.platform/desktop/draft.js",
@@ -4624,7 +4583,33 @@
               }
             },
             "category": "automation",
-            "tint": "violet"
+            "tint": "violet",
+            "conversation_modes": [
+              {
+                "id": "multitask",
+                "option": "mode",
+                "display": {
+                  "label": "Multitask",
+                  "icon": "reicon:users/users2",
+                  "locales": {
+                    "en": "Multitask",
+                    "zh-CN": "多任务",
+                    "zh-TW": "多工",
+                    "ja": "マルチタスク",
+                    "ko": "멀티태스크",
+                    "de": "Mehrere Aufgaben",
+                    "es": "Multitarea",
+                    "fr": "Multitâche",
+                    "pt-BR": "Multitarefa",
+                    "ru": "Многозадачность"
+                  }
+                },
+                "permissions": {
+                  "write": true
+                },
+                "instructions": "This mode enables autonomous delegation for the authorized task. Identify independent investigation, implementation or review work and assign useful scopes to available child agents while you advance the critical path. Give each child a concrete result, relevant context and explicit file ownership; keep overlapping edits with one owner. Reuse or guide existing children instead of duplicating their work. Handle small or tightly coupled work directly; delegation is a means to finish the task, not a requirement for every turn. Preserve the user's scope, mode restrictions and tool permissions in every child. Children cannot delegate further. Background completion notices carry results; review and integrate those results before claiming completion. Do not poll background work or repeat uncertain side effects. Coordinate shared build and test resources, and run only the relevant verification required by the task."
+              }
+            ]
           }
         },
         "description": "Delegate tasks to subagents"
@@ -4639,7 +4624,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Group adjacent child guidance and observation tools while keeping child creation separate"
+        "text": "- Move autonomous delegation into the Multitask work mode and remove the model toggle.\n- Keep Build delegation explicit and preserve captured conversation choices."
       }
     },
     {
@@ -14716,7 +14701,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -14744,7 +14729,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Check current code-index capabilities, service bindings and declared flow operations\n- Reject retired language-server declarations and document revision-checked source queries"
+        "text": "- Accept declared conversation modes in package preflight checks\n- Document shared mode selection, captured instructions and Node permissions"
       }
     },
     {

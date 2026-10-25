@@ -33,7 +33,7 @@ FIELDS = {
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
     "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
-    "conversation_options", "model_providers", "model_auth", "model_resources", "model_adapters",
+    "conversation_options", "conversation_modes", "model_providers", "model_auth", "model_resources", "model_adapters",
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",

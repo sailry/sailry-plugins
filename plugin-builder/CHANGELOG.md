@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.8
+
+- Accept declared conversation modes in package preflight checks
+- Document shared mode selection, captured instructions and Node permissions
+
 ## 0.1.7
 
 - Check current code-index capabilities, service bindings and declared flow operations

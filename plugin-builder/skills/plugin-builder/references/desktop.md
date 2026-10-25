@@ -144,6 +144,14 @@ export default class Chat extends View {
 
 ## Composer controls
 
+Declare `conversation_modes` for shared mode selection; no `ui_entry` is needed.
+`readComposer()` exposes the available `modes`, current `mode_selection: {package,
+id} | null` and effective `mode: 'code' | 'plan'`. With `conversation.control`,
+select this package's declaration through
+`setComposerOption(cursor, 'mode', {package, id})`, or select a builtin with
+`'code'` or `'plan'`. The host applies revision checks and clears other active
+mode choices while preserving unrelated options.
+
 `ui` entries add native controls to the conversation without drawing them yourself. Slots: `composer`, `context`, `statistics`, `status`, `project`, `project_menu`, `commands`. Kinds: `button`, `toggle`, `select`, `menu`, `picker`, `popover`, `metric`, `indicator`.
 
 ```json

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.23
+
+- Move autonomous delegation into the Multitask work mode and remove the model toggle.
+- Keep Build delegation explicit and preserve captured conversation choices.
+
 ## 0.1.22
 
 - Group adjacent child guidance and observation tools while keeping child creation separate

@@ -6,12 +6,12 @@ const extension = manifest.extensions['dev.sailry.platform'];
 
 test('preserves package identity and enable binding',() => {
   assert.equal(manifest.name,'code');
-  assert.equal(manifest.version,'0.1.9');
+  assert.equal(manifest.version,'0.1.10');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.scope,'host');
   assert.equal(extension.enabled_service,'code_index');
-  assert.equal(extension.settings_page.enabled_control,true);
-  assert.equal(extension.settings_page.entry,undefined);
+  assert.equal(extension.settings_page,undefined);
+  assert.equal(extension.settings_schema,undefined);
   assert.equal(extension.desktop,undefined);
   assert.equal(extension.display.locales['zh-CN'],'代码索引');
 });

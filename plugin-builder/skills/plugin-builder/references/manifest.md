@@ -53,6 +53,8 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 | `description` | Localized one-line description |
 | `icon` | Package-relative PNG for catalogs, as an alternative to a `reicon:` icon in `display` |
 | `instructions` | Short package instructions supplied to the model together with the package's tools |
+| `conversation_options` | Public per-conversation choices stored in this package's options namespace |
+| `conversation_modes` | Host mode declarations for the shared selector, with instructions and write restrictions |
 | `settings_schema` | Path to a settings form schema, such as `dev.sailry.platform/settings.json` |
 | `settings_page` | Settings navigation entry, with an optional custom desktop `entry` |
 | `registration` | Provider application creation bound to public and protected settings fields |
@@ -73,6 +75,37 @@ Every label uses the same shape. `label` is the default (English) text; `locales
 ### Icons
 
 Catalog and navigation icons use the bundled icon set as `reicon:<group>/<name>`, for example `reicon:files/file-text`, `reicon:ui/database`, `reicon:it/code-square`, `reicon:time/calendar` or `reicon:notifications/bell`. Composer controls in `ui` use plain control icon names such as `eye`, `file-text` or `rotate-cw`. Reuse names that existing official plugins use when unsure.
+
+## Conversation modes
+
+Host packages can extend the shared Build/Plan selector without a custom composer
+control. Bind each mode to a string conversation option with an empty default and
+an enum containing `""` and the IDs of modes using that field:
+
+```json
+"conversation_options": {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {"mode": {"type": "string", "default": "", "enum": ["", "review"]}}
+},
+"conversation_modes": [{
+  "id": "review",
+  "option": "mode",
+  "display": {"label": "Review"},
+  "permissions": {"write": false},
+  "instructions": "Inspect the requested changes and report findings"
+}]
+```
+
+Declare up to 16 distinct modes. Node validates the declarations during
+installation. `permissions.write: false` requires Plan; `true` uses Build and
+still requires the session's ordinary tool permissions. Instructions apply to the
+main coordinator; children retain their task, role and captured restrictions.
+Exactly one package mode can be selected. Mode changes use the existing session
+revision, and selecting Build or Plan clears active mode choices while preserving
+other options. Package instructions and options freeze at turn admission; package
+updates or removal never rewrite those captures.
 
 ## Actions
 
