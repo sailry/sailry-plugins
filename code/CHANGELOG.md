@@ -1,3 +1,7 @@
+## 0.1.9
+
+- Make code tools available in conversation-owned worktrees as well as projects.
+
 ## 0.1.8
 
 - Replace language-server tools and settings with the shared code index.

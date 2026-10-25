@@ -11,7 +11,7 @@ const en = {
   "worktree_prune_on_select": "Unavailable · click to clean up",
   "worktree_pruned": "Stale worktree registration removed",
   "worktree_prune_failed": "Not cleaned up: the directory exists, is locked, or could not be verified",
-  "composer_no_project": "No project",
+  "composer_no_project": "Chats",
   "workspace_native_menu_unavailable": "Native menus are unavailable",
   "workspace_native_menu_platform": "Native context menus are unavailable on this platform",
   "workspace_project": "Project overview",
@@ -275,7 +275,7 @@ const zh = {
   "worktree_missing_project": "项目已不可用，请关闭表单后重新选择",
   "settings_cancel": "取消",
   "close": "关闭",
-  "composer_no_project": "无项目",
+  "composer_no_project": "对话",
   "composer_branch_none": "无 worktree",
   "git_commit_message": "提交说明",
   "git_commit": "提交",
@@ -479,4 +479,11 @@ const zh = {
   "form_revision_hint": "分支、标签或提交",
   "form_target_directory_hint": "工作树目录路径"
 };
-export function messages(locale) { return locale.startsWith("zh") ? {...en,...zh} : {...zh,...en}; }
+const chatLabels = {
+  "zh-TW": "對話", ja: "チャット", ko: "대화", "pt-BR": "Conversas", ru: "Чаты",
+};
+
+export function messages(locale) {
+  const strings = locale.startsWith("zh") ? {...en,...zh} : {...zh,...en};
+  return {...strings, composer_no_project: chatLabels[locale] ?? strings.composer_no_project};
+}

@@ -1524,7 +1524,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1581,6 +1581,7 @@
                 "name": "code_search",
                 "operation": "code.search",
                 "contexts": [
+                  "plugin",
                   "workspace"
                 ],
                 "presentation": "summary",
@@ -1611,6 +1612,7 @@
                 "name": "code_outline",
                 "operation": "code.outline",
                 "contexts": [
+                  "plugin",
                   "workspace"
                 ],
                 "presentation": "summary",
@@ -1640,6 +1642,7 @@
               {
                 "name": "code_context",
                 "contexts": [
+                  "plugin",
                   "workspace"
                 ],
                 "presentation": "summary",
@@ -1742,7 +1745,7 @@
         "files.read"
       ],
       "release_notes": {
-        "text": "- Replace language-server tools and settings with the shared code index.\n- Add symbol search, file structure and bounded revision-checked source context.\n- Keep the Node enable choice and existing text, command, build and test workflows.\n\n# Changes"
+        "text": "- Make code tools available in conversation-owned worktrees as well as projects."
       }
     },
     {
@@ -18769,7 +18772,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -19078,18 +19081,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Increase spacing between form labels and controls",
-        "locales": {
-          "zh-CN": "- 增大表单标签与控件的间距",
-          "zh-TW": "- 增加表單標籤與控制項的間距",
-          "ja": "- フォームのラベルと入力欄の間隔を拡大",
-          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
-          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
-          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
-          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
-          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
-          "ru": "- Увеличить расстояние между подписями и полями форм"
-        }
+        "text": "- Label conversations without a project consistently across supported languages"
       }
     },
     {

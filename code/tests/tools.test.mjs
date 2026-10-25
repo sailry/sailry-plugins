@@ -6,7 +6,7 @@ const extension = manifest.extensions['dev.sailry.platform'];
 
 test('preserves package identity and enable binding',() => {
   assert.equal(manifest.name,'code');
-  assert.equal(manifest.version,'0.1.8');
+  assert.equal(manifest.version,'0.1.9');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.scope,'host');
   assert.equal(extension.enabled_service,'code_index');
@@ -29,7 +29,7 @@ test('declares only bounded structure tools',() => {
   assert.deepEqual(extension.host.handlers,['context']);
   assert.deepEqual(extension.host.read_only,['context']);
   for (const tool of extension.tools) {
-    assert.deepEqual(tool.contexts,['workspace']);
+    assert.deepEqual(tool.contexts,['plugin','workspace']);
     assert.equal(tool.presentation,'summary');
     assert.equal(Object.keys(tool.display.locales).length,10);
   }

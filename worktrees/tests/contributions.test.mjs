@@ -7,7 +7,7 @@ import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8')
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class Worktrees','class Worktrees');
-function fixture(location) {
+function fixture(location,locale='en') {
   const published=[];
   const names=['selectLocation','readWorktreeCatalog','listWorktrees','inspectGit','resolveGitRevision',
     'prepareWorktreeChange','prepareGitChange','completeRequest','forgetRequest','newId','worktreeHasDrafts',
@@ -15,7 +15,7 @@ function fixture(location) {
     'nextTextEvent','nextToastEvent','createText','readText','releaseText','focusText','dismissToast'];
   const bindings=Object.fromEntries(names.map(name=>[name,()=>{}]));
   const Worktrees=vm.runInNewContext(`${source}\nWorktrees`,{
-    ...bindings,View:class {},Controller,messages,render:()=>{},context:()=>JSON.stringify({locale:'en'}),
+    ...bindings,View:class {},Controller,messages,render:()=>{},context:()=>JSON.stringify({locale}),
     readLocation:()=>location,publishContributions:states=>published.push(states),
   });
   const view=new Worktrees();
@@ -48,11 +48,16 @@ test('valid UTF-8 labels and captured replies remain intact',()=>{
   }
 });
 
-test('no-project labels and disabled context preserve scope',()=>{
-  const {published}=fixture({...base,project:null,session:'session',can_move:false});
-  assert.equal(published[0][0].label.label,'No project');
-  assert.equal(published[0][0].enabled,false);
-  assert.equal(published[0][1].visible,false);
-  assert.equal(published[0][2].visible,false);
-  assert.equal(published[0][3].visible,false);
+test('chat labels and disabled context preserve scope',()=>{
+  for (const [locale,label] of Object.entries({
+    en:'Chats','zh-CN':'对话','zh-TW':'對話',de:'Chats',es:'Chats',fr:'Chats',
+    ja:'チャット',ko:'대화','pt-BR':'Conversas',ru:'Чаты',
+  })) {
+    const {published}=fixture({...base,project:null,session:'session',can_move:false},locale);
+    assert.equal(published[0][0].label.label,label,locale);
+    assert.equal(published[0][0].enabled,false);
+    assert.equal(published[0][1].visible,false);
+    assert.equal(published[0][2].visible,false);
+    assert.equal(published[0][3].visible,false);
+  }
 });

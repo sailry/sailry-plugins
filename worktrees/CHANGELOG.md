@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Label conversations without a project consistently across supported languages
+
 ## 0.1.8
 
 - Increase spacing between form labels and controls
