@@ -1,3 +1,9 @@
+## 0.1.8
+
+- Replace language-server tools and settings with the shared code index.
+- Add symbol search, file structure and bounded revision-checked source context.
+- Keep the Node enable choice and existing text, command, build and test workflows.
+
 # Changes
 
 ## 0.1.7

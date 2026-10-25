@@ -1,50 +1,48 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
       "actions": [
-        "code.read",
-        "code.manage",
-        "code.settings.read",
-        "code.settings.write"
+        "code.index.read",
+        "files.read"
       ],
       "display": {
-        "label": "Language services",
+        "label": "Code index",
         "locales": {
-          "zh-CN": "语言服务",
-          "zh-TW": "語言服務",
-          "ja": "言語サービス",
-          "ko": "언어 서비스",
-          "de": "Sprachdienste",
-          "es": "Servicios de lenguaje",
-          "fr": "Services de langage",
-          "pt-BR": "Serviços de linguagem",
-          "ru": "Языковые службы"
+          "zh-CN": "代码索引",
+          "zh-TW": "程式碼索引",
+          "ja": "コード索引",
+          "ko": "코드 인덱스",
+          "de": "Codeindex",
+          "es": "Índice de código",
+          "fr": "Index du code",
+          "pt-BR": "Índice de código",
+          "ru": "Индекс кода"
         },
         "icon": "reicon:it/code"
       },
       "description": {
-        "label": "Query installed language services",
+        "label": "Find code symbols and source context",
         "locales": {
-          "zh-CN": "查询已安装的语言服务"
+          "zh-CN": "检索代码符号与源码上下文"
         }
       },
       "settings_page": {
         "navigation": {
-          "label": "Language services",
+          "label": "Code index",
           "locales": {
-            "zh-CN": "语言服务",
-            "zh-TW": "語言服務",
-            "ja": "言語サービス",
-            "ko": "언어 서비스",
-            "de": "Sprachdienste",
-            "es": "Servicios de lenguaje",
-            "fr": "Services de langage",
-            "pt-BR": "Serviços de linguagem",
-            "ru": "Языковые службы"
+            "zh-CN": "代码索引",
+            "zh-TW": "程式碼索引",
+            "ja": "コード索引",
+            "ko": "코드 인덱스",
+            "de": "Codeindex",
+            "es": "Índice de código",
+            "fr": "Index du code",
+            "pt-BR": "Índice de código",
+            "ru": "Индекс кода"
           },
           "icon": "reicon:it/code"
         },
@@ -52,603 +50,166 @@
           "group": "tools",
           "order": 300
         },
-        "enabled_control": true,
-        "entry": "dev.sailry.platform/desktop/settings.js"
+        "enabled_control": true
       },
-      "instructions": "For questions about diagnostics, errors or type errors, call code_diagnostics first. For references or usage, call code_references first. Fall back to source search only when the query returns not_installed, and say that the required language service is not installed. Read-only code queries use language servers on the execution Node. Use code_catalog for registered installable packages and installed executable availability, code_packages with installed=true for managed receipts and actual versions, and code_servers for actual instances in the current worktree. Installed or installable does not mean running. Use code_start or code_stop only for the exact returned Startup descriptor and current worktree; never fabricate an executable, root or revision. These explicit lifecycle calls follow conversation authorization and do not change enable settings. If a required server is missing, use code_packages or the query package_info to obtain an install descriptor, then call code_install with that exact descriptor and retry the query after successful installation. Install only packages relevant to the user task; installation and updates follow the current conversation authorization policy. Respect disabled services and never change their enable settings. Use code_packages with installed=true before uninstalling, and pass the exact managed package and version to code_uninstall only when removal is requested; uninstall affects every project on this Node and returns busy while the package is being installed or used. Do not use shell package managers to bypass these tools. An Ask-mode cold start requests approval for that workspace and exact server configuration. Results marked indexing or partial are incomplete; corroborate them with relevant source. Query paths are relative to the current worktree, and line numbers start at one.",
+      "instructions": "Use code_search to find symbols, code_outline for one file's structure, and code_context for bounded symbol and source context. These tools parse saved source, not types or runtime behavior; compilation and tests remain necessary for diagnostics and verification. Use existing text search, file reads, commands, builds and tests when they better match the task or structure extraction is unavailable. First outline parses only its requested file; repository search and context reconcile the current worktree index lazily. Grammar availability does not guarantee every structural capability. Report unsupported, partial and truncated results accurately. Paths are relative to the current worktree. Symbol positions use zero-based lines and UTF-8 byte columns with exclusive byte ends; snippet line numbers are one-based. Use returned file revisions when expanding source. A revision conflict requires a fresh search or outline; never reuse stale ranges against new content. Code context returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON. Respect the Node code-index enable setting; these tools do not install or start language servers.",
       "tools": [
         {
-          "name": "code_diagnostics",
-          "operation": "code.diagnostics",
+          "name": "code_search",
+          "operation": "code.search",
           "contexts": [
             "workspace"
           ],
-          "presentation": "details",
-          "description": "Read at most 100 diagnostics for a saved project file. Supply path and optionally severity. A missing server returns not_installed; do not claim the file is error-free.",
+          "presentation": "summary",
+          "description": "Search indexed symbols by literal query terms, optional name substring, worktree-relative path prefix and language. Default 20 results, maximum 100. Returns source ranges, full-content file revisions, index revision and partial/truncated status; first repository search lazily reconciles the worktree. This is source structure, not type analysis.",
           "display": {
-            "label": "Diagnostics",
+            "label": "Search code",
             "locales": {
-              "zh-CN": "诊断",
-              "zh-TW": "診斷",
-              "ja": "診断",
-              "ko": "진단",
-              "fr": "Diagnostics",
-              "de": "Diagnosen",
-              "es": "Diagnósticos",
-              "pt-BR": "Diagnósticos",
-              "ru": "Диагностика",
-              "en": "Diagnostics"
+              "en": "Search code",
+              "zh-CN": "检索代码",
+              "zh-TW": "搜尋程式碼",
+              "ja": "コードを検索",
+              "ko": "코드 검색",
+              "de": "Code suchen",
+              "es": "Buscar código",
+              "fr": "Rechercher du code",
+              "pt-BR": "Pesquisar código",
+              "ru": "Поиск кода"
             },
+            "icon": "reicon:ui/magnifier",
+            "input": {
+              "summary": {
+                "path": "/query"
+              }
+            }
+          }
+        },
+        {
+          "name": "code_outline",
+          "operation": "code.outline",
+          "contexts": [
+            "workspace"
+          ],
+          "presentation": "summary",
+          "description": "Return the requested saved file's source-ordered declarations, nesting depth and limited signatures. Parses only this file when needed; complete input is limited to 1 MiB. Returns actual extraction capabilities, file/index revisions, UTF-8 source ranges and partial/truncated status. Unsupported structure is explicit.",
+          "display": {
+            "label": "File structure",
+            "locales": {
+              "en": "File structure",
+              "zh-CN": "文件结构",
+              "zh-TW": "檔案結構",
+              "ja": "ファイル構造",
+              "ko": "파일 구조",
+              "de": "Dateistruktur",
+              "es": "Estructura del archivo",
+              "fr": "Structure du fichier",
+              "pt-BR": "Estrutura do arquivo",
+              "ru": "Структура файла"
+            },
+            "icon": "reicon:it/code",
             "input": {
               "summary": {
                 "path": "/path"
-              },
-              "target": {
-                "path": "/path"
               }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/status"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/notice"
-                    }
-                  },
-                  {
-                    "rows": {
-                      "value": {
-                        "source": "result",
-                        "path": "/data/content/data"
-                      },
-                      "text": {
-                        "parts": [
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": "/severity"
-                            }
-                          },
-                          {
-                            "text": " "
-                          },
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": "/location/path"
-                            }
-                          },
-                          {
-                            "text": ":"
-                          },
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": "/location/start/line"
-                            }
-                          },
-                          {
-                            "text": ":"
-                          },
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": "/location/start/column"
-                            }
-                          },
-                          {
-                            "text": " "
-                          },
-                          {
-                            "value": {
-                              "source": "item",
-                              "path": "/message"
-                            }
-                          }
-                        ]
-                      },
-                      "separator": "\n"
-                    }
-                  }
-                ],
-                "separator": "\n"
-              },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "en": "Partial results",
-                      "zh-CN": "仅显示部分结果",
-                      "zh-TW": "僅顯示部分結果",
-                      "ja": "一部の結果",
-                      "ko": "일부 결과",
-                      "fr": "Résultats partiels",
-                      "de": "Teilergebnisse",
-                      "es": "Resultados parciales",
-                      "pt-BR": "Resultados parciais",
-                      "ru": "Частичные результаты"
-                    }
-                  },
-                  "when": {
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/partial"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                }
+            }
+          }
+        },
+        {
+          "name": "code_context",
+          "contexts": [
+            "workspace"
+          ],
+          "presentation": "summary",
+          "description": "Combine symbol search and revision-checked source expansion for the current worktree. Returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON, with file/index revisions and honest partial/truncated status. Symbol lines are zero-based; snippet lines are one-based. A changed source revision fails instead of reading a stale range.",
+          "handler": {
+            "name": "context",
+            "read_only": true,
+            "flow": {
+              "operations": [
+                "code.search",
+                "files.read_lines"
               ]
-            }
-          }
-        },
-        {
-          "name": "code_definition",
-          "operation": "code.definition",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "Locate a literal symbol on a one-based line. Returns confined relative paths and one-based positions. Read the returned files for surrounding code.",
-          "display": {
-            "label": "Definition",
-            "locales": {
-              "zh-CN": "定义",
-              "zh-TW": "定義",
-              "ja": "定義",
-              "ko": "정의",
-              "fr": "Définition",
-              "de": "Definition",
-              "es": "Definición",
-              "pt-BR": "Definição",
-              "ru": "Определение",
-              "en": "Definition"
-            }
-          }
-        },
-        {
-          "name": "code_references",
-          "operation": "code.references",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "Find at most 100 references to a literal symbol on a one-based line. Partial or indexing results do not establish the absence of other references.",
-          "display": {
-            "label": "References",
-            "locales": {
-              "zh-CN": "引用",
-              "zh-TW": "參照",
-              "ja": "参照",
-              "ko": "참조",
-              "fr": "Références",
-              "de": "Referenzen",
-              "es": "Referencias",
-              "pt-BR": "Referências",
-              "ru": "Ссылки",
-              "en": "References"
-            }
-          }
-        },
-        {
-          "name": "code_hover",
-          "operation": "code.hover",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "Read a literal symbol signature and documentation from its one-based line. Output is limited to 8 KiB.",
-          "display": {
-            "label": "Hover",
-            "locales": {
-              "zh-CN": "悬停",
-              "zh-TW": "懸停資訊",
-              "ja": "ホバー情報",
-              "ko": "호버 정보",
-              "fr": "Informations au survol",
-              "de": "Hover-Informationen",
-              "es": "Información al pasar",
-              "pt-BR": "Informações ao passar",
-              "ru": "Информация при наведении",
-              "en": "Hover"
-            }
-          }
-        },
-        {
-          "name": "code_symbols",
-          "operation": "code.symbols",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "List document symbols using path, or search symbols on an already running project server using query. A project query does not scan or start arbitrary servers.",
-          "display": {
-            "label": "Symbols",
-            "locales": {
-              "zh-CN": "符号",
-              "zh-TW": "符號",
-              "ja": "シンボル",
-              "ko": "심볼",
-              "fr": "Symboles",
-              "de": "Symbole",
-              "es": "Símbolos",
-              "pt-BR": "Símbolos",
-              "ru": "Символы",
-              "en": "Symbols"
-            }
-          }
-        },
-        {
-          "name": "code_packages",
-          "operation": "code.packages",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "Set installed=false to list project language candidates and exact install descriptors. Set installed=true to list Node-managed installations and actual versions for removal. This does not install or start anything.",
-          "display": {
-            "label": "Language packages",
-            "locales": {
-              "zh-CN": "语言服务包",
-              "zh-TW": "語言套件",
-              "ja": "言語パッケージ",
-              "ko": "언어 패키지",
-              "fr": "Paquets de langue",
-              "de": "Sprachpakete",
-              "es": "Paquetes de lenguaje",
-              "pt-BR": "Pacotes de linguagem",
-              "ru": "Языковые пакеты",
-              "en": "Language packages"
-            }
-          }
-        },
-        {
-          "name": "code_catalog",
-          "operation": "code.catalog",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "List the Node language registry, available package install descriptors and installed executable availability. Installed is not Running; use code_packages for managed actual versions and code_servers for running instances.",
-          "display": {
-            "label": "Language catalog",
-            "locales": {
-              "zh-CN": "语言服务目录",
-              "zh-TW": "語言目錄",
-              "ja": "言語カタログ",
-              "ko": "언어 카탈로그",
-              "fr": "Catalogue de langues",
-              "de": "Sprachkatalog",
-              "es": "Catálogo de lenguajes",
-              "pt-BR": "Catálogo de linguagens",
-              "ru": "Каталог языков",
-              "en": "Language catalog"
-            }
-          }
-        },
-        {
-          "name": "code_servers",
-          "operation": "code.servers",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "summary",
-          "description": "List actual language server instances owned by the current worktree. Copy the exact Startup descriptor for start or stop; catalog package availability does not prove a server is running.",
-          "display": {
-            "label": "Running language services",
-            "locales": {
-              "zh-CN": "运行中的语言服务",
-              "zh-TW": "執行中的語言服務",
-              "ja": "実行中の言語サービス",
-              "ko": "실행 중인 언어 서비스",
-              "fr": "Services de langue actifs",
-              "de": "Aktive Sprachdienste",
-              "es": "Servicios de lenguaje activos",
-              "pt-BR": "Serviços de linguagem ativos",
-              "ru": "Работающие языковые службы",
-              "en": "Running language services"
-            }
-          }
-        },
-        {
-          "name": "code_start",
-          "operation": "code.start",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "details",
-          "description": "Start an installed language server for this worktree using all fields of its returned Startup descriptor. Follow conversation approval; do not fabricate an executable, root, worktree or revision, or toggle service settings.",
-          "display": {
-            "label": "Start language service",
-            "locales": {
-              "zh-CN": "启动语言服务",
-              "zh-TW": "啟動語言服務",
-              "ja": "言語サービスを開始",
-              "ko": "언어 서비스 시작",
-              "fr": "Démarrer le service de langue",
-              "de": "Sprachdienst starten",
-              "es": "Iniciar servicio de lenguaje",
-              "pt-BR": "Iniciar serviço de linguagem",
-              "ru": "Запустить языковую службу",
-              "en": "Start language service"
             },
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "Literal search terms for names, paths and short signatures."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Literal symbol-name substring."
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Worktree-relative path prefix."
+                },
+                "language": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "default": 20
+                },
+                "max_snippets": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5,
+                  "default": 5
+                },
+                "max_bytes": {
+                  "type": "integer",
+                  "minimum": 512,
+                  "maximum": 16384,
+                  "default": 16384
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Code context",
+            "locales": {
+              "en": "Code context",
+              "zh-CN": "代码上下文",
+              "zh-TW": "程式碼上下文",
+              "ja": "コードのコンテキスト",
+              "ko": "코드 컨텍스트",
+              "de": "Codekontext",
+              "es": "Contexto del código",
+              "fr": "Contexte du code",
+              "pt-BR": "Contexto do código",
+              "ru": "Контекст кода"
+            },
+            "icon": "reicon:it/code",
             "input": {
               "summary": {
-                "path": "/server"
-              },
-              "context": {
-                "path": "/root"
-              }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/startup/server"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/startup/root"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/status"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/progress"
-                    }
-                  }
-                ],
-                "separator": "\n"
-              }
-            }
-          }
-        },
-        {
-          "name": "code_stop",
-          "operation": "code.stop",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "details",
-          "description": "Stop the exact language server instance returned for this worktree. Follow conversation approval and copy its full Startup descriptor. This does not uninstall its package or change enable settings.",
-          "display": {
-            "label": "Stop language service",
-            "locales": {
-              "zh-CN": "停止语言服务",
-              "zh-TW": "停止語言服務",
-              "ja": "言語サービスを停止",
-              "ko": "언어 서비스 중지",
-              "fr": "Arrêter le service de langue",
-              "de": "Sprachdienst stoppen",
-              "es": "Detener servicio de lenguaje",
-              "pt-BR": "Parar serviço de linguagem",
-              "ru": "Остановить языковую службу",
-              "en": "Stop language service"
-            },
-            "input": {
-              "summary": {
-                "path": "/server"
-              },
-              "context": {
-                "path": "/root"
-              }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/startup/server"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/startup/root"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/status"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/progress"
-                    }
-                  }
-                ],
-                "separator": "\n"
-              }
-            }
-          }
-        },
-        {
-          "name": "code_install",
-          "operation": "code.install",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "details",
-          "description": "Install or update a Node-wide language package. Copy all fields from the install descriptor returned by a code query or code_packages. Follow conversation approval; do not fabricate URLs, commands or revisions. Retry the original query after success.",
-          "display": {
-            "label": "Install language service",
-            "locales": {
-              "zh-CN": "安装语言服务",
-              "zh-TW": "安裝語言服務",
-              "ja": "言語サービスをインストール",
-              "ko": "언어 서비스 설치",
-              "fr": "Installer le service de langue",
-              "de": "Sprachdienst installieren",
-              "es": "Instalar servicio de lenguaje",
-              "pt-BR": "Instalar serviço de linguagem",
-              "ru": "Установить языковую службу",
-              "en": "Install language service"
-            },
-            "input": {
-              "summary": {
-                "path": "/package"
-              },
-              "context": {
-                "path": "/version"
-              }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/package"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/version"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/receipt/version"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/status"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/progress"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/error"
-                    }
-                  }
-                ],
-                "separator": "\n"
-              }
-            }
-          }
-        },
-        {
-          "name": "code_uninstall",
-          "operation": "code.uninstall",
-          "contexts": [
-            "workspace"
-          ],
-          "presentation": "details",
-          "description": "Remove the exact managed package and version returned by code_packages with installed=true. This affects all projects on the Node, stops only idle owned instances and returns busy while the package is being installed or used. Use only when removal is requested.",
-          "display": {
-            "label": "Uninstall language service",
-            "locales": {
-              "zh-CN": "卸载语言服务",
-              "zh-TW": "移除語言服務",
-              "ja": "言語サービスを削除",
-              "ko": "언어 서비스 제거",
-              "fr": "Désinstaller le service de langue",
-              "de": "Sprachdienst deinstallieren",
-              "es": "Desinstalar servicio de lenguaje",
-              "pt-BR": "Desinstalar serviço de linguagem",
-              "ru": "Удалить языковую службу",
-              "en": "Uninstall language service"
-            },
-            "input": {
-              "summary": {
-                "path": "/package"
-              },
-              "context": {
-                "path": "/version"
-              }
-            },
-            "output": {
-              "preview": {
-                "parts": [
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/package"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/version"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/receipt/version"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/status"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/progress"
-                    }
-                  },
-                  {
-                    "value": {
-                      "source": "result",
-                      "path": "/data/error"
-                    }
-                  }
-                ],
-                "separator": "\n"
+                "path": "/query"
               }
             }
           }
         }
       ],
-      "desktop": {
-        "resources": [
-          "dev.sailry.platform/desktop/locales.js",
-          "dev.sailry.platform/desktop/model.js",
-          "dev.sailry.platform/desktop/settings.js",
-          "dev.sailry.platform/desktop/view.js"
-        ]
-      },
-      "enabled_service": "language",
+      "enabled_service": "code_index",
       "category": "development",
-      "tint": "gray"
+      "tint": "gray",
+      "scope": "host",
+      "host": {
+        "entry": "dev.sailry.platform/host/main.js",
+        "resources": [
+          "dev.sailry.platform/host/main.js",
+          "dev.sailry.platform/host/context.js"
+        ],
+        "handlers": [
+          "context"
+        ],
+        "read_only": [
+          "context"
+        ]
+      }
     }
   }
 }
