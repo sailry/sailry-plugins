@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.7
+
+- Check current code-index capabilities, service bindings and declared flow operations
+- Reject retired language-server declarations and document revision-checked source queries
+
 ## 0.1.6
 
 - Accept current permission and connector declarations and connector modules in package preflight checks

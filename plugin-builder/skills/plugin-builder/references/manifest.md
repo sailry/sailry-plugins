@@ -48,6 +48,7 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 | `api_version` | Always `"v1"` |
 | `scope` | `"host"` (default): runs on the execution Node and works from every controller. `"desktop"`: bound to the desktop's local Node |
 | `actions` | Capabilities the package needs; see below |
+| `enabled_service` | Optional `"code_index"` binding for a Host package with `code.index.read`; follows the package's enabled choice |
 | `display` | Localized catalog name and icon |
 | `description` | Localized one-line description |
 | `icon` | Package-relative PNG for catalogs, as an alternative to a `reicon:` icon in `display` |
@@ -82,6 +83,8 @@ Declare only what the package uses. Each action grants one capability family:
 | `storage.read`, `storage.write` | The package's private key-value storage on the Node |
 | `http.request` | HTTP requests made by the Node |
 | `files.read`, `files.write` | Files in the captured worktree |
+| `code.index.read` | Indexed source symbols and file structure |
+| `code.index.settings.read`, `code.index.settings.write` | Read or change the Node code-index setting |
 | `git.read`, `git.write` | Git status and history; staging and commits |
 | `worktrees.read`, `worktrees.write` | Registered worktrees |
 | `projects.read` | The registered project catalog |

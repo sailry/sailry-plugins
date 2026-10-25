@@ -36,7 +36,8 @@ export async function remember(args) {
 | Scope | `context()` | None |
 | Node storage | `getValue`, `listKeys`, `setValue`, `deleteValue` | `storage.read` / `storage.write` |
 | Conversation storage | `getConversationValue`, `setConversationValue`, `deleteConversationValue` | `storage.read` / `storage.write` |
-| Worktree files | `readFile(path)`, `prepareFile(path, text, expectedRevision)` | `files.read` / `files.write` |
+| Worktree files | `readFile(path)`, `readFileLines(path, offset, limit, expectedRevision?)`, `prepareFile(path, text, expectedRevision)` | `files.read` / `files.write` |
+| Code index | `searchCode(query)`, `outlineCode(path)` | `code.index.read` |
 | Git | `inspectGit()` | `git.read` |
 | Notifications | `prepareNotification({title, message, kind})` | `notifications.publish` |
 | Conversation | `readSession()`, `readConversation(before, limit)` | `conversation.read` |
@@ -46,6 +47,8 @@ export async function remember(args) {
 | Requests | `prepareRequest(command)`, `completeRequest(id)`, `forgetRequest(id)`, `newId()` | As needed |
 
 Functions named `prepare…`, `set…` and `delete…` only prepare a durable request and return its ID. `completeRequest(id)` submits it and returns `{Ok: {kind, data}}` or `{Err: {code, message}}`. Keep the ID until the outcome is confirmed; on an uncertain outcome, retry with the same ID or report it. Never resubmit a write under a new ID. Revisions are decimal strings; a missing key has revision `"0"`.
+
+Code queries return full-content file revisions and zero-based source ranges with UTF-8 byte columns. Pass the file revision to `readFileLines` before expanding an indexed range. A changed file returns `revision_conflict`; obtain fresh symbols before trying new ranges. The Code plugin owns bounded context composition; callbacks do not install or start language servers.
 
 Model, HTTP and UI functions are desktop-only. A headless tool reaches HTTP through a handler bound to the `http.request` operation (see `tools.md`).
 

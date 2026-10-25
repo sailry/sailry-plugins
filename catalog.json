@@ -14713,7 +14713,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -14741,7 +14741,7 @@
       "provides_models": false,
       "permissions": [],
       "release_notes": {
-        "text": "- Accept current permission and connector declarations and connector modules in package preflight checks"
+        "text": "- Check current code-index capabilities, service bindings and declared flow operations\n- Reject retired language-server declarations and document revision-checked source queries"
       }
     },
     {

@@ -46,23 +46,27 @@ ACTIONS = {
     "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control",
     "terminals.read", "terminals.control", "conversation.read", "conversation.control",
     "sessions.start", "projects.read", "http.request", "models.generate", "storage.read",
-    "storage.write", "code.read", "code.manage", "artifacts.read", "artifacts.write",
-    "code.settings.read", "code.settings.write", "web.read", "web.settings.read",
+    "storage.write", "code.index.read", "artifacts.read", "artifacts.write",
+    "code.index.settings.read", "code.index.settings.write", "web.read", "web.settings.read",
     "web.settings.write", "knowledge.read", "knowledge.write",
 }
 OPERATION_ACTIONS = {
     "models.install": "models.install", "models.remove": "models.install",
-    "code.packages":"code.read", "code.install":"code.manage", "code.uninstall":"code.manage",
-    "code.diagnostics":"code.read", "code.definition":"code.read",
-    "code.references":"code.read", "code.hover":"code.read", "code.symbols":"code.read",
+    "code.search": "code.index.read", "code.outline": "code.index.read",
     "storage.get": "storage.read", "storage.list": "storage.read",
     "storage.set": "storage.write", "storage.delete": "storage.write",
     "http.request": "http.request", "files.list": "files.read", "files.read": "files.read",
+    "files.read_lines": "files.read",
     "files.search": "files.read", "files.find": "files.read", "files.write": "files.write",
     "files.edit": "files.write", "git.status": "git.read", "git.diff": "git.read",
     "git.log": "git.read", "git.show": "git.read", "git.blame": "git.read",
     "git.changes": "git.read", "git.change": "git.read",
     "worktrees.list": "worktrees.read",
+}
+RETIRED_OPERATIONS = {
+    "code.packages", "code.catalog", "code.servers", "code.start", "code.stop",
+    "code.install", "code.uninstall", "code.diagnostics", "code.definition",
+    "code.references", "code.hover", "code.symbols",
 }
 SETTING_KINDS = {"string", "integer", "number", "boolean"}
 
@@ -186,15 +190,33 @@ def check_tools(extension, servers, report):
             report.error(f"tool {name} needs exactly one of operation, handler or server")
             continue
         handler = tool.get("handler")
+        if handler is not None and not isinstance(handler, dict):
+            report.error(f"tool {name} handler must be an object")
+            continue
         if isinstance(handler, dict):
             if handler.get("name") not in handlers:
                 report.error(f"tool {name} handler {handler.get('name')!r} is not in host.handlers")
             if "parameters" not in handler:
                 report.error(f"tool {name} handler needs a parameters schema")
         operation = tool.get("operation") or (handler or {}).get("operation")
-        needed = OPERATION_ACTIONS.get(operation)
-        if needed and needed not in actions:
-            report.error(f"tool {name} uses {operation} and needs the {needed} action")
+        operations = [operation] if operation is not None else []
+        flow = (handler or {}).get("flow")
+        if flow is not None:
+            if not isinstance(flow, dict):
+                report.error(f"tool {name} flow must be an object")
+            else:
+                operations += check_names(flow.get("operations", []),
+                                          f"tool {name} flow.operations", report)
+        for operation in operations:
+            if not isinstance(operation, str):
+                report.error(f"tool {name} operation must be a string")
+                continue
+            if operation in RETIRED_OPERATIONS:
+                report.error(f"tool {name} uses a retired operation: {operation}")
+                continue
+            needed = OPERATION_ACTIONS.get(operation)
+            if needed and needed not in actions:
+                report.error(f"tool {name} uses {operation} and needs the {needed} action")
         server = tool.get("server")
         if server is not None and server not in servers:
             report.error(f"tool {name} names server {server!r}, which mcp.json does not declare")
@@ -338,9 +360,19 @@ def check(root):
         value = extension.get(field)
         if value is not None and (not isinstance(value, str) or value not in choices):
             report.error(f"{field} must be one of: {', '.join(sorted(choices))}")
-    for action in check_names(extension.get("actions", []), "actions", report):
+    actions = check_names(extension.get("actions", []), "actions", report)
+    for action in actions:
         if action not in ACTIONS:
             report.error(f"unknown action: {action}")
+    service = extension.get("enabled_service")
+    if service is not None:
+        if service != "code_index":
+            report.error("enabled_service must be code_index")
+        else:
+            if extension.get("scope", "host") != "host":
+                report.error("code_index requires host scope")
+            if "code.index.read" not in actions:
+                report.error("code_index needs the code.index.read action")
     if not isinstance(extension.get("display"), dict):
         report.warn("display is missing; catalogs fall back to the package name")
     if not manifest.get("description") and not extension.get("description"):

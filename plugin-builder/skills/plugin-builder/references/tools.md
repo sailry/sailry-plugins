@@ -80,11 +80,13 @@ export function count(args) {
 - Return JSON. Throw an `Error` (or return `{isError: true, error: {code, message}}`) for a failure the model should see.
 - Mark side-effect-free tools `read_only: true`. The Node still enforces Plan-mode restrictions.
 - To wrap a native operation, add `"operation": "files.read"` (or another operation) to the handler: the export receives the tool arguments and returns the operation's arguments; the Node runs the operation. An optional `"result": "result"` export receives `{output}` and returns what the model sees, for example `output.isError ? output : output.data`.
-- Operations available this way include `files.list`, `files.read`, `files.write`, `files.edit`, `files.search`, `files.find`, `git.status`, `git.diff`, `git.log`, `git.show`, `git.blame`, `git.changes`, `git.change`, `worktrees.list`, `code.diagnostics`, `code.definition`, `code.references`, `code.hover`, `code.symbols`, `process.run` and `http.request`, plus the storage operations above. Declare the matching action, and copy each operation's argument shape from the official plugin that wraps it (Files, Git, Worktrees, Code, Commands).
+- Operations available this way include `files.list`, `files.read`, `files.read_lines`, `files.write`, `files.edit`, `files.search`, `files.find`, `git.status`, `git.diff`, `git.log`, `git.show`, `git.blame`, `git.changes`, `git.change`, `worktrees.list`, `code.search`, `code.outline`, `process.run` and `http.request`, plus the storage operations above. Declare the matching action, and copy each operation's argument shape from the official plugin that wraps it (Files, Git, Worktrees, Code, Commands).
+
+A finite script flow declares every operation in `handler.flow.operations`. Each declared operation needs its matching action, including `code.index.read` for code queries and `files.read` for source expansion. The Node executes each explicit call outside the VM and checks its authority.
 
 `files.read` returns a line page: `offset` is zero-based (default 0), `limit` defaults to 200 (maximum 2000), and results include one-based line numbers, the full file revision and `next_offset`. Files may be up to 64 MiB, but each page is bounded to 128 KiB. A page is partial evidence; preserve the exact returned text and line endings when preparing `files.edit`, which requires one unique, nonempty `old_text` and the full `expected_revision`. `files.edit` requires `files.write`; `files.find` matches worktree-relative filename globs and requires `files.read`. `git.show` and `git.blame` read committed content and authorship with `git.read`.
 
-The callback SDK's `readFile(path)` remains a whole-file preview, limited to 128 KiB; it does not accept line pagination. Use the native `files.read` operation for paged reads and large-file editing workflows.
+The callback SDK's `readFile(path)` remains a whole-file preview, limited to 128 KiB. Use `readFileLines(path, offset, limit, expectedRevision?)` or the native `files.read_lines` operation for revision-checked pages. Pass the full indexed file revision as `expected_revision` to the operation; a mismatch returns `revision_conflict` before reading the requested range.
 
 ## MCP servers
 
@@ -125,8 +127,8 @@ With `"presentation": "content"`, a tool can return `sailry_content` (or MCP `st
 
 Limits: 1–16 blocks and 256 KiB; tables up to 64 columns and 1000 rows, with equal row widths; diffs up to 4096 lines. Add `"truncated": true` to a table or diff that shows partial output. Invalid content falls back to plain output.
 
-Language package tools may bind `code.packages` with `code.read`, or `code.install` and
-`code.uninstall` with `code.manage`. Use direct operation declarations as in the Code
-plugin. Lifecycle calls require their exact conversation approval and do not grant
-installation authority to callbacks. Installation takes the complete returned registry
-descriptor; removal takes the installed package and version and affects the entire Node.
+## Code index
+
+`code.search` and `code.outline` require `code.index.read`. Search accepts literal query terms, name, path and language filters, with 20 results by default and at most 100. Outline parses only its requested file, with complete input limited to 1 MiB. Source ranges use zero-based lines and UTF-8 byte columns; byte ends are exclusive. File structure depends on the grammar's actual extraction capabilities.
+
+The official Code plugin composes `code_context` from search and revision-checked file reads. It returns at most 20 symbols, 5 merged snippets and 16 KiB of UTF-8 JSON, including revisions and partial/truncated status. Preserve those limits when composing a similar flow. Language-server query, installation and lifecycle operations are retired authoring contracts.

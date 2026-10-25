@@ -178,9 +178,8 @@ test('requires the action behind a bound operation', () => {
 
 const operations = [
   ['models.install', 'models.install'], ['models.remove', 'models.install'],
-  ['code.packages','code.read'], ['code.install','code.manage'], ['code.uninstall','code.manage'],
-  ['code.diagnostics','code.read'], ['code.definition','code.read'],
-  ['code.references','code.read'], ['code.hover','code.read'], ['code.symbols','code.read'],
+  ['code.search', 'code.index.read'], ['code.outline', 'code.index.read'],
+  ['files.read_lines', 'files.read'],
   ['files.edit', 'files.write'],
   ['files.find', 'files.read'],
   ['git.show', 'git.read'],
@@ -194,6 +193,12 @@ function bindings(operation) {
     {name: 'invoke', operation},
     {name: 'invoke', handler: {name: 'invoke', operation, parameters: {type: 'object'}}},
   ];
+}
+
+function flow(operations) {
+  return {name: 'invoke', description: 'Read indexed context', handler: {
+    name: 'invoke', read_only: true, flow: {operations}, parameters: {type: 'object'},
+  }};
 }
 
 function operationPackage(tool, actions) {
@@ -231,6 +236,64 @@ for (const [operation, action] of operations) {
     }
   });
 }
+
+test('accepts current code index capabilities and bindings', () => {
+  for (const scope of [undefined, 'host']) {
+    const result = check(fixture({'plugin.json': manifest({
+      scope, enabled_service: 'code_index',
+      actions: ['code.index.read', 'code.index.settings.read', 'code.index.settings.write'],
+    })}));
+    assert.equal(result.code, 0, result.output);
+  }
+});
+
+test('rejects unavailable code index bindings', () => {
+  for (const [extension, message] of [
+    [{enabled_service: 'language'}, 'enabled_service must be code_index'],
+    [{enabled_service: 'unknown'}, 'enabled_service must be code_index'],
+    [{enabled_service: 'code_index'}, 'needs the code.index.read action'],
+    [{enabled_service: 'code_index', scope: 'desktop', actions: ['code.index.read']}, 'requires host scope'],
+  ]) {
+    const result = check(fixture({'plugin.json': manifest(extension)}));
+    assert.equal(result.code, 1, result.output);
+    assert.ok(result.output.includes(message), result.output);
+  }
+});
+
+test('requires every context flow capability', () => {
+  const tool = flow(['code.search', 'code.outline', 'files.read_lines']);
+  for (const [actions, missing] of [
+    [[], 'code.index.read'], [['files.read'], 'code.index.read'], [['code.index.read'], 'files.read'],
+  ]) {
+    const result = check(operationPackage(tool, actions));
+    assert.equal(result.code, 1, result.output);
+    assert.ok(result.output.includes(`needs the ${missing} action`), result.output);
+  }
+  const result = check(operationPackage(tool, ['code.index.read', 'files.read']));
+  assert.equal(result.code, 0, result.output);
+});
+
+test('rejects retired language capabilities', () => {
+  for (const action of ['code.read', 'code.manage', 'code.settings.read', 'code.settings.write']) {
+    const result = check(fixture({'plugin.json': manifest({actions: [action]})}));
+    assert.equal(result.code, 1, result.output);
+    assert.ok(result.output.includes(`unknown action: ${action}`), result.output);
+  }
+});
+
+test('rejects retired operations in every binding', () => {
+  for (const operation of [
+    'code.packages', 'code.catalog', 'code.servers', 'code.start', 'code.stop',
+    'code.install', 'code.uninstall', 'code.diagnostics', 'code.definition',
+    'code.references', 'code.hover', 'code.symbols',
+  ]) {
+    for (const tool of [...bindings(operation), flow([operation])]) {
+      const result = check(operationPackage(tool, ['code.index.read', 'files.read']));
+      assert.equal(result.code, 1, result.output);
+      assert.ok(result.output.includes(`retired operation: ${operation}`), result.output);
+    }
+  }
+});
 
 test('rejects a skill whose name differs from its folder', () => {
   const result = check(fixture({'plugin.json': manifest(), 'skills/notes/SKILL.md': skill}));
