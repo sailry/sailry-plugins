@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Release terminal input before closing and retain uncertain close requests
+
 ## 0.1.7
 
 - Keep switching terminals free of transient stopped text and spinners

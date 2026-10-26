@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 
 async function fixture() {
   const context=vm.createContext({});
-  const opened=[],notices=[],focused=[];
+  const opened=[],notices=[],focused=[],released=[];
   const profile={id:'saved-host',revision:3,name:'Saved host'};
   const terminal={id:'existing-terminal',ssh:profile.id,status:{kind:'running'}};
   const host={profiles:[profile],terminals:[terminal],catalog:{projects:[],worktrees:[]},catalogReads:0,inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
@@ -15,7 +15,7 @@ async function fixture() {
   const requests=new Map(),reads=[],forgotten=[],started=[],texts=[];
   const exports={
     'gpui-kit':{View:class{}},
-    sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id)},
+    sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id),releaseTerminal:id=>released.push(id)},
     'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return host.readCatalog();},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
     'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);},requestOutcome:id=>host.outcome(id)},
     'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),nextTextEvent(){}},
@@ -40,8 +40,8 @@ async function fixture() {
   await module.link(resolve);await module.evaluate();
   const view=new module.namespace.default();const pending=[];
   view.run=(action,cx)=>pending.push(Promise.resolve().then(()=>action(cx)));
-  Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,selected:null,browsers:new Map(),pending:null,connected:true,loaded:false,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
-  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,cx:{notify(){}},settle:()=>Promise.all(pending)};
+  Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,closingTerminals:new Set(),selected:null,browsers:new Map(),pending:null,connected:true,loaded:false,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
+  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,released,cx:{notify(){}},settle:()=>Promise.all(pending)};
 }
 
 async function browsing() {const setup=await fixture();await setup.view.refresh(setup.cx);await setup.settle();return setup;}
@@ -430,4 +430,67 @@ test('the close shortcut captures its terminal before dispatch',async()=>{
   await settle();
   assert.deepEqual(closed,[terminal.id]);
   assert.equal(view.terminal,second.id);
+});
+
+test('terminal release precedes close and lasts through settlement',async()=>{
+  const {view,cx,host,terminal,released,reads}=await browsing(),reply=deferred();
+  host.inspect=value=>{
+    if(value.kind==='close_ssh_terminal'){assert.deepEqual(released,[terminal.id]);return reply.promise;}
+    return Promise.resolve({Ok:{kind:'terminal_snapshot',data:{info:{...terminal,status:{kind:'closed'}}}}});
+  };
+  const closing=view.closeTerminal(terminal.id,cx);
+  assert.deepEqual(released,[terminal.id]);assert.equal(view.closingTerminals.has(terminal.id),true);
+  assert.equal(view.pending.request.command.kind,'close_ssh_terminal');
+  host.terminals=[];reply.resolve({Ok:{kind:'terminal',data:{...terminal,status:{kind:'closed'}}}});
+  await closing;
+  assert.equal(view.terminal,null);assert.equal(view.closingTerminals.size,0);
+  assert.equal(reads.filter(value=>value.kind==='close_ssh_terminal').length,1);
+});
+
+test('confirmed close failure restores the captured terminal without replay',async()=>{
+  const {view,cx,host,terminal,released,reads}=await browsing();
+  host.inspect=async()=>({Err:{code:'unavailable',message:'Close failed'}});
+  await view.closeTerminal(terminal.id,cx);
+  assert.deepEqual(released,[terminal.id]);assert.equal(view.closingTerminals.size,0);
+  assert.equal(view.terminal,terminal.id);assert.equal(view.terminals[0],terminal);
+  assert.equal(view.error.code,'unavailable');assert.equal(view.pending,null);
+  assert.equal(reads.filter(value=>value.kind==='close_ssh_terminal').length,1);
+});
+
+test('uncertain closes retain release until the original outcome settles',async()=>{
+  for(const failed of [false,true]){
+    const {view,cx,host,terminal,released,reads}=await browsing();
+    host.inspect=async()=>({Err:{code:'outcome_unknown',message:'Close outcome unavailable'}});
+    await view.closeTerminal(terminal.id,cx);
+    const id=view.pending.request.id;
+    assert.equal(view.pending.request.unknown,true);assert.equal(view.closingTerminals.has(terminal.id),true);
+    host.outcome=async observed=>{assert.equal(observed,id);return {kind:'completed',data:failed
+      ?{Err:{code:'unavailable',message:'Close failed'}}
+      :{Ok:{kind:'terminal',data:{...terminal,status:{kind:'closed'}}}}};};
+    if(!failed){host.terminals=[];host.inspect=async()=>({Err:{code:'not_found'}});}
+    await view.inspect(cx);
+    assert.equal(view.pending,null);assert.equal(view.closingTerminals.size,0);
+    assert.equal(view.terminal,failed?terminal.id:null);assert.deepEqual(released,[terminal.id]);
+    assert.equal(reads.filter(value=>value.kind==='close_ssh_terminal').length,1);
+  }
+});
+
+test('overlapping settled closes retain each released terminal',async()=>{
+  const {view,cx,host,profile,terminal,released,reads}=await browsing(),profiles=deferred();
+  const second={...terminal,id:'second-terminal'};host.terminals=[terminal,second];await view.refresh(cx);
+  let requested=false;host.listProfiles=()=>{requested=true;return profiles.promise;};
+  host.inspect=async value=>{
+    const info={...terminal,id:value.data.terminal,status:{kind:'closed'}};
+    if(value.kind==='close_ssh_terminal'){host.terminals=host.terminals.filter(item=>item.id!==info.id);return {Ok:{kind:'terminal',data:info}};}
+    return {Ok:{kind:'terminal_snapshot',data:{info}}};
+  };
+  const first=view.closeTerminal(terminal.id,cx);
+  for(let step=0;step<20&&!requested;step++)await Promise.resolve();
+  assert.equal(requested,true);assert.equal(view.pending,null);
+  const next=view.closeTerminal(second.id,cx);
+  assert.equal(view.closingTerminals.has(terminal.id),true);assert.equal(view.closingTerminals.has(second.id),true);
+  assert.deepEqual(released,[terminal.id,second.id]);
+  profiles.resolve([profile]);await Promise.all([first,next]);
+  assert.equal(view.closingTerminals.size,0);assert.equal(view.terminal,null);
+  assert.equal(reads.filter(value=>value.kind==='close_ssh_terminal').length,2);
 });

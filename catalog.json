@@ -2471,7 +2471,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2869,7 +2869,7 @@
         "terminals.control"
       ],
       "release_notes": {
-        "text": "- Keep switching terminals free of transient stopped text and spinners"
+        "text": "- Release terminal input before closing and retain uncertain close requests"
       }
     },
     {
@@ -16401,7 +16401,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17236,18 +17236,7 @@
         "projects.read"
       ],
       "release_notes": {
-        "text": "- Increase spacing between form labels and controls\n- Keep the normal page visible while its initial data loads",
-        "locales": {
-          "zh-CN": "- 增大表单标签与控件的间距\n- 初始数据加载时保留正常页面",
-          "zh-TW": "- 增加表單標籤與控制項的間距\n- 初始資料載入時保留正常頁面",
-          "ja": "- フォームのラベルと入力欄の間隔を拡大\n- 初期データの読み込み中も通常のページを保持",
-          "ko": "- 양식 레이블과 컨트롤 사이 간격 확대\n- 초기 데이터를 불러오는 동안 일반 페이지 유지",
-          "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires\n- Conserver la page normale pendant le chargement des données initiales",
-          "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern\n- Die normale Seite während des ersten Datenladens beibehalten",
-          "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario\n- Mantener la página normal mientras se cargan los datos iniciales",
-          "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários\n- Manter a página normal enquanto os dados iniciais carregam",
-          "ru": "- Увеличить расстояние между подписями и полями форм\n- Сохранять обычную страницу при загрузке исходных данных"
-        }
+        "text": "- Release terminal input before closing and restore observation after a confirmed failure"
       }
     },
     {

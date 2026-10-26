@@ -8,7 +8,7 @@ const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{k
 
 async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}, initialEntry = 0) {
   const context = vm.createContext({});
-  const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], closed = [], requests = new Map();
+  const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], closed = [], released = [], requests = new Map();
   const host = {items, complete:null, prepareError:null, change:null};
   const prepare = (action, target) => {
     const id = `request-${prepared.length}`;
@@ -17,7 +17,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   };
   const exports = {
     'gpui-kit':{View:class {}},
-    sailry:{context:() => JSON.stringify({locale:'en'})},
+    sailry:{context:() => JSON.stringify({locale:'en'}),releaseTerminal:id=>released.push(id)},
     'sailry/sdk':{
       listTerminals:async () => host.items,
       listTerminalTools:async () => [],
@@ -66,7 +66,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   };
   const enter = async () => { entry++; await observe(); };
   await observe();
-  return {view, host, cx, settle, observe, enter, prepared, completed, forgotten, panes, updates,notices,closed};
+  return {view, host, cx, settle, observe, enter, prepared, completed, forgotten, panes, updates,notices,closed,released};
 }
 
 test('restored shell metadata never launches a hidden process', async () => {
@@ -310,4 +310,49 @@ test('a missing resource closes after authoritative inventory loads', async () =
   assert.deepEqual(setup.closed,[true]);
   assert.deepEqual(setup.prepared,[]);
   assert.deepEqual(setup.notices,[]);
+});
+
+test('terminal release precedes close dispatch and inventory removal', async () => {
+  const item={...shell(),status:{kind:'running'}},setup=await fixture([item],null);
+  setup.host.complete=async request=>{
+    assert.deepEqual(setup.released,[item.id]);
+    assert.equal(setup.view.closingTerminals.has(item.id),true);
+    setup.host.items=[];
+    return {Ok:{kind:'terminal',data:{...item,status:{kind:'closed'}}}};
+  };
+  setup.view.perform('close',item.id,setup.cx);await setup.settle();
+  assert.equal(setup.view.closingTerminals.size,0);assert.equal(setup.view.selected,null);
+  assert.deepEqual(setup.completed,['request-0']);assert.equal(setup.prepared.length,1);
+  assert.deepEqual(setup.notices,[]);
+});
+
+test('confirmed close failure restores the current terminal without replay', async () => {
+  const item={...shell(),status:{kind:'running'}},setup=await fixture([item],null);
+  setup.host.complete=async()=>({Err:{code:'busy'}});
+  setup.view.perform('close',item.id,setup.cx);await setup.settle();
+  assert.deepEqual(setup.released,[item.id]);assert.equal(setup.view.closingTerminals.size,0);
+  assert.equal(setup.view.items[0],item);assert.equal(setup.view.selected,item.id);
+  assert.equal(setup.view.error,'failed');assert.equal(setup.view.pending,null);
+  assert.equal(setup.prepared.length,1);assert.deepEqual(setup.completed,['request-0']);
+});
+
+test('uncertain close retains release and the original request identity', async () => {
+  for(const failed of [false,true]){
+    const item={...shell(),status:{kind:'running'}},setup=await fixture([item],null);
+    setup.host.complete=async()=>({Err:{code:'outcome_unknown'}});
+    setup.view.perform('close',item.id,setup.cx);await setup.settle();
+    assert.equal(setup.view.closingTerminals.has(item.id),true);
+    assert.equal(setup.view.pending.id,'request-0');assert.equal(setup.view.error,'unknown');
+    setup.view.refresh(setup.cx);await setup.settle();
+    assert.deepEqual(setup.completed,['request-0']);
+    setup.host.complete=async()=>{
+      if(failed)return {Err:{code:'busy'}};
+      setup.host.items=[];return {Ok:{kind:'terminal',data:{...item,status:{kind:'closed'}}}};
+    };
+    setup.view.retry(setup.cx);await setup.settle();
+    assert.equal(setup.view.closingTerminals.size,0);assert.equal(setup.view.pending,null);
+    assert.equal(setup.view.selected,failed?item.id:null);
+    assert.deepEqual(setup.released,[item.id]);assert.equal(setup.prepared.length,1);
+    assert.deepEqual(setup.completed,['request-0','request-0']);
+  }
 });
