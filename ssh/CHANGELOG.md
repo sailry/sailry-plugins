@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Release terminal input before closing and restore observation after a confirmed failure
+
 ## 0.1.13
 
 - Increase spacing between form labels and controls

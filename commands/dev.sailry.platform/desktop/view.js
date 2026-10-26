@@ -7,11 +7,12 @@ import {choices} from './access.js';
 export function render(view) {
   const {text} = view, disabled = view.busy || !!view.pending;
   const selected = view.items.find(item => item.id === view.selected);
-  const attached = selected && selected.status.kind !== 'stopped';
+  const closing = view.closingTerminals?.has(selected?.id);
+  const attached = selected && selected.status.kind !== 'stopped' && !closing;
   const stoppedShell = selected?.status.kind === 'stopped' && !selected.tool && !selected.ssh;
   const waiting = !selected && (!view.loaded || view.loading || disabled || !!view.resource);
   const spinning = waiting && !view.error && !view.resource;
-  const status = selected ? (opening(view, selected) ? null : text.stopped) : waiting ? null : text.empty;
+  const status = closing ? null : selected ? (opening(view, selected) ? null : text.stopped) : waiting ? null : text.empty;
   return div().id('commands-page').v_flex().size_full().min_w_0().min_h_0()
     .children(!view.resource ? [div().h_flex().flex_shrink(0).gap_1().px_2().py_1()
       .child(new Button('terminal-new').ghost().label(text.create).disabled(disabled)

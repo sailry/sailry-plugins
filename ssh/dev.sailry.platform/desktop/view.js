@@ -92,7 +92,7 @@ export function render(view){const{text}=view,active=view.home?null:view.termina
   const body=div().id(!view.loaded?'ssh-loading':active?'ssh-page':'ssh-landing').relative().v_flex().size_full().min_h_0().min_w_0()
     .children(!opened&&!connecting&&view.pending?[feedback(view)]:[])
     .child(!view.loaded?div().flex_1().min_h_0()
-      :active?div().flex_1().min_h_0().child(Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
+      :active?div().flex_1().min_h_0().child(view.closingTerminals?.has(active.id)?div():Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
     .children(connecting?[Loading.new('ssh-connecting')]:[]);
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})
     .child(Header.new('ssh-header',{content:JSON.stringify({title:text.ssh,tabs:view.terminals.length?{id:'ssh-tabs',selected:view.home?null:view.terminal,close_label:text.close,max_width:180,items:view.terminals.map(info=>({id:info.id,label:view.profiles.find(profile=>profile.id===info.ssh)?.name??text.ssh,closable:true,icon:'terminal'}))}:undefined,

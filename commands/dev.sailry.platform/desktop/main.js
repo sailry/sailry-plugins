@@ -1,5 +1,5 @@
 import {View} from 'gpui-kit';
-import {context} from 'sailry';
+import {context,releaseTerminal} from 'sailry';
 import {listTerminals, listTerminalTools, prepareTerminal, prepareOpenTerminal, prepareCloseTerminal,
   completeRequest, forgetRequest, nextChange} from 'sailry/sdk';
 import {nextMenuEvent, pane, openPane, updatePane, closePane, nextPaneEvent,toast} from 'sailry/ui';
@@ -16,6 +16,7 @@ export default class Commands extends View {
     this.loaded = false; this.loading = false; this.dirty = false; this.busy = false; this.pending = null; this.error = null;
     this.openAttempts = new Map(); this.openRetry = null;
     this.openIntent = null;
+    this.closingTerminals = new Set();
     if (this.resource) cx.spawn(async cx => {
       try { while (true) {
         const event = await nextPaneEvent();
@@ -50,6 +51,7 @@ export default class Commands extends View {
         const selected = this.selected;
         const [items, tools] = await Promise.all([listTerminals(), listTerminalTools()]);
         this.items = items.filter(item => item.status.kind !== 'closed'); this.tools = tools; this.loaded = true;
+        for (const id of this.closingTerminals) if (!this.items.some(item => item.id === id)) this.closingTerminals.delete(id);
         if (this.resource) {
           const index = this.items.findIndex(item => item.id === this.resource.id);
           if (index < 0) { closePane(); return; }
@@ -83,6 +85,7 @@ export default class Commands extends View {
     const intent = this.openIntent; this.openIntent = null;
     if (intent.target !== null && intent.target !== this.selected) return;
     const item = this.items.find(item => item.id === this.selected);
+    if (item && this.closingTerminals.has(item.id)) return;
     if (!item || item.status.kind !== 'stopped' || item.tool || item.ssh) return;
     if (this.error) {
       const failed = this.openAttempts.get(this.openRetry);
@@ -123,12 +126,18 @@ export default class Commands extends View {
               const chosen = target === null ? {tool:null,access:'unrestricted'} : selection(target);
               return prepareTerminal(chosen.tool, chosen.access);
             })();
+          if (action === 'close') {
+            try { releaseTerminal(target); }
+            catch (error) { forgetRequest(id); throw error; }
+            this.closingTerminals.add(target);
+          }
           this.pending = {id, action, target};
         }
         const result = await completeRequest(this.pending.id);
         const done = this.pending.action, opened = this.pending.target;
         if (result.Err?.code === 'outcome_unknown') { this.fail('unknown'); return; }
         if (result.Err) {
+          if (done === 'close') this.closingTerminals.delete(opened);
           this.fail('failed');
           if (done === 'open') this.openFailed(opened);
         }
