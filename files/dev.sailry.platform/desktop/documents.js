@@ -66,7 +66,11 @@ export class Documents {
   refresh(cx) { return this.accept(readDocuments(),cx); }
 
   async open(path, line, cx) {
-    await openDocument(path,line === undefined ? {} : {line});
+    try { await openDocument(path,line === undefined ? {} : {line}); }
+    catch (error) {
+      if (faultCode(error.message ?? String(error)) === 'cancelled') return;
+      throw error;
+    }
     this.refresh(cx);
   }
 

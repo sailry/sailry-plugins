@@ -15,7 +15,10 @@ function fixture(initial, afterClose = async () => {}, confirm = async () => fal
   const calls = [],errors = [];
   const cx = {notify(){}};
   const api = {
-    faultCode:message => JSON.parse(message).code,
+    faultCode:message => {
+      try { return JSON.parse(message).code; }
+      catch (_) { return 'failed'; }
+    },
     readDocuments:() => state,
     nextDocumentChange:async () => { throw new Error('closed'); },
     openDocument:async (path,options) => { calls.push(['open',path,options]); },
@@ -60,6 +63,35 @@ test('managed file documents retain ordinary editing and save actions',async () 
   assert.deepEqual(plain(calls),[['open',path,{}],['action','managed',{kind:'undo'}],['save','managed']]);
   assert.equal(documents.current().readonly,false);
   assert.equal(documents.current().path,path);
+});
+
+test('canceled opens preserve the selected successor and its draft', async () => {
+  const retained = document('draft',{dirty:true,can_save:true});
+  const {documents,cx,api,errors} = fixtureState('1',[document('closing'),retained]);
+  let reject;
+  api.openDocument = () => new Promise((_,failed) => { reject = failed; });
+  const opening = documents.open('closing.txt',undefined,cx);
+  await documents.close('closing',cx);
+  reject(new Error(JSON.stringify({code:'cancelled',message:'Document read was invalidated'})));
+  await opening;
+  assert.equal(documents.current(),retained);
+  assert.equal(documents.current().dirty,true);
+  assert.deepEqual(plain(documents.order),['draft']);
+  assert.deepEqual(errors,[]);
+});
+
+test('open failures retain their original errors', async () => {
+  const messages = ['cancelled',...['unavailable','invalid_request','outcome_unknown'].map(code =>
+    JSON.stringify({code,message:'Document read failed'}))];
+  for (const message of messages) {
+    const retained = document('draft',{dirty:true,can_save:true});
+    const {documents,cx,api} = fixtureState('1',[retained]);
+    const failure = new Error(message);
+    api.openDocument = async () => { throw failure; };
+    await assert.rejects(documents.open('missing.txt',undefined,cx),error => error === failure);
+    assert.equal(documents.current(),retained);
+    assert.equal(documents.current().dirty,true);
+  }
 });
 
 test('reveal selects existing documents and waits for an admitted loading document', async () => {
@@ -183,7 +215,7 @@ test('uncertain outcomes preserve drafts and report each changed failure once', 
 });
 
 test('native save failures report once across snapshot ordering', async () => {
-  for (const code of ['revision_conflict','outcome_unknown']) for (const early of [true,false]) {
+  for (const code of ['revision_conflict','outcome_unknown','cancelled']) for (const early of [true,false]) {
     const current = document('draft',{dirty:true,can_save:true});
     const failure = {code,message:'Save was not confirmed'};
     const state = {cursor:'2',documents:[{...current,error:failure,uncertain:code === 'outcome_unknown'}],reveal:null};

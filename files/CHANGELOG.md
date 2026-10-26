@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Ignore canceled document opens after their read is invalidated.
+- Preserve genuine read errors and save feedback.
+
 ## 0.1.11
 
 - Report each save failure once while retaining conflict and uncertain outcomes

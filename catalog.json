@@ -7433,7 +7433,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9236,7 +9236,7 @@
         "models.install"
       ],
       "release_notes": {
-        "text": "- Report each save failure once while retaining conflict and uncertain outcomes"
+        "text": "- Ignore canceled document opens after their read is invalidated.\n- Preserve genuine read errors and save feedback."
       }
     },
     {
