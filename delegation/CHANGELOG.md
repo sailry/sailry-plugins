@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.24
+
+- Present the work mode as Flagship with localized labels and descriptions.
+- Preserve existing mode selections and autonomous coordination behavior.
+
 ## 0.1.23
 
 - Move autonomous delegation into the Multitask work mode and remove the model toggle.

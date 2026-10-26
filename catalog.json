@@ -4030,7 +4030,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.23",
+        "version": "0.1.24",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4534,9 +4534,18 @@
               "icon": "reicon:users/users2"
             },
             "description": {
-              "label": "Delegate tasks to subagents",
+              "label": "Multiple agents work on code and files, suited to refactoring and organization",
               "locales": {
-                "zh-CN": "将任务分配给子代理"
+                "en": "Multiple agents work on code and files, suited to refactoring and organization",
+                "zh-CN": "多代理协作处理代码和文件，适合重构与整理",
+                "zh-TW": "多代理協作處理程式碼和檔案，適合重構與整理",
+                "ja": "複数エージェントでコードやファイルを扱い、リファクタリングや整理に対応",
+                "ko": "여러 에이전트로 코드와 파일을 처리하며 리팩터링과 정리에 적합",
+                "de": "Mehrere Agenten für Code und Dateien, geeignet für Refactoring und Ordnung",
+                "es": "Varios agentes trabajan con código y archivos, ideal para refactorizar y organizar",
+                "fr": "Plusieurs agents pour le code et les fichiers, adaptés à la refactorisation et à l'organisation",
+                "pt-BR": "Vários agentes para código e arquivos, indicado para refatoração e organização",
+                "ru": "Несколько агентов для кода, файлов, рефакторинга и организации"
               }
             },
             "host": {
@@ -4589,19 +4598,19 @@
                 "id": "multitask",
                 "option": "mode",
                 "display": {
-                  "label": "Multitask",
+                  "label": "Flagship",
                   "icon": "reicon:users/users2",
                   "locales": {
-                    "en": "Multitask",
-                    "zh-CN": "多任务",
-                    "zh-TW": "多工",
-                    "ja": "マルチタスク",
-                    "ko": "멀티태스크",
-                    "de": "Mehrere Aufgaben",
-                    "es": "Multitarea",
-                    "fr": "Multitâche",
-                    "pt-BR": "Multitarefa",
-                    "ru": "Многозадачность"
+                    "en": "Flagship",
+                    "zh-CN": "旗舰",
+                    "zh-TW": "旗艦",
+                    "ja": "フラッグシップ",
+                    "ko": "플래그십",
+                    "de": "Flaggschiff",
+                    "es": "Insignia",
+                    "fr": "Phare",
+                    "pt-BR": "Carro-chefe",
+                    "ru": "Флагман"
                   }
                 },
                 "permissions": {
@@ -4612,7 +4621,7 @@
             ]
           }
         },
-        "description": "Delegate tasks to subagents"
+        "description": "Multiple agents work on code and files, suited to refactoring and organization"
       },
       "provides_models": false,
       "permissions": [
@@ -4624,7 +4633,7 @@
         "conversation.control"
       ],
       "release_notes": {
-        "text": "- Move autonomous delegation into the Multitask work mode and remove the model toggle.\n- Keep Build delegation explicit and preserve captured conversation choices."
+        "text": "- Present the work mode as Flagship with localized labels and descriptions.\n- Preserve existing mode selections and autonomous coordination behavior."
       }
     },
     {
