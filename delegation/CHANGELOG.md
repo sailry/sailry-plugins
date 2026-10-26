@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Keep delegation optional in Flagship and summarize child tasks with scoped evidence
+
 ## 0.1.25
 
 - Pause hidden settings refreshes and keep drafts after background failures

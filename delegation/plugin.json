@@ -1,10 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "delegation",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.0-alpha.4",
       "scope": "host",
       "settings_schema": "dev.sailry.platform/settings.json",
       "conversation_options": {
@@ -366,7 +367,7 @@
           "name": "spawn_agent",
           "presentation": "details",
           "grouping": "standalone",
-          "description": "Delegate a self-contained task to a child agent when the user's instructions allow it. Delegate independent research, implementation or review that benefits from separate context or parallel work; do trivial lookups and tightly coupled steps yourself, and do not redo a child's work. The child does not see this conversation: write a self-contained task with the goal, relevant paths, constraints, whether edits are allowed, and expected output with path:line evidence. Give a short display title separate from the task. By default this observes the child's result within a bounded observation window; use it for results this turn needs and verify them before relying on them. If it returns an admitted, pending child with queued or running status, that work continues under the returned session and turn IDs. Do not spawn it again. Set background to true only when the user asks or long-running work is not needed this turn; it immediately returns the child session ID and queued admission status. The execution Node starts queued children in order as its configured running-child capacity becomes available. This capacity applies independently to each main conversation; waiting for capacity can outlast an observation window. Queued admission is not execution or completion. Do not poll background work: its durable completion arrives as a background notice, and this conversation continues when idle. Until then, report its current status; never claim its results were integrated. Use guide_agent for new directions. A new child inherits this turn's worktree, work mode and permission, including a conversation's private worktree when no project is selected. Choose a role listed in this tool when it fits; use its exact listed key and never invent a role. If no role fits or the roster is empty, omit role or use null to inherit this conversation's model and instructions. worktree selects a registered worktree in this project. If concurrent children could edit the same files, create one with create_worktree and pass its ID; otherwise give children sharing a directory disjoint files. Independent calls may run concurrently. To reuse an idle child owned by this conversation, copy its exact returned session ID and normally omit role; never reconstruct the ID. It keeps its history, role, model, worktree and settings. Busy or foreign children cannot be reused. Children cannot delegate further.",
+          "description": "Delegate bounded parallel work when the user or the active work mode allows it (project guides do not). Keep immediate lookups and tightly coupled steps yourself. Supply the goal, relevant paths and excerpts, constraints, edit ownership and expected result; the child cannot see this conversation. Expect a summary with path:line pointers, not file contents. The default uses a bounded observation window; verify completed results before relying on them. An admitted, pending child keeps running under its returned session and turn IDs. Do not spawn it again. Use background only for work this turn does not need; completion arrives automatically. Do not poll or claim uncollected results were integrated. Queued admission is not execution or completion. Use guide_agent for new directions. Children inherit this turn's worktree, including a private worktree, mode and permission and cannot delegate. Choose an exact listed role, or omit it to inherit the model and instructions. worktree selects a registered project checkout; concurrent edits need disjoint files or separate worktrees. To reuse an idle child owned by this conversation, use its exact returned session ID and normally omit role; never reconstruct it. It keeps its history, role, model, worktree and settings.",
           "handler": {
             "name": "prepare",
             "parameters": {
@@ -587,10 +588,9 @@
           "permissions": {
             "write": true
           },
-          "instructions": "This mode enables autonomous delegation for the authorized task. Identify independent investigation, implementation or review work and assign useful scopes to available child agents while you advance the critical path. Give each child a concrete result, relevant context and explicit file ownership; keep overlapping edits with one owner. Reuse or guide existing children instead of duplicating their work. Handle small or tightly coupled work directly; delegation is a means to finish the task, not a requirement for every turn. Preserve the user's scope, mode restrictions and tool permissions in every child. Children cannot delegate further. Background completion notices carry results; review and integrate those results before claiming completion. Do not poll background work or repeat uncertain side effects. Coordinate shared build and test resources, and run only the relevant verification required by the task."
+          "instructions": "Flagship enables delegation; it does not require it. First plan the task and do the immediate blocking step yourself. Do directed work yourself: reading or searching known files, single lookups, small edits, verifying a child's claim, and anything your next step depends on. Delegate only bounded work that runs in parallel with your own progress: broad multi-area investigation, independent implementation slices with disjoint files, or review and verification that can run alongside. Never delegate 'read file X and return it'. Keep tightly coupled work with one owner. Wait only when blocked; do not redo a child's work."
         }
-      ],
-      "min_sailry_version": "0.1.0-alpha.4"
+      ]
     }
   },
   "description": "Multiple agents work on code and files, suited to refactoring and organization"

@@ -15,9 +15,11 @@ test('declares a mode without a model toggle',()=>{
   assert.equal(mode.display.label,'Flagship');
   assert.equal(mode.display.locales['zh-CN'],'旗舰');
   assert.deepEqual(mode.permissions,{write:true});
-  assert.match(mode.instructions,/enables autonomous delegation/);
-  assert.match(mode.instructions,/explicit file ownership/);
-  assert.match(mode.instructions,/Children cannot delegate further/);
+  assert.match(mode.instructions,/Flagship enables delegation; it does not require it/);
+  assert.match(mode.instructions,/immediate blocking step yourself/);
+  assert.match(mode.instructions,/disjoint files/);
+  assert.match(mode.instructions,/Never delegate 'read file X and return it'/);
+  assert.match(mode.instructions,/Wait only when blocked/);
   assert.equal(extension.conversation_options.properties.mode.default,'');
   assert.deepEqual(extension.conversation_options.properties.mode.enum,['','multitask']);
   assert.equal(extension.ui,undefined);

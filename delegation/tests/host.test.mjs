@@ -69,14 +69,13 @@ test('manifest and initialized schemas expose reuse consistently',async()=>{
   const tool = manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === 'spawn_agent');
   assert.deepEqual(tool.handler.parameters.required,['task']);
   assert.equal(tool.handler.parameters.properties.session.type,'string');
-  assert.match(tool.description,/new child inherits/);
-  assert.match(tool.description,/private worktree when no project is selected/);
+  assert.match(tool.description,/Children inherit this turn's worktree/);
+  assert.match(tool.description,/including a private worktree, mode and permission/);
   for (const name of ['spawn_agent','guide_agent','wait_agent']) {
     assert.deepEqual(manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === name).contexts ?? [],[]);
   }
-  assert.match(tool.description,/Choose a role listed in this tool when it fits/);
-  assert.match(tool.description,/use its exact listed key and never invent a role/);
-  assert.match(tool.description,/If no role fits or the roster is empty, omit role or use null/);
+  assert.match(tool.description,/Choose an exact listed role/);
+  assert.match(tool.description,/omit it to inherit the model and instructions/);
   assert.match(tool.description,/session ID and normally omit role/);
   assert.match(tool.description,/reuse an idle child/);
   assert.match(tool.description,/It keeps its history, role, model, worktree and settings/);
@@ -104,10 +103,11 @@ test('background mode retains synchronous default and exposes child control',asy
   const spawn = tools.find(tool => tool.name === 'spawn_agent');
   assert.equal(spawn.handler.parameters.properties.background.type,'boolean');
   assert.match(spawn.description,/Use guide_agent for new directions/);
-  assert.match(spawn.description,/child does not see this conversation/);
-  assert.match(spawn.description,/self-contained task with the goal, relevant paths, constraints, whether edits are allowed, and expected output with path:line evidence/);
-  assert.match(spawn.description,/do trivial lookups and tightly coupled steps yourself, and do not redo a child's work/);
-  assert.match(spawn.description,/create one with create_worktree and pass its ID/);
+  assert.match(spawn.description,/child cannot see this conversation/);
+  assert.match(spawn.description,/goal, relevant paths and excerpts, constraints, edit ownership and expected result/);
+  assert.match(spawn.description,/summary with path:line pointers/);
+  assert.match(spawn.description,/Keep immediate lookups and tightly coupled steps yourself/);
+  assert.match(spawn.description,/disjoint files or separate worktrees/);
   assert.match(spawn.description,/disjoint files/);
   assert.equal(tools.find(tool => tool.name === 'guide_agent').operation,'agents.guide');
   assert.equal(tools.find(tool => tool.name === 'wait_agent').operation,'agents.wait');
@@ -122,9 +122,9 @@ test('background guidance does not imply result collection',async()=>{
     assert.doesNotMatch(description,/Wait for the child result before answering/);
   }
   const spawn = tools.find(tool => tool.name === 'spawn_agent');
-  assert.match(spawn.description,/use it for results this turn needs and verify them before relying on them/);
-  assert.match(spawn.description,/Set background to true only when the user asks or long-running work is not needed this turn/);
-  assert.match(spawn.description,/never claim its results were integrated/);
+  assert.match(spawn.description,/verify completed results before relying on them/);
+  assert.match(spawn.description,/Use background only for work this turn does not need/);
+  assert.match(spawn.description,/Do not poll or claim uncollected results were integrated/);
   const guide = tools.find(tool => tool.name === 'guide_agent');
   assert.match(guide.description,/queued guidance receipt, not the child's final result/);
   const wait = tools.find(tool => tool.name === 'wait_agent');
