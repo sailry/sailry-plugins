@@ -69,12 +69,25 @@ jobs:
           python3 scripts/catalog.py
           python3 scripts/catalog.py --check
       - name: Commit catalog changes
+        id: commit
         run: |
-          if git diff --quiet -- catalog.json; then
+          if ! git diff --quiet -- catalog.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add catalog.json
+            git commit -m 'Update official catalog'
+            git push origin HEAD:main
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Notify website
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+          CATALOG_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "WEBSITE_DISPATCH_TOKEN is not set; skipping"
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add catalog.json
-          git commit -m 'Update official catalog'
-          git push origin HEAD:main
+          gh api --method POST repos/sailry/sailry-website/dispatches \
+            -f event_type=plugins-catalog-updated \
+            -f "client_payload[sha]=$CATALOG_SHA"
