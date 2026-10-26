@@ -24,6 +24,32 @@ test('complete categories can use their recorded total',()=>{
   ]);
 });
 
+test('session composition keeps measured categories beside unknown estimates',()=>{
+  const state={statistics:{usage:{input:'890750',output:'2750'},observations:{reasoning:'125',composition:[
+    {kind:'user',tokens:'700'},{kind:'assistant',tokens:'51'},
+    {kind:'tools',tokens:'100'},{kind:'results',tokens:'406300'},
+  ]}}};
+  const before=structuredClone(state),data=overview(state);
+  const parts=data.composition.map(part=>({...part,value:part.tokens}));
+  assert.equal(data.usage.total,893500n);
+  assert.equal(data.composition.find(part=>part.kind==='system').tokens,null);
+  const measured=shares(parts,data.usage.total);
+  assert.deepEqual(measured.map(part=>[part.kind,part.value]),[
+    ['dialogue',751n],['tools',406400n],['reasoning',125n],['output',2625n],
+  ]);
+  assert.ok(measured.every(part=>part.share>0));
+  assert.equal(measured.find(part=>part.kind==='tools').share,406400/893500*100);
+  assert.ok(measured.reduce((sum,part)=>sum+part.share,0)<100);
+  assert.deepEqual(state,before);
+});
+
+test('zero composition segments stay omitted',()=>{
+  assert.deepEqual(shares([{value:0n},{value:25n},{value:0n}],25n),[
+    {value:25n,share:100},
+  ]);
+  assert.deepEqual(shares([{value:0n},{value:0n}],0n),[]);
+});
+
 test('unknown occupancy stays unknown while entry remains available',()=>{
   for(const sidebar of [true,false]) {
     const state={sidebar,statistics:null};

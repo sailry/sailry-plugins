@@ -1,3 +1,7 @@
+## 0.1.22
+
+- Show measured session composition when some categories are unknown and separate bar segments
+
 ## 0.1.21
 
 - Align context metric values and units using shaped text baselines

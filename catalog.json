@@ -17255,7 +17255,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -17423,7 +17423,7 @@
         "conversation.read"
       ],
       "release_notes": {
-        "text": "- Align context metric values and units using shaped text baselines"
+        "text": "- Show measured session composition when some categories are unknown and separate bar segments"
       }
     },
     {

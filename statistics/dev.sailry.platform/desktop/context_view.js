@@ -62,9 +62,9 @@ function section(id,label,right,body,details) {
 }
 
 function bars(id,parts,whole=null) {
-  return div().id(id).h_flex().items_stretch().w_full().h(8).flex_shrink_0().rounded(3).overflow_hidden().bg(colors().muted)
+  return div().id(id).h_flex().items_stretch().w_full().h(8).flex_shrink_0().gap(1).rounded(3).overflow_hidden().bg(colors().muted)
     .children(shares(parts,whole).map(part=>div().h_full()
-      .min_w(0).flex_shrink_0().w(`${part.share}%`).bg(colors()[part.color])));
+      .min_w(0).flex_shrink(1).w(`${part.share}%`).bg(colors()[part.color])));
 }
 
 function metric(id,value,size=23,tone='foreground',capacity=null,reference_size=null) {
@@ -211,7 +211,7 @@ function connection(view,data) {
 
 function composition(view,data) {
   const {text}=view,parts=data.composition;
-  const body=column().child(bars('context-composition-bar',parts.map(part=>({...part,value:part.tokens}))))
+  const body=column().child(bars('context-composition-bar',parts.map(part=>({...part,value:part.tokens})),data.usage.total))
     .child(div().h_flex().flex_wrap().gap(15).children(parts.map(part=>div().h_flex().items_center().gap(6)
       .child(dot(part.color)).child(muted(text[part.label])))));
   const detail=column().gap(0).children(parts.map(part=>row(text[part.label],tokens(part.tokens,part.estimated),{color:part.color})));
