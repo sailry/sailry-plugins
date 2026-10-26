@@ -55,6 +55,10 @@ export function checkPackage(manifest) {
   }
   const extension = data.extensions?.['dev.sailry.platform'];
   if (!extension || extension.api_version !== 'v1') throw new Error('Sailry extension must use v1');
+  if (extension.min_sailry_version !== undefined
+      && (typeof extension.min_sailry_version !== 'string' || !version.test(extension.min_sailry_version))) {
+    throw new Error('Minimum Sailry version must be a semantic version');
+  }
   distinct(extension.actions ?? [], 'Actions');
   checkConnectors(extension, directory);
   const sections = [extension.host, extension.desktop, extension.settings_page].filter(Boolean);

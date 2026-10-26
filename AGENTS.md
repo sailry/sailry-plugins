@@ -15,6 +15,12 @@
   build metadata alone and older versions do not offer an update. This does not
   declare a product release; keep the Sailry extension API at `v1` and numeric
   format versions at `1`.
+- When a package starts using a new host capability, set
+  `extensions."dev.sailry.platform".min_sailry_version` to the first application
+  version containing it. This includes new `sailry/*` modules or exports,
+  extension fields and permissions. Use an exact SemVer, including prerelease
+  identifiers when needed. Adding or changing this declaration changes package
+  content and requires the usual version bump.
 - Immutable content digests verify package contents and identify captures. Preserve captured
   package resources and sent-turn references; updates apply to new admission.
   Never rewrite historical captures to deliver a package fix.

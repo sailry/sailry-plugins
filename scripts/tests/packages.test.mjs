@@ -81,6 +81,22 @@ test('versions accept previews and reject invalid SemVer identifiers', t => {
   }
 });
 
+test('minimum Sailry versions accept previews and reject invalid declarations', t => {
+  const {manifest, data} = fixture(t);
+  for (const minimum of ['0.1.0-alpha.4', '0.2.0-alpha.1', '1.0.0', '1.0.0+build.01']) {
+    const current = structuredClone(data);
+    current.extensions['dev.sailry.platform'].min_sailry_version = minimum;
+    writeFileSync(manifest, JSON.stringify(current));
+    assert.equal(checkPackage(manifest), 0);
+  }
+  for (const minimum of ['', '>=0.1.0', '0.1.0-alpha.01', '01.0.0', 1, null, {}]) {
+    const current = structuredClone(data);
+    current.extensions['dev.sailry.platform'].min_sailry_version = minimum;
+    writeFileSync(manifest, JSON.stringify(current));
+    assert.throws(() => checkPackage(manifest), /Minimum Sailry version must be a semantic version/);
+  }
+});
+
 test('repository packages and examples accept valid version increments', t => {
   const {temp, manifest, data} = fixture(t);
   const scripts = path.join(temp, 'scripts');

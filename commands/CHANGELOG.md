@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support
+
 ## 0.1.8
 
 - Release terminal input before closing and retain uncertain close requests
