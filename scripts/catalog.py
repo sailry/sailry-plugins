@@ -5,45 +5,13 @@ import json
 from pathlib import Path
 import sys
 
+from history import LOCALES, notes, section, versions
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCALES = ("en", "zh-CN", "zh-TW", "ja", "ko", "fr", "de", "es", "pt-BR", "ru")
 
 
-def section(path, version):
-    if not path.is_file():
-        return None
-    selected = False
-    lines = []
-    for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
-        if line.rstrip().startswith("## "):
-            if selected:
-                break
-            selected = line.rstrip()[3:].strip() == version
-        elif selected:
-            lines.append(line)
-    text = "".join(lines).strip()
-    if not text:
-        return None
-    if any((ord(char) < 32 and char not in "\n\r\t") or 127 <= ord(char) <= 159
-           for char in text):
-        raise ValueError("Release notes contain control characters")
-    return text
-
-
-def notes(directory, version):
-    text = section(directory / "CHANGELOG.md", version)
-    if text is None:
-        return None
-    locales = {}
-    for locale in LOCALES:
-        localized = section(directory / f"CHANGELOG.{locale}.md", version)
-        if localized is not None:
-            locales[locale] = localized
-    result = {"text": text}
-    if locales:
-        result["locales"] = locales
-    return result
+def read(path):
+    return path.read_text(encoding="utf-8") if path.is_file() else None
 
 
 def stale_notes(root=ROOT):
@@ -53,7 +21,7 @@ def stale_notes(root=ROOT):
         version = manifest.get("version")
         locales = [locale for locale in LOCALES
                    if (path.parent / f"CHANGELOG.{locale}.md").is_file()
-                   and section(path.parent / f"CHANGELOG.{locale}.md", version) is None]
+                   and section(read(path.parent / f"CHANGELOG.{locale}.md"), version) is None]
         if locales:
             result.append(f"{manifest['name']} {version}: {', '.join(locales)}")
     return result
@@ -77,10 +45,13 @@ def skills(directory, package):
     return result
 
 
-def catalog(root=ROOT):
+def catalog(root=ROOT, version_history=None):
+    manifests = sorted(root.glob("*/plugin.json"))
+    if version_history is None:
+        version_history = versions(root, [path.parent.name for path in manifests])
     packages = []
     entries = []
-    for manifest in sorted(root.glob("*/plugin.json")):
+    for manifest in manifests:
         data = json.loads(manifest.read_text(encoding="utf-8"))
         name = data["name"]
         if name != manifest.parent.name:
@@ -91,8 +62,9 @@ def catalog(root=ROOT):
             "manifest": data,
             "provides_models": bool(extension.get("model_providers") or extension.get("model_adapters")),
             "permissions": extension.get("actions", []),
+            "versions": version_history.get(name, []),
         }
-        release_notes = notes(manifest.parent, data.get("version"))
+        release_notes = notes(lambda filename: read(manifest.parent / filename), data.get("version"))
         if release_notes:
             entry["release_notes"] = release_notes
         packages.append(entry)

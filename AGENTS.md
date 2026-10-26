@@ -25,12 +25,15 @@
   package resources and sent-turn references; updates apply to new admission.
   Never rewrite historical captures to deliver a package fix.
 - Regenerate `catalog.json` with `python3 scripts/catalog.py` after manifest
-  changes and check it with `python3 scripts/catalog.py --check`. Run the relevant
+  changes and check it with `python3 scripts/catalog.py --check`. Commit package
+  content first, then generate and commit the catalog so version records reference
+  existing commits. Use a complete Git checkout for history generation. Run the relevant
   package checks and behavior tests described in the README; report their actual
   scope. Documentation-only changes need diff review, not product builds.
 - Keep release notes in `CHANGELOG.md` under `## <manifest version>`; optional
   `CHANGELOG.<locale>.md` sections use the same exact version. Catalog generation
-  includes only that section. Marketplace categories, tints and localized tool or
+  includes each version's exact section from its immutable package commit.
+  Marketplace categories, tints and localized tool or
   skill names belong to package metadata; changing them also requires a patch bump.
 - Keep source, comments, diagnostics and documentation in English. Put product
   copy in localization resources; retain imported licenses and provenance.

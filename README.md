@@ -25,6 +25,12 @@ resources and sent-turn references. Updates apply to new admission; historical
 captures keep their recorded package. Standalone imported skills retain their
 repository-commit update identity rather than adopting plugin release versions.
 
+Declare `extensions."dev.sailry.platform".min_sailry_version` when a package
+needs a new host module, export, extension field or permission. Set it to the first
+application version with that capability, such as `0.1.0-alpha.4`. It is an exact
+SemVer floor, not a version range; omission imposes no minimum. This declaration
+changes package content and requires a version bump.
+
 Package marketplace metadata uses the existing v1 extension: optional `category`
 (`development`, `documents`, `data`, `automation`, `entertainment`) and `tint`
 (`blue`, `violet`, `teal`, `amber`, `gray`). Tool `display.locales` supplies names
@@ -39,6 +45,19 @@ real `skills/*/SKILL.md` frontmatter in the shared catalog. Missing notes are
 omitted. New notes count as package content and require the usual version bump.
 `catalog.py --check` reports existing translations that lack the selected version;
 those locales retain the current English fallback until their notes are updated.
+
+Each catalog package also includes `versions`, ordered by descending SemVer
+precedence. A version records its final package-content commit, minimum Sailry
+version when declared, and notes from that immutable commit. Build metadata does
+not affect precedence; equal-precedence records retain newest-commit order.
+The current `manifest` and notes remain available alongside the history.
+
+Catalog generation needs complete Git history. Commit package changes first,
+then run the generator and commit `catalog.json` separately so every version
+points to an existing commit. Unrelated repository or catalog-only commits do not
+change package history. Missing historical translations are omitted.
+When historical source reset package versions, the current version lineage ends
+at that reset; retired higher versions are not offered as current releases.
 
 ## Working with the application submodule
 

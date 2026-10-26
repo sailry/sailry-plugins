@@ -58,6 +58,26 @@
       "permissions": [
         "activity.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.0",
+          "commit": "5c72398d23f9c386a75860a0a795891e53a5725d",
+          "release_notes": {
+            "text": "- Add the optional Activity Board",
+            "locales": {
+              "zh-CN": "- 新增可选的活动看板",
+              "zh-TW": "- 新增可選的活動看板",
+              "ja": "- 任意で導入できるアクティビティボードを追加",
+              "ko": "- 선택 설치할 수 있는 활동 보드 추가",
+              "fr": "- Ajouter le tableau d’activité facultatif",
+              "de": "- Optionale Aktivitätsübersicht hinzufügen",
+              "es": "- Añadir el tablero de actividad opcional",
+              "pt-BR": "- Adicionar o painel de atividades opcional",
+              "ru": "- Добавить необязательную доску активности"
+            }
+          }
+        }
+      ],
       "release_notes": {
         "text": "- Add the optional Activity Board",
         "locales": {
@@ -246,6 +266,79 @@
       "permissions": [
         "artifacts.read",
         "artifacts.write"
+      ],
+      "versions": [
+        {
+          "version": "0.1.9",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Keep the normal page visible while its initial data loads",
+            "locales": {
+              "zh-CN": "- 初始数据加载时保留正常页面",
+              "zh-TW": "- 初始資料載入時保留正常頁面",
+              "ja": "- 初期データの読み込み中も通常のページを保持",
+              "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+              "fr": "- Conserver la page normale pendant le chargement des données initiales",
+              "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+              "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+              "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+              "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+            }
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "44e4866d92d4177339afcd8452adb0802657c096"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "5e386d2b9098db3e58d2076707459d85df6a69de"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "b28897d6617a974932748e95d2c894829308528b"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "4182be238a21599596b07cbc54ef3cd212863c81"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "4c58af66987916536627f9be59b74d0543dae6da"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "4079ee8ca5e92eaed03989a0c2cb4c0ba1d03158"
+        }
       ],
       "release_notes": {
         "text": "- Keep the normal page visible while its initial data loads",
@@ -1213,6 +1306,49 @@
         "browser.read",
         "browser.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.5",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Keep captured page artifacts inspectable while ordinary browser reads stay concise"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "4aa005cc0ac95384c6cbf0ddb402c988ac3c45cf"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "1c31e8f1516c862ed0c38947acc0297088d5e64e"
+        }
+      ],
       "release_notes": {
         "text": "- Keep captured page artifacts inspectable while ordinary browser reads stay concise"
       }
@@ -1398,6 +1534,37 @@
         "storage.read",
         "storage.write"
       ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
+      ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
       }
@@ -1514,6 +1681,22 @@
       "permissions": [
         "models.authenticate",
         "credentials.inspect"
+      ],
+      "versions": [
+        {
+          "version": "0.1.1",
+          "commit": "35b100490d135d79101e2d2fc13e80cbd8f6d3aa",
+          "release_notes": {
+            "text": "- Use the Claude OAuth name with a distinct localized model sign-in description"
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d082a665a71fc56c2caf41d4156e2b2892345406",
+          "release_notes": {
+            "text": "- Provide existing account authorization through the shared private authentication services"
+          }
+        }
       ],
       "release_notes": {
         "text": "- Use the Claude OAuth name with a distinct localized model sign-in description"
@@ -1721,6 +1904,98 @@
       "permissions": [
         "code.index.read",
         "files.read"
+      ],
+      "versions": [
+        {
+          "version": "0.1.10",
+          "commit": "f67b95ab151a0371461ab1de1f3b7fe01e08347c",
+          "release_notes": {
+            "text": "- Remove the empty code index settings entry while preserving tools and the enable choice."
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "7cfc335d28f3e948e0bd1b65179bc5061c7277c8",
+          "release_notes": {
+            "text": "- Make code tools available in conversation-owned worktrees as well as projects."
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "18629746e31db10fe28bc13e60615731b3177225",
+          "release_notes": {
+            "text": "- Replace language-server tools and settings with the shared code index.\n- Add symbol search, file structure and bounded revision-checked source context.\n- Keep the Node enable choice and existing text, command, build and test workflows.\n\n# Changes"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary lookups as concise activity while retaining diagnostics and service details"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "1af242d0efc56cf61878421023b95dd83a9ba646",
+          "release_notes": {
+            "text": "- Read independent language settings data concurrently\n- Show loading and empty cards for language server lists"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "bb61f1bf86e4cd68ae1c36728489c8444b019e18"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "ad9f25c59fc57b0282b96d5f3dc3168bba2e8e8b"
+        }
       ],
       "release_notes": {
         "text": "- Remove the empty code index settings entry while preserving tools and the enable choice."
@@ -2462,6 +2737,75 @@
         "storage.write",
         "agents.delegate"
       ],
+      "versions": [
+        {
+          "version": "0.1.11",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show review discovery as concise activity while retaining findings and changes"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "bfe721a7ccd3cb8414016d89c14a3b29f1773bc3",
+          "release_notes": {
+            "text": "- Read and verify independent frozen review records concurrently"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "0f891c953b985ef43517f776c087abe5fd4207af",
+          "release_notes": {
+            "text": "- Recompute parallel finding and review receipt updates after a confirmed storage conflict\n- Preserve frozen review scope, tool identity and uncertain outcomes during retries"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "2f6be83519331602613e83794670d1308f788941"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "4d613ff8bd210baad9ffb96d38f36ab4440a1829"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "1f186c08dca71e0f38aacc5b87934c86bf3ac8f2"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "1374a11aa8f65bb6cd9a3f683c517839a3ba3903"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d099d78514ae744d219a6c2af895cb6ff6ad71e5"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d110e976e9002b7c593168994d74083bc2d0f127"
+        }
+      ],
       "release_notes": {
         "text": "- Show review discovery as concise activity while retaining findings and changes"
       }
@@ -2471,9 +2815,10 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
+            "min_sailry_version": "0.1.0-alpha.4",
             "api_version": "v1",
             "actions": [
               "process.read",
@@ -2868,8 +3213,77 @@
         "terminals.read",
         "terminals.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.9",
+          "commit": "b9d78069fac60895c97e1a3def83845fd61faa9c",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "9e3dd77a6edf34f31b5dcc761f75e7d4f8c04f21",
+          "release_notes": {
+            "text": "- Release terminal input before closing and retain uncertain close requests"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "6c217f6f10fa34d939766f775e91a9e195b91fdc",
+          "release_notes": {
+            "text": "- Keep switching terminals free of transient stopped text and spinners"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "52a71d282c47885682f1a33e0d6763c03c255a41",
+          "release_notes": {
+            "text": "- Keep terminal panes loading until their terminal metadata arrives"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "b0829f738063d35e8e371c852a67734227b2b2af"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "c621dbe372c2a22253a6ccd906bb2487f7ad9c26"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "375d13c18f699896fed8c4fd6a95596cbd271118"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "c4f4ec8a51c5bf3e372cb0f0e59f25adc7772ea5"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "ba6eef51171bced91716afa6f7d01c1891dae6ce"
+        }
+      ],
       "release_notes": {
-        "text": "- Release terminal input before closing and retain uncertain close requests"
+        "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
       }
     },
     {
@@ -3296,6 +3710,62 @@
         "computer.read",
         "computer.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.4",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Keep app snapshots and action results inspectable while app lists and element searches stay concise"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "1eeeada2507ded3693233ab246be48d3b011f766",
+          "release_notes": {
+            "text": "- Contribute computer permissions to Settings → Permissions with one shared onboarding flow"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "680fdaf2d0a043340d7ed233b7e77edfe0db9471",
+          "release_notes": {
+            "text": "- Use the packaged Open Computer Use backend and isolate each turn’s tool session",
+            "locales": {
+              "zh-CN": "- 使用随应用提供的 Open Computer Use，并隔离每轮工具会话",
+              "zh-TW": "- 使用隨應用程式提供的 Open Computer Use，並隔離每輪工具工作階段",
+              "ja": "- 同梱の Open Computer Use を使用し、ターンごとにツールセッションを分離",
+              "ko": "- 포함된 Open Computer Use를 사용하고 턴마다 도구 세션 분리",
+              "fr": "- Utiliser Open Computer Use fourni et isoler la session d’outils de chaque tour",
+              "de": "- Gebündeltes Open Computer Use verwenden und Tool-Sitzungen pro Durchgang trennen",
+              "es": "- Usar Open Computer Use incluido y aislar la sesión de herramientas de cada turno",
+              "pt-BR": "- Usar o Open Computer Use incluído e isolar a sessão de ferramentas de cada turno",
+              "ru": "- Использовать встроенный Open Computer Use и отдельные сеансы инструментов для каждого хода"
+            }
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "717bfec4ced1c1027a085cc74071c916401cc9f5"
+        }
+      ],
       "release_notes": {
         "text": "- Keep app snapshots and action results inspectable while app lists and element searches stay concise"
       }
@@ -3426,6 +3896,55 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.5",
+          "commit": "1486889a68bd844c06b5d553c64aeb1cfc9af803",
+          "release_notes": {
+            "text": "- Keep the connector declaration valid without extra instructions"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "a7c4ceca29cb349ed536781b9440a02f9edc3271"
+        }
+      ],
       "release_notes": {
         "text": "- Keep the connector declaration valid without extra instructions"
       }
@@ -4009,6 +4528,104 @@
         "conversation.control",
         "projects.read",
         "ssh.read"
+      ],
+      "versions": [
+        {
+          "version": "0.1.13",
+          "commit": "a99bae87cc7544b8df7bb501ac0cf2788dd34abf",
+          "release_notes": {
+            "text": "- Ignore catalog read failures after their connection tab closes or is replaced.\n- Keep active catalog and database operation failures visible."
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "46f30a2667705269e7244f0dbc4628eba626ff19",
+          "release_notes": {
+            "text": "- Remove unused tool definition copies and retain the manifest declarations"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show catalog queries as concise activity while retaining SQL results and changes"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "7563bd5da3285d7b2c2238c1b1f94b2adf534e13",
+          "release_notes": {
+            "text": "- Load connection inventories, project choices and database catalogs concurrently"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "6dc11a3a09d8bcdce418bac635c9b85345fe8a8d"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "2c103ec8f491fb3ebbc76d890c870d16d2661fdc"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "5f1695eb98ad65ef8a092a4978c3feee00dad15e"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "baa6c453e8d08f0f2a0b7e2905e329eb5b7fd8ea"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3738d94b9376e927d619bea4803cd3707b33d086"
+        }
       ],
       "release_notes": {
         "text": "- Ignore catalog read failures after their connection tab closes or is replaced.\n- Keep active catalog and database operation failures visible."
@@ -4621,6 +5238,180 @@
         "conversation.read",
         "conversation.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.24",
+          "commit": "5e9ac3511743f77b2054642398d785597561ece2",
+          "release_notes": {
+            "text": "- Present the work mode as Flagship with localized labels and descriptions.\n- Preserve existing mode selections and autonomous coordination behavior."
+          }
+        },
+        {
+          "version": "0.1.23",
+          "commit": "f67b95ab151a0371461ab1de1f3b7fe01e08347c",
+          "release_notes": {
+            "text": "- Move autonomous delegation into the Multitask work mode and remove the model toggle.\n- Keep Build delegation explicit and preserve captured conversation choices."
+          }
+        },
+        {
+          "version": "0.1.22",
+          "commit": "8b5874a8e550c7579e47c81344761221e24c627d",
+          "release_notes": {
+            "text": "- Group adjacent child guidance and observation tools while keeping child creation separate"
+          }
+        },
+        {
+          "version": "0.1.21",
+          "commit": "5ac714d62a20571eebadd879b7b1b04d08a8f02f",
+          "release_notes": {
+            "text": "- Resume idle child sessions through explicit guidance"
+          }
+        },
+        {
+          "version": "0.1.20",
+          "commit": "6127373f6b8c0294fe0efb5e3ec8c7b249c0cc56",
+          "release_notes": {
+            "text": "- Scroll the complete subagent form above the action buttons",
+            "locales": {
+              "zh-CN": "- 完整滚动子代理表单，保留底部操作按钮",
+              "zh-TW": "- 完整捲動子代理表單，保留底部操作按鈕",
+              "ja": "- 操作ボタンを表示したままサブエージェントのフォーム全体をスクロール",
+              "ko": "- 작업 버튼을 유지하면서 하위 에이전트 양식 전체를 스크롤",
+              "fr": "- Faire défiler tout le formulaire du sous-agent en gardant les boutons visibles",
+              "de": "- Das gesamte Unteragentenformular scrollen und die Aktionsschaltflächen sichtbar halten",
+              "es": "- Desplazar todo el formulario del subagente manteniendo visibles los botones",
+              "pt-BR": "- Rolar todo o formulário do subagente mantendo os botões visíveis",
+              "ru": "- Прокрутка всей формы субагента с доступными кнопками действий"
+            }
+          }
+        },
+        {
+          "version": "0.1.19",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.18",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show agent lists as concise activity while retaining delegated task interactions"
+          }
+        },
+        {
+          "version": "0.1.17",
+          "commit": "e5551fdc2d3c867eaca5c843e435de67527d803e",
+          "release_notes": {
+            "text": "- Capitalize the selected Super label"
+          }
+        },
+        {
+          "version": "0.1.16",
+          "commit": "9fde3b18ee391076c3151016b123bceed346b93e",
+          "release_notes": {
+            "text": "- Use a distinct glyph for proactive subagents"
+          }
+        },
+        {
+          "version": "0.1.15",
+          "commit": "762a3b84c70747e86869f34e6acfec1cec5d7d08",
+          "release_notes": {
+            "text": "- Keep slider drafts responsive while saves settle\n- Save the latest released value after the current receipt\n- Show retry only for uncertain saves"
+          }
+        },
+        {
+          "version": "0.1.14",
+          "commit": "1373a775f4bced3b80ebb8cfd23bea8975699d89",
+          "release_notes": {
+            "text": "- Adjust concurrency with a slider and save once after interaction\n- Keep settings drafts visible while confirming saves\n- Report preparation failures without claiming an uncertain result"
+          }
+        },
+        {
+          "version": "0.1.13",
+          "commit": "cd23dadfa3ba2066af62b04af208b043388d64f5",
+          "release_notes": {
+            "text": "- Restore settings loading and render concurrency with the shared settings row\n- Clarify that pending observations retain the admitted child without spawning it again"
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "5da032f8df2eb21d9a8f055ef0e4cf5aae3ff2c5"
+        },
+        {
+          "version": "0.1.10",
+          "commit": "ba7ff3e6eb1820dbbf0f5943251057e91f6df3b7"
+        },
+        {
+          "version": "0.1.9",
+          "commit": "b83f26d0fbbcfa9f22d0417362e5ac08fb2114ac"
+        },
+        {
+          "version": "0.1.8",
+          "commit": "c1ef9fcb1001c643fd57b9d887d87d199d598c80"
+        },
+        {
+          "version": "0.1.7",
+          "commit": "dde4d4fc0885e64940bc5240ac3961bfd790c7d3"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "74e3ffcb3e223f6336217bfa932b0a8cfbf0e201"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "5cd73bd5af0a31774ccc4954859402bab25f676e"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "3422e58a8148f4a0b5357a86e967bfa40b12da69"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "993ea0f52989f8fe4f8466dbd6a2c3ffeb102dfe"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3155babcfca12910e760a499e8b78f7b0bece14c"
+        }
+      ],
       "release_notes": {
         "text": "- Present the work mode as Flagship with localized labels and descriptions.\n- Preserve existing mode selections and autonomous coordination behavior."
       }
@@ -4913,6 +5704,66 @@
       "permissions": [
         "http.request"
       ],
+      "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary knowledge queries as concise activity"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Report invalid service response shapes without throwing"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "b3e1f9fa5d84ddf2ca133e456a88b864d452b7f7"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "40cb5c77636fb3f90b0fc8f5c94b1f2389a55139"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d2869a5b348ce5066bdab44346af135e9ec57218"
+        }
+      ],
       "release_notes": {
         "text": "- Show ordinary knowledge queries as concise activity"
       }
@@ -4983,6 +5834,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -6989,6 +7871,41 @@
         "external_browser.read",
         "external_browser.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.3",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Keep screenshots, PDFs, downloads and script results inspectable"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "64ed6be9ef34499d20f8216661b3abd4b99550e2"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "a7c4ceca29cb349ed536781b9440a02f9edc3271"
+        }
+      ],
       "release_notes": {
         "text": "- Keep screenshots, PDFs, downloads and script results inspectable"
       }
@@ -7194,6 +8111,52 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.5",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "936178958bff44983b7596a5342549bc208e922f"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "b2beaf6b06362dc8934a339f7019a001b54e35a8"
+        }
+      ],
       "release_notes": {
         "text": "- Manage service accounts through declared connectors"
       }
@@ -7423,6 +8386,70 @@
       "provides_models": false,
       "permissions": [
         "http.request"
+      ],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary design queries as concise activity"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "2b906a25bb19088c9be000d91a89f2b2f14194f5"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "ed9a4ff32cc4807eef1be1d1626023bc5cc4d442"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "efc399cf659f0fb9e7ac83150b0d60b6f2e9d61e"
+        }
       ],
       "release_notes": {
         "text": "- Show ordinary design queries as concise activity"
@@ -9234,6 +10261,86 @@
         "files.write",
         "models.read",
         "models.install"
+      ],
+      "versions": [
+        {
+          "version": "0.1.12",
+          "commit": "77d85d080b9c0e281e691f5762519a803d3125e9",
+          "release_notes": {
+            "text": "- Ignore canceled document opens after their read is invalidated.\n- Preserve genuine read errors and save feedback."
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "540e5369dd27aaa1c17f56b58a7218c5752a99ae",
+          "release_notes": {
+            "text": "- Report each save failure once while retaining conflict and uncertain outcomes"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show OCR model lists as concise activity while retaining file and notebook changes"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "a98f00c427a5fb1e25d42b0e3da5cf75450ac7e5",
+          "release_notes": {
+            "text": "- Read file capabilities and directories together\n- Run independent opens, trash requests and confirmed transfers concurrently while preserving per-item recovery"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "c62b4852aa32f796c806e7bd32565c6ba5c2f393"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "d0cb7d6407f3ac712f09cbf3435cb60b3807f717"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "5bca5804ff2adffc7c4fa86b9d193f5df222ab33"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ffc50d07ee1e6b05db84c1666fb8d02fc58d691"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "618aef76b7630a87b90432da84487c58226aedd7"
+        }
       ],
       "release_notes": {
         "text": "- Ignore canceled document opens after their read is invalidated.\n- Preserve genuine read errors and save feedback."
@@ -11161,6 +12268,143 @@
         "files.read",
         "conversation.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.19",
+          "commit": "97f8dcb749efbdeb87f200d21ec1de93695b09df",
+          "release_notes": {
+            "text": "- Add an initialization button to the Git sidebar for plain directories"
+          }
+        },
+        {
+          "version": "0.1.18",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Keep the normal page visible while its initial data loads",
+            "locales": {
+              "zh-CN": "- 初始数据加载时保留正常页面",
+              "zh-TW": "- 初始資料載入時保留正常頁面",
+              "ja": "- 初期データの読み込み中も通常のページを保持",
+              "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+              "fr": "- Conserver la page normale pendant le chargement des données initiales",
+              "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+              "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+              "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+              "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+            }
+          }
+        },
+        {
+          "version": "0.1.17",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary repository queries as concise activity while retaining actual differences"
+          }
+        },
+        {
+          "version": "0.1.16",
+          "commit": "f00043d5f4f57366ac3dd88e46c2449dde26b572",
+          "release_notes": {
+            "text": "- Read branches only after confirming the directory contains a repository"
+          }
+        },
+        {
+          "version": "0.1.15",
+          "commit": "a98f00c427a5fb1e25d42b0e3da5cf75450ac7e5",
+          "release_notes": {
+            "text": "- Load independent repository, document, history and diff reads concurrently"
+          }
+        },
+        {
+          "version": "0.1.14",
+          "commit": "3bb4de4a1b0b40aa077b2bc64a3298af9bc4dbce",
+          "release_notes": {
+            "text": "Hide the branch control until repository information is available."
+          }
+        },
+        {
+          "version": "0.1.13",
+          "commit": "d057a40710a9f5d8ab78c06ad4b46721821f9293",
+          "release_notes": {
+            "text": "- Keep branch controls visible while repository inspection recovers"
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "88497b61de4012d08f101c985f6e7a9fb70dd3c2",
+          "release_notes": {
+            "text": "- Keep the session Git sidebar compact until a diff is opened\n- Preserve open diffs when reopening the sidebar"
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "cc6bb7e97d77eb1e967b1b90746de80249e29804",
+          "release_notes": {
+            "text": "- Open branch choices immediately and share active reads without blocking unrelated requests"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "65e0f9eef333339b8c9f0f891e64d64006ff8f26"
+        },
+        {
+          "version": "0.1.7",
+          "commit": "95ddadd946a672e02f4511af291f14962a541bc9"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "5e386d2b9098db3e58d2076707459d85df6a69de"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "46d500be3838664fa6c9cd39059c2cb54650fbab"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "6dc11a3a09d8bcdce418bac635c9b85345fe8a8d"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d19a80c0b6d52f71fde51c948813852980ff3a43"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d"
+        }
+      ],
       "release_notes": {
         "text": "- Add an initialization button to the Git sidebar for plain directories"
       }
@@ -11289,6 +12533,44 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.3",
+          "commit": "2611e78bd272a6400ddbe7574fdb356f7c1fa140",
+          "release_notes": {
+            "text": "Require an active local CLI account before reading a transient credential.\n\n# Changes"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "0f78887d73eb3fcb0528621fbc765abe54a67f61"
+        }
+      ],
       "release_notes": {
         "text": "Require an active local CLI account before reading a transient credential.\n\n# Changes"
       }
@@ -11721,6 +13003,67 @@
         "conversation.read",
         "conversation.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.6",
+          "commit": "e395dcb5513795c20c189fb6dc0a64ab79d0aea2",
+          "release_notes": {
+            "text": "- Keep inactive goals idle and observe only run status changes",
+            "locales": {
+              "zh-CN": "- 未使用目标时不订阅会话，执行中仅跟踪状态变化",
+              "zh-TW": "- 未使用目標時不訂閱對話，執行中僅追蹤狀態變化",
+              "ja": "- 未使用の目標では会話を購読せず、実行中は状態の変更のみを追跡",
+              "ko": "- 사용하지 않는 목표의 대화 구독을 중지하고 실행 상태 변경만 추적",
+              "fr": "- Suspendre les abonnements des objectifs inactifs et suivre les changements d’état",
+              "de": "- Inaktive Ziele ohne Abfragen belassen und nur Statusänderungen verfolgen",
+              "es": "- Mantener inactivos los objetivos sin uso y observar solo los cambios de estado",
+              "pt-BR": "- Manter objetivos sem uso inativos e observar apenas mudanças de estado",
+              "ru": "- Не опрашивать неиспользуемые цели и отслеживать только изменения состояния"
+            }
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Check paged goal history and advance verified progress atomically"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "d12136483bc3fd7f77cc65a51a87b80e5940179c"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "5704eab3ca836331cd6b263e427b8894ea8b3141"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "6eff295a5019779a9847547c35cbea3d0f24c5cb"
+        }
+      ],
       "release_notes": {
         "text": "- Keep inactive goals idle and observe only run status changes",
         "locales": {
@@ -11798,6 +13141,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -12045,6 +13419,66 @@
       "permissions": [
         "http.request"
       ],
+      "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary workspace queries as concise activity"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Report invalid service response shapes without throwing"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "f952a35a1741f90875efff007c97c1bea831c518"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "4bd1d0736872ea6105438ecea0c067a2618447c2"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "88c9f2ef007cb49f87367efbe0aeaa7bf87d3a8d"
+        }
+      ],
       "release_notes": {
         "text": "- Show ordinary workspace queries as concise activity"
       }
@@ -12111,6 +13545,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -12207,6 +13672,37 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d2869a5b348ce5066bdab44346af135e9ec57218"
+        }
+      ],
       "release_notes": {
         "text": "- Manage service accounts through declared connectors"
       }
@@ -12488,6 +13984,45 @@
         "media.video",
         "media.settings.read",
         "media.settings.write"
+      ],
+      "versions": [
+        {
+          "version": "0.1.4",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show image inspection as concise activity while retaining generated artifacts"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "2ea6484aaa257a1bb6e6e862737aedb2c67f1627"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "91338d055c2b08da336eb5938374009807c33b01"
+        }
       ],
       "release_notes": {
         "text": "- Show image inspection as concise activity while retaining generated artifacts"
@@ -13994,6 +15529,95 @@
         "storage.write",
         "projects.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.12",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Separate memory lookup activity from confirmed memory changes and readable snapshots"
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "57df259f994fbe58826769365eee9bfa93b11578",
+          "release_notes": {
+            "text": "- Retrieve relevant preferences and decisions before relying on earlier context\n- Proactively retain useful lasting facts while preserving scope and write authority"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "e83820316d43670f9f72ede13bc552a408ac5bab",
+          "release_notes": {
+            "text": "- Read independent memory body pages concurrently while retaining snapshot validation"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "53be585a4eea2d655d04ad55aba562b8a3c0b199",
+          "release_notes": {
+            "text": "- Preserve deletions during concurrent memory consolidation"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "bac94d914537b008a7c37b138ddcd4a5ffc2a22c",
+          "release_notes": {
+            "text": "- Retry catalog contention in memory management without losing drafts"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "9e8c623bf3de519e20843077ee092b1600d63401",
+          "release_notes": {
+            "text": "- Reconcile concurrent memory reads and writes automatically\n- Preserve deleted memories and newly committed facts during concurrent edits"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "94614ed9b099cc33931e56727a024a1fb45fcd21",
+          "release_notes": {
+            "text": "- Show the memory scope as a tag"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "1ccbd9b4de3ab3964141966e22c4ae1b04c1632b"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d541938d88f632e46bb0f99b94a3433d9c615b62"
+        }
+      ],
       "release_notes": {
         "text": "- Separate memory lookup activity from confirmed memory changes and readable snapshots"
       }
@@ -14264,6 +15888,66 @@
       "permissions": [
         "http.request"
       ],
+      "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary workspace queries as concise activity"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Report invalid service response shapes without throwing"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "304de754eb23240432c5b4f184b47c878231b496"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "eedc99be4535a1c49601a5e77b8d32018e6c49d0"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "88c9f2ef007cb49f87367efbe0aeaa7bf87d3a8d"
+        }
+      ],
       "release_notes": {
         "text": "- Show ordinary workspace queries as concise activity"
       }
@@ -14450,6 +16134,64 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "44e4866d92d4177339afcd8452adb0802657c096"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "091120f731a2cc2eec1ce0bf837bcf63f3d709b9"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "21505f18b33e6cdd140b3957ecfc5b924182ad36"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "e3d9307c9396243a4802908af0210e8129bc51e6"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "28cee71da36a778465e4ef1e68e99e43f594a440"
+        }
+      ],
       "release_notes": {
         "text": "- Manage service accounts through declared connectors"
       }
@@ -14486,6 +16228,30 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "282e887b5fa39106805a57a0fad548e774b415df"
+        }
+      ],
       "release_notes": {
         "text": "- Add marketplace category and icon color\n- Add localized skill names",
         "locales": {
@@ -14690,6 +16456,36 @@
         "models.authenticate",
         "credentials.inspect"
       ],
+      "versions": [
+        {
+          "version": "0.1.3",
+          "commit": "35b100490d135d79101e2d2fc13e80cbd8f6d3aa",
+          "release_notes": {
+            "text": "- Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "23fa106b3df9aeef962f99aff49dd266ad3ac166",
+          "release_notes": {
+            "text": "- Allow explicit sign-in to replace the account while preserving strict refresh identity checks\n- Expose an optional account email"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "afaf8acfdce00de3fc0c586747cda2711befd2bd",
+          "release_notes": {
+            "text": "- Read Codex device-token account metadata without imposing SIWC OIDC verification\n- Preserve SIWC identity verification and existing credential bindings"
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d082a665a71fc56c2caf41d4156e2b2892345406",
+          "release_notes": {
+            "text": "- Provide existing account authorization through the shared private authentication services"
+          }
+        }
+      ],
       "release_notes": {
         "text": "- Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions"
       }
@@ -14726,6 +16522,73 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "f67b95ab151a0371461ab1de1f3b7fe01e08347c",
+          "release_notes": {
+            "text": "- Accept declared conversation modes in package preflight checks\n- Document shared mode selection, captured instructions and Node permissions"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "1529993b5fa36aef14530c074c5579dda68d0fc1",
+          "release_notes": {
+            "text": "- Check current code-index capabilities, service bindings and declared flow operations\n- Reject retired language-server declarations and document revision-checked source queries"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "d753901d7b970d952bc51dd6a271f94bf6d62cd1",
+          "release_notes": {
+            "text": "- Accept current permission and connector declarations and connector modules in package preflight checks"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "3b04f33f759deb0d456f6f50a8e0f7e5961941e1",
+          "release_notes": {
+            "text": "- Check declared authentication scripts and their credential access"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Accept current catalog metadata and model declarations in package preflight checks\n- Reject unsupported category and tint values"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "44e4866d92d4177339afcd8452adb0802657c096"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d"
+        }
+      ],
       "release_notes": {
         "text": "- Accept declared conversation modes in package preflight checks\n- Document shared mode selection, captured instructions and Node permissions"
       }
@@ -14794,6 +16657,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -14914,6 +16808,67 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.6",
+          "commit": "5c72398d23f9c386a75860a0a795891e53a5725d",
+          "release_notes": {
+            "text": "- Separate Activity Board from Plan tools",
+            "locales": {
+              "zh-CN": "- 将活动看板与计划工具拆为独立插件",
+              "zh-TW": "- 將活動看板與計畫工具拆為獨立外掛",
+              "ja": "- アクティビティボードと計画ツールを別のプラグインに分離",
+              "ko": "- 활동 보드를 계획 도구와 별도 플러그인으로 분리",
+              "fr": "- Séparer le tableau d’activité des outils de planification",
+              "de": "- Aktivitätsübersicht und Planwerkzeuge in getrennte Plugins aufteilen",
+              "es": "- Separar el tablero de actividad de las herramientas de planificación",
+              "pt-BR": "- Separar o painel de atividades das ferramentas de planejamento",
+              "ru": "- Отделить доску активности от инструментов планирования"
+            }
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "e83820316d43670f9f72ede13bc552a408ac5bab",
+          "release_notes": {
+            "text": "- Read independent activity preview batches concurrently"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "8272ca54e5246a434bc5c69105af6d97c895cf4b"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "0963f7343422ae4ce2441ba7fb0e8980ebfd8ec6"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "140e6b49b181224e06476e4faf74363461189e57"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d"
+        }
+      ],
       "release_notes": {
         "text": "- Separate Activity Board from Plan tools",
         "locales": {
@@ -15083,6 +17038,57 @@
       "provides_models": false,
       "permissions": [
         "http.request"
+      ],
+      "versions": [
+        {
+          "version": "0.1.6",
+          "commit": "08b8c3e943edb6d51db0a4933ff1d9c1d3b1bd75",
+          "release_notes": {
+            "text": "- Read provider accounts and new contexts concurrently"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "f20ff2533aaa71a9191857be3dc62244418a37d5",
+          "release_notes": {
+            "text": "- Label 5-hour and 7-day usage windows as 5h and 7d"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "98ff16770233cecc7233c69283b7e3bc589d713f",
+          "release_notes": {
+            "text": "- Show remaining usage and shared account measurements in channel rows\n- Hide unavailable percentages and keep queries silent"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "22d2e2e0b118cc236f9e97d46d62e1a3aa8131e1",
+          "release_notes": {
+            "text": "- Show reset times in the device local time zone with a concise shared label\n- Share usage reads across sessions using the current account credential"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "6243ff76c80107af2133489c63b1528600f39bd6",
+          "release_notes": {
+            "text": "- Keep account usage reads silent and hide unavailable measurements\n- Preserve zero for successful nullable measurements"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "1c5f5b18fae0b65bdc49c61034b91796966fbdfe",
+          "release_notes": {
+            "text": "- Fix package metadata and localized catalog descriptions"
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "1f968749a5bb7c302865cf436d6bdb6a8af4084e",
+          "release_notes": {
+            "text": "- Read configured GPT and Claude OAuth account usage in the shared footer"
+          }
+        }
       ],
       "release_notes": {
         "text": "- Read provider accounts and new contexts concurrently"
@@ -15511,6 +17517,78 @@
         "notifications.publish",
         "projects.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "e83820316d43670f9f72ede13bc552a408ac5bab",
+          "release_notes": {
+            "text": "- Read reminders, delivery records and project choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "d56c79f4586266a62532a935f885ec6b96d5bc98",
+          "release_notes": {
+            "text": "- Reduce status tags in lists and details by one size"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "ae1093e699b4ab937cfa7db960f45468ad0db9bf"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "3f1e40f8efa050c81d1655bdddb9af47a053544d"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "4b0484623a1f4f00f6c136dbdfff5701df26e709"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d"
+        }
+      ],
       "release_notes": {
         "text": "- Increase spacing between form labels and controls",
         "locales": {
@@ -15588,6 +17666,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -16242,6 +18351,93 @@
         "models.read",
         "conversation.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.11",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "4ae14fc2a5726ff8537ab0ff4c2be097c9a0f083",
+          "release_notes": {
+            "text": "- Align the last-run failure icon with its title and remove its open-session shortcut"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "e83820316d43670f9f72ede13bc552a408ac5bab",
+          "release_notes": {
+            "text": "- Read tasks, job records, models and project choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "d56c79f4586266a62532a935f885ec6b96d5bc98",
+          "release_notes": {
+            "text": "- Reduce status tags in lists and details by one size"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "1bdf518f2844c1bf90fd91d6ce6a2dd299551961"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "ae1093e699b4ab937cfa7db960f45468ad0db9bf"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "3b194ec3ae004840fe0b5bbd165438678453cfe2"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "5e386d2b9098db3e58d2076707459d85df6a69de"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d"
+        }
+      ],
       "release_notes": {
         "text": "- Increase spacing between form labels and controls",
         "locales": {
@@ -16390,6 +18586,37 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "d2869a5b348ce5066bdab44346af135e9ec57218"
+        }
+      ],
       "release_notes": {
         "text": "- Manage service accounts through declared connectors"
       }
@@ -16399,9 +18626,10 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "extensions": {
           "dev.sailry.platform": {
+            "min_sailry_version": "0.1.0-alpha.4",
             "api_version": "v1",
             "actions": [
               "ssh.read",
@@ -17233,8 +19461,121 @@
         "conversation.control",
         "projects.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.15",
+          "commit": "b9d78069fac60895c97e1a3def83845fd61faa9c",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
+          }
+        },
+        {
+          "version": "0.1.14",
+          "commit": "9e3dd77a6edf34f31b5dcc761f75e7d4f8c04f21",
+          "release_notes": {
+            "text": "- Release terminal input before closing and restore observation after a confirmed failure"
+          }
+        },
+        {
+          "version": "0.1.13",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls\n- Keep the normal page visible while its initial data loads",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距\n- 初始数据加载时保留正常页面",
+              "zh-TW": "- 增加表單標籤與控制項的間距\n- 初始資料載入時保留正常頁面",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大\n- 初期データの読み込み中も通常のページを保持",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대\n- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires\n- Conserver la page normale pendant le chargement des données initiales",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern\n- Die normale Seite während des ersten Datenladens beibehalten",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario\n- Mantener la página normal mientras se cargan los datos iniciales",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários\n- Manter a página normal enquanto os dados iniciais carregam",
+              "ru": "- Увеличить расстояние между подписями и полями форм\n- Сохранять обычную страницу при загрузке исходных данных"
+            }
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "46f30a2667705269e7244f0dbc4628eba626ff19",
+          "release_notes": {
+            "text": "- Remove unused tool definition copies and retain the manifest declarations"
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show connection lists as concise activity while retaining command and transfer details"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "f9e4bd2c59ac38756acc832351c7bd180d5418f1",
+          "release_notes": {
+            "text": "- Run independent file changes concurrently while retaining every request outcome"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "7563bd5da3285d7b2c2238c1b1f94b2adf534e13",
+          "release_notes": {
+            "text": "- Load connection inventories and terminal lists concurrently without duplicate startup reads"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "af7c9c27bb6ef75ed33f3a383714e0e0b149560e"
+        },
+        {
+          "version": "0.1.6",
+          "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c"
+        },
+        {
+          "version": "0.1.5",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "2c103ec8f491fb3ebbc76d890c870d16d2661fdc"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "555c4d9173d3048cd024e36bd95a243494b1ee90"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3738d94b9376e927d619bea4803cd3707b33d086"
+        }
+      ],
       "release_notes": {
-        "text": "- Release terminal input before closing and restore observation after a confirmed failure"
+        "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
       }
     },
     {
@@ -17409,6 +19750,239 @@
         "usage.read",
         "conversation.read"
       ],
+      "versions": [
+        {
+          "version": "0.1.22",
+          "commit": "b25c2f113953b29aec3b634a52e813b0227e2a33",
+          "release_notes": {
+            "text": "- Show measured session composition when some categories are unknown and separate bar segments"
+          }
+        },
+        {
+          "version": "0.1.21",
+          "commit": "8b5874a8e550c7579e47c81344761221e24c627d",
+          "release_notes": {
+            "text": "- Align context metric values and units using shaped text baselines"
+          }
+        },
+        {
+          "version": "0.1.20",
+          "commit": "42eba9cbbbbbe4e2a65a8efba4613e2170c5d1c3",
+          "release_notes": {
+            "text": "- Show session connection averages and toggle context step details",
+            "locales": {
+              "zh-CN": "- 汇总会话连接均值，支持切换全部与单步上下文明细",
+              "zh-TW": "- 彙總工作階段連線平均值，支援切換全部與單步上下文詳細資料",
+              "ja": "- セッションの接続平均を表示し、すべてのステップと単一ステップのコンテキスト詳細を切り替え",
+              "ko": "- 세션 연결 평균을 표시하고 전체 또는 개별 단계의 컨텍스트 상세 전환",
+              "fr": "- Afficher les moyennes de connexion de session et basculer entre tous les détails de contexte et une étape",
+              "de": "- Durchschnittliche Sitzungsverbindungen anzeigen und Kontextdetails aller oder einzelner Schritte umschalten",
+              "es": "- Mostrar promedios de conexión de la sesión y alternar detalles de todos los pasos o de uno",
+              "pt-BR": "- Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma",
+              "ru": "- Показывать средние показатели соединений сеанса и переключать детали контекста всех или одного шага"
+            }
+          }
+        },
+        {
+          "version": "0.1.19",
+          "commit": "9861c6364c55899bc9bb96e7a511830aee89f6c4",
+          "release_notes": {
+            "text": "- Use the same session average speed in the footer and context details",
+            "locales": {
+              "zh-CN": "- 底栏与上下文详情统一显示会话均速",
+              "zh-TW": "- 底欄與上下文詳細資料統一顯示工作階段平均速度",
+              "ja": "- フッターとコンテキスト詳細で同じセッション平均速度を表示",
+              "ko": "- 하단 표시와 컨텍스트 상세에 동일한 세션 평균 속도 표시",
+              "fr": "- Afficher la même vitesse moyenne de session dans le pied de page et les détails du contexte",
+              "de": "- In der Fußzeile und den Kontextdetails dieselbe durchschnittliche Sitzungsgeschwindigkeit anzeigen",
+              "es": "- Mostrar la misma velocidad media de sesión en el pie y los detalles de contexto",
+              "pt-BR": "- Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto",
+              "ru": "- Показывать одинаковую среднюю скорость сеанса внизу и в сведениях о контексте"
+            }
+          }
+        },
+        {
+          "version": "0.1.18",
+          "commit": "97f8dcb749efbdeb87f200d21ec1de93695b09df",
+          "release_notes": {
+            "text": "- Keep slow connection observations visible using the semantic error color"
+          }
+        },
+        {
+          "version": "0.1.17",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Keep the normal page visible while its initial data loads",
+            "locales": {
+              "zh-CN": "- 初始数据加载时保留正常页面",
+              "zh-TW": "- 初始資料載入時保留正常頁面",
+              "ja": "- 初期データの読み込み中も通常のページを保持",
+              "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+              "fr": "- Conserver la page normale pendant le chargement des données initiales",
+              "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+              "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+              "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+              "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+            }
+          }
+        },
+        {
+          "version": "0.1.16",
+          "commit": "fff5ba49eb0b7c62f5eb7900ed2e966d254c16d8",
+          "release_notes": {
+            "text": "- Align context charts, metric units and section order with the shared statistics layout.",
+            "locales": {
+              "zh-CN": "- 对齐上下文图表、指标单位和统计区域顺序",
+              "zh-TW": "- 對齊上下文圖表、指標單位和統計區域順序",
+              "ja": "- コンテキストのグラフ、指標の単位、セクションの順序を統計表示に合わせて調整",
+              "ko": "- 컨텍스트 차트, 지표 단위와 섹션 순서를 통계 레이아웃에 맞게 조정",
+              "fr": "- Aligne les graphiques de contexte, les unités et les sections sur la présentation des statistiques.",
+              "de": "- Kontextdiagramme, Metrikeinheiten und Abschnittsreihenfolge an das gemeinsame Statistiklayout anpassen.",
+              "es": "- Alinea los gráficos de contexto, las unidades y el orden de las secciones con el diseño de estadísticas.",
+              "pt-BR": "- Alinha os gráficos de contexto, as unidades e a ordem das seções ao layout de estatísticas.",
+              "ru": "- Согласованы графики контекста, единицы измерения и порядок разделов статистики."
+            }
+          }
+        },
+        {
+          "version": "0.1.15",
+          "commit": "b10cb3a7197a4248069f4ee493b803239df592bc",
+          "release_notes": {
+            "text": "- Show one context history step per conversation round, keep metric units and capacity subordinate, and align context and elapsed-time bars",
+            "locales": {
+              "zh-CN": "- 每轮会话显示一个上下文历史步骤，优化数值与单位层级，并对齐上下文和耗时图表",
+              "zh-TW": "- 每輪對話顯示一個上下文歷史步驟，改善數值與單位層級，並對齊上下文與耗時圖表",
+              "ja": "- 会話の各ターンを1つのコンテキスト履歴として表示し、数値と単位の強弱、コンテキストと所要時間のバー配置を調整",
+              "ko": "- 대화 턴마다 컨텍스트 이력을 하나씩 표시하고, 수치와 단위의 계층 및 컨텍스트·소요 시간 막대 정렬 개선",
+              "fr": "- Une étape de contexte par tour, une hiérarchie plus claire des valeurs et unités et des barres de contexte et de durée alignées",
+              "de": "- Ein Kontextschritt pro Gesprächsrunde, klarere Größenverhältnisse für Werte und Einheiten sowie ausgerichtete Kontext- und Zeitbalken",
+              "es": "- Un paso de contexto por turno, mejor jerarquía de valores y unidades, y barras de contexto y tiempo alineadas",
+              "pt-BR": "- Uma etapa de contexto por turno, hierarquia mais clara entre valores e unidades e alinhamento das barras de contexto e duração",
+              "ru": "- Один шаг контекста на ход беседы, более чёткая иерархия чисел и единиц и выравнивание полос контекста и времени"
+            }
+          }
+        },
+        {
+          "version": "0.1.14",
+          "commit": "d3d4d056e9dee9b3824ace20a2184c529588e6ab",
+          "release_notes": {
+            "text": "- Show per-request API response timing and latency colors, restore connection icons, and align context figures and expandable rows, with session composition directly below usage",
+            "locales": {
+              "zh-CN": "- 显示逐请求 API 响应时间和延迟配色，恢复连接图标，对齐上下文数值与可展开列表，并将会话组成放在会话用量之后",
+              "zh-TW": "- 顯示逐請求 API 回應時間和延遲配色，恢復連線圖示，對齊內容數值與可展開清單，並將會話組成放在會話用量之後",
+              "ja": "- リクエストごとの API 応答時間と遅延色を表示し、接続アイコンを復元してコンテキスト数値と展開行を整列。会話構成を会話使用量の直後に配置",
+              "ko": "- 요청별 API 응답 시간과 지연 색상을 표시하고 연결 아이콘을 복원하며 컨텍스트 수치와 펼침 행 정렬 및 세션 사용량 바로 아래에 세션 구성 배치",
+              "fr": "- Afficher les temps de réponse API et les couleurs de latence par requête, restaurer les icônes et aligner les chiffres et les lignes dépliables, avec la composition de session juste sous l’utilisation",
+              "de": "- API-Antwortzeiten und Latenzfarben pro Anfrage anzeigen, Verbindungssymbole wiederherstellen und Kontextwerte sowie aufklappbare Zeilen ausrichten; die Sitzungszusammensetzung folgt direkt auf die Nutzung",
+              "es": "- Mostrar tiempos de respuesta API y colores de latencia por solicitud, restaurar iconos y alinear cifras de contexto y filas desplegables, con la composición de la sesión justo debajo del uso",
+              "pt-BR": "- Mostrar tempo de resposta API e cores de latência por solicitação, restaurar ícones e alinhar números de contexto e linhas expansíveis, com a composição da sessão logo abaixo do uso",
+              "ru": "- Показывать время ответа API и цвет задержки каждого запроса, восстановить значки и выровнять показатели контекста и раскрываемые строки; состав сеанса расположен сразу после использования"
+            }
+          }
+        },
+        {
+          "version": "0.1.13",
+          "commit": "f2efc7f30b6bc5bdf9ba6bb5528260a5f1ce885e",
+          "release_notes": {
+            "text": "- Match the approved context panel spacing, metric baselines and connection layout; expand details below their controls and restore saved session metrics before message pages load",
+            "locales": {
+              "zh-CN": "- 对齐上下文面板的间距、数值基线与连接布局；明细在入口下方展开，历史消息加载前即可显示已保存的会话统计\n\n# Changes",
+              "zh-TW": "- 對齊上下文面板的間距、數值基線與連線配置；明細在入口下方展開，歷史訊息載入前即可顯示已儲存的會話統計\n\n# Changes",
+              "ja": "- コンテキストパネルの間隔、数値のベースライン、接続表示を調整。明細を操作の下に展開し、メッセージの読み込み前に保存済みの統計を表示\n\n# Changes",
+              "ko": "- 컨텍스트 패널의 간격, 수치 기준선과 연결 배치를 조정하고 상세 내용을 버튼 아래에 펼치며 메시지를 읽기 전에 저장된 통계를 표시\n\n# Changes",
+              "fr": "- Aligner les espacements, les valeurs et les connexions du panneau ; ouvrir les détails sous leurs commandes et afficher les statistiques enregistrées avant le chargement des messages\n\n# Changes",
+              "de": "- Abstände, Zahlen und Verbindungen im Kontextbereich angleichen; Details unter den Steuerelementen öffnen und gespeicherte Sitzungswerte vor dem Laden der Nachrichten anzeigen\n\n# Changes",
+              "es": "- Ajustar el espaciado, las líneas base y las conexiones del panel; abrir los detalles debajo de sus controles y mostrar las estadísticas guardadas antes de cargar los mensajes\n\n# Changes",
+              "pt-BR": "- Ajustar o espaçamento, o alinhamento dos valores e as conexões do painel; abrir os detalhes abaixo dos controles e mostrar as estatísticas salvas antes de carregar as mensagens\n\n# Changes",
+              "ru": "- Выровнять отступы, значения и соединения панели; раскрывать сведения под кнопками и показывать сохранённую статистику до загрузки сообщений\n\n# Changes"
+            }
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "09af541764d1aed7f74b8666de559dfa8adcb253",
+          "release_notes": {
+            "text": "- Keep compaction budgets in the meter and explain partial source attribution on hover"
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "53c854434cdc4b8c31279b0817096ccd266ef55c",
+          "release_notes": {
+            "text": "- Show scoped context, session usage, active time, connection observations and composition in the session header\n- Keep unknown measurements distinct from zero and history selection separate from current occupancy\n\n# Changes"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "3bb4de4a1b0b40aa077b2bc64a3298af9bc4dbce",
+          "release_notes": {
+            "text": "Keep the composer ring passive and show compact context details from the statistics row on hover. Hide unavailable measurements."
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "af0eb69345ef4e2a71234daa300b7e1e275b37f4",
+          "release_notes": {
+            "text": "Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation."
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "762a3b84c70747e86869f34e6acfec1cec5d7d08",
+          "release_notes": {
+            "text": "- Show an estimated current context after compaction without changing recorded usage or cost"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "7a80f35b6db3182d3f56e3787bdeb238c09c56bf",
+          "release_notes": {
+            "text": "- Pair context usage with the model limit captured for that response"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "3dcd51a59c31a1e7e79fd17c562fdc92a4f4bf1a"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "a0f63ca998dc4510e70c927f5217e77c5a490429"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "a31669a05fbf02fca0285861a22b41d56037a27a"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "375d13c18f699896fed8c4fd6a95596cbd271118"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "87b921e843dfe09241602044c61fa908faf0c3d8"
+        }
+      ],
       "release_notes": {
         "text": "- Show measured session composition when some categories are unknown and separate bar segments"
       }
@@ -17480,6 +20054,75 @@
         "activity.read",
         "conversation.read",
         "conversation.control"
+      ],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Keep the normal page visible while its initial data loads",
+            "locales": {
+              "zh-CN": "- 初始数据加载时保留正常页面",
+              "zh-TW": "- 初始資料載入時保留正常頁面",
+              "ja": "- 初期データの読み込み中も通常のページを保持",
+              "ko": "- 초기 데이터를 불러오는 동안 일반 페이지 유지",
+              "fr": "- Conserver la page normale pendant le chargement des données initiales",
+              "de": "- Die normale Seite während des ersten Datenladens beibehalten",
+              "es": "- Mantener la página normal mientras se cargan los datos iniciales",
+              "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
+              "ru": "- Сохранять обычную страницу при загрузке исходных данных"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "e83820316d43670f9f72ede13bc552a408ac5bab",
+          "release_notes": {
+            "text": "- Read independent activity preview batches concurrently"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "0963f7343422ae4ce2441ba7fb0e8980ebfd8ec6"
+        },
+        {
+          "version": "0.1.4",
+          "commit": "acd94027fa2dac69f11bb7f75eeb5676507b6536"
+        },
+        {
+          "version": "0.1.3",
+          "commit": "140e6b49b181224e06476e4faf74363461189e57"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "e2141db94e36d9fc522b453943567aee45278e85"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "14a3faa975d6b36f24167e0d2d1a4d2c40fe017b"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Keep the normal page visible while its initial data loads",
@@ -17608,6 +20251,41 @@
       },
       "provides_models": false,
       "permissions": [],
+      "versions": [
+        {
+          "version": "0.1.3",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "efc399cf659f0fb9e7ac83150b0d60b6f2e9d61e"
+        }
+      ],
       "release_notes": {
         "text": "- Manage service accounts through declared connectors"
       }
@@ -17758,6 +20436,74 @@
         "web.read",
         "web.settings.read",
         "web.settings.write"
+      ],
+      "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show fetched pages as concise activity"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "eb03ac67e1229865a84766f7818a0188aff96b0f",
+          "release_notes": {
+            "text": "- Align package contract tests with the current release metadata"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "43078f3eea393ae66c2af7faab2e6ef0beb16112"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "4f5d8c050260f121abf9536d3b2641850b6cf3f7"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "ab42fbb3491c98df3b4502d63bd5424cf1b03c59"
+        }
       ],
       "release_notes": {
         "text": "- Increase spacing between form labels and controls",
@@ -18042,6 +20788,70 @@
       "provides_models": false,
       "permissions": [
         "http.request"
+      ],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Keep service discovery concise and expose explicitly invoked business responses"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Report invalid service response shapes without throwing"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "6fbaac893865863c88a1edf5815f6ba7ae947d17"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "3727124477f86eb3d3bbb4d015b9fd07e9ebd927"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "efc399cf659f0fb9e7ac83150b0d60b6f2e9d61e"
+        }
       ],
       "release_notes": {
         "text": "- Keep service discovery concise and expose explicitly invoked business responses"
@@ -18724,6 +21534,118 @@
         "dispatch.manage",
         "notifications.publish"
       ],
+      "versions": [
+        {
+          "version": "0.1.15",
+          "commit": "08b8c3e943edb6d51db0a4933ff1d9c1d3b1bd75",
+          "release_notes": {
+            "text": "- Read provider accounts and new contexts concurrently"
+          }
+        },
+        {
+          "version": "0.1.14",
+          "commit": "1317dcfb7f392784e25b68129d10362b8ecf75df",
+          "release_notes": {
+            "text": "- Preserve structured upstream error diagnostics for model recovery."
+          }
+        },
+        {
+          "version": "0.1.13",
+          "commit": "3b04f33f759deb0d456f6f50a8e0f7e5961941e1",
+          "release_notes": {
+            "text": "- Use the WorkBuddy logo for the package and its channel types"
+          }
+        },
+        {
+          "version": "0.1.12",
+          "commit": "98ff16770233cecc7233c69283b7e3bc589d713f",
+          "release_notes": {
+            "text": "- Show shared account credits in channel rows\n- Configure automatic daily check-in with a time control and enable switch"
+          }
+        },
+        {
+          "version": "0.1.11",
+          "commit": "22d2e2e0b118cc236f9e97d46d62e1a3aa8131e1",
+          "release_notes": {
+            "text": "- Share credit reads across sessions using the current account credential\n- Align credit query ranges with the existing refresh interval"
+          }
+        },
+        {
+          "version": "0.1.10",
+          "commit": "6243ff76c80107af2133489c63b1528600f39bd6",
+          "release_notes": {
+            "text": "- Keep credit queries silent and hide unavailable balances"
+          }
+        },
+        {
+          "version": "0.1.9",
+          "commit": "1c5f5b18fae0b65bdc49c61034b91796966fbdfe",
+          "release_notes": {
+            "text": "- Add localized catalog descriptions"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "4630fd3e6120c06cd8249cfc037e6cf5d82f7496",
+          "release_notes": {
+            "text": "- Register China daily credit claims with the execution Node scheduler\n- Configure the daily check-in time in Beijing time, including when another model channel is selected\n- Keep closed activities, completed claims and uncertain requests from repeating"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "762a3b84c70747e86869f34e6acfec1cec5d7d08",
+          "release_notes": {
+            "text": "- Remove Hy4's trailing reasoning control token after normal stream completion\n- Show a credit icon beside the balance"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "d79ef3c3edfb22fa123e009511732a57585cbf34",
+          "release_notes": {
+            "text": "- Show zero credits when the upstream resource list is explicitly null\n- Preserve streamed usage before completing a model response"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "ee1382317911f6de94c5362ba550ecdcbadab95a",
+          "release_notes": {
+            "text": "- Send the desktop generation identity and preserve upstream business messages\n- Show selected-channel credits through protected read-only requests"
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "32555a88018aeab5c1e76cd672e68111bfadef68",
+          "release_notes": {
+            "text": "- Send regional discovery headers and accept wrapped or bare model catalogs\n- Group regional channels under WorkBuddy"
+          }
+        },
+        {
+          "version": "0.1.2",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "db9c106368ab2a72c8e38716ef5b6d1f7924da3f"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "913d7ef5f28bb3611e81c0a517dd6bff18bd4495"
+        }
+      ],
       "release_notes": {
         "text": "- Read provider accounts and new contexts concurrently"
       }
@@ -19041,6 +21963,88 @@
         "git.read",
         "conversation.control"
       ],
+      "versions": [
+        {
+          "version": "0.1.9",
+          "commit": "7cfc335d28f3e948e0bd1b65179bc5061c7277c8",
+          "release_notes": {
+            "text": "- Label conversations without a project consistently across supported languages"
+          }
+        },
+        {
+          "version": "0.1.8",
+          "commit": "2037a3475cc87e8fd002801cf71a5e352045dd49",
+          "release_notes": {
+            "text": "- Increase spacing between form labels and controls",
+            "locales": {
+              "zh-CN": "- 增大表单标签与控件的间距",
+              "zh-TW": "- 增加表單標籤與控制項的間距",
+              "ja": "- フォームのラベルと入力欄の間隔を拡大",
+              "ko": "- 양식 레이블과 컨트롤 사이 간격 확대",
+              "fr": "- Augmenter l’espace entre les libellés et les champs des formulaires",
+              "de": "- Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern",
+              "es": "- Aumentar el espacio entre las etiquetas y los controles del formulario",
+              "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
+              "ru": "- Увеличить расстояние между подписями и полями форм"
+            }
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show worktree lists as concise activity while retaining changes"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "a98f00c427a5fb1e25d42b0e3da5cf75450ac7e5",
+          "release_notes": {
+            "text": "- Start registered and native worktree discovery together while showing registered choices first"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "cc6bb7e97d77eb1e967b1b90746de80249e29804",
+          "release_notes": {
+            "text": "- Show registered worktrees before Git discovery and reuse active refreshes"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "5cd73bd5af0a31774ccc4954859402bab25f676e"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "76ad207cc71ba97150e02bcc670557821553f256"
+        }
+      ],
       "release_notes": {
         "text": "- Label conversations without a project consistently across supported languages"
       }
@@ -19107,6 +22111,37 @@
       "provides_models": false,
       "permissions": [
         "models.generate"
+      ],
+      "versions": [
+        {
+          "version": "0.1.2",
+          "commit": "dfc44966a6409aeb03f9ec437c00171b64c37e78",
+          "release_notes": {
+            "text": "- Read game settings and model choices concurrently"
+          }
+        },
+        {
+          "version": "0.1.1",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色",
+              "zh-TW": "- 新增市集分類和圖示配色",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
+              "ru": "- Добавлены категория каталога и цвет значка"
+            }
+          }
+        },
+        {
+          "version": "0.1.0",
+          "commit": "3f5f69a15f4dd75ce0b97f73f76d635c2ff9ab10"
+        }
       ],
       "release_notes": {
         "text": "- Read game settings and model choices concurrently"
@@ -19401,6 +22436,70 @@
       "provides_models": false,
       "permissions": [
         "http.request"
+      ],
+      "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
+          "release_notes": {
+            "text": "- Show ordinary knowledge queries as concise activity"
+          }
+        },
+        {
+          "version": "0.1.7",
+          "commit": "080f3019dad4d91c19cae978cd68dbab961e49e8",
+          "release_notes": {
+            "text": "- Reuse the shared HTTP flow helpers"
+          }
+        },
+        {
+          "version": "0.1.6",
+          "commit": "9221b93784ddf0dc1cac6c9b7ba55e66c74de257",
+          "release_notes": {
+            "text": "- Manage service accounts through declared connectors"
+          }
+        },
+        {
+          "version": "0.1.5",
+          "commit": "80d2274c708e658ba965acf70a7c47c2f0be1bb7",
+          "release_notes": {
+            "text": "- Report invalid service response shapes without throwing"
+          }
+        },
+        {
+          "version": "0.1.4",
+          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
+          "release_notes": {
+            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
+            "locales": {
+              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
+              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
+              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
+              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
+              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
+              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
+              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
+              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
+              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
+            }
+          }
+        },
+        {
+          "version": "0.1.3",
+          "commit": "e16dce68a2906f37e83d627f00a311bc0dd97a88"
+        },
+        {
+          "version": "0.1.2",
+          "commit": "5d79d4be51bca9c1fd2737fd05750c59238e7c71"
+        },
+        {
+          "version": "0.1.1",
+          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
+        },
+        {
+          "version": "0.1.0",
+          "commit": "efc399cf659f0fb9e7ac83150b0d60b6f2e9d61e"
+        }
       ],
       "release_notes": {
         "text": "- Show ordinary knowledge queries as concise activity"
