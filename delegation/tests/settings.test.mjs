@@ -25,12 +25,12 @@ const role = {id:'existing',revision:5,key:'review',name:'Review',appearance:nul
 
 async function settings(options = {}) {
   const changes = events(), controls = events(), menus = events(), closes = events(), inputs = events(), sliders = events();
-  const prepared = [], calls = [], forgotten = [], notices = [], released = [], fields = new Map();
+  const prepared = [], calls = [], forgotten = [], notices = [], released = [], scopes = [], fields = new Map();
   let profiles = [plain(role)], models = [plain(model)], ids = 0;
   let settings = {package:{name:'fixture',digest:'captured',settings_revision:'1'},values:{child_concurrency:options.value ?? '8',retained:'value'}};
   const bindings = {
     View:class {},context:() => '{"locale":"en"}',draft,messages,
-    nextChange:changes.next,nextControlEvent:controls.next,nextMenuEvent:menus.next,
+    nextChange:(cursor,scope)=>{scopes.push(scope);return changes.next(cursor);},nextControlEvent:controls.next,nextMenuEvent:menus.next,
     modal_closed:closes.next,nextTextEvent:inputs.next,nextSliderEvent:sliders.next,
     createSlider:value => {const id=`slider-${++ids}`;fields.set(id,value);return id;},
     setSlider:(id,value)=>fields.set(id,value),
@@ -38,7 +38,7 @@ async function settings(options = {}) {
     readText:id => fields.get(id),setText:(id,value) => fields.set(id,value),
     releaseText:id => {released.push(id); fields.delete(id);},
     toast:value => notices.push(value),dismissToast() {},forgetRequest:id => forgotten.push(id),
-    listRoles:async () => {if(options.read) options.read();return plain(profiles);},listModels:async () => ({models:plain(models)}),newRoleId:() => 'created',
+    listRoles:async () => {if(options.read) await options.read();return plain(profiles);},listModels:async () => ({models:plain(models)}),newRoleId:() => 'created',
     prepareRole:(role,revision) => {prepared.push(plain({kind:'edit',role,revision})); return `request-${prepared.length}`;},
     prepareRemoveRole:(id,revision) => {prepared.push({kind:'remove',id,revision}); return `request-${prepared.length}`;},
     completeRequest:async id => {calls.push(id); const value = prepared[Number(id.split('-')[1])-1];
@@ -46,14 +46,14 @@ async function settings(options = {}) {
       if(value.kind === 'settings') {settings={...settings,package:{...settings.package,settings_revision:String(Number(settings.package.settings_revision)+1)},values:value.values};return {Ok:{kind:'plugin_settings',data:plain(settings)}};}
       return {Ok:{kind:value.kind === 'edit' ? 'role' : 'roles',data:{}}};},
     faultCode:message => message,
-    readSettings:async () => plain(settings),
+    readSettings:async () => {if(options.readSettings)await options.readSettings();return plain(settings);},
     prepareSettings:(values,edits,revision) => {if(options.prepare)options.prepare();prepared.push(plain({kind:'settings',values,edits,revision}));return `request-${prepared.length}`;}
   };
   bindings.Capacity = vm.runInNewContext(`${capacitySource}\nCapacity`,bindings);
   const Type = vm.runInNewContext(`${source}\nSettings`,bindings);
-  const cx = {notify() {},spawn(action) {return action(cx);}};
+  const cx = {notify() {},sleep:options.sleep ?? (async () => {}),spawn(action) {return action(cx);}};
   const view = new Type(); view.init({},cx); await tick();
-  return {view,cx,changes,controls,menus,closes,inputs,sliders,prepared,calls,forgotten,notices,released,fields,
+  return {view,cx,changes,controls,menus,closes,inputs,sliders,prepared,calls,forgotten,notices,released,scopes,fields,
     async act(action) {action(); await tick(); await tick();},
     configuration(value) {settings=value;},
     catalog(roles,nextModels) {profiles = roles; if (nextModels) models = nextModels;},
@@ -73,6 +73,37 @@ test('capacity saves once on release and preserves other settings',async()=>{
   assert.deepEqual(f.prepared,[{kind:'settings',values:{child_concurrency:'24',retained:'value'},edits:{},revision:'1'}]);
   assert.equal(capacity.request,null);
   assert.equal(f.notices.filter(notice=>notice.kind==='success').length,1);
+});
+
+test('hidden catalogs catch up once and retain drafts on background failures',async()=>{
+  let reads=0,failed=false;
+  const f=await settings({read(){reads++;if(failed)throw Error('unavailable');},
+    readSettings(){if(failed)throw Error('unavailable');}});
+  f.view.edit(role,f.cx);f.edit('name','Retained draft');
+  const original=f.view.roles,saved=f.view.capacity.saved;
+  await f.act(()=>f.changes.send({cursor:'1',connected:true,visible:false}));
+  for(let count=2;count<12;count++)await f.act(()=>f.changes.send({cursor:String(count),connected:true,visible:false}));
+  assert.equal(reads,1);assert.equal(f.view.roles,original);
+  failed=true;
+  await f.act(()=>f.changes.send({cursor:'shown',connected:true,visible:true}));
+  assert.equal(reads,2);assert.equal(f.view.roles,original);assert.equal(f.view.capacity.saved,saved);
+  assert.equal(f.fields.get(f.view.dialog.fields.name),'Retained draft');
+  assert.deepEqual(f.notices,[]);assert.equal(f.scopes.every(scope=>scope==='package'),true);
+  await f.act(()=>f.view.load(f.cx,true));
+  assert.equal(f.notices.filter(value=>value.kind==='error').length,2);
+});
+
+test('catalog bursts retain one follow-up and publish the latest data',async()=>{
+  const gate=deferred();let held=false,reads=0;
+  const f=await settings({async read(){reads++;if(held)await gate.promise;}});
+  await f.act(()=>f.changes.send({cursor:'1',connected:true}));
+  const original=f.view.roles;held=true;f.view.load(f.cx);
+  for(let count=2;count<12;count++)await f.act(()=>f.changes.send({cursor:String(count),connected:true}));
+  assert.equal(reads,2);assert.equal(f.view.roles,original);
+  f.catalog([{...role,name:'Latest role'}]);held=false;
+  await f.act(()=>gate.finish());
+  assert.equal(reads,3);assert.equal(f.view.roles[0].name,'Latest role');
+  assert.equal(f.view.loading,false);assert.deepEqual(f.notices,[]);
 });
 
 test('capacity keeps existing values outside the slider range',async()=>{

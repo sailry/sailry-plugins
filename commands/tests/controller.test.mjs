@@ -9,7 +9,7 @@ const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{k
 async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}, initialEntry = 0) {
   const context = vm.createContext({});
   const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], closed = [], released = [], requests = new Map();
-  const host = {items, complete:null, prepareError:null, change:null};
+  const host = {items, complete:null, prepareError:null, change:null,reads:0,scopes:[],readError:null};
   const prepare = (action, target) => {
     const id = `request-${prepared.length}`;
     const request = {id, action, target};
@@ -19,7 +19,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     'gpui-kit':{View:class {}},
     sailry:{context:() => JSON.stringify({locale:'en'}),releaseTerminal:id=>released.push(id)},
     'sailry/sdk':{
-      listTerminals:async () => host.items,
+      listTerminals:async () => {host.reads++;if(host.readError)throw host.readError;return host.list ? host.list() : host.items;},
       listTerminalTools:async () => [],
       prepareTerminal:(target,access) => { const id = prepare('create', target); requests.get(id).access = access; return id; },
       prepareOpenTerminal:target => { if (host.prepareError) throw host.prepareError; return prepare('open', target); },
@@ -33,7 +33,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
         return {Ok:{kind:'terminal', data:{id:request.target}}};
       },
       forgetRequest:id => forgotten.push(id),
-      nextChange:() => new Promise(resolve => { host.change = resolve; }),
+      nextChange:(_cursor,scope) => {host.scopes.push(scope);return new Promise(resolve => { host.change = resolve; });},
     },
     'sailry/ui':{nextMenuEvent() {}, pane:() => resource ? {resource} : null,
       openPane:value => { panes.push(value); return true; }, updatePane:value => updates.push(value),
@@ -52,15 +52,15 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   const background = [];
   view.init(null, {spawn(callback) { background.push(callback); }});
   const pending = [];
-  const cx = {notify() {}, spawn(callback) { pending.push(Promise.resolve().then(() => callback(cx))); }};
+  const cx = {notify() {}, sleep:async () => {}, spawn(callback) { pending.push(Promise.resolve().then(() => callback(cx))); }};
   let cursor = 0;
   const settle = async () => { while (cursor < pending.length) await pending[cursor++]; };
   background.at(-1)(cx);
   let changes = 0, entry = initialEntry;
-  const observe = async () => {
+  const observe = async (visible = true) => {
     while (!host.change) await Promise.resolve();
     const receive = host.change; host.change = null;
-    receive({cursor:String(++changes), connected:true, entry:String(entry)});
+    receive({cursor:String(++changes), connected:true, visible, entry:String(entry)});
     while (!host.change) await Promise.resolve();
     await settle();
   };
@@ -78,6 +78,18 @@ test('restored shell metadata never launches a hidden process', async () => {
   assert.equal(setup.view.selected, 'shell');
   assert.equal(setup.view.items[0].status.kind, 'stopped');
   assert.equal(setup.panes.length, 0);
+});
+
+test('hidden refreshes wait and loaded failures remain quiet',async()=>{
+  const setup=await fixture(),original=setup.view.items,reads=setup.host.reads;
+  for(let count=0;count<10;count++)await setup.observe(false);
+  assert.equal(setup.host.reads,reads);assert.equal(setup.view.items,original);
+  setup.host.readError=Error('unavailable');
+  await setup.observe(true);
+  assert.equal(setup.host.reads,reads+1);assert.equal(setup.view.items,original);
+  assert.deepEqual(setup.notices,[]);assert.equal(setup.host.scopes.every(scope=>scope==='package'),true);
+  setup.view.retry(setup.cx);await setup.settle();
+  assert.equal(setup.notices.at(-1).message,'Could not load terminals');
 });
 
 test('explicit entry reopens the captured shell once with its existing identity', async () => {

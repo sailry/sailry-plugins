@@ -16,6 +16,7 @@ export default class Commands extends View {
     this.loaded = false; this.loading = false; this.dirty = false; this.busy = false; this.pending = null; this.error = null;
     this.openAttempts = new Map(); this.openRetry = null;
     this.openIntent = null;
+    this.visible = true; this.connected = true; this.lastRead = 0;
     this.closingTerminals = new Set();
     if (this.resource) cx.spawn(async cx => {
       try { while (true) {
@@ -33,20 +34,27 @@ export default class Commands extends View {
     cx.spawn(async cx => {
       let cursor = '', entry = '0';
       try { while (true) {
-        const change = await nextChange(cursor); cursor = change.cursor;
+        const change = await nextChange(cursor,'package'); cursor = change.cursor;
+        this.visible = change.visible !== false; this.connected = change.connected;
         if (change.entry !== entry) {
           entry = change.entry;
           if (entry !== '0') this.openIntent = {target:this.selected};
         }
-        if (change.connected) this.refresh(cx);
+        if (this.connected && this.visible) this.refresh(cx);
+        else this.dirty = true;
       } } catch (_) { /* The captured view has been released. */ }
     });
   }
-  refresh(cx) {
+  refresh(cx, explicit = false) {
+    if (!this.visible || !this.connected) { this.dirty = true; return; }
     if (this.loading) { this.dirty = true; return; }
     this.loading = true;
     cx.spawn(async cx => {
       try { do {
+        const delay = 750 - (Date.now() - this.lastRead);
+        if (!explicit && delay > 0) await cx.sleep(delay);
+        if (!this.visible || !this.connected) { this.dirty = true; break; }
+        this.lastRead = Date.now();
         this.dirty = false;
         const selected = this.selected;
         const [items, tools] = await Promise.all([listTerminals(), listTerminalTools()]);
@@ -66,8 +74,8 @@ export default class Commands extends View {
         }
         if (this.error === 'loadFailed') this.error = null;
         cx.notify();
-      } while (this.dirty); }
-      catch (_) { this.fail('loadFailed'); }
+      } while (this.dirty && this.visible && this.connected); }
+      catch (_) { if (this.visible && (explicit || !this.loaded)) this.fail('loadFailed'); }
       finally { this.loading = false; this.openSelected(cx); cx.notify(); }
     });
   }
@@ -108,7 +116,7 @@ export default class Commands extends View {
   retry(cx) {
     if (this.pending) this.perform(null, null, cx);
     else if (this.openRetry) this.perform('open', this.openRetry, cx);
-    else this.refresh(cx);
+    else this.refresh(cx,true);
   }
   perform(action, target, cx) {
     if (this.busy || (this.pending ? action !== null : action === null)) return;

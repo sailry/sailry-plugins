@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -304,7 +304,7 @@
         {
           "name": "read_file",
           "presentation": "summary",
-          "description": "Read UTF-8 lines from files up to 64 MiB in the session worktree. offset is zero-based and defaults to 0; limit defaults to 200; responses return at most 2000 lines. Each page is bounded to 128 KiB. Results include one-based line numbers, the full file revision and next_offset for another page. Keep the returned line text exactly, including newlines, when preparing edit_file. A page is partial evidence; do not treat it as the whole file.",
+          "description": "Read UTF-8 lines from files up to 64 MiB in the session worktree. offset is zero-based and defaults to 0; limit defaults to 100; responses return at most 2000 lines. Model text is bounded to about 32 KiB and 2 KiB per line; use next_offset to continue or read_command with the returned output reference for omitted text. Results include one-based line numbers, the full file revision and next_offset. Keep the original line text exactly when preparing edit_file. A page is partial evidence; do not treat it as the whole file.",
           "handler": {
             "name": "read",
             "operation": "files.read",
@@ -325,7 +325,7 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 9007199254740991,
-                  "default": 200,
+                  "default": 100,
                   "description": "Requested rows; each response has an independent output budget and may return a continuation"
                 }
               },

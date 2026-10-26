@@ -88,7 +88,7 @@ test('writes retain exact text and optimistic revision semantics', () => {
     path:'new.txt',text:'',expected_revision:null,
   });
   assert.equal(host.write({path:'text.txt',text:'\u0001'.repeat(128 * 1024)}).text.length,128 * 1024);
-  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt',offset:0,limit:200});
+  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt',offset:0,limit:100});
 });
 
 test('search defaults keep original expressions and globs without interpreting them', () => {

@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Keep mounted GitHub MCP guidance concise while preserving anonymous reads and credential boundaries
+
 ## 0.1.3
 
 Require an active local CLI account before reading a transient credential.

@@ -14,8 +14,9 @@ export function failure(kind, code) {
 }
 
 export class Repository {
-  constructor(api, notify = () => {}, report = () => {}) {
+  constructor(api, notify = () => {}, report = () => {}, pause = async () => {}) {
     this.api = api; this.notify = notify; this.report = report;
+    this.pause = pause; this.visible = true; this.dirty = false; this.lastRead = 0;
     this.connected = true; this.status = null; this.branches = null; this.loading = false;
     this.error = null; this.readCode = null; this.pending = null; this.followUp = null;
     this.message = ''; this.amend = false; this.amendDraft = null; this.options = defaults(); this.commitOpen = false;
@@ -32,15 +33,20 @@ export class Repository {
     && (this.amend ? this.status.head !== null : this.status.entries.length > 0); }
   revisions() { return {expected_index:this.status.index_revision,expected_head:this.status.head,expected_branch:this.status.branch}; }
 
-  refresh(review = false) {
+  refresh(review = false, quiet = false) {
     this.readCode = null;
-    if (this.closed || !this.connected || this.pending?.busy) return Promise.resolve(false);
+    if (this.closed || !this.connected || !this.visible || this.pending?.busy) {
+      this.dirty = !this.closed;
+      return Promise.resolve(false);
+    }
     const previous = this.refreshing;
     if (previous?.active && previous.sequence === this.read && this.loading) {
       previous.review ||= review;
+      previous.quiet &&= quiet;
       return previous.promise;
     }
-    const current = {sequence:++this.read,review:review || !!(previous?.active && previous.sequence === this.read - 1 && previous.review),active:true,promise:null};
+    const current = {sequence:++this.read,review:review || !!(previous?.active && previous.sequence === this.read - 1 && previous.review),quiet,followup:false,active:true,promise:null};
+    this.dirty = false;
     this.refreshing = current;
     current.promise = this.reload(current);
     return current.promise;
@@ -48,8 +54,11 @@ export class Repository {
 
   invalidate() {
     const current = this.refreshing;
-    if (current?.active && current.sequence === this.read && this.loading) current.invalidated = true;
-    return this.refresh();
+    if (current?.active && current.sequence === this.read) {
+      current.invalidated = true;
+      return current.promise;
+    }
+    return this.refresh(false,true);
   }
 
   latest(sequence) {
@@ -61,37 +70,54 @@ export class Repository {
     const sequence = current.sequence;
     this.loading = true; this.notify();
     try {
-      const status = await this.api.inspectGit();
-      let branches = null, branchError = null;
-      try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
-      catch (_) { branchError = 'git_branches_failed'; }
-      if (this.closed || sequence !== this.read) return this.latest(sequence);
-      if (current.invalidated) {
-        current.active = false;
-        return this.refresh(current.review);
+      while (!this.closed && this.connected && this.visible) {
+        const delay = 750 - (Date.now() - this.lastRead);
+        if ((current.quiet || current.followup) && delay > 0) await this.pause(delay);
+        if (this.closed || sequence !== this.read) return this.latest(sequence);
+        if (!this.connected || !this.visible) { this.dirty = true; return false; }
+        this.lastRead = Date.now(); current.invalidated = false;
+        try {
+          const status = await this.api.inspectGit();
+          if (this.closed || sequence !== this.read) return this.latest(sequence);
+          const report = !current.quiet || !this.status;
+          this.status = status;
+          this.readCode = null;
+          if (!this.connected || !this.visible) { this.dirty = true; return false; }
+          let branches = null, branchError = null;
+          try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
+          catch (_) { branchError = 'git_branches_failed'; }
+          if (this.closed || sequence !== this.read) return this.latest(sequence);
+          if (!this.connected || !this.visible) { this.dirty = true; return false; }
+          if (!branchError) this.branches = branches;
+          if (!branchError || report) this.error = branchError;
+          if (branchError && report && !current.invalidated) this.report(branchError);
+          if (this.pending?.reviewing || current.review) {
+            if (this.pending) this.api.forgetRequest(this.pending.id);
+            this.pending = null;
+          }
+          this.loading = false;
+          if (!current.invalidated) {
+            const document = this.documents.get(this.selected);
+            await Promise.all([
+              document ? this.open(document.request,false,current.quiet) : Promise.resolve(),
+              this.view === 'history' ? this.loadHistory(null,current.quiet) : Promise.resolve(),
+            ]);
+          }
+          if (this.closed || sequence !== this.read) return this.latest(sequence);
+          if (!current.invalidated) return true;
+        } catch (error) {
+          if (sequence !== this.read || this.closed) return this.latest(sequence);
+          this.readCode = this.api.faultCode(error.message ?? String(error));
+          if (!current.invalidated && this.visible && (!current.quiet || !this.status)) {
+            this.error = 'git_read_failed'; this.report(this.error);
+          }
+          if (!current.invalidated) return false;
+        }
+        current.followup = true;
+        this.loading = true; this.notify();
       }
-      this.status = status; this.branches = branches; this.error = branchError;
-      if (branchError) this.report(branchError);
-      if (this.pending?.reviewing || current.review) {
-        if (this.pending) this.api.forgetRequest(this.pending.id);
-        this.pending = null;
-      }
-      this.loading = false;
-      const document = this.documents.get(this.selected);
-      await Promise.all([
-        document ? this.open(document.request,false) : Promise.resolve(),
-        this.view === 'history' ? this.loadHistory() : Promise.resolve(),
-      ]);
-      return !this.closed && sequence === this.read ? true : this.latest(sequence);
-    } catch (error) {
-      if (!this.closed && sequence === this.read && current.invalidated) {
-        current.active = false;
-        return this.refresh(current.review);
-      }
-      if (sequence === this.read && !this.closed) {
-        this.error = 'git_read_failed'; this.readCode = this.api.faultCode(error.message ?? String(error)); this.report(this.error);
-      }
-      return this.latest(sequence);
+      this.dirty = !this.closed;
+      return false;
     } finally {
       current.active = false;
       if (sequence === this.read) this.loading = false;
@@ -195,15 +221,15 @@ export class Repository {
     }
   }
 
-  async loadHistory(cursor = null) {
-    if (this.closed || !this.connected || this.pending?.busy) return;
+  async loadHistory(cursor = null, quiet = false) {
+    if (this.closed || !this.connected || !this.visible || this.pending?.busy) return;
     const sequence = ++this.historyRead;
     this.historyLoading = true; this.notify();
     try {
       const page = await this.api.readGitLog(100,cursor);
       if (this.closed || sequence !== this.historyRead) return;
       this.history = page;
-    } catch (_) { if (sequence === this.historyRead && !this.closed) { this.error = 'git_read_failed'; this.report(this.error); } }
+    } catch (_) { if (sequence === this.historyRead && !this.closed && this.visible && (!quiet || !this.history)) { this.error = 'git_read_failed'; this.report(this.error); } }
     finally { if (sequence === this.historyRead) this.historyLoading = false; this.notify(); }
   }
 
@@ -214,8 +240,8 @@ export class Repository {
     return this.loadHistory({head:this.history.head,offset:(page - 1) * 100});
   }
 
-  async open(request, select = true) {
-    if (this.closed || this.pending?.busy) return;
+  async open(request, select = true, quiet = false) {
+    if (this.closed || !this.visible || this.pending?.busy) return;
     const sequence = ++this.documentRead;
     const id = request.kind === 'file' ? request.path : request.kind === 'changes' ? 'changes:'
       : request.kind === 'output' ? 'output:' : `${request.kind}:${request.commit}`;
@@ -246,7 +272,7 @@ export class Repository {
       this.error = content.truncated || content.files?.some(file => file.truncated) ? 'git_diff_partial'
         : content.binary || content.files?.some(file => file.binary) ? 'git_diff_binary' : null;
     } catch (_) {
-      if (sequence === this.documentRead && !this.closed) { this.error = 'git_read_failed'; this.report(this.error); }
+      if (sequence === this.documentRead && !this.closed && this.visible && (!quiet || !this.documents.has(id))) { this.error = 'git_read_failed'; this.report(this.error); }
     } finally { if (sequence === this.documentRead) this.documentLoading = false; this.notify(); }
   }
 

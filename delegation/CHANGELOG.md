@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Pause hidden settings refreshes and keep drafts after background failures
+
 ## 0.1.24
 
 - Present the work mode as Flagship with localized labels and descriptions.

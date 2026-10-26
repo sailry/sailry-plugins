@@ -6,7 +6,7 @@ import * as sdk from 'sailry/sdk';
 import {createText, readText, setText, nextTextEvent} from 'sailry/forms';
 import {Workspace, workspaceMode, ActionScope, registerShortcuts, closePanel, toast, nextControlEvent, nextMenuEvent,
   nextNavigationTabEvent, nextTreeEvent, nextContextMenuEvent, nextPickerEvent, modal_closed,
-  canInvokeContribution, readResourceTarget, nextResourceTarget, nextWindowActivation, collapseOpen, focusEntry} from 'sailry/ui';
+  canInvokeContribution, readResourceTarget, nextResourceTarget, collapseOpen, focusEntry} from 'sailry/ui';
 import {Repository} from './repository.js';
 import {Actions} from './actions.js';
 import {Menus} from './menus.js';
@@ -32,7 +32,7 @@ export default class Git extends View {
     this.mode = workspaceMode(); this.worktrees = false; this.worktreesPending = false;
     this.message = createText('',{multiline:true,label:this.text.git_commit_message,placeholder:this.text.git_commit_message});
     this.surfaces = new Surfaces(patch => DiffState(patch),text => EditorState(text));
-    this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },key => this.report(key));
+    this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },key => this.report(key),ms => cx.sleep(ms));
     this.actions = new Actions(this); this.menus = new Menus(this);
     this.expanded = new Map(); this.nodes = new Map(); this.current = null;
     this.watch(nextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
@@ -60,20 +60,15 @@ export default class Git extends View {
     cx.spawn(async cx => {
       let cursor = '';
       try { while (true) {
-        const change = await sdk.nextChange(cursor); cursor = change.cursor;
+        const change = await sdk.nextChange(cursor,'repository'); cursor = change.cursor;
         this.repo.connected = change.connected;
-        this.refreshWorktrees(cx);
-        if (change.connected) await this.invalidate();
+        this.repo.visible = change.visible !== false;
+        if (change.connected && this.repo.visible) {
+          this.refreshWorktrees(cx);
+          this.invalidate();
+        } else this.repo.dirty = true;
         cx.notify();
       } } catch (_) { /* Releasing a renderer stops observation, not admitted Git work. */ }
-    });
-    cx.spawn(async cx => {
-      let cursor = '';
-      try { while (true) {
-        const state = await nextWindowActivation(cursor); const changed = cursor !== ''; cursor = state.cursor;
-        if (changed && state.active) await this.invalidate();
-        cx.notify();
-      } } catch (_) { /* Activation ends with this controller. */ }
     });
     if (!this.overlay) cx.spawn(async cx => {
       let target = readResourceTarget();

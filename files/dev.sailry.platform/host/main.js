@@ -27,7 +27,7 @@ export function list(args) {
 
 export function read(args) {
   if (!object(args,['path','offset','limit']) || typeof args.path !== 'string') return invalid();
-  const {offset = 0,limit = 200} = args;
+  const {offset = 0,limit = 100} = args;
   if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
   if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
   return {path:args.path,offset,limit};

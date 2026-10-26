@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Read smaller file pages and keep original tool output available through retained output references
+
 ## 0.1.12
 
 - Ignore canceled document opens after their read is invalidated.

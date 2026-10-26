@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "delegation",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -589,7 +589,8 @@
           },
           "instructions": "This mode enables autonomous delegation for the authorized task. Identify independent investigation, implementation or review work and assign useful scopes to available child agents while you advance the critical path. Give each child a concrete result, relevant context and explicit file ownership; keep overlapping edits with one owner. Reuse or guide existing children instead of duplicating their work. Handle small or tightly coupled work directly; delegation is a means to finish the task, not a requirement for every turn. Preserve the user's scope, mode restrictions and tool permissions in every child. Children cannot delegate further. Background completion notices carry results; review and integrate those results before claiming completion. Do not poll background work or repeat uncertain side effects. Coordinate shared build and test resources, and run only the relevant verification required by the task."
         }
-      ]
+      ],
+      "min_sailry_version": "0.1.0-alpha.4"
     }
   },
   "description": "Multiple agents work on code and files, suited to refactoring and organization"

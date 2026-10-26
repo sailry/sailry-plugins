@@ -17,13 +17,14 @@ export class Capacity {
     this.text = text; this.saved = null; this.request = null; this.settled = settled;
     this.value = null; this.queued = null; this.submitted = null; this.unknown = false;
     this.serial = 0; this.pending = false; this.loading = false; this.dirty = false; this.connected = true;
+    this.visible = true;
     this.field = createSlider(8,{min:1,max:50,step:1,label:text.child_concurrency});
   }
 
   locked() { return !this.connected || !this.saved || !!this.request && this.unknown; }
 
-  load(cx) {
-    if (this.loading || this.request) return;
+  load(cx, explicit = false) {
+    if (this.loading || this.request || !this.visible || !this.connected) return;
     this.loading = true;
     const serial = this.serial;
     cx.spawn(async cx => {
@@ -33,8 +34,8 @@ export class Capacity {
           this.saved = value;
           if (!this.dirty) this.adopt(value.values.child_concurrency);
         }
-      } catch (_) { this.fail('role_failed'); }
-      finally { this.loading = false; cx.notify(); }
+      } catch (_) { if (this.visible && (explicit || !this.saved)) this.fail('role_failed'); }
+      finally { this.loading = false; this.settled(cx); cx.notify(); }
     });
   }
 

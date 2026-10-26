@@ -6,7 +6,7 @@ import {rows,checkbox,selectedId} from '../dev.sailry.platform/desktop/changes.j
 const deferred = () => { let resolve,reject; const promise=new Promise((done,fail) => {resolve=done;reject=fail;}); return {promise,resolve,reject}; };
 const settle = async () => { for (let index=0;index<12;index++) await Promise.resolve(); };
 const status = () => ({kind:'ready',head:'original',branch:'main',index_revision:'index-1',entries:[{path:'a.txt',staged:'modified',unstaged:null,untracked:false,conflicted:false}]});
-function fixture(extra = {}) {
+function fixture(extra = {}, pause = async () => {}) {
   const prepared=[],completed=[],forgotten=[],reported=[];
   const api={inspectGit:async()=>status(),listGitBranches:async()=>({sync:{head_message:'Previous message'}}),
     prepareGitCommit:draft=>{prepared.push(draft);return 'stable-request';},
@@ -14,7 +14,7 @@ function fixture(extra = {}) {
     prepareGitChange:draft=>{prepared.push(draft);return 'stable-request';},
     completeRequest:async id=>{completed.push(id);return {Ok:{kind:'git_index',data:{revision:'index-2'}}};},
     forgetRequest:id=>forgotten.push(id),faultCode:()=> 'outcome_unknown',...extra};
-  const owner=new Repository(api,()=>{},key=>reported.push(key));owner.status=status();return {owner,prepared,completed,forgotten,reported};
+  const owner=new Repository(api,()=>{},key=>reported.push(key),pause);owner.status=status();return {owner,prepared,completed,forgotten,reported};
 }
 
 test('branch reads wait for repository applicability',async()=>{
@@ -130,7 +130,7 @@ test('stale and released reads cannot report failures',async()=>{
     ['readGitDiff',owner=>owner.open({kind:'file',path:'a.txt'})],
   ]) {
     const pending=deferred();const {owner,reported}=fixture({[method]:()=>pending.promise});
-    const readResult=read(owner);owner.stop();pending.reject(Error('late failure'));
+    const readResult=read(owner);await settle();owner.stop();pending.reject(Error('late failure'));
     await readResult;assert.deepEqual(reported,[]);
   }
   const first=deferred();let count=0;
@@ -159,11 +159,80 @@ test('invalidation follows shared reads with one fresh observation',async()=>{
     assert.equal(observation,changed);assert.equal(changed,again);assert.equal(reads,1);
     if(failed)first.reject(Error('stale failure'));else first.resolve({...status(),branch:'stale'});
     await settle();assert.equal(reads,2);
-    assert.equal(owner.status.branch,'main','invalidated results are not accepted');
+    assert.equal(owner.status.branch,failed ? 'main' : 'stale','completed data stays available during the follow-up');
     latest.resolve({...status(),branch:'fresh'});
     assert.deepEqual(await Promise.all([observation,changed,again]),[true,true,true]);
     assert.equal(owner.status.branch,'fresh');assert.equal(reads,2);assert.deepEqual(reported,[]);
   }
+});
+
+test('continuous changes share one pending slot and retain completed data',async()=>{
+  const replies=[deferred(),deferred(),deferred()],pauses=[];let reads=0;
+  const {owner}=fixture({inspectGit:()=>replies[reads++].promise},async delay=>pauses.push(delay));
+  owner.message='Retained draft';
+  const initial=owner.invalidate();
+  for(let count=0;count<20;count++)assert.equal(owner.invalidate(),initial);
+  replies[0].resolve({...status(),branch:'first'});await settle();
+  assert.equal(reads,2);assert.equal(owner.status.branch,'first');
+  for(let count=0;count<20;count++)assert.equal(owner.invalidate(),initial);
+  replies[1].resolve({...status(),branch:'second'});await settle();
+  assert.equal(reads,3);assert.equal(owner.status.branch,'second');
+  replies[2].resolve({...status(),branch:'latest'});
+  assert.equal(await initial,true);assert.equal(owner.status.branch,'latest');
+  assert.equal(owner.message,'Retained draft');assert.equal(reads,3);
+  assert.equal(pauses.length,2);assert.equal(pauses.every(delay=>delay>0&&delay<=750),true);
+});
+
+test('hidden reads retain one catch-up without background feedback',async()=>{
+  let reads=0;const {owner,reported}=fixture({inspectGit:async()=>{reads++;throw Error('unavailable');},faultCode:()=> 'unavailable'});
+  const original=owner.status;owner.visible=false;owner.message='Retained draft';
+  for(let count=0;count<20;count++)await owner.invalidate();
+  assert.equal(reads,0);assert.equal(owner.status,original);
+  owner.visible=true;assert.equal(await owner.invalidate(),false);
+  assert.equal(reads,1);assert.equal(owner.status,original);assert.equal(owner.message,'Retained draft');
+  assert.deepEqual(reported,[]);
+  await owner.refresh();assert.deepEqual(reported,['git_read_failed']);
+  owner.status=null;await owner.invalidate();assert.equal(reported.length,2);
+});
+
+test('visibility changes stop subsequent repository reads',async()=>{
+  for(const field of ['visible','connected']) {
+    const inspected=deferred();let branches=0,reads=0;
+    const {owner}=fixture({
+      inspectGit:()=>++reads===1 ? inspected.promise : Promise.resolve(status()),
+      listGitBranches:async()=>{branches++;return {};},
+    });
+    const initial=owner.invalidate();owner[field]=false;
+    inspected.resolve({...status(),branch:'retained'});
+    assert.equal(await initial,false);assert.equal(branches,0);
+    assert.equal(owner.status.branch,'retained');assert.equal(owner.dirty,true);
+    owner[field]=true;
+    assert.equal(await owner.invalidate(),true);
+    assert.equal(reads,2);assert.equal(branches,1);
+  }
+});
+
+test('disconnect during refresh delay prevents a new query',async()=>{
+  const waiting=deferred();let reads=0;
+  const {owner}=fixture({inspectGit:async()=>{reads++;return status();}},()=>waiting.promise);
+  owner.lastRead=Date.now();
+  const refresh=owner.invalidate();owner.connected=false;
+  waiting.resolve();
+  assert.equal(await refresh,false);assert.equal(reads,0);assert.equal(owner.dirty,true);
+});
+
+test('document invalidations share the active repository read',async()=>{
+  const document=deferred();let reads=0,diffs=0;
+  const {owner}=fixture({inspectGit:async()=>{reads++;return status();},
+    readGitDiff:()=>++diffs===1 ? document.promise : Promise.resolve({path:'a.txt',text:'latest'})});
+  owner.selected='a.txt';owner.tabs=['a.txt'];owner.documents.set('a.txt',{request:{kind:'file',path:'a.txt'}});
+  const initial=owner.invalidate();await settle();
+  assert.equal(reads,1);assert.equal(diffs,1);
+  for(let count=0;count<20;count++)assert.equal(owner.invalidate(),initial);
+  assert.equal(reads,1);
+  document.resolve({path:'a.txt',text:'accepted'});
+  assert.equal(await initial,true);assert.equal(reads,2);assert.equal(diffs,2);
+  assert.equal(owner.documents.get('a.txt').files[0].text,'latest');
 });
 
 test('superseded refreshes follow the latest result',async()=>{

@@ -96,7 +96,7 @@ export function render(view) {
       .child(div().h_flex().gap_2().flex_wrap()
         .child(button('role-add',text.settings_add,(_,cx) => view.edit(null,cx),disabled,true)))
       .children(rows.length ? rows : view.ready ? [empty(view)] : [view.error && !view.loading
-        ? button('role-reload',text.role_retry,(_,cx)=>view.load(cx),!view.connected)
+        ? button('role-reload',text.role_retry,(_,cx)=>view.load(cx,true),!view.connected)
         : div().relative().w_full().h_24().child(Loading.new('role-loading'))]))
     .child(modal);
 }

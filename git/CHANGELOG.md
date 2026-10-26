@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.20
+
+- Refresh repository views only for relevant changes and pause hidden controllers
+- Reuse collected line statistics for badges and report bounded counts as incomplete
+
 ## 0.1.19
 
 - Add an initialization button to the Git sidebar for plain directories

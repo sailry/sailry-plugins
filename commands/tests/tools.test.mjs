@@ -29,6 +29,19 @@ test('reads exact command IDs or lists without an ID', () => {
   }
 });
 
+test('pages retained streams and canonical tool results', () => {
+  const output = {call:'call-1', revision:'f'.repeat(64)};
+  for (const args of [
+    {output,offset:0,limit:32768}, {output,stream:'stderr',offset:32768,limit:4096},
+    {id:'11111111-1111-4111-8111-111111111111',stream:'stdout',offset:0,limit:1},
+  ]) assert.deepEqual(read(args),args);
+  for (const args of [
+    {output:{...output,revision:'bad'}},{output:{...output,call:''}},
+    {id:'command',output},{offset:0},{stream:'stdout'},{output,limit:0},
+    {output,offset:-1},{output,limit:32769},{output,stream:'combined'},
+  ]) assert.equal(read(args).isError,true);
+});
+
 test('command format affects only the summary', () => {
   const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
   const declaration = manifest.extensions['dev.sailry.platform'].tools

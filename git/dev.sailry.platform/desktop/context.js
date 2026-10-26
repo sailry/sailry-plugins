@@ -1,5 +1,5 @@
 import {readLocation,nextLocationChange,openResource} from 'sailry/ui';
-import {context as readScope,publishContributions,nextContributionEvent,readGitDiff,faultCode} from 'sailry/sdk';
+import {context as readScope,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import Git from './main.js';
 import {dialogs} from './view.js';
 
@@ -77,18 +77,12 @@ export default class Context extends Git {
     if (this.badgeRead !== sequence || !this.sameScope()) return;
     if (this.location.surface !== 'composer' || this.repo.status.kind === 'directory') { this.counts = null; this.publish(); return; }
     let added = 0, removed = 0, partial = this.repo.status.truncated || this.repo.status.omitted_paths > 0;
-    try {
-      const diffs = await Promise.all(this.repo.status.entries.map(entry => readGitDiff(entry.path,'all')));
-      if (this.badgeRead !== sequence || !this.sameScope()) return;
-      for (const diff of diffs) {
-        added += diff.additions; removed += diff.deletions; partial ||= diff.truncated;
-      }
-      if (this.badgeRead === sequence) { this.counts = {added,removed,partial}; this.publish(); this.notify(); }
-    } catch (error) {
-      if (this.badgeRead !== sequence || !this.sameScope()) return;
-      if (clearsBadge.has(faultCode(error.message ?? String(error)))) this.counts = null;
-      this.report('git_read_failed'); this.publish(); this.notify?.();
+    for (const entry of this.repo.status.entries) {
+      added += entry.diff.additions; removed += entry.diff.deletions;
+      partial ||= entry.diff.truncated === true;
     }
+    this.counts = {added,removed,partial};
+    this.publish(); this.notify();
   }
   publish(event) {
     const state = this.location;

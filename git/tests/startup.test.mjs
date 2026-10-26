@@ -16,14 +16,14 @@ const settle = async () => { for (let index=0;index<12;index++) await Promise.re
 function fixture(discovery, options = {}) {
   const changes = [deferred(),deferred(),deferred()]; let reads=0, queries=0, cursor=0;
   const targets = [deferred(),deferred(),deferred()]; let target = 0;
-  const shortcuts=[];
+  const shortcuts=[],scopes=[];
   const globals = {View:class {}, Surfaces, DiffState:()=>({}), EditorState:text=>({text}), context:()=>'{"locale":"en"}',
     messages:()=>({}), workspaceMode:()=>options.mode ?? 'main', createText:()=> 'message', Repository,
     Actions:class {}, Menus:class {}, readResourceTarget:()=>options.target ?? null,
     nextResourceTarget:()=>targets[target++].promise,focusEntry:()=>{},
     nextWindowActivation:()=>new Promise(()=>{}),registerShortcuts:bindings=>{shortcuts.push(bindings);return 'FixtureGitKeys';},
     canInvokeContribution:()=>{queries++;return discovery.promise;},
-    sdk:{nextChange:()=>changes[cursor++].promise,...options.api}};
+    sdk:{nextChange:(_cursor,scope)=>{scopes.push(scope);return changes[cursor++].promise;},...options.api}};
   for (const name of ['nextMenuEvent','nextContextMenuEvent','nextControlEvent','nextTreeEvent',
     'nextNavigationTabEvent','nextPickerEvent','modal_closed','nextTextEvent']) globals[name]=()=>{};
   const Git=vm.runInNewContext(`${source}\nGit`,globals);
@@ -31,9 +31,9 @@ function fixture(discovery, options = {}) {
   if (!options.observe) owner.invalidate=async()=>{reads++;};
   const tasks=[];let notifications=0;
   const live={notify:()=>{notifications++;},spawn:task=>{const pending=task(live);tasks.push(pending);return pending;}};
-  const cx={notify:()=>{},spawn:live.spawn,focus_handle:()=>({focus(){}})};
+  const cx={notify:()=>{},sleep:async()=>{},spawn:live.spawn,focus_handle:()=>({focus(){}})};
   owner.init({},cx);
-  return {owner,changes,targets,tasks,cx,live,shortcuts,notifications:()=>notifications,reads:()=>reads,queries:()=>queries};
+  return {owner,changes,targets,tasks,cx,live,shortcuts,scopes,notifications:()=>notifications,reads:()=>reads,queries:()=>queries};
 }
 
 test('empty resource targets keep document selection unchanged',async()=>{
@@ -122,7 +122,7 @@ function contributions() {
     'nextNavigationTabEvent','nextPickerEvent','modal_closed','nextTextEvent']) globals[name]=never;
   const Context=vm.runInNewContext(`${source}\n${contextSource}\nContext`,globals);
   const owner=new Context();owner.watch=()=>{};
-  const live={notify:()=>{},spawn:task=>task(live),focus_handle:()=>({focus(){}})};owner.init({},live);
+  const live={notify:()=>{},sleep:async()=>{},spawn:task=>task(live),focus_handle:()=>({focus(){}})};owner.init({},live);
   return {owner,change,event,reads,branches,choices,published};
 }
 
@@ -130,7 +130,7 @@ function badgeFixture(options={}) {
   const published=[],reported=[];
   const location={cursor:'0',surface:'composer',node:'captured-node',worktree:'captured',branch:'main',
     main:true,git:true,git_status:'repository',connected:true,can_move:true};
-  const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt'}],truncated:false,omitted_paths:0},
+  const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt',diff:{additions:1,deletions:0}}],truncated:false,omitted_paths:0},
     refresh:options.refresh ?? (async()=>true),invalidate(){return this.refresh();}};
   const globals={
     Git:class {
@@ -185,7 +185,8 @@ test('closed or released pickers reject late results',async()=>{
     else if (change==='released') state.owner.release();
     else state.owner.location={...state.owner.location,worktree:'other'};
     state.reads[0].resolve({branch:'latest',kind:'ready',entries:[]});await settle();
-    state.branches[0].resolve({entries:[{name:'late',commit:'abc1234'}],sync:{tracking:{}}});await settle();
+    if(change==='released') assert.equal(state.branches.length,0,'released controllers do not start branch reads');
+    else { state.branches[0].resolve({entries:[{name:'late',commit:'abc1234'}],sync:{tracking:{}}});await settle(); }
     assert.equal(state.choices.length,1);assert.equal(picker.items.length,0);
     assert.equal(state.owner.actions.picker,null);
     state.owner.release();
@@ -200,29 +201,40 @@ test('failed observation closes its loading picker',async()=>{
 });
 
 test('badge keeps known counts through overlapping refreshes',async()=>{
-  const refresh=deferred(),diff=deferred();let reads=0;
-  const state=badgeFixture({refresh:()=>refresh.promise,read:()=>{reads++;return diff.promise;}});
+  const refresh=deferred();
+  const state=badgeFixture({refresh:()=>refresh.promise,read:()=>assert.fail('status already contains line counts')});
   state.owner.counts={added:7,removed:3,partial:false};state.owner.publish();
   const first=state.owner.invalidate(),latest=state.owner.invalidate();
-  refresh.resolve(true);await settle();
-  assert.equal(reads,1,'only the latest refresh reads diffs');
   assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
     segment=>segment.label.label),['+7','-3']);
-  diff.resolve({additions:4,deletions:2,truncated:false});
+  state.repo.status.entries[0].diff={additions:4,deletions:2};
+  refresh.resolve(true);
   await Promise.all([first,latest]);
   assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
     segment=>segment.label.label),['+4','-2']);
 });
 
-test('transient diff failure keeps known badge counts',async()=>{
-  const state=badgeFixture({read:async()=>{throw Error('unavailable');}});
+test('transient status failure keeps known badge counts',async()=>{
+  const state=badgeFixture({refresh:async()=>false});
   const known={added:5,removed:1,partial:true};state.owner.counts=known;
+  state.owner.publish();
   await state.owner.invalidate();
   assert.equal(state.owner.counts,known);
-  assert.deepEqual(state.reported,['git_read_failed']);
+  assert.deepEqual(state.reported,[]);
   const badge=state.published.at(-1).find(entry=>entry.id==='changes');
   assert.equal(badge.visible,true);
   assert.deepEqual(Array.from(badge.segments,segment=>segment.label.label),['+5','-1']);
+});
+
+test('retained controllers suspend queries until their view returns',async()=>{
+  const discovery=deferred(),state=fixture(discovery);
+  state.changes[0].resolve({cursor:'hidden',connected:true,visible:false});await settle();
+  assert.equal(state.reads(),0);assert.equal(state.queries(),0);
+  state.changes[1].resolve({cursor:'shown',connected:true,visible:true});await settle();
+  assert.equal(state.reads(),1);assert.equal(state.queries(),1);
+  assert.equal(state.scopes.every(scope=>scope==='repository'),true);
+  await settle();assert.equal(state.reads(),1);
+  state.owner.release();
 });
 
 test('refresh failures preserve only transient badge counts',async()=>{
@@ -242,14 +254,15 @@ test('refresh failures preserve only transient badge counts',async()=>{
   assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,true);
 });
 
-test('scope failures clear known badge counts',async()=>{
+test('status scope failures clear known badge counts',async()=>{
   for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
-    const state=badgeFixture({read:async()=>{throw Error(code);}});
+    const state=badgeFixture();
+    state.repo.refresh=async()=>{state.repo.readCode=code;return false;};
     state.owner.counts={added:5,removed:1,partial:false};
     await state.owner.invalidate();
     assert.equal(state.owner.counts,null,code);
     assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,false,code);
-    assert.deepEqual(state.reported,['git_read_failed']);
+    assert.deepEqual(state.reported,[]);
   }
 });
 
@@ -534,17 +547,22 @@ test('released controllers cannot recreate surfaces after late notifications',()
 });
 
 
-test('badge reads independent diffs together',async()=>{
-  const started=[],pending=new Map();
-  const state=badgeFixture({read:path=>{
-    started.push(path);
-    return new Promise(resolve=>pending.set(path,resolve));
-  }});
-  state.repo.status.entries=[{path:'one.txt'},{path:'two.txt'}];
-  const refreshed=state.owner.invalidate();await settle();
-  assert.deepEqual(started,['one.txt','two.txt']);
-  pending.get('two.txt')({additions:3,deletions:1,truncated:false});
-  pending.get('one.txt')({additions:2,deletions:4,truncated:true});
-  await refreshed;
-  assert.deepEqual(JSON.parse(JSON.stringify(state.owner.counts)),{added:5,removed:5,partial:true});
+test('badge reuses status counts without reading file diffs',async()=>{
+  for(const truncated of [false,true]) {
+    const state=badgeFixture({read:()=>assert.fail('badge must not read file diffs')});
+    state.repo.status.entries=[
+      {path:'one.txt',diff:{additions:2,deletions:4}},
+      {path:'two.txt',diff:{additions:3,deletions:1}},
+    ];
+    state.repo.status.truncated=truncated;
+    await state.owner.invalidate();
+    assert.deepEqual(JSON.parse(JSON.stringify(state.owner.counts)),{added:5,removed:5,partial:truncated});
+    state.repo.status.omitted_paths=1;
+    await state.owner.invalidate();
+    assert.equal(state.owner.counts.partial,true);
+    state.repo.status.omitted_paths=0;state.repo.status.truncated=false;
+    state.repo.status.entries[0].diff.truncated=true;
+    await state.owner.invalidate();
+    assert.equal(state.owner.counts.partial,true,'bounded line counts remain partial');
+  }
 });

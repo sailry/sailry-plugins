@@ -9,17 +9,13 @@ const extension = manifest.extensions['dev.sailry.platform'];
 const read = new Set('tabs read navigate scroll back forward refresh open focus frame wait'.split(' '));
 
 test('research prefers bound search and anonymous fetch tools', () => {
-  assert.match(extension.instructions, /prefer available search tools and GitHub read tools/);
-  assert.match(extension.instructions, /web_fetch when it is bound/);
-  assert.match(extension.instructions, /anonymous read can complete the task/);
-  assert.match(extension.instructions, /page interaction, login, JavaScript rendering/);
-  assert.match(extension.instructions, /page view requested by the user/);
-  assert.match(extension.instructions, /no suitable search or fetch tool/);
-  assert.match(extension.instructions, /without claiming an unavailable tool was used/);
-  for (const name of ['browser_read', 'browser_navigate', 'browser_open']) {
-    assert.match(extension.tools.find(tool => tool.name === name).description, /Prefer available search/);
-    assert.match(extension.tools.find(tool => tool.name === name).description, /web_fetch/);
-  }
+  assert.match(extension.instructions, /Prefer available search, GitHub reads and web_fetch/);
+  assert.match(extension.instructions, /public text, APIs and raw files/);
+  assert.match(extension.instructions, /missing authenticated MCP access alone does not require browsing/);
+  assert.match(extension.instructions, /interaction, login, JavaScript rendering/);
+  assert.match(extension.instructions, /requested page views/);
+  assert.match(extension.instructions, /no suitable read tool/);
+  assert.match(extension.instructions, /Use only available tools and report missing capabilities/);
 });
 
 test('all eighteen tools retain approval groups and captured action dispatch', () => {
@@ -57,14 +53,14 @@ test('background navigation is explicit and preserves caller arguments', () => {
     for (const background of [null,'true',0,1,[],{}]) {
       assert.equal(host[action]({url:'https://example.com',background}).error.code,'invalid_request');
     }
-    assert.match(tool.description,/background=true for automated reading and interaction/);
-    assert.match(tool.description,/defaults to false/);
+    assert.match(tool.description,/background=true for automation/);
+    assert.match(tool.description,/default false/);
   }
   for (const tool of extension.tools.filter(tool => !['browser_open','browser_navigate'].includes(tool.name))) {
     assert.equal(tool.handler.parameters.properties.background,undefined);
   }
-  assert.match(extension.instructions,/foreground.*user asks to open or view a page/);
-  assert.match(extension.instructions,/reads, clicks and screenshots keep that tab in the background/);
+  assert.match(extension.instructions,/foreground navigation for requested page views/);
+  assert.match(extension.instructions,/later actions preserve the tab's background state/);
 });
 
 test('wait validation preserves requested duration and conditions', () => {

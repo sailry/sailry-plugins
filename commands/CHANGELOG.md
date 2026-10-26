@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Coalesce terminal refreshes and preserve loaded content after background failures
+- Page retained command streams and original tool results without starting a process
+
 ## 0.1.9
 
 - Require Sailry 0.1.0-alpha.4 for terminal lifecycle support

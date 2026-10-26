@@ -15,6 +15,7 @@ export default class Settings extends View {
     this.text = messages(JSON.parse(context()).locale);
     this.roles = []; this.models = []; this.ready = false; this.connected = true;
     this.loading = false; this.refresh = false; this.error = null; this.dialog = null; this.serial = 0;
+    this.visible = true; this.lastRead = 0;
     this.capacity = new Capacity(this.text,cx => {
       if (this.refresh) { this.refresh = false; this.load(cx); }
     });
@@ -22,10 +23,13 @@ export default class Settings extends View {
     cx.spawn(async cx => {
       let cursor;
       try { while (true) {
-        const event = await nextChange(cursor), first = cursor === undefined;
+        const event = await nextChange(cursor,'package'), first = cursor === undefined;
         cursor = event.cursor; this.connected = event.connected;
+        this.visible = event.visible !== false;
         this.capacity.connected = event.connected;
-        if (event.connected && !first) this.load(cx);
+        this.capacity.visible = this.visible;
+        if (event.connected && this.visible && !first) this.load(cx);
+        else if (!this.visible || !event.connected) this.refresh = true;
         cx.notify();
       } } catch (_) { /* The captured page owns this subscription. */ }
     });
@@ -58,20 +62,26 @@ export default class Settings extends View {
     });
   }
 
-  load(cx) {
-    if (!this.connected) return;
+  load(cx, explicit = false) {
+    if (!this.connected || !this.visible) { this.refresh = true; return; }
     if (this.capacity.request || this.loading) { this.refresh = true; return; }
     this.loading = true;
-    this.capacity.load(cx);
     cx.spawn(async cx => {
-      try {
+      try { do {
+        const delay = 750 - (Date.now() - this.lastRead);
+        if (!explicit && delay > 0) await cx.sleep(delay);
+        if (!this.connected || !this.visible || this.capacity.request) { this.refresh = true; break; }
+        this.lastRead = Date.now(); this.refresh = false;
+        this.capacity.load(cx,explicit);
         const [roles,models] = await Promise.all([listRoles(),listModels()]);
         this.roles = roles; this.models = draft.catalog(models); this.ready = true; this.error = null;
-      } catch (_) { this.error = 'role_failed'; toast({id:'role-catalog',message:this.text[this.error],kind:'error'}); }
+      } while (this.refresh && this.connected && this.visible && !this.capacity.request); } catch (_) {
+        if (this.visible && (explicit || !this.ready)) {
+          this.error = 'role_failed'; toast({id:'role-catalog',message:this.text[this.error],kind:'error'});
+        }
+      }
       finally {
         this.loading = false;
-        const refresh = this.refresh; this.refresh = false;
-        if (refresh) this.load(cx);
         cx.notify();
       }
     });

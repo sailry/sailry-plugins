@@ -25,8 +25,18 @@ export function run(args) {
 }
 
 export function read(args) {
-  if (!object(args, ['id']) || (args.id != null && typeof args.id !== 'string'))
-    return invalid('Invalid command id');
+  if (!object(args, ['id', 'output', 'stream', 'offset', 'limit']) ||
+      (args.id != null && typeof args.id !== 'string') ||
+      (args.id != null && args.output != null) ||
+      (args.output != null && (!object(args.output, ['call', 'revision']) ||
+        typeof args.output.call !== 'string' || !args.output.call ||
+        typeof args.output.revision !== 'string' || !/^[a-fA-F0-9]{64}$/.test(args.output.revision))) ||
+      (args.stream != null && !['stdout', 'stderr'].includes(args.stream)) ||
+      (args.offset != null && (!Number.isSafeInteger(args.offset) || args.offset < 0)) ||
+      (args.limit != null && (!Number.isSafeInteger(args.limit) || args.limit < 1 || args.limit > 32768)) ||
+      (args.id == null && args.output == null &&
+        ['stream', 'offset', 'limit'].some(key => args[key] != null)))
+    return invalid('Invalid output reference or page');
   return args;
 }
 
@@ -62,6 +72,8 @@ export function result({ output }) {
     });
   } else if (output.kind === 'command_started') {
     blocks = [{kind:'notice',message:captions.started}];
+  } else if (output.kind === 'command_output_page' || output.kind === 'tool_output') {
+    blocks = [{kind:'text',path:'/data/text',notices:[]}];
   }
   const result = blocks ? {...output,sailry_content:{version:1,blocks}} : output;
   // A nonzero exit is still a completed command with inspectable output.
