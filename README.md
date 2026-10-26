@@ -37,6 +37,8 @@ the manifest version exactly. Optional `CHANGELOG.<locale>.md` files use the sam
 headings. The generator includes only the selected version's plain text, alongside
 real `skills/*/SKILL.md` frontmatter in the shared catalog. Missing notes are
 omitted. New notes count as package content and require the usual version bump.
+`catalog.py --check` reports existing translations that lack the selected version;
+those locales retain the current English fallback until their notes are updated.
 
 ## Working with the application submodule
 

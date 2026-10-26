@@ -74,6 +74,18 @@ class Catalog(unittest.TestCase):
             (package / "CHANGELOG.md").write_text("## 1.9.0\n- Previous\n")
             self.assertNotIn("release_notes", catalog.catalog(root)["packages"][0])
 
+    def test_reports_stale_existing_translations(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample")
+            package = root / "sample"
+            (package / "CHANGELOG.md").write_text("## 1.10.0\n- Current\n")
+            (package / "CHANGELOG.zh-CN.md").write_text("## 1.9.0\n- 旧版说明\n", encoding="utf-8")
+            (package / "CHANGELOG.ja.md").write_text("## 1.10.0\n- 現在の変更\n", encoding="utf-8")
+            self.assertEqual(catalog.stale_notes(root), ["sample 1.10.0: zh-CN"])
+            self.assertEqual(catalog.catalog(root)["packages"][0]["release_notes"],
+                             {"text": "- Current", "locales": {"ja": "- 現在の変更"}})
+
     def test_preserves_real_skill_frontmatter(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

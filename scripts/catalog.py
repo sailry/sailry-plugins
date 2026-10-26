@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +43,19 @@ def notes(directory, version):
     result = {"text": text}
     if locales:
         result["locales"] = locales
+    return result
+
+
+def stale_notes(root=ROOT):
+    result = []
+    for path in sorted(root.glob("*/plugin.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        version = manifest.get("version")
+        locales = [locale for locale in LOCALES
+                   if (path.parent / f"CHANGELOG.{locale}.md").is_file()
+                   and section(path.parent / f"CHANGELOG.{locale}.md", version) is None]
+        if locales:
+            result.append(f"{manifest['name']} {version}: {', '.join(locales)}")
     return result
 
 
@@ -93,6 +107,8 @@ if __name__ == "__main__":
     text = json.dumps(catalog(), ensure_ascii=False, indent=2) + "\n"
     target = ROOT / "catalog.json"
     if args.check:
+        for entry in stale_notes():
+            print(f"Release note translations need an update: {entry}", file=sys.stderr)
         if not target.is_file() or target.read_text(encoding="utf-8") != text:
             raise SystemExit("Catalog is stale; run python3 scripts/catalog.py")
     else:
