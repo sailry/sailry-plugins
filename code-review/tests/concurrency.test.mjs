@@ -56,3 +56,35 @@ test('completion verifies independent files before publishing',async()=>{
   for(const entry of held)entry.resolve();
   assert.equal((await loading).status,'complete');
 });
+
+test('capture reads grow once per content page',async()=>{
+  for (const count of [1,5,23]) {
+    const current=await fixture(Array.from({length:count},(_,index)=>file(`src/${index}.js`)));
+    const scope=await current.capture();
+    assert.equal(scope.counts.files,count);
+    assert.equal(current.calls.filter(call=>call.kind === 'list_git_changes').length,2);
+    assert.equal(current.calls.filter(call=>call.kind === 'read_git_change').length,count);
+    assert.equal(current.calls.filter(call=>call.kind === 'read_git_context').length,count*2);
+  }
+});
+
+test('large final scopes prepare packed results once',async()=>{
+  const paths=Array.from({length:128},(_,index)=>`part-${index}/${'漢'.repeat(4000)}.rs`);
+  const current=await fixture(paths.map(path=>file(path)));
+  const scope=await current.capture();
+  assert.equal(scope.counts.files,paths.length);
+  const progress=current.values.get(`review/${scope.review_id}/capture`).value.progress;
+  assert.ok(progress.final.length>16,'final scope crosses the continuation step budget');
+  assert.ok(progress.results.length<paths.length,'completed rows use packed source shards');
+  for(const page of progress.results) {
+    const key=`review/${scope.review_id}/scope/${page}`;
+    assert.equal(current.valueReads.filter(name=>name===key).length,1,'each source shard is prepared once');
+  }
+  const found=scope.files.map(value=>value.path);
+  for(let next=scope.next;next!==null;) {
+    const page=await current.invoke('scope',{review_id:scope.review_id,offset:next});
+    found.push(...page.files.map(value=>value.path));
+    next=page.next;
+  }
+  assert.deepEqual(new Set(found),new Set(paths));
+});

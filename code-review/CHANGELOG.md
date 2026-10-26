@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Resume durable review captures across bounded content reads
+- Prepare captured scope records once and verify the final inventory before publication
+
 ## 0.1.11
 
 - Show review discovery as concise activity while retaining findings and changes

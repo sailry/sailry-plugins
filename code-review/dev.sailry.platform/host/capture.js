@@ -12,7 +12,7 @@ async function execute(operations) {
   const outcome = await completeRequest(request);
   if (outcome?.Err) {
     if (outcome.Err.code !== 'outcome_unknown') forgetRequest(request);
-    fail(outcome.Err.message,outcome.Err.code);
+    fail(outcome.Err.message,outcome.Err.code,outcome.Err.details);
   }
   if (outcome?.Ok?.kind !== 'plugin_transaction' || outcome.Ok.data?.length !== operations.length) {
     fail('Review capture transaction is uncertain','outcome_unknown');
@@ -100,8 +100,19 @@ export async function begin(id,actor) {
   }
 }
 
-export async function flush(owner) {
-  if (!owner.pending.length) return;
+export async function resume(id,actor) {
+  const current=await record(key(id,'capture'));
+  if (!current.present) fail('Review does not exist','not_found');
+  if (!owned(current.value,actor)) fail('Capture belongs to another owner','permission_denied');
+  if (current.value.id !== id || current.value.status !== 'capturing') fail('Review capture is unavailable','conflict');
+  counts(current.value);
+  const value=clone(current.value);
+  value.turn=context().turn;
+  return {id,actor,value,revision:current.revision,pending:[]};
+}
+
+export async function flush(owner,force = false) {
+  if (!owner.pending.length && !force) return;
   const value=clone(owner.value);
   await execute([write(key(owner.id,'capture'),value,owner.revision),...owner.pending]);
   owner.revision=(BigInt(owner.revision)+1n).toString();

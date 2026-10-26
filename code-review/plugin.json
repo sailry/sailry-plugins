@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -75,6 +75,7 @@
           "dev.sailry.platform/host/locales.js",
           "dev.sailry.platform/host/delegation.js",
           "dev.sailry.platform/host/capture.js",
+          "dev.sailry.platform/host/capture/scope.js",
           "dev.sailry.platform/host/content.js"
         ],
         "handlers": [
@@ -99,7 +100,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Capture every eligible mapped diff and full old/new changed-file context before publishing an immutable review. Inventory and strong revisions are checked throughout capture and again before publication. Later repository changes do not invalidate published content. Read it with read_review_change, never live Git or readFile. Binary or unsupported files have explicit skips. Omit target for worktree all; use review_id with offset/limit to page an existing review. Follow next until null; limit bounds the response, never samples the captured scope. Incomplete capture fails without publishing; a fresh invocation in the same session can capture again.",
+          "description": "Capture every eligible mapped diff and full old/new changed-file context before publishing an immutable review. While status is capturing, call again with the returned review_id and no offset to continue its durable capture. Once open, follow next with review_id and offset until null; limit bounds each response, never samples coverage. Omit target for worktree all. Host reads validate file revisions; a final inventory check precedes publication. Later repository changes do not invalidate published evidence. Read it with read_review_change, never live Git or readFile. Binary or unsupported files have explicit skips. A failed capture never publishes a partial review.",
           "handler": {
             "name": "scope",
             "parameters": {

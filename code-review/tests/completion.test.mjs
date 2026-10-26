@@ -9,7 +9,7 @@ function partial(scope, group) {
 
 test('zero findings still require every file and group', async () => {
   const fixtureData = await fixture(Array.from({length:15},(_,index) => file(`src/${index}.rs`)));
-  const scope = await fixtureData.invoke('scope',{});
+  const scope = await fixtureData.capture();
   const missing = await fixtureData.invoke('complete',receipt(scope,{reviewed_files:[],reviewed_groups:[]}));
   assert.equal(missing.isError,true);
   assert.equal(missing.remaining.counts.files,15);

@@ -8,7 +8,7 @@ const capture=(current,id) => current.values.get(`review/${id}/capture`);
 test('stored evidence survives edits and reopening',async()=>{
   const original=file('src/main.js',{old_text:'original\r\nsecond\r\nend',new_text:'changed\r\nsecond\r\nend'});
   const current=await fixture([original]);
-  const scope=await current.invoke('scope',{});
+  const scope=await current.capture();
   const read={review_id:scope.review_id,path:original.path};
   const diff=await current.read(read);
   const first=await current.read({...read,part:'new',limit:1});
@@ -34,7 +34,8 @@ test('stored evidence survives edits and reopening',async()=>{
 
 test('missing content never falls back to live source',async()=>{
   const current=await fixture(),scope=await current.invoke('scope',{});
-  const scopeRow=[...current.values.values()].find(row => row.value?.kind === 'scope');
+  const value=current.values.get(`review/${scope.review_id}/head`).value;
+  const scopeRow=current.values.get(`review/${scope.review_id}/scope/${value.pages[0]}`);
   delete scopeRow.value.rows.find(row => row.kind === 'file').value.content;
   const before=current.calls.length;
   assert.equal((await current.invoke('scope',{review_id:scope.review_id})).review_id,scope.review_id);
@@ -112,7 +113,7 @@ test('large captures use bounded batches without a review transaction cap',async
   const lines=Array.from({length:18000},(_,index)=>({kind:'added',old_line:null,new_line:index+1,
     text:`${index}:${'x'.repeat(90)}`}));
   const current=await fixture([file('src/large.js',{lines})]);
-  const scope=await current.invoke('scope',{});
+  const scope=await current.capture();
   assert.equal(scope.counts.files,1);
   const transactions=current.calls.filter(call=>call.kind==='plugin_transaction');
   assert.ok(transactions.length>2);
@@ -122,6 +123,36 @@ test('large captures use bounded batches without a review transaction cap',async
   }
   const last=await current.read({review_id:scope.review_id,path:'src/large.js',offset:17999});
   assert.deepEqual(last.lines,[lines.at(-1)]); assert.equal(last.next,null);
+});
+
+test('capture resumes stored offsets after reopening',async()=>{
+  const lines=Array.from({length:12000},(_,index)=>({kind:'added',old_line:null,new_line:index+1,text:`line ${index}`}));
+  const source=file('src/large.js',{lines});
+  let current=await fixture([source]), before=0;
+  let scope=await current.invoke('scope',{});
+  assert.equal(scope.status,'capturing');
+  assert.equal(current.values.has(`review/${scope.review_id}/head`),false);
+  const first=current.calls.filter(call=>call.kind.startsWith('read_git_') || call.kind === 'list_git_changes');
+  assert.ok(first.length<=16);
+  const stored=current.values.get(`review/${scope.review_id}/capture`).value;
+  assert.ok(stored.progress.offset>0);
+  assert.equal(stored.progress.part,'diff');
+  current=await fixture([source],{values:current.values});
+  const calls=[...first];
+  while (scope.status === 'capturing') {
+    before=current.calls.length;
+    scope=await current.invoke('scope',{review_id:scope.review_id});
+    const batch=current.calls.slice(before).filter(call=>call.kind.startsWith('read_git_') || call.kind === 'list_git_changes');
+    assert.ok(batch.length<=16);
+    calls.push(...batch);
+  }
+  assert.equal(scope.status,'open');
+  assert.equal(scope.counts.files,1);
+  const diffs=calls.filter(call=>call.kind === 'read_git_change');
+  assert.deepEqual(diffs.map(call=>call.data.offset),Array.from({length:24},(_,index)=>index*500));
+  assert.equal(calls.filter(call=>call.kind === 'list_git_changes').length,2);
+  const last=await current.read({review_id:scope.review_id,path:source.path,offset:11999});
+  assert.deepEqual(last.lines,[lines.at(-1)]);
 });
 
 test('committed batches are reclaimed after later capture conflicts',async()=>{
@@ -134,11 +165,11 @@ test('committed batches are reclaimed after later capture conflicts',async()=>{
       return {Err:{code:'revision_conflict',message:'Concurrent source edit'}};
     }
   }});
-  const result=await current.invoke('scope',{});
+  const result=await current.capture();
   assert.equal(result.error.code,'revision_conflict'); assert.equal(committed,true);
   assert.equal(live(current).length,0);
   assert.ok([...current.values.values()].some(row=>row.key.includes('/data/') && !row.present));
-  assert.equal((await current.invoke('scope',{})).counts.files,1);
+  assert.equal((await current.capture()).counts.files,1);
 });
 
 test('uncertain committed batches are fenced without replay',async()=>{

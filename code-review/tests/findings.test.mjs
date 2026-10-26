@@ -57,6 +57,6 @@ test('anchoring exhausts mapped pages under one strong revision', async () => {
   const result = await fixtureData.invoke('finding',finding(scope,{snippet:'changed_1099();',line:1}));
   assert.equal(result.finding.line,1100);
   const pages = fixtureData.calls.filter(call => call.kind === 'read_git_change');
-  assert.deepEqual(pages.map(page => page.data.offset),[0,500,1000,0]);
+  assert.deepEqual(pages.map(page => page.data.offset),[0,500,1000]);
   assert.ok(pages.slice(1).every(page => page.data.expected_revision === scope.files[0].revision));
 });

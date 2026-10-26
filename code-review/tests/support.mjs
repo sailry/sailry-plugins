@@ -12,7 +12,7 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   const worktree = uuid(2);
   const captured = {session:uuid(1),worktree,turn:uuid(3),package:{name:'code-review',digest:'digest-a',settings_revision:'0'}};
   const sessions = new Map([[captured.session,{id:captured.session,worktree:captured.worktree}]]);
-  const values = options.values ?? new Map(), calls = [], requests = new Map();
+  const values = options.values ?? new Map(), calls = [], valueReads = [], requests = new Map();
   const turns=new Map([[captured.turn,'running']]);
   let sequence = 10, currentCall = uuid(sequence), metadata = 'inventory:1', turnState = null;
   let data = files.map(plain), head = 'a'.repeat(40);
@@ -86,7 +86,10 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
     },
     readTurnState:() => plain(turnState),
     stageTurnState:value => { turnState = plain(value); },
-    getValue:async key => plain(values.get(key) ?? {key,revision:'0',value:null,present:false}),
+    getValue:async key => {
+      valueReads.push(key);
+      return plain(values.get(key) ?? {key,revision:'0',value:null,present:false});
+    },
     prepareRequest:command => { calls.push(plain(command)); const id = `request-${requests.size}`; requests.set(id,plain(command)); return id; },
     prepareTransaction:operations => sdk.prepareRequest({kind:'plugin_transaction',data:{operations}}),
     completeRequest:async id => plain(native(requests.get(id))),
@@ -150,13 +153,21 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
       currentCall = previousCall;
     }
   }
-  return {values,calls,captured,sessions,start,finish,commit,
+  return {values,calls,valueReads,captured,sessions,start,finish,commit,
     initialize:input => plain(entry.namespace.initialize(plain(input))),
     delegate:async input => plain(await entry.namespace.delegate(plain(input))),
     read:async input => plain(await entry.namespace.read(plain(input))),
     terminal:turn => turns.set(turn,'completed'),
     add:value => data.push(plain(value)),
     invoke:async (name,args) => finish(await start(name,args)),
+    async capture(args = {}) {
+      let result=await finish(await start('scope',args));
+      for (let calls=0;result.status === 'capturing';calls++) {
+        if (calls >= 4096) throw new Error('Capture did not finish');
+        result=await finish(await start('scope',{review_id:result.review_id,limit:args.limit}));
+      }
+      return result;
+    },
     actor(id,parent = null,scope = worktree) {
       captured.session = id;
       captured.worktree = scope;

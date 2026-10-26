@@ -148,7 +148,7 @@ test('already covered groups cannot be delegated again', async () => {
 test('oversized whole groups are never sampled', async () => {
   const current = await fixture(Array.from({length:70},(_,index) => file(`app/locales/${'x'.repeat(1800)}/file-${index}.json`)));
   initialize(current);
-  const scope = await current.invoke('scope',{limit:1});
+  const scope = await current.capture({limit:1});
   assert.equal(scope.counts.files,70);
   const group = scope.files[0].group;
   const result = await current.delegate({review_id:scope.review_id,groups:[group],record_receipt:true});
