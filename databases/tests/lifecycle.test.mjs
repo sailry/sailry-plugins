@@ -150,6 +150,7 @@ async function fixture(packageName,globals={}) {
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class').replace(/^export /gm,'');
   const Controller=vm.runInNewContext(`${source}\n${packageName==='ssh'?'Ssh':'Databases'}`,{View:class{},toast:value=>notices.push(value),...globals});
   const owner=new Controller(),tasks=[],errors=[];
+  if(packageName==='ssh')owner.closingTerminals=new Set();
   let valid=true,notifications=0;
   const live={notify(){notifications++;},spawn:body=>start(body)};
   const start=body=>{const task=body(live);tasks.push(task);return task;};
@@ -390,6 +391,48 @@ test('database tab close rejects stale events and preserves pending drafts and h
   for(const key of ['opened','catalog','result','origin','status'])assert.equal(owner[key],null);
   assert.equal(owner.epoch,5);assert.equal(owner.page,0);assert.equal(owner.logs,logs);assert.equal(owner.selectedLog,'log');assert.equal(owner.sql,sql);
   owner.navigation({bar:'db-tabs',id:'active',kind:'close'},setup.live);assert.equal(owner.epoch,5);
+});
+
+async function catalogFixture() {
+  const reads=[];
+  const source=(await readFile(new URL('../dev.sailry.platform/desktop/catalog.js',import.meta.url),'utf8'))
+    .replace(/^import.*\n/,'').replace('export class','class');
+  const Catalog=vm.runInNewContext(`${source}\nCatalog`,{browseDatabase:()=>new Promise((resolve,reject)=>reads.push({resolve,reject}))});
+  const setup=await fixture('databases',{Catalog,feedback:true,failure:()=> 'db_failed'});
+  const first={id:'first',revision:1},second={id:'second',revision:2},sql={draft:'SELECT retained'};
+  Object.assign(setup.owner,{profiles:[first,second],opened:null,catalog:null,connected:true,pending:null,epoch:0,sql});
+  return {...setup,reads,first,second,sql};
+}
+
+for(const transition of ['close','switch','reopen']) {
+  test(`database ${transition} ignores obsolete catalog failures`,async()=>{
+    const setup=await catalogFixture(),owner=setup.owner;
+    const opening=owner.open(setup.first,setup.live),original=owner.catalog;
+    assert.equal(setup.reads.length,1);
+    if(transition!=='switch')owner.navigation({bar:'db-tabs',id:'first',kind:'close'},setup.live);
+    let current=null;
+    if(transition!=='close') {
+      const next=owner.open(transition==='switch'?setup.second:setup.first,setup.live);
+      current=owner.catalog;assert.notEqual(current,original);
+      setup.reads[1].resolve({kind:'catalog',data:{kind:'databases',data:['retained']}});
+      await next;
+    }
+    setup.reads[0].reject(new Error('Obsolete catalog read failed'));
+    await opening;
+    assert.equal(owner.catalog,current);assert.equal(owner.sql,setup.sql);
+    if(current)assert.deepEqual(Array.from(current.names),['retained']);
+    assert.deepEqual(setup.errors,[]);assert.deepEqual(setup.notices,[]);
+  });
+}
+
+test('database catalog failures remain visible while active',async()=>{
+  const setup=await catalogFixture(),owner=setup.owner,error=new Error('Active catalog read failed');
+  const opening=owner.open(setup.first,setup.live),catalog=owner.catalog;
+  setup.reads[0].reject(error);await opening;
+  assert.equal(owner.catalog,catalog);assert.equal(owner.sql,setup.sql);
+  assert.equal(catalog.failed.has(''),true);assert.equal(catalog.loading.size,0);
+  assert.deepEqual(setup.errors,[error]);assert.equal(setup.notices.length,1);
+  assert.equal(setup.notices[0].kind,'error');assert.match(setup.notices[0].message,/Active catalog read failed/);
 });
 
 test('database switches clear resource state; reopening the same database retains it',async()=>{

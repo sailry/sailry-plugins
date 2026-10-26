@@ -114,7 +114,9 @@ export default class Databases extends View {
     this.home=false;
     if(this.opened!==profile.id) {
       this.opened=profile.id;this.logs=[];this.selectedLog=null;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
-      this.catalog=new Catalog(profile,error=>this.report(error));
+      const catalog=new Catalog(profile);
+      catalog.report=error=>{if(this.catalog===catalog)this.report(error);};
+      this.catalog=catalog;
     } else this.catalog.profile=profile;
     this.picker=false;await this.catalog.load(null,cx);
   }

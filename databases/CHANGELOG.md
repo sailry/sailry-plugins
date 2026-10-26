@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.13
+
+- Ignore catalog read failures after their connection tab closes or is replaced.
+- Keep active catalog and database operation failures visible.
+
 ## 0.1.12
 
 - Increase spacing between form labels and controls
