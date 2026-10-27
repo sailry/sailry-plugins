@@ -2013,7 +2013,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -2747,6 +2747,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.14",
+          "commit": "96dabaa21045ace432f6f98fbf2ebb3c182befc5",
+          "release_notes": {
+            "text": "- Preserve captured review progress after a temporary Git read failure"
+          }
+        },
+        {
           "version": "0.1.13",
           "commit": "29361c91925e82277c4a8c960b054f4fabfd97d2",
           "release_notes": {
@@ -2829,7 +2836,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Verify the current review package storage declarations"
+        "text": "- Preserve captured review progress after a temporary Git read failure"
       }
     },
     {
