@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Read omitted file text through the native canonical result reader without requiring command tools
+
 ## 0.1.13
 
 - Read smaller file pages and keep original tool output available through retained output references
