@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Keep delegation tool declarations stable when captured roles change
+
 ## 0.1.26
 
 - Keep delegation optional in Flagship and summarize child tasks with scoped evidence

@@ -10,8 +10,7 @@ export function initialize({tools,roles,session_revision=null}) {
   const parameters = Object.fromEntries(tools.filter(name => name === 'spawn_agent').map(name => [name, {
     type:'object',additionalProperties:false,required:['task'],properties:{
       session:{type:'string',pattern:uuid.source},
-      role:roles.length ? {type:['string','null'],enum:[...roles.map(role => role.key),null],
-        description:`Available delegation roles (selection metadata only):\n${roster}`} : {type:'null'},
+      role:{type:['string','null'],description:'Exact role key from the captured conversation roster; omit or use null to inherit the parent model and instructions'},
       task:{type:'string'},title:{type:'string',minLength:1},
       background:{type:'boolean'},
       worktree:{type:['string','null']},

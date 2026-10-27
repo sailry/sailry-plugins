@@ -13,7 +13,7 @@ function host(roles = []) {
 test('explicit constraints describe exploration independently of editable role names',()=>{
   const policy = host([{key:'renamed',name:'Customized',description:'Inspect sources',read_only:true}]);
   assert.match(policy.initialized.instruction,/renamed \(Customized\) \[read only\]: Inspect sources/);
-  assert.match(policy.initialized.parameters.spawn_agent.properties.role.description,/\[read only\]/);
+  assert.doesNotMatch(policy.initialized.parameters.spawn_agent.properties.role.description,/renamed|\[read only\]/);
   assert.equal(policy.prepare({role:'renamed',task:'Inspect'}).isError,undefined);
 });
 test('the admitted roster controls selection and instructions',()=>{
@@ -39,15 +39,24 @@ test('fresh default children accept omitted or null roles with any roster',()=>{
       assert.match(policy.initialized.instruction,/Configured delegation roles/);
       assert.match(policy.initialized.instruction,/review \(Review\): Inspect/);
       assert.deepEqual(plain(schema.properties.role.type),['string','null']);
-      assert.deepEqual(plain(schema.properties.role.enum),['review',null]);
-      assert.match(schema.properties.role.description,/review \(Review\): Inspect/);
-      assert.match(schema.properties.role.description,/selection metadata only/);
     } else {
       assert.match(policy.initialized.instruction,/No delegation roles are configured/);
-      assert.equal(schema.properties.role.type,'null');
     }
+    assert.deepEqual(plain(schema.properties.role.type),['string','null']);
+    assert.equal(schema.properties.role.enum,undefined);
+    assert.match(schema.properties.role.description,/captured conversation roster/);
     for(const role of ['unknown','',false,0]) assert.equal(policy.prepare({role,task:'Task'}).isError,true);
   }
+});
+test('roster changes preserve schemas and exact captured selection',()=>{
+  const empty=host(), first=host([{key:'review',name:'Review',description:'Inspect'}]);
+  const changed=host([{key:'research',name:'Research',description:'Find evidence',read_only:true}]);
+  for(const policy of [first,changed]) assert.deepEqual(plain(policy.initialized.parameters),plain(empty.initialized.parameters));
+  assert.notEqual(first.initialized.instruction,changed.initialized.instruction);
+  assert.equal(first.prepare({role:'review',task:'Inspect'}).isError,undefined);
+  assert.equal(first.prepare({role:'research',task:'Inspect'}).isError,true);
+  assert.equal(changed.prepare({role:'review',task:'Inspect'}).isError,true);
+  assert.equal(changed.prepare({role:'research',task:'Inspect'}).isError,undefined);
 });
 test('reuse keeps role selection optional and validates session IDs',()=>{
   const session = '11111111-1111-4111-8111-111111111111';
