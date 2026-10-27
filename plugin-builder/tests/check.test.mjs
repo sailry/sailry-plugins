@@ -54,6 +54,24 @@ test('accepts every official package and example', () => {
   }
 });
 
+test('accepts minimum Sailry versions', () => {
+  for (const minimum of [null, '0.1.0-alpha.4', '1.0.0', '1.0.0+build.01']) {
+    const result = check(fixture({'plugin.json': manifest({min_sailry_version: minimum})}));
+    assert.equal(result.code, 0, result.output);
+  }
+});
+
+test('rejects invalid minimum Sailry versions', () => {
+  for (const minimum of [
+    '', '>=0.1.0', '0.1.0-alpha.01', '01.0.0', '0.1.0\n', '1.2٢.0',
+    1, false, [], {},
+  ]) {
+    const result = check(fixture({'plugin.json': manifest({min_sailry_version: minimum})}));
+    assert.equal(result.code, 1, result.output);
+    assert.match(result.output, /min_sailry_version must be a semantic version/);
+  }
+});
+
 test('accepts declared conversation modes', () => {
   const result = check(fixture({'plugin.json': manifest({
     scope: 'host',

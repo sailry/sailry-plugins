@@ -29,7 +29,7 @@ MODULES = {
     "sailry/settings", "sailry/installations",
 }
 FIELDS = {
-    "api_version", "scope", "actions", "display", "description", "icon", "instructions",
+    "api_version", "min_sailry_version", "scope", "actions", "display", "description", "icon", "instructions",
     "model_tools", "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
     "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
@@ -351,6 +351,11 @@ def check(root):
         return report
     if extension.get("api_version") != "v1":
         report.error('api_version must be "v1"')
+    minimum = extension.get("min_sailry_version")
+    if minimum is not None and (
+        not isinstance(minimum, str) or not minimum.isascii() or not VERSION.fullmatch(minimum)
+    ):
+        report.error("min_sailry_version must be a semantic version, for example 0.1.0-alpha.4")
     for field in sorted(set(extension) - FIELDS):
         report.error(f"unknown extension field: {field}")
     for field, choices in (

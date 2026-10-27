@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Validate minimum Sailry versions in package preflight checks
+
 ## 0.1.8
 
 - Accept declared conversation modes in package preflight checks

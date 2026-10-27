@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Verify the current review package storage declarations
+
 ## 0.1.12
 
 - Resume durable review captures across bounded content reads
