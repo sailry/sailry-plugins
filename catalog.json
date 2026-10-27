@@ -2013,7 +2013,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -2747,6 +2747,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.13",
+          "commit": "29361c91925e82277c4a8c960b054f4fabfd97d2",
+          "release_notes": {
+            "text": "- Verify the current review package storage declarations"
+          }
+        },
+        {
           "version": "0.1.12",
           "commit": "ad1252a837982b269308ddbf6e10f610b3ce7dce",
           "release_notes": {
@@ -2822,7 +2829,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Resume durable review captures across bounded content reads\n- Prepare captured scope records once and verify the final inventory before publication"
+        "text": "- Verify the current review package storage declarations"
       }
     },
     {
@@ -16591,7 +16598,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -16619,6 +16626,13 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.9",
+          "commit": "29361c91925e82277c4a8c960b054f4fabfd97d2",
+          "release_notes": {
+            "text": "- Validate minimum Sailry versions in package preflight checks"
+          }
+        },
         {
           "version": "0.1.8",
           "commit": "f67b95ab151a0371461ab1de1f3b7fe01e08347c",
@@ -16686,7 +16700,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Accept declared conversation modes in package preflight checks\n- Document shared mode selection, captured instructions and Node permissions"
+        "text": "- Validate minimum Sailry versions in package preflight checks"
       }
     },
     {
