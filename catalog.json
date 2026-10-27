@@ -4706,7 +4706,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.26",
+        "version": "0.1.27",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -5311,6 +5311,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.27",
+          "commit": "64ebf4f6c9f8f992c4ba6d56034fded69b8c1f63",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Keep delegation tool declarations stable when captured roles change"
+          }
+        },
+        {
           "version": "0.1.26",
           "commit": "ad01451e753e080f1ba3ce543806721d2fa6a02d",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -5500,7 +5508,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep delegation optional in Flagship and summarize child tasks with scoped evidence"
+        "text": "- Keep delegation tool declarations stable when captured roles change"
       }
     },
     {
