@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Preserve captured review progress after a temporary Git read failure
+
 ## 0.1.13
 
 - Verify the current review package storage declarations

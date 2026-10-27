@@ -158,6 +158,47 @@ test('creation failures never publish a scope', async () => {
   assert.equal([...fixtureData.values.values()].filter(value => value.present).length,0);
 });
 
+test('transient Git reads retain capture progress', async () => {
+  for (const kind of ['list_git_changes','read_git_change','read_git_context']) {
+    let blocked=true;
+    const current=await fixture([file('src/first.rs'),file('src/second.rs')],{
+      command(command) {
+        if (command.kind === kind && blocked) {
+          blocked=false;
+          return {Err:{code:'busy',message:'Git inspection queue is busy'}};
+        }
+      },
+    });
+    const failure=await current.invoke('scope',{});
+    assert.equal(failure.error.code,'busy');
+    const review_id=failure.remaining.review_id;
+    const saved=current.values.get(`review/${review_id}/capture`);
+    assert.equal(saved.present,true);
+    assert.equal(saved.value.status,'capturing');
+    const scope=await current.capture({review_id});
+    assert.equal(scope.status,'open');
+    assert.equal(scope.counts.files,2);
+  }
+});
+
+test('continuation does not reread completed files', async () => {
+  let blocked=true;
+  const current=await fixture([file('src/first.rs'),file('src/second.rs')],{
+    command(command) {
+      if (command.kind === 'read_git_change' && command.data.path === 'src/second.rs' && blocked) {
+        blocked=false;
+        return {Err:{code:'expired',message:'Git read deadline exceeded'}};
+      }
+    },
+  });
+  const failure=await current.invoke('scope',{});
+  assert.equal(failure.error.code,'expired');
+  const scope=await current.capture({review_id:failure.remaining.review_id});
+  assert.equal(scope.counts.files,2);
+  assert.equal(current.calls.filter(call=>call.kind === 'read_git_change'
+    && call.data.path === 'src/first.rs').length,1);
+});
+
 test('source test conventions retain project ownership', async () => {
   const fixtureData = await fixture(['java/src/main/java/example/Service.java',
     'java/src/test/java/example/ServiceTest.java','dotnet/src/Service.cs','dotnet/tests/ServiceTests.cs'].map(path => file(path)));

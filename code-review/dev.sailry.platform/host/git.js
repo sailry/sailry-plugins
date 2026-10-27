@@ -8,6 +8,11 @@ async function read(kind, data, expected) {
     if (outcome?.Err) fail(outcome.Err.message, outcome.Err.code);
     if (outcome?.Ok?.kind !== expected) fail('Unexpected Git result', 'internal');
     return outcome.Ok.data;
+  } catch (error) {
+    // These commands only read captured Git state. Keep the durable capture
+    // available for an explicit continuation after a transient read failure.
+    if (['busy','unavailable','expired'].includes(error.code)) error.retryableRead=true;
+    throw error;
   } finally { forgetRequest(request); }
 }
 export async function inventory(worktree, target, snapshot = null) {

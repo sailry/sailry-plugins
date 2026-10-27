@@ -1,5 +1,5 @@
 import {callId} from 'sailry/sdk';
-import {begin,discard,finish,recover,resume} from './capture.js';
+import {begin,discard,finish,flush,recover,resume} from './capture.js';
 import {advance,initialize,pending} from './capture/scope.js';
 import {fail,fields,identifier,integer,limits,size} from './policy.js';
 import {head,key,manifest,record,write} from './records.js';
@@ -54,12 +54,17 @@ export async function prepare(input, actor) {
     initialize(owner,args.target ?? {kind:'worktree',data:{scope:'all'}});
   }
   try {
+    await flush(owner,true);
     const value=await advance(owner);
     if (!value) return pending(owner);
     const output=await page(value,0,limit);
     await finish(owner,[write(key(owner.id,'head'),value)]);
     return output;
   } catch (error) {
+    if (error.retryableRead) {
+      error.details={...error.details,review_id:owner.id};
+      throw error;
+    }
     if (error.details?.kind !== 'plugin_value_conflict') await discard(owner.id,actor);
     throw error;
   }
