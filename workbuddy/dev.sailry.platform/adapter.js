@@ -87,7 +87,7 @@ export function prepare(input) {
   const body = {model: input.model, messages, stream: true};
   if (endpoint === 'https://www.codebuddy.ai') body.stream_options = {include_usage:true};
   const choice = input.tool_choice;
-  if (choice.kind !== 'none' && input.tools.length) {
+  if (input.tools.length) {
     body.tools = input.tools.map(tool => ({type: 'function', function: {
       name: tool.name, description: tool.description ?? '', parameters: tool.parameters}}));
     body.tool_choice = choice.kind === 'named' ? choice.name : choice.kind;

@@ -54,6 +54,24 @@ export const cases = [
     assert.equal(body.tool_choice,'inspect');
     assert.equal(body.reasoning_effort,'high');
   }},
+  {name:'preserves tool declarations while disabling calls',handler:'prepare',input:request({
+    tools:[{name:'inspect',description:'Inspect a fixture',parameters:{type:'object',properties:{path:{type:'string'}}}}],
+    tool_choice:{kind:'none'},
+    messages:[{role:'assistant',parts:[{kind:'tool_call',id:'call-1',name:'inspect',arguments:{path:'fixture'}}]},
+      {role:'tool',call_id:'call-1',name:'inspect',is_error:false,parts:[{kind:'json',value:{ok:true}}]}],
+  }),check(output){
+    const body = prepared(output);
+    assert.deepEqual(body.tools,[{type:'function',function:{name:'inspect',description:'Inspect a fixture',
+      parameters:{type:'object',properties:{path:{type:'string'}}}}}]);
+    assert.equal(body.tool_choice,'none');
+    assert.equal(body.messages[1].tool_calls[0].id,'call-1');
+    assert.equal(body.messages[2].tool_call_id,'call-1');
+  }},
+  {name:'omits tool choice without declarations',handler:'prepare',input:request({tool_choice:{kind:'none'}}),check(output){
+    const body = prepared(output);
+    assert.equal(body.tools,undefined);
+    assert.equal(body.tool_choice,undefined);
+  }},
   {name:'decodes streamed text reasoning tools usage and completion',handler:'decode',input:{state:null,done:true,status:200,
     events:[event({choices:[{delta:{reasoning_content:'Inspect first',content:'Answer',tool_calls:[{index:0,id:'call-1',function:{name:'inspect',arguments:'{"path":'}}]}}]}),
       event({choices:[{delta:{tool_calls:[{index:0,function:{arguments:'"fixture"}'}}]},finish_reason:'tool_calls'}],

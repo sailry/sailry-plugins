@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Preserve tool declarations when disabling tool calls for context summaries
+
 ## 0.1.15
 
 - Read provider accounts and new contexts concurrently
