@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Remove the editing file-size limit from the paged-read description
+
 ## 0.1.14
 
 - Read omitted file text through the native canonical result reader without requiring command tools
