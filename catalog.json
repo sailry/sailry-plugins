@@ -20996,7 +20996,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -21670,6 +21670,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.16",
+          "commit": "d1a9f5dfeb0b409b5e2188f856d3d162f00bd169",
+          "release_notes": {
+            "text": "- Preserve tool declarations when disabling tool calls for context summaries"
+          }
+        },
+        {
           "version": "0.1.15",
           "commit": "08b8c3e943edb6d51db0a4933ff1d9c1d3b1bd75",
           "release_notes": {
@@ -21781,7 +21788,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read provider accounts and new contexts concurrently"
+        "text": "- Preserve tool declarations when disabling tool calls for context summaries"
       }
     },
     {
