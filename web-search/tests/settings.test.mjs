@@ -7,7 +7,7 @@ const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',i
   .replace(/^import .*;\n/gm,'').replace('export default class','class').replace('export const drivers','const drivers');
 const plain=value=>JSON.parse(JSON.stringify(value)),tick=()=>new Promise(resolve=>setImmediate(resolve));
 async function fixture() {
-  let saved={revision:0,prefer_native:true,fallback:true,providers:{exa:{enabled:true,key_configured:false},searxng:{enabled:true}}};
+  let saved={revision:0,fallback:true,providers:{exa:{enabled:true,key_configured:false},searxng:{enabled:true}}};
   const fields=new Map(),secrets=new Set(),calls=[],prepared=[],forgotten=[],notices=[];
   let serial=0,fault=null,hold=false,held=null;const requests=new Map();
   function prepare(value){const id='request-'+(++serial);requests.set(id,plain(value));return id;}
@@ -62,7 +62,7 @@ test('refresh locks saving and rebasing without discarding drafts',async()=>{
   f.fields.set(editor.endpoint,'https://draft.example.com');f.secrets.add(editor.key);
   f.external();f.hold();f.view.load(f.cx);await tick();
   const count=f.calls.length;assert(f.view.busy());
-  f.view.saveEditor(f.cx);f.view.reloadEditor(f.cx);f.view.toggle('prefer_native',false,f.cx);
+  f.view.saveEditor(f.cx);f.view.reloadEditor(f.cx);f.view.toggle('fallback',false,f.cx);
   assert.equal(f.calls.length,count);assert.equal(f.prepared.length,0);assert.equal(editor.settings.revision,0);
   assert.equal(f.fields.get(editor.endpoint),'https://draft.example.com');assert(f.secrets.has(editor.key));
   f.release();await f.settle();assert.equal(f.view.saved.revision,1);assert.equal(editor.settings.revision,0);

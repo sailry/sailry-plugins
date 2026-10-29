@@ -62,8 +62,6 @@ export function render(view) {
     .children(!view.saved&&!view.loading?[button('search-reload',text.search_reload,(_,cx)=>view.load(cx))]:[])
     .children(view.request&&!view.editor?[button('search-retry',text.search_retry,(_,cx)=>view.retry(cx),view.pending)]:[])
     .child(SettingsGroup.new('search_settings',{title:text.search_settings})
-      .child(row('search-prefer-native',text.search_prefer_native,toggle('search-prefer-native-toggle',settings.prefer_native,locked,
-        (value,cx)=>view.toggle('prefer_native',value,cx))))
       .child(row('search-driver-row',text.search_default_driver,SelectField.new('search-default-driver',{
         label:text.search_default_driver,disabled:locked,selected,items:['auto',...drivers,'none'].map(id=>({id,label:text[`search_driver_${id}`]}))})))
       .child(row('search-fallback',text.search_fallback,toggle('search-fallback-toggle',settings.fallback,locked,

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Reject retired model-hosted tool declarations
+
 ## 0.1.9
 
 - Validate minimum Sailry versions in package preflight checks

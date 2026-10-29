@@ -21,21 +21,20 @@ test('research distinguishes investigations from simple current facts', () => {
 
 test('research follows available search and page-reading capabilities', () => {
   const skill = fs.readFileSync(new URL('../skills/research/SKILL.md', import.meta.url), 'utf8');
-  assert.match(skill, /available provider-native search tool or the configured Node `web_search` tool/);
-  assert.match(skill, /do not demand a Node fallback tool when native search is advertised instead/);
-  assert.match(skill, /available provider-native page-reading tool or `web_fetch`/);
+  assert.match(skill, /configured Node `web_search` tool/);
+  assert.match(skill, /with `web_fetch`/);
   assert.match(skill, /Search snippets identify candidates; they do not establish a claim/);
   assert.match(skill, /report the limitation rather than inventing a tool or successful access/);
   assert.match(skill, /three search-and-read rounds, six queries and eight distinct fetched sources/);
-  assert.match(extension.instructions, /search tools advertised for this turn/);
-  assert.match(extension.instructions, /available native page-reading tools or web_fetch/);
+  assert.match(extension.instructions, /Node web_search tool advertised for this turn/);
+  assert.match(extension.instructions, /through web_fetch/);
   assert.match(extension.instructions, /Do not invent unavailable search or page-reading tools/);
-  assert.deepEqual(extension.model_tools.map(tool => tool.capability), ['web_search']);
+  assert.equal(extension.model_tools, undefined);
   assert.deepEqual(extension.tools.map(tool => tool.name), ['web_fetch', 'web_search']);
 });
 
 test('contributes packaged search settings and enable control', () => {
-  assert.equal(manifest.version, '0.1.7');
+  assert.equal(manifest.version, '0.1.8');
   assert.equal(extension.settings_page.native, undefined);
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
   assert.equal(extension.settings_page.enabled_control, true);
@@ -45,10 +44,9 @@ test('contributes packaged search settings and enable control', () => {
   assert.ok(extension.desktop.resources.includes(extension.settings_page.entry));
 });
 
-test('binds anonymous page reads beside native search', () => {
+test('binds anonymous page reads beside configured search', () => {
   assert.equal(extension.api_version, 'v1');
   assert.deepEqual(extension.actions, ['web.read', 'web.settings.read', 'web.settings.write']);
-  assert.equal(extension.model_tools[0].capability, 'web_search');
   assert.equal(extension.tools[0].name, 'web_fetch');
   assert.equal(extension.tools[0].operation, 'web.fetch');
   assert.equal(extension.tools[0].handler, undefined);

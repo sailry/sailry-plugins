@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Remove unavailable model-hosted search and its preference
+
 ## 0.1.7
 
 - Increase spacing between form labels and controls

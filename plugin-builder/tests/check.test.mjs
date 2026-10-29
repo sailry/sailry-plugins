@@ -310,6 +310,14 @@ test('requires every context flow capability', () => {
   assert.equal(result.code, 0, result.output);
 });
 
+test('rejects retired model tool declarations', () => {
+  const result = check(fixture({'plugin.json': manifest({
+    model_tools: [{capability: 'web_search', display: {label: 'Search'}}],
+  })}));
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /unknown extension field: model_tools/);
+});
+
 test('rejects retired language capabilities', () => {
   for (const action of ['code.read', 'code.manage', 'code.settings.read', 'code.settings.write']) {
     const result = check(fixture({'plugin.json': manifest({actions: [action]})}));

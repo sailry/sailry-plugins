@@ -17,7 +17,7 @@ description: Investigate multiple public sources to compare alternatives, synthe
 
 # Research
 
-Use this skill for an investigation requiring multiple sources, comparisons or repeated search-and-read rounds. For a simple current fact, search and verify relevant official evidence directly; this research workflow is unnecessary unless the user explicitly selects it. Loading the skill reads workflow instructions; it does not search the web. Use the search and page-reading tools available in this turn, whether provider-native or Node tools; this workflow does not create another agent, install a tool or grant permission. A delegated researcher reports to its parent and does not ask the user for input or create a report file unless that output was explicitly requested.
+Use this skill for an investigation requiring multiple sources, comparisons or repeated search-and-read rounds. For a simple current fact, search and verify relevant official evidence directly; this research workflow is unnecessary unless the user explicitly selects it. Loading the skill reads workflow instructions; it does not search the web. Use the Node search and page-reading tools available in this turn; this workflow does not create another agent, install a tool or grant permission. A delegated researcher reports to its parent and does not ask the user for input or create a report file unless that output was explicitly requested.
 
 ## Establish the question
 
@@ -25,7 +25,7 @@ Keep the user's goal, constraints and latest corrections. Identify the few claim
 
 ## Search and read
 
-Start with focused queries using an available provider-native search tool or the configured Node `web_search` tool. Follow the execution Node's search preference; do not demand a Node fallback tool when native search is advertised instead. Prefer first-party documentation, original research, official records and sources close to the underlying event. Search snippets identify candidates; they do not establish a claim. Read relevant source content with an available provider-native page-reading tool or `web_fetch` and verify the actual passages, publication dates and event dates. Follow `next_offset` when a Node fetch returns a truncated passage. An unavailable search tool, page, paywall or fetch limit is a gap in evidence, not proof of its contents; report the limitation rather than inventing a tool or successful access.
+Start with focused queries using the configured Node `web_search` tool. Prefer first-party documentation, original research, official records and sources close to the underlying event. Search snippets identify candidates; they do not establish a claim. Read relevant source content with `web_fetch` and verify the actual passages, publication dates and event dates. Follow `next_offset` when a Node fetch returns a truncated passage. An unavailable search tool, page, paywall or fetch limit is a gap in evidence, not proof of its contents; report the limitation rather than inventing a tool or successful access.
 
 After reading, refine the next query to resolve a missing fact, disagreement or an alternative explanation. Compare independent sources when a consequential claim lacks a primary source or sources conflict. Repeated publication of the same original report is one line of evidence. Keep each claim associated with the source that directly supports it and distinguish observation, attribution and your own inference. Do not invent citations, quotes, dates or successful tool calls.
 
