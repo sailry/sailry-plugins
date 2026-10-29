@@ -4032,7 +4032,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4608,6 +4608,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.15",
+          "commit": "bc8fba07fe480dadc7e2569d12dcfe48bbaac7f1",
+          "release_notes": {
+            "text": "- Keep dynamic connection schemas aligned with compact tool declarations"
+          }
+        },
+        {
           "version": "0.1.14",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "release_notes": {
@@ -4712,7 +4719,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant numeric schema bounds while preserving host validation"
+        "text": "- Keep dynamic connection schemas aligned with compact tool declarations"
       }
     },
     {
@@ -8581,7 +8588,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10377,6 +10384,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "bc8fba07fe480dadc7e2569d12dcfe48bbaac7f1",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Align declaration checks with the current paged-read guidance"
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -10487,7 +10502,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Default file reads to 2000 lines and searches to matching paths\n- Clarify bounded model text, exact continuations and retained original results\n- Remove repeated editing guidance and redundant numeric schema bounds"
+        "text": "- Align declaration checks with the current paged-read guidance"
       }
     },
     {
@@ -18452,7 +18467,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.0-alpha.4",
@@ -18524,7 +18539,8 @@
                       },
                       "timeout_ms": {
                         "type": "integer",
-                        "minimum": 1
+                        "minimum": 1,
+                        "maximum": 600000
                       }
                     },
                     "required": [
@@ -19287,6 +19303,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "bc8fba07fe480dadc7e2569d12dcfe48bbaac7f1",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Keep dynamic connection schemas aligned with compact tool declarations\n- Limit SSH command timeouts to ten minutes"
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -19407,7 +19431,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant numeric schema bounds while preserving host validation"
+        "text": "- Keep dynamic connection schemas aligned with compact tool declarations\n- Limit SSH command timeouts to ten minutes"
       }
     },
     {
