@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Keep uncertain-write guidance available when memory tools are imported without the index
+
 ## 0.1.13
 
 - Keep memory activation and trust guidance separate from tool rules

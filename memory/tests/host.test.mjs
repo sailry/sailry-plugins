@@ -216,7 +216,8 @@ test('guidance covers history and proactive retention',async () => {
   assert.match(projected,/global only for/);
   assert.match(projected,/temporary tasks, progress, transcripts and unaccepted proposals/);
   assert.match(projected,/tool success/);
-  assert.match(projected,/uncertain write/);
+  assert.match(instruction,/Never replay an uncertain memory write or claim it was saved/);
+  assert.doesNotMatch(projected,/uncertain.*write/);
   const tools=manifest.extensions['dev.sailry.platform'].tools;
   assert.match(tools.find(tool=>tool.name==='search_memory').description,/before saving to avoid duplicates/);
   const save=tools.find(tool=>tool.name==='save_memory').description;
