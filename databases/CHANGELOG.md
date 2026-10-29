@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Keep dynamic connection schemas aligned with compact tool declarations
+
 ## 0.1.14
 
 - Remove redundant numeric schema bounds while preserving host validation

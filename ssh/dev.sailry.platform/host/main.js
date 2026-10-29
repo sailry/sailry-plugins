@@ -18,7 +18,7 @@ function target(args,fields) {
 const unavailable = () => ({isError:true,error:{code:'permission_denied',message:'SSH connection is unavailable to this session; use ssh_connections'}});
 export function run(args) {
   if (!target(args,['connection','command','timeout_ms']) || typeof args.command !== 'string'
-      || (args.timeout_ms != null && (!Number.isSafeInteger(args.timeout_ms) || args.timeout_ms < 1))) return invalid();
+      || (args.timeout_ms != null && (!Number.isSafeInteger(args.timeout_ms) || args.timeout_ms < 1 || args.timeout_ms > 600000))) return invalid();
   if (!readTurnState().connections.includes(args.connection)) return unavailable();
   return {...args,timeout_ms:args.timeout_ms ?? 120000};
 }

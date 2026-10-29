@@ -7,7 +7,7 @@ export function parameters(name,profiles) {
   const required = ['connection'];
   if (name === 'ssh_run') {
     properties.command={type:'string'};
-    properties.timeout_ms={type:'integer',minimum:1,maximum:Number.MAX_SAFE_INTEGER};
+    properties.timeout_ms={type:'integer',minimum:1,maximum:600000};
     required.push('command');
   } else {
     properties.path={type:'string'};properties.remote_path={type:'string'};
@@ -21,7 +21,7 @@ const uuid = '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$';
 function saveParameters() {
   return {type:'object',additionalProperties:false,required:[],properties:{
     connection:{type:['string','null'],pattern:uuid,description:'Saved connection ID; omit with expected_revision to create'},
-    expected_revision:{type:['integer','null'],minimum:1,maximum:9007199254740991},
+    expected_revision:{type:['integer','null'],minimum:1},
     name:{type:'string',minLength:1},host:{type:'string',minLength:1},
     port:{type:'integer',minimum:1,maximum:65535},username:{type:'string',minLength:1},
     authentication:{type:'string',enum:['password','private_key','key_path','agent']},

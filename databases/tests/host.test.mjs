@@ -81,6 +81,7 @@ test('connection tools remain available without initial profiles',async()=>{
   for(const args of [null,[],{connection:created},{password:'hidden'}]) assert.equal(api.connections(args).isError,true);
   const schema=initialized.parameters.database_save_connection;
   assert.equal(schema.additionalProperties,false);
+  assert.equal(schema.properties.expected_revision.maximum,undefined);
   assert.deepEqual(plain(schema.properties.engine.enum),['sqlite','mysql','postgres']);
   assert.equal(schema.properties.password,undefined);
   assert.equal(schema.properties.sharing,undefined);
@@ -120,6 +121,7 @@ test('save validates create fields and preserves omitted update fields',async()=
     {...network,port:0}, {...network,port:65536}, {...network,port:1.5}, {...network,username:null},
     {connection:created}, {expected_revision:1}, {connection:created,expected_revision:null},
     {connection:other,expected_revision:1}, {connection:created,expected_revision:0},
+    {connection:created,expected_revision:Number.MAX_SAFE_INTEGER+1},
     {connection:created,expected_revision:1,name:null}]) assert.equal(api.save(args).error.code,'invalid_request');
   const unavailable=api.save({connection:other,expected_revision:1,read_only:false});
   assert.match(unavailable.error.message,/Connection is not available in this session/);

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.17
+
+- Keep dynamic connection schemas aligned with compact tool declarations
+- Limit SSH command timeouts to ten minutes
+
 ## 0.1.16
 
 - Remove redundant numeric schema bounds while preserving host validation

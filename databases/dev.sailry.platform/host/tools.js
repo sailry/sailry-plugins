@@ -24,7 +24,7 @@ const uuid = '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$';
 function saveParameters() {
   return {type:'object',additionalProperties:false,required:[],properties:{
     connection:{type:['string','null'],pattern:uuid,description:'Saved connection ID; omit with expected_revision to create'},
-    expected_revision:{type:['integer','null'],minimum:1,maximum:9007199254740991},
+    expected_revision:{type:['integer','null'],minimum:1},
     name:{type:'string',minLength:1},engine:{type:'string',enum:['sqlite','mysql','postgres']},
     path:{type:'string',minLength:1,description:'SQLite file path on the execution Node; relative paths use the captured worktree. Saving does not create the file'},
     host:{type:'string',minLength:1},port:{type:'integer',minimum:1,maximum:65535},

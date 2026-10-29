@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Align declaration checks with the current paged-read guidance
+
 ## 0.1.16
 
 - Default file reads to 2000 lines and searches to matching paths

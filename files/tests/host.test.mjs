@@ -49,7 +49,7 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     assert.match(declaration.display.icon.svg,/viewBox="0 0 24 24"/);
   }
   assert.match(tool('write_file').description,/conflict requires reading the current file/);
-  assert.match(tool('read_file').description,/do not treat it as the whole file/);
+  assert.match(tool('read_file').description,/one page is not the whole file/);
   assert.equal(tool('get_office_runtime'),undefined);
   assert.match(tool('read_office').description,/including continuations of long parts/);
 });

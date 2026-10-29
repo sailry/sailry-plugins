@@ -35,11 +35,17 @@ test('binds the saved target and package workspace guidance',async()=>{
 });
 
 test('keeps command text, enforces target and timeout, and never accepts caller credentials',async()=>{
-  const api=await fixture();api.initialize({tools,resources:true,connections});
+  const api=await fixture();
+  const initialized=api.initialize({tools,resources:true,connections});
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  assert.equal(initialized.parameters.ssh_run.properties.timeout_ms.maximum,600000);
+  assert.equal(manifest.extensions['dev.sailry.platform'].tools.find(tool=>tool.name==='ssh_run')
+    .handler.parameters.properties.timeout_ms.maximum,600000);
   const command='printf "资料 🙂\\n"';
   assert.deepEqual(plain(api.run({connection:'a',command})),{connection:'a',command,timeout_ms:120000});
-  assert.equal(api.run({connection:'a',command,timeout_ms:900001}).timeout_ms,900001);
-  for(const args of [{connection:'b',command},{connection:'a',command,timeout_ms:0},{connection:'a',command,password:'hidden'}]) assert.equal(api.run(args).isError,true);
+  assert.equal(api.run({connection:'a',command,timeout_ms:600000}).timeout_ms,600000);
+  for(const args of [{connection:'b',command},{connection:'a',command,timeout_ms:0},
+    {connection:'a',command,timeout_ms:600001},{connection:'a',command,password:'hidden'}]) assert.equal(api.run(args).isError,true);
 });
 
 test('prepares only explicit upload or download while preserving both path domains',async()=>{
@@ -99,6 +105,7 @@ test('saves accept typed credentials without exposing read or trust inputs',asyn
   for(const args of [null,[],{host:'example.com'},{password:'hidden'}]) assert.equal(api.connections(args).isError,true);
   const schema=initialized.parameters.ssh_save_connection;
   assert.equal(schema.additionalProperties,false);
+  assert.equal(schema.properties.expected_revision.maximum,undefined);
   assert.deepEqual(plain(schema.properties.authentication.enum),['password','private_key','key_path','agent']);
   assert.deepEqual(plain(schema.properties.credential.oneOf).map(value=>value.properties.kind.const),['password','private_key','key_path','agent']);
   for(const value of schema.properties.credential.oneOf) assert.equal(value.additionalProperties,false);
@@ -147,6 +154,7 @@ test('save preserves omission and explicit native credential replacements',async
     ...['constructor','__proto__','toString'].map(kind=>({...agent,credential:{kind}})),
     {connection:created,expected_revision:null}, {connection:other,expected_revision:1},
     {connection:created,expected_revision:0}, {...update,name:null},
+    {connection:created,expected_revision:Number.MAX_SAFE_INTEGER+1},
     ...['password','key','passphrase','host_key','sharing'].map(key=>({...agent,[key]:'hidden'}))]) {
     assert.equal(api.save(args).error.code,'invalid_request');
   }
