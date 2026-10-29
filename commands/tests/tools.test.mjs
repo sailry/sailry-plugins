@@ -93,12 +93,14 @@ test('input preserves bytes and validates its bound', () => {
   const declaration = manifest.extensions['dev.sailry.platform'].tools
     .find(tool => tool.name === 'run_command');
   const access = declaration.handler.parameters.properties.access;
-  for (const description of [declaration.description, access.description]) {
-    assert.match(description, /existing Git metadata/i);
-    assert.match(description, /macOS also blocks .*\.git paths/);
-    assert.match(description, /Git writes, including git init, git add and git commit/);
-    assert.match(description, /Ask and Project require fresh approval for each unrestricted command/);
-  }
+  assert.doesNotMatch(declaration.description,/existing Git metadata/i);
+  assert.match(access.description, /existing Git metadata/i);
+  assert.match(access.description, /macOS also blocks .*\.git paths/);
+  assert.match(access.description, /Git writes, including git init, git add and git commit/);
+  assert.match(access.description, /Ask and Project require fresh approval for each unrestricted command/);
+  assert.equal(access.default,'workspace');
+  assert.match(access.description,/network access or paths outside the worktree/);
+  assert.match(access.description,/Windows uses the selected permission mode/);
   assert.equal(run({command:'true'}).access, 'workspace');
   assert.equal(run({command:'true',access:'unrestricted'}).access, 'unrestricted');
   for (const access of [null, '', true, 'full', {}, []])
@@ -114,4 +116,9 @@ test('large commands retain all requested inputs',()=>{
   assert.equal(result.timeout_ms,900001);
   assert.deepEqual(result.attachments,attachments);
   assert.equal(run({command,timeout_ms:Number.MAX_SAFE_INTEGER+1}).isError,true);
+  const manifest=JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url)));
+  const timeout=manifest.extensions['dev.sailry.platform'].tools
+    .find(tool=>tool.name==='run_command').handler.parameters.properties.timeout_ms;
+  assert.equal(timeout.default,120000);
+  assert.equal(timeout.maximum,600000);
 });

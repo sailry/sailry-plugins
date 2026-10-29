@@ -6,7 +6,9 @@ export function cases() {
     tool:'search_files',handler:'search',input:{...search,context},valid:true,expected:{...search,context},
   }));
   rows.push({tool:'search_files',handler:'search',input:{query:'needle'},valid:true,
-    expected:{...search,globs:[],path:''}});
+    expected:{...search,globs:[],path:'',mode:'files'}});
+  rows.push({tool:'read_file',handler:'read',input:{path:'note.txt'},valid:true,
+    expected:{path:'note.txt',offset:0,limit:2000}});
   for (const change of [{limit:201},{limit:Number.MAX_SAFE_INTEGER},{query:'x'.repeat(4097)},
     {globs:Array(65).fill('**/*.rs')},{globs:['a'.repeat(4097)]}]) {
     rows.push({tool:'search_files',handler:'search',input:{...search,...change},valid:true,
@@ -23,10 +25,12 @@ export function cases() {
   }
   for (const context of [-1,1.5,null,'8',Number.MAX_SAFE_INTEGER+1]) {
     rows.push({tool:'search_files',handler:'search',input:{...search,context},valid:false,
+      schemaValid:context === Number.MAX_SAFE_INTEGER+1,
       message:'context must be a non-negative safe integer'});
   }
   for (const limit of [0,-1,1.5,null,'201',Number.MAX_SAFE_INTEGER+1]) {
     rows.push({tool:'search_files',handler:'search',input:{...search,limit},valid:false,
+      schemaValid:limit === Number.MAX_SAFE_INTEGER+1,
       message:'limit must be a positive safe integer'});
   }
   for (const input of [{...search,path:null},{...search,unexpected:'private fixture'},

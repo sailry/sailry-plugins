@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.21
+
+- Keep captured Git targets and snapshots opaque in model schemas
+- Preserve host validation while removing redundant numeric schema bounds
+
 ## 0.1.20
 
 - Refresh repository views only for relevant changes and pause hidden controllers

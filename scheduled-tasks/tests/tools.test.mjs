@@ -168,12 +168,12 @@ test("recurring tasks preserve positive safe integer intervals",async()=>{
     }
   }
 });
-runtimeTest("interval schemas agree with handler domains",async()=>{
+runtimeTest("interval schemas retain integer types without duplicating handler bounds",async()=>{
   const manifest=JSON.parse(await readFile(new URL("../plugin.json",import.meta.url),"utf8"));
   const extension=manifest.extensions["dev.sailry.platform"];
   const rows=[...intervals,...invalidIntervals].map(interval_ms=>({action:"create",name:"Review",prompt:"Read",
     timing:{kind:"every",data:{anchor_ms:1000,interval_ms}}}));
-  const expected=[...intervals.map(()=>true),...invalidIntervals.map(()=>false)];
+  const expected=[...intervals,...invalidIntervals].map(value=>Number.isInteger(value)&&value>0);
   assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,rows),expected);
   const schema=extension.storage.collections[0].schema.properties.timing;
   assert.deepEqual(validateSchema(schema,rows.map(row=>row.timing)),expected);

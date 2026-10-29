@@ -27,7 +27,7 @@ export function list(args) {
 
 export function read(args) {
   if (!object(args,['path','offset','limit']) || typeof args.path !== 'string') return invalid();
-  const {offset = 0,limit = 100} = args;
+  const {offset = 0,limit = 2000} = args;
   if (!Number.isSafeInteger(offset) || offset < 0) return invalid('offset must be a non-negative safe integer');
   if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
   return {path:args.path,offset,limit};
@@ -103,7 +103,7 @@ export function search(args) {
   if (!object(args,['query','regex','case_sensitive','globs','path','mode','context','type','limit','offset','multiline'])) {
     return invalid('Expected search arguments with supported fields');
   }
-  const {query,regex = false,case_sensitive = false,globs = [],path = '',mode = 'content',context = 0,
+  const {query,regex = false,case_sensitive = false,globs = [],path = '',mode = 'files',context = 0,
     type = null,limit = 200,offset = 0,multiline = false} = args;
   if (typeof query !== 'string' || !query) return invalid('query must be a nonempty string');
   if (!Number.isSafeInteger(context) || context < 0) return invalid('context must be a non-negative safe integer');

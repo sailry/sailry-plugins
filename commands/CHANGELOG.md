@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Keep command access guidance in one parameter description
+- Declare a 600000 ms timeout maximum without changing execution validation
+
 ## 0.1.10
 
 - Coalesce terminal refreshes and preserve loaded content after background failures

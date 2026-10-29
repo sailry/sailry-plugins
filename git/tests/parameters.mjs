@@ -22,7 +22,7 @@ export function cases() {
   }
   for (const entry of rows.slice(0,5)) {
     for (const limit of [0,-1,1.5,null,'4000',Number.MAX_SAFE_INTEGER+1]) {
-      rows.push({...entry,input:{...entry.input,limit},valid:false});
+      rows.push({...entry,input:{...entry.input,limit},valid:false,schemaValid:limit === Number.MAX_SAFE_INTEGER+1});
     }
   }
   return rows;

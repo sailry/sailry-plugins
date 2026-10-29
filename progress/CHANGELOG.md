@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Keep task planning guidance separate from update tool rules
+
 ## 0.1.6
 
 - Separate Activity Board from Plan tools

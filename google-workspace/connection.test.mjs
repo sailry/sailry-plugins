@@ -113,7 +113,7 @@ runtimeTest('larger requests preserve source values and endpoint budgets', async
 runtimeTest('larger requests reach the production adapter unchanged', async () => {
   const schema = extension.tools[0].handler.parameters;
   assert.deepEqual(validateSchema(schema,[...largeCases.map(entry => entry.arguments),...invalidCases]),
-    [...largeCases.map(() => true),...invalidCases.map(() => false)]);
+    [...largeCases.map(() => true),...invalidCases.map(args => args.limit === Number.MAX_SAFE_INTEGER+1)]);
   for (const entry of largeCases) {
     const input = await packageInput(new URL('./',import.meta.url),'request',
       {step:entry.step ?? 0,arguments:entry.arguments,outcome:entry.outcome});
@@ -123,6 +123,9 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
     entry.check(output.result.Ok);
     assert.equal(output.calls.length,0);
   }
+  const rejected=execute({...fixture,input:{step:0,arguments:invalidCases.at(-1)}});
+  assert.equal(rejected.result.Ok,undefined);
+  assert.match(rejected.result.Err.message,/positive safe integer/);
 });
 
 

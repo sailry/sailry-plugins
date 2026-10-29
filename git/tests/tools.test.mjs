@@ -64,7 +64,7 @@ test('page requests preserve intent and report invalid fields', async () => {
   }
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const declaration = manifest.extensions['dev.sailry.platform'].tools.find(tool => tool.name === 'git_show');
-  assert.equal(declaration.handler.parameters.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
+  assert.equal(declaration.handler.parameters.properties.limit.maximum,undefined);
   assert.match(declaration.handler.parameters.properties.limit.description,/independent output budget/);
   assert.deepEqual(show({path:'apps/desktop/src/sidebar.rs',revision:'HEAD',offset:0,limit:1200}),
     {worktree:null,path:'apps/desktop/src/sidebar.rs',revision:'HEAD',offset:0,limit:1200});
@@ -110,6 +110,14 @@ test('file change descriptions distinguish captured revision fields', async () =
   assert.match(tool.description,/Every request requires the unchanged snapshot/);
   const fields = tool.handler.parameters.properties;
   assert.match(fields.snapshot.description,/pass it unchanged on every page/);
+  assert.equal(fields.snapshot.type,'object');
+  assert.equal(fields.snapshot.properties,undefined);
+  const inventory = extension.tools.find(tool => tool.name === 'list_git_changes').handler.parameters.properties;
+  assert.deepEqual(inventory.target.type,['object','null']);
+  assert.equal(inventory.target.anyOf,undefined);
+  const cursor = inventory.cursor.anyOf.find(value => value.type === 'object');
+  assert.deepEqual(cursor.required,['snapshot','after_path']);
+  assert.deepEqual(cursor.properties.snapshot,fields.snapshot);
   assert.match(fields.path.description,/required on every page/);
   assert.match(fields.expected_metadata_revision.description,/file entry's metadata_revision, not snapshot.metadata_revision/);
   assert.match(fields.expected_revision.description,/Strong revision of this file/);

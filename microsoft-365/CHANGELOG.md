@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Remove redundant numeric schema bounds while preserving host validation
+
 ## 0.1.7
 
 - Show ordinary workspace queries as concise activity

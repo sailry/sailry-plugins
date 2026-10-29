@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Remove redundant numeric schema bounds while preserving host validation
+
 ## 0.1.8
 
 - Increase spacing between form labels and controls

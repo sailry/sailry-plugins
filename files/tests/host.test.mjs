@@ -88,21 +88,22 @@ test('writes retain exact text and optimistic revision semantics', () => {
     path:'new.txt',text:'',expected_revision:null,
   });
   assert.equal(host.write({path:'text.txt',text:'\u0001'.repeat(128 * 1024)}).text.length,128 * 1024);
-  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt',offset:0,limit:100});
+  assert.deepEqual(plain(host.read({path:'nested/资料.txt'})),{path:'nested/资料.txt',offset:0,limit:2000});
 });
 
 test('search defaults keep original expressions and globs without interpreting them', () => {
   const schema = tool('search_files').handler.parameters;
   assert.deepEqual(schema.required,['query']);
   assert.equal(schema.properties.query.minLength,1);
+  assert.equal(schema.properties.mode.default,'files');
   assert.equal(schema.properties.globs.maxItems,undefined);
   assert.equal(schema.properties.globs.items.maxLength,undefined);
   assert.deepEqual(plain(host.search({query:' needle\n'})),{
-    query:' needle\n',regex:false,case_sensitive:false,globs:[],path:'',mode:'content',context:0,type:null,limit:200,offset:0,multiline:false,
+    query:' needle\n',regex:false,case_sensitive:false,globs:[],path:'',mode:'files',context:0,type:null,limit:200,offset:0,multiline:false,
   });
   const globs = ['**/*.rs','资料/*.txt','**/*.rs'];
   const args = {query:'^a.*[中]$',regex:true,case_sensitive:true,globs};
-  assert.deepEqual(plain(host.search(args)),{path:'',mode:'content',context:0,type:null,limit:200,offset:0,multiline:false,...args});
+  assert.deepEqual(plain(host.search(args)),{path:'',mode:'files',context:0,type:null,limit:200,offset:0,multiline:false,...args});
   assert.equal(host.search(args).globs,globs);
   assert.deepEqual(args,{query:'^a.*[中]$',regex:true,case_sensitive:true,globs});
 });
@@ -198,7 +199,12 @@ test('line pages retain offsets and exact edit fragments', () => {
   assert.deepEqual(plain(host.find({globs:['**/*.rs','src/**/mod.rs']})),{globs:['**/*.rs','src/**/mod.rs'],path:'',limit:500,offset:0});
   assert.equal(tool('find_files').handler.operation,'files.find');
   assert.equal(tool('read_file').handler.parameters.properties.offset.minimum,0);
-  assert.equal(tool('read_file').handler.parameters.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
+  const limit = tool('read_file').handler.parameters.properties.limit;
+  assert.equal(limit.default,2000);
+  assert.equal(limit.maximum,undefined);
+  assert.match(tool('read_file').description,/32 KiB page budget and a 2 KiB line budget/);
+  assert.match(tool('read_file').description,/shortened long line is not a new page/);
+  assert.match(tool('read_file').description,/read_tool_output with the returned output reference/);
   assert.deepEqual(tool('read_file').display.output.notices[0].when.any,[
     {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
     {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
@@ -231,7 +237,9 @@ test('batch edits preserve atomic arguments and enforce exclusive forms', () => 
   assert.equal(schema.properties.edits.items.additionalProperties,false);
   assert.deepEqual(schema.properties.edits.items.required,['old_text','new_text']);
   assert.equal(schema.oneOf.length,2);
-  assert.match(extension.instructions,/original content/);
+  assert.match(extension.instructions,/find_files and search_files.*rather than shell commands/);
+  assert.doesNotMatch(extension.instructions,/original content/);
+  assert.match(tool('edit_file').description,/original file/);
   assert.match(tool('edit_file').description,/fail without writing any change/);
 });
 
@@ -294,10 +302,13 @@ test('scoped search modes and discovery pages preserve arguments', () => {
   });
   const schema = tool('search_files').handler.parameters;
   assert.deepEqual(schema.properties.mode.enum,['content','files','count']);
-  assert.equal(schema.properties.context.maximum,Number.MAX_SAFE_INTEGER);
-  assert.equal(schema.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
-  assert.equal(tool('find_files').handler.parameters.properties.limit.maximum,Number.MAX_SAFE_INTEGER);
+  assert.equal(schema.properties.context.maximum,undefined);
+  assert.equal(schema.properties.limit.maximum,undefined);
+  assert.equal(tool('find_files').handler.parameters.properties.limit.maximum,undefined);
   assert.match(tool('search_files').description,/ripgrep/);
+  assert.match(tool('search_files').description,/32 KiB total budget/);
+  assert.match(tool('search_files').description,/original captured result/);
+  assert.match(tool('search_files').description,/next_offset.*cannot recover a shortened line/);
   assert.match(tool('search_files').description,/Partial|Incomplete/);
   for (const args of [
     {query:'x',mode:'all'}, {query:'x',context:-1}, {query:'x',context:1.5},

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Remove redundant numeric schema bounds while preserving host validation
+
 ## 0.1.13
 
 - Ignore catalog read failures after their connection tab closes or is replaced.

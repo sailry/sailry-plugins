@@ -7,12 +7,12 @@ const directory = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',directory),'utf8'));
 const tools = manifest.extensions['dev.sailry.platform'].tools;
 
-runtimeTest('read pages agree across schema and production adapters', async () => {
+runtimeTest('read pages preserve schema and adapter domains', async () => {
   const rows = cases();
   for (const name of new Set(rows.map(row => row.tool))) {
     const selected = rows.filter(row => row.tool === name);
     const schema = tools.find(tool => tool.name === name).handler.parameters;
-    assert.deepEqual(validateSchema(schema,selected.map(row => row.input)),selected.map(row => row.valid));
+    assert.deepEqual(validateSchema(schema,selected.map(row => row.input)),selected.map(row => row.schemaValid ?? row.valid));
   }
   for (const entry of rows) {
     const output = execute(await packageInput(directory,entry.handler,entry.input));

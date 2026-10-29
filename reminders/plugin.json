@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reminders",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "To-dos and scheduled reminders",
   "extensions": {
     "dev.sailry.platform": {
@@ -51,8 +51,7 @@
                     "null"
                   ],
                   "default": null,
-                  "minimum": 0,
-                  "maximum": 9007199254740991
+                  "minimum": 0
                 },
                 "notified_ms": {
                   "type": [
@@ -60,8 +59,7 @@
                     "null"
                   ],
                   "default": null,
-                  "minimum": 0,
-                  "maximum": 9007199254740991
+                  "minimum": 0
                 }
               }
             }

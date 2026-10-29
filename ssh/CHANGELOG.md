@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Remove redundant numeric schema bounds while preserving host validation
+
 ## 0.1.15
 
 - Require Sailry 0.1.0-alpha.4 for terminal lifecycle support

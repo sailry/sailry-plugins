@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.13
+
+- Keep memory activation and trust guidance separate from tool rules
+- Remove redundant numeric schema bounds without changing host validation
+
 ## 0.1.12
 
 - Separate memory lookup activity from confirmed memory changes and readable snapshots

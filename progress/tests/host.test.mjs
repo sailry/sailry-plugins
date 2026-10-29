@@ -44,7 +44,11 @@ test('the ordinary package uses canonical progress presentation without session 
   assert.equal(tool.presentation,'progress'); assert.equal(tool.grouping,'standalone');
   assert.deepEqual(tool.contexts,['plugin','workspace']);
   assert.equal(tool.handler.operation,undefined); assert.equal(tool.handler.name,'update');
-  assert.match(extension.instructions,/Skip plans for direct questions and simple changes/);
-  assert.match(extension.instructions,/complete current list with honest statuses/);
+  assert.match(extension.instructions,/skip direct questions and simple changes/);
+  assert.match(extension.instructions,/substantial multi-step tasks/);
+  assert.match(extension.instructions,/persistent goal only when the user requests/);
+  assert.doesNotMatch(extension.instructions,/complete current|mark completed/i);
+  assert.match(tool.description,/complete current task plan/);
+  assert.match(tool.description,/mark completed only after the described work is verified/);
   assert.equal(tool.handler.parameters.properties.steps.maxItems,undefined);
 });

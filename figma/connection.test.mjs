@@ -17,7 +17,7 @@ const outcome = (body, status = 200) => ({data:{status, headers:{}, body:JSON.st
 
 test('declares PAT REST without an automatic MCP connection', () => {
   assert.equal(manifest.name, 'figma');
-  assert.equal(manifest.version, '0.1.8');
+  assert.equal(manifest.version, '0.1.9');
   assert.equal(extension.api_version, 'v1');
   assert.equal(existsSync(new URL('./mcp.json', import.meta.url)), false);
   assert.deepEqual(extension.actions, ['http.request']);
@@ -139,7 +139,7 @@ runtimeTest('larger requests preserve source values and endpoint budgets', async
 runtimeTest('larger requests reach the production adapter unchanged', async () => {
   const schema = extension.tools[0].handler.parameters;
   assert.deepEqual(validateSchema(schema,[...largeCases.map(entry => entry.arguments),...invalidCases]),
-    [...largeCases.map(() => true),...invalidCases.map(() => false)]);
+    [...largeCases.map(() => true),...invalidCases.map(args => args.depth === Number.MAX_SAFE_INTEGER+1)]);
   for (const entry of largeCases) {
     const input = await packageInput(new URL('./',import.meta.url),'read',
       {step:entry.step ?? 0,arguments:entry.arguments,outcome:entry.outcome});
@@ -149,4 +149,7 @@ runtimeTest('larger requests reach the production adapter unchanged', async () =
     entry.check(output.result.Ok);
     assert.equal(output.calls.length,0);
   }
+  const rejected=execute({...fixture,input:{step:0,arguments:invalidCases.at(-1)}});
+  assert.equal(rejected.result.Ok,undefined);
+  assert.match(rejected.result.Err.message,/Invalid depth/);
 });

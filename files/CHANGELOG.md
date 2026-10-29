@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.16
+
+- Default file reads to 2000 lines and searches to matching paths
+- Clarify bounded model text, exact continuations and retained original results
+- Remove repeated editing guidance and redundant numeric schema bounds
+
 ## 0.1.15
 
 - Remove the editing file-size limit from the paged-read description

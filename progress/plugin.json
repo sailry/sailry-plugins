@@ -1,12 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "progress",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Track task progress",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "instructions": "Use update_plan for substantial multi-step tasks and keep one complete current list with honest statuses. Include affected files, implementation steps and verification; record risks and questions when they matter. Skip plans for direct questions and simple changes. Mark completed only after the described result is verified. Create a persistent goal only when the user requests one. Progress does not approve a plan or grant execution authority.",
+      "instructions": "Use update_plan for substantial multi-step tasks; skip direct questions and simple changes. Include affected files, implementation steps and verification, plus risks or questions when relevant. Create a persistent goal only when the user requests one.",
       "actions": [],
       "display": {
         "label": "Plan",
