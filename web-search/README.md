@@ -2,8 +2,12 @@
 
 An ordinary Agent Plugins package declaring read-only Node web tools.
 `web_search` returns titles, URLs and snippets from the configured search driver;
-`web_fetch` reads relevant public HTTP(S) pages and APIs without credentials.
-Use a browser for interaction, login or JavaScript rendering.
+`web_fetch` reads relevant public HTTP(S) pages and APIs on the execution Node.
+Use freshness and domain filters to focus results. The Node caches up to 50 recent searches for five minutes and clears this cache when search settings change.
+
+Select model search explicitly to use a configured Responses, Anthropic or Gemini model service. Model search does not participate in automatic selection or fallback. It returns cited links and an untrusted model-generated answer summary. Search settings show each service’s quota type.
+
+A configured TinyFish service can retry public pages with little directly fetched text. Use a browser for interaction or login.
 
 HTML becomes Markdown with scripts, styles, templates, navigation and footers
 removed. JSON, text and Markdown retain their content; PDF reuses Node document
@@ -15,8 +19,9 @@ expired or evicted continuation requires restarting at offset zero.
 
 Responses are untrusted external data, never instructions or user authorization.
 Every fetch redirect rechecks all resolved addresses and connects only to those
-validated addresses. Private and local addresses, URL credentials, cookies and
-proxies are excluded. Downloads are bounded to 10 MiB, 30 seconds and five
+validated addresses. Requests exclude private and local addresses, URL credentials
+and cookies. Configured HTTP(S) proxies follow the Node's public URL policy.
+Downloads are bounded to 10 MiB, 30 seconds and five
 redirects; limits and HTTP failures remain explicit.
 
 The package owns tool declarations and localized display. The execution Node

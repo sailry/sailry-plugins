@@ -3,19 +3,30 @@ import test from 'node:test';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
+import * as catalog from '../dev.sailry.platform/desktop/catalog.js';
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace('export default class','class').replace('export const drivers','const drivers');
 const plain=value=>JSON.parse(JSON.stringify(value)),tick=()=>new Promise(resolve=>setImmediate(resolve));
 async function fixture() {
-  let saved={revision:0,fallback:true,providers:{exa:{enabled:true,key_configured:false},searxng:{enabled:true}}};
+  let saved={revision:0,fallback:true,providers:{exa:{enabled:true,key_configured:false},searxng:{enabled:true},
+    tinyfish:{enabled:false,key_configured:false},model:{enabled:false,model:null}},
+    capabilities:{exa:{quota:'anonymous_quota',key_required:false},searxng:{quota:'keyless',key_required:false},
+      tinyfish:{quota:'free_quota',key_required:true},model:{quota:'paid',key_required:false}}};
+  let choices={models:[
+    {kind:'provider',id:'alpha/first',provider:'Alpha',api:'responses',default:false},
+    {kind:'provider',id:'alpha/default',provider:'Alpha',api:'responses',default:true},
+    {kind:'provider',id:'beta/vendor/model',provider:'Beta',api:'anthropic',default:true},
+    {kind:'provider',id:'gamma/unsupported',provider:'Gamma',api:'chat_completions',default:true},
+  ]};
   const fields=new Map(),secrets=new Set(),calls=[],prepared=[],forgotten=[],notices=[];
-  let serial=0,fault=null,hold=false,held=null;const requests=new Map();
+  let serial=0,fault=null,hold=false,held=null,modelsFault=false;const requests=new Map();
   function prepare(value){const id='request-'+(++serial);requests.set(id,plain(value));return id;}
   const Type=vm.runInNewContext(source+'\nSettings',{
-    View:class{},context:()=>'{"locale":"en"}',messages,prepareRequest:prepare,
+    View:class{},context:()=>'{"locale":"en"}',messages,catalog,prepareRequest:prepare,
+    async listModels(){if(modelsFault)throw new Error('catalog unavailable');return plain(choices);},
     prepareSettings(value){prepared.push(plain(value));return prepare({kind:'save_search_settings',data:{settings:value.settings}});},
     async completeRequest(id){calls.push(id);const request=requests.get(id);
-      if(fault){const code=fault;fault=null;return {Err:{code}};}
+      if(fault){const error=fault;fault=null;return {Err:typeof error==='string'?{code:error}:plain(error)};}
       if(request.kind==='read_search_settings'&&hold) {
         hold=false;const result={Ok:{kind:'search_settings',data:plain(saved)}};
         return new Promise(resolve=>{held=()=>resolve(result);});
@@ -32,7 +43,8 @@ async function fixture() {
   });
   const cx={notify(){},spawn:task=>task(cx)};const view=new Type();view.init({},cx);
   async function settle(){for(let i=0;i<10;i++)await tick();}await settle();
-  return {view,cx,prepared,fields,secrets,calls,forgotten,notices,settle,fault:code=>{fault=code;},external:()=>{saved={...saved,revision:saved.revision+1,fallback:false};},
+  return {view,cx,prepared,fields,secrets,calls,forgotten,notices,requests,settle,fault:code=>{fault=code;},external:()=>{saved={...saved,revision:saved.revision+1,fallback:false};},
+    models:value=>{choices=plain(value);},failModels:()=>{modelsFault=true;},
     hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;}};
 }
 test('passes only opaque credential handles',async()=>{
@@ -71,4 +83,73 @@ test('refresh locks saving and rebasing without discarding drafts',async()=>{
   f.view.saveEditor(f.cx);await f.settle();assert.equal(f.view.editor,null);
   assert.equal(f.prepared[0].settings.fallback,false);
   assert.equal(f.prepared[0].settings.providers.searxng.endpoint,'https://draft.example.com');
+});
+
+test('chooses a provider before its model',async()=>{
+  const f=await fixture();f.view.edit('model',f.cx);
+  assert.equal(f.fields.size,0);assert.equal(f.secrets.size,0);
+  assert.equal(f.view.models.length,3);assert.equal(f.view.editor.model,null);
+  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);
+  assert.deepEqual(plain(f.view.editor.model),{provider:'alpha',model:'default'});
+  f.view.control({id:'search-model-name',value:'vendor/model'},f.cx);
+  assert.equal(f.view.editor.model.model,'default');
+  f.view.control({id:'search-model-name',value:'first'},f.cx);
+  assert.equal(f.view.editor.model.model,'first');
+  f.view.control({id:'search-model-provider',value:'beta'},f.cx);
+  assert.deepEqual(plain(f.view.editor.model),{provider:'beta',model:'vendor/model'});
+  f.view.saveEditor(f.cx);await f.settle();
+  const save=[...f.requests.values()].find(request=>request.kind==='save_search_settings');
+  assert.deepEqual(save.data.settings.providers.model.model,{provider:'beta',model:'vendor/model'});
+  assert.deepEqual(save.data.credentials,{});assert.equal(f.prepared.length,0);assert.equal(f.view.editor,null);
+});
+
+test('catalog refresh failures leave search settings usable',async()=>{
+  const f=await fixture(),before=f.notices.length;
+  f.failModels();f.external();f.view.load(f.cx);await f.settle();
+  assert.equal(f.view.saved.revision,1);assert.equal(f.view.saved.fallback,false);
+  assert.equal(f.view.busy(),false);assert.equal(f.notices.length,before);
+});
+
+test('unavailable models retain the selection draft',async()=>{
+  const f=await fixture();f.view.edit('model',f.cx);const editor=f.view.editor;
+  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);
+  f.models({models:[]});f.view.load(f.cx);await f.settle();
+  f.view.saveEditor(f.cx);await f.settle();
+  assert.equal(f.view.editor,editor);assert.equal(editor.model.model,'default');
+  assert.equal(f.notices.at(-1).message,messages('en').search_model_unavailable);
+  assert(![...f.requests.values()].some(request=>request.kind==='save_search_settings'));
+});
+
+test('model edits retain uncertain request identity',async()=>{
+  const f=await fixture();f.view.edit('model',f.cx);const editor=f.view.editor;
+  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);f.fault('outcome_unknown');
+  f.view.saveEditor(f.cx);await f.settle();const id=f.view.request.id;
+  f.view.close(f.cx);assert.equal(f.view.editor,editor);
+  f.view.control({id:'search-model-provider',value:'beta'},f.cx);
+  assert.equal(editor.model.provider,'alpha');assert(!f.forgotten.includes(id));
+  f.view.saveEditor(f.cx);await f.settle();
+  assert.equal(f.calls.filter(value=>value===id).length,2);assert.equal(f.view.editor,null);
+  assert.deepEqual(f.requests.get(id).data.settings.providers.model.model,{provider:'alpha',model:'default'});
+});
+
+test('distinguishes unsupported searches and expired login',async()=>{
+  const f=await fixture();
+  f.fault({code:'invalid_request',details:{kind:'search_unsupported'}});
+  f.view.test('model',f.cx);await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('en').search_not_supported);
+  f.fault('expired');f.view.test('model',f.cx);await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('en').search_sign_in);
+  f.fault({code:'permission_denied',details:{kind:'model_request',reason:'unauthorized'}});
+  f.view.test('model',f.cx);await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('en').search_test_auth_failed);
+});
+
+
+test('search response failures do not blame settings',async()=>{
+  const f=await fixture();
+  f.fault({code:'invalid_request',details:{kind:'model_request',reason:'invalid_response'}});
+  f.view.test('model',f.cx);await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('en').search_request_failed);
+  f.view.fail({code:'invalid_request'},true,false);
+  assert.equal(f.notices.at(-1).message,messages('en').search_settings_invalid);
 });

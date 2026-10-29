@@ -1,19 +1,20 @@
 // Search settings and editing workflows belong to the package, not Desktop.
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
-import {prepareRequest,completeRequest,forgetRequest,nextChange,faultCode} from 'sailry/sdk';
+import {prepareRequest,completeRequest,forgetRequest,nextChange,faultCode,listModels} from 'sailry/sdk';
 import {createText,readText,releaseText} from 'sailry/forms';
 import {createSecret,releaseSecret,describeSecret} from 'sailry/credentials';
 import {prepareSettings} from 'sailry/search';
 import {nextControlEvent,modal_closed,toast} from 'sailry/ui';
 import {messages} from './locales.js';
 import {render} from './view.js';
+import * as catalog from './catalog.js';
 
 const clone = value => JSON.parse(JSON.stringify(value));
-export const drivers = ['exa','tavily','brave','searxng','bocha'];
+export const drivers = catalog.drivers;
 export default class Settings extends View {
   init(_props,cx) {
-    this.text=messages(JSON.parse(context()).locale); this.saved=null;
+    this.text=messages(JSON.parse(context()).locale); this.saved=null;this.models=[];
     this.pending=false; this.loading=false; this.refresh=false; this.connected=true;
     this.request=null; this.editor=null; this.serial=0; this.load(cx);
     cx.spawn(async cx=>{let cursor;try {while(true) {
@@ -26,9 +27,12 @@ export default class Settings extends View {
     }} catch(_) {}});
   }
   busy() {return !this.saved||!this.connected||this.loading||this.pending||!!this.request;}
-  fail(code,writing=false,testing=false) {
-    const key=code==='revision_conflict'?'search_settings_conflict':code==='invalid_request'?'search_settings_invalid'
-      :code==='not_configured'?'search_not_configured':code==='permission_denied'&&testing?'search_test_auth_failed'
+  fail(error,writing=false,testing=false) {
+    const code=typeof error==='string'?error:error?.code,details=error?.details;
+    const key=details?.kind==='search_unsupported'?'search_not_supported'
+      :code==='expired'?'search_sign_in'
+      :code==='revision_conflict'?'search_settings_conflict':code==='invalid_request'&&!testing?'search_settings_invalid'
+      :code==='not_configured'?'search_not_configured':testing&&(code==='permission_denied'||details?.kind==='model_request'&&details.reason==='unauthorized')?'search_test_auth_failed'
       :writing&&['unavailable','outcome_unknown'].includes(code)?'search_save_unknown':'search_request_failed';
     toast({id:'search-operation',message:this.text[key],kind:'error'});
   }
@@ -39,8 +43,8 @@ export default class Settings extends View {
     cx.notify();
     cx.spawn(async cx=>{let request;try {
       request=prepareRequest({kind:'read_search_settings'});
-      const result=await completeRequest(request);
-      if(result.Err)this.fail(result.Err.code);else this.saved=result.Ok.data;
+      const [result,models]=await Promise.all([completeRequest(request),listModels().catch(()=>null)]);
+      if(result.Err)this.fail(result.Err);else {this.saved=result.Ok.data;if(models)this.models=catalog.models(models);}
     } catch(error){this.fail(faultCode(String(error.message)));}
     finally {if(request)forgetRequest(request);this.loading=false;
       const refresh=this.refresh;this.refresh=false;if(refresh)this.load(cx);cx.notify();}});
@@ -56,6 +60,7 @@ export default class Settings extends View {
   enabled(driver,value,cx) {
     if(this.busy())return;const settings=clone(this.saved);settings.providers[driver].enabled=value;this.save(settings,cx);
   }
+  available() {return catalog.available(this.saved);}
   test(driver,cx) {
     if(this.busy())return;
     this.request={id:prepareRequest({kind:'test_search_driver',data:{driver}}),testing:true};this.retry(cx);
@@ -65,7 +70,7 @@ export default class Settings extends View {
     const request=this.request;this.pending=true;cx.notify();
     cx.spawn(async cx=>{try {
       const result=await completeRequest(request.id);
-      if(result.Err){this.fail(result.Err.code,request.writing,request.testing);if(result.Err.code==='outcome_unknown')return;}
+      if(result.Err){this.fail(result.Err,request.writing,request.testing);if(result.Err.code==='outcome_unknown')return;}
       else {
         if(result.Ok.kind==='search_settings')this.saved=result.Ok.data;
         toast({id:'search-operation',message:this.text[request.testing?'search_test_passed':'search_saved'],kind:'info'});
@@ -78,6 +83,11 @@ export default class Settings extends View {
   edit(driver,cx) {
     if(this.busy()||this.editor)return;
     const config=this.saved.providers[driver],text=this.text;
+    if(!config)return;
+    if(driver==='model') {
+      this.editor={id:`search-editor-${++this.serial}`,driver,settings:clone(this.saved),model:clone(config.model ?? null)};
+      cx.notify();return;
+    }
     this.editor={id:`search-editor-${++this.serial}`,driver,settings:clone(this.saved),removeKey:false,removeBasic:false,
       endpoint:createText(config.endpoint??'',{label:text.search_endpoint}),
       key:createSecret({label:text.search_api_key,placeholder:text[config.key_configured?'search_secret_keep':'search_api_key']}),
@@ -90,6 +100,17 @@ export default class Settings extends View {
     if(this.request){this.retry(cx);return;}
     if(this.pending||!this.connected||!this.editor)return;
     const editor=this.editor,settings=clone(editor.settings);
+    if(editor.driver==='model') {
+      if(!catalog.contains(this.models,editor.model)) {
+        toast({id:'search-operation',message:this.text.search_model_unavailable,kind:'error'});return;
+      }
+      settings.providers.model.model=clone(editor.model);
+      try {
+        this.request={id:prepareRequest({kind:'save_search_settings',data:{settings,credentials:{}}}),writing:true,editor};
+        this.retry(cx);
+      } catch(_){toast({id:'search-operation',message:this.text.search_settings_invalid,kind:'error'});}
+      return;
+    }
     if(editor.driver==='searxng')settings.providers.searxng.endpoint=readText(editor.endpoint).trim()||null;
     const username=describeSecret(editor.username).filled,password=describeSecret(editor.password).filled;
     if(!editor.removeBasic&&username!==password){toast({id:'search-operation',message:this.text.search_basic_invalid,kind:'error'});return;}
@@ -106,17 +127,28 @@ export default class Settings extends View {
   }
   close(cx,confirmed=false) {
     if(!confirmed&&(this.pending||this.request))return;
-    if(this.editor){releaseText(this.editor.endpoint);[this.editor.key,this.editor.username,this.editor.password].forEach(releaseSecret);}
+    if(this.editor?.endpoint)releaseText(this.editor.endpoint);
+    if(this.editor)[this.editor.key,this.editor.username,this.editor.password].filter(Boolean).forEach(releaseSecret);
     this.editor=null;cx.notify();
   }
   control(event,cx) {
+    const editor=this.editor;
+    if(editor?.driver==='model'&&!this.loading&&!this.pending&&!this.request) {
+      if(event.id==='search-model-provider')editor.model=catalog.binding(this.models,event.value);
+      else if(event.id==='search-model-name'&&this.models.some(model=>model.provider===editor.model?.provider&&model.model===event.value)) {
+        editor.model={provider:editor.model.provider,model:event.value};
+      }
+      cx.notify();
+    }
     if(event.id==='search-default-driver'&&!this.busy()) {
       const settings=clone(this.saved);
       settings.driver=event.value==='none'?null:event.value==='auto'?{kind:'auto'}:{kind:'driver',driver:event.value};
-      if (settings.driver?.kind==='driver') settings.providers[settings.driver.driver].enabled=true;
+      if (settings.driver?.kind==='driver') {
+        const config=settings.providers[settings.driver.driver];if(!config)return;config.enabled=true;
+      }
       this.save(settings,cx);
     }
-    for(const driver of drivers) {
+    for(const driver of this.available()) {
       if(event.id===`search-edit-${driver}`)this.edit(driver,cx);
       if(event.id===`search-test-${driver}`)this.test(driver,cx);
     }

@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.9
+
+- Añade filtros de fecha y dominio
+- Añade servicios de búsqueda configurables y una alternativa para páginas dinámicas
+- Guarda búsquedas recientes en caché y muestra los tipos de cuota
+- Añade búsqueda con servicios de modelos seleccionados explícitamente
+
 ## 0.1.7
 
 - Aumentar el espacio entre las etiquetas y los controles del formulario

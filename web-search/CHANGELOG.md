@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.9
+
+- Add freshness and domain filters
+- Add configurable search services and rendered-page fallback
+- Cache recent searches and show service quota types
+- Add explicit model search using configured model services
+
 ## 0.1.8
 
 - Remove unavailable model-hosted search and its preference
