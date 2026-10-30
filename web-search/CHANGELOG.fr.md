@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+La recherche automatique passe au service activé suivant après tout échec, y compris lorsqu’un modèle n’effectue pas de recherche.
+
 ## 0.1.11
 
 Réorganisez les services avec les boutons haut et bas. La recherche automatique suit l’ordre des services activés, y compris les modèles, et passe au suivant en cas d’incompatibilité.

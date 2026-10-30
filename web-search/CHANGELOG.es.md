@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+La búsqueda automática pasa al siguiente servicio activo tras cualquier fallo, incluso cuando un modelo no realiza la búsqueda.
+
 ## 0.1.11
 
 Reordena los servicios con los botones de subir y bajar. La búsqueda automática sigue el orden de los servicios activos, incluida la búsqueda con modelos, y recurre al siguiente si no es compatible.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+Die automatische Suche wechselt nach jedem Fehler zum nächsten aktiven Dienst, auch wenn ein Modell keine Suche ausführt.
+
 ## 0.1.11
 
 Suchdienste lassen sich nach oben und unten verschieben. Die automatische Suche folgt der Reihenfolge aktiver Dienste einschließlich Modellsuche und wechselt bei fehlender Unterstützung zum nächsten Dienst.

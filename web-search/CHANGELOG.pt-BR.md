@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+A pesquisa automática passa para o próximo serviço ativo após qualquer falha, inclusive quando um modelo não realiza a pesquisa.
+
 ## 0.1.11
 
 Reordene os serviços com os botões para cima e para baixo. A pesquisa automática segue a ordem dos serviços ativos, incluindo modelos, e tenta o próximo quando não há suporte.

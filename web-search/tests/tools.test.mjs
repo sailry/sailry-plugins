@@ -35,7 +35,7 @@ test('research follows available search and page-reading capabilities', () => {
 });
 
 test('contributes packaged search settings and enable control', () => {
-  assert.equal(manifest.version, '0.1.11');
+  assert.equal(manifest.version, '0.1.12');
   assert.equal(extension.min_sailry_version, '0.1.0-alpha.5');
   assert.equal(extension.settings_page.native, undefined);
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');

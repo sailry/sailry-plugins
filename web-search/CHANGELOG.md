@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+Automatic search moves to the next enabled channel after any failure, including model search that does not search.
+
 ## 0.1.11
 
 Reorder search channels with up and down buttons. Automatic search follows the enabled channel order, including model search, and falls back on unsupported model services.
