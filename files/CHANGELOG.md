@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Remove the redundant written notice from file write and edit results
+
 ## 0.1.17
 
 - Align declaration checks with the current paged-read guidance
