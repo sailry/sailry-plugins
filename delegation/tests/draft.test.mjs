@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {catalog,create,source,selectModel,profile,efforts,errorKey,applyResearch,RESEARCH_INSTRUCTIONS} from '../dev.sailry.platform/desktop/draft.js';
+import {catalog,create,source,selectModel,profile,efforts,errorKey,applyResearch,applyPreset,PRESETS,RESEARCH_INSTRUCTIONS} from '../dev.sailry.platform/desktop/draft.js';
 
 const models = [
   {kind:'provider',id:'provider-a/plain',provider:'First',model:'plain',default:false,reasoning:false,efforts:[],default_effort:'default'},
@@ -94,4 +94,22 @@ test('retains native conflict, unavailable, and uncertain distinctions',() => {
   assert.equal(errorKey('not_configured'),'role_model_unavailable');
   assert.equal(errorKey('outcome_unknown'),'role_unknown');
   assert.equal(errorKey('busy'),'role_capacity');
+});
+
+test('presets fill complete new roles with their appearance',() => {
+  for (const [key,preset] of Object.entries(PRESETS)) {
+    const state = create(null,`new-${key}`,catalog({models}));
+    source(state,true);
+    const values = applyPreset(state,key,'Name','Description','Instructions');
+    const result = profile(state,values);
+    assert.equal(result.key,preset.key);
+    assert.equal(result.description,'Description');
+    assert.equal(result.read_only,preset.read_only);
+    assert.equal(result.max_turns,preset.max_turns);
+    assert.equal(result.model,null);
+    assert.deepEqual(result.appearance,preset.appearance);
+    assert.deepEqual(result.skills,preset.skills);
+  }
+  assert.equal(applyPreset(create(original,'unused',[]),'review','Name','Description','Text'),null);
+  assert.equal(applyPreset(create(null,'unknown',[]),'missing','Name','Description','Text'),null);
 });

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.28
+
+- Show each subagent's icon and description, and start new subagents from complete preset roles
+- Use a compact editor layout with regular-size fields
+
 ## 0.1.27
 
 - Keep delegation tool declarations stable when captured roles change

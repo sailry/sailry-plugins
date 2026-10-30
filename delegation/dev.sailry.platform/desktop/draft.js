@@ -3,18 +3,27 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const equal = (left,right) => JSON.stringify(left) === JSON.stringify(right);
 export const RESEARCH_INSTRUCTIONS = 'Research the assigned question using the selected web-search:research skill and available read-only tools. Return supported conclusions with source links, uncertainty and conflicting evidence to the parent. Keep the inherited permissions and the task\'s budget; do not modify resources or ask the user for input.';
 
-export function research(id,name,description) {
-  return {id,revision:0,key:'research',name,appearance:null,description,read_only:true,
-    model:null,max_turns:8,skills:['web-search:research'],instructions:RESEARCH_INSTRUCTIONS};
+/** Complete templates for new subagents; editing an existing role replaces only its instructions. */
+export const PRESETS = {
+  review:{key:'reviewer',appearance:{icon:'code',color:'blue'},read_only:true,max_turns:null,skills:[]},
+  test:{key:'verifier',appearance:{icon:'science',color:'green'},read_only:false,max_turns:null,skills:[]},
+  implement:{key:'implementer',appearance:{icon:'tools',color:'orange'},read_only:false,max_turns:null,skills:[]},
+  research:{key:'research',appearance:{icon:'ai',color:'none'},read_only:true,max_turns:8,skills:['web-search:research']},
+  docs:{key:'writer',appearance:{icon:'writing',color:'violet'},read_only:false,max_turns:null,skills:[]}
+};
+
+export function applyPreset(draft,preset,name,description,instructions) {
+  const value = PRESETS[preset];
+  if (!draft.creating || !value) return null;
+  draft.original = {...draft.original,key:value.key,name,description,read_only:value.read_only,
+    model:null,max_turns:value.max_turns,skills:[...value.skills],instructions};
+  draft.appearance = clone(value.appearance);
+  draft.readOnly = value.read_only; draft.fixed = false; draft.model = null; draft.error = null;
+  return {key:value.key,name,turns:value.max_turns === null ? '' : String(value.max_turns),instructions};
 }
 
 export function applyResearch(draft,name,description) {
-  if (!draft.creating) return null;
-  const value = research(draft.original.id,name,description);
-  draft.original = {...value,revision:draft.original.revision};
-  draft.appearance = {icon:'ai',color:'none'};
-  draft.readOnly = value.read_only; draft.fixed = false; draft.model = null; draft.error = null;
-  return {key:value.key,name:value.name,turns:String(value.max_turns),instructions:value.instructions};
+  return applyPreset(draft,'research',name,description,RESEARCH_INSTRUCTIONS);
 }
 
 export function catalog(value) {

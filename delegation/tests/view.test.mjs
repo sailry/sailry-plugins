@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
+import {PRESETS} from '../dev.sailry.platform/desktop/draft.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -23,13 +24,13 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','SettingsRow','IconButton','AppearancePicker','Menu','Modal','TextField','SliderField','Loading']
+  const adapters=Object.fromEntries(['EmptyState','SettingsGroup','SettingsRow','IconButton','Appearance','AppearancePicker','Menu','Modal','TextField','SliderField','Loading']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
     div:()=>element(),Button:function(id){return element('Button',id);},
     Checkbox:function(id){return element('Checkbox',id);},
     Field:function(){return element('Field');},Form:function(){return element('Form');},...adapters,
-    efforts:()=>[null],window:{viewport_size:()=>({width:1280,height:820})},
+    efforts:()=>[null],PRESETS,window:{viewport_size:()=>({width:1280,height:820})},
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:{settings_empty:'No roles',settings_add:'Add',settings_edit:'Edit',settings_delete:'Delete',roles_profiles:'Roles'},
@@ -120,7 +121,7 @@ test('draft mode chooses the modal title',()=>{
     fields:{key:'key',name:'name',turns:'turns',instructions:'instructions'},models:[],fixed:false,model:null};
   setup.view.text=messages('en');setup.view.dialog=owner;setup.render();
   let modal=setup.nodes.get('dialog');
-  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Add subagent',width:648});
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Add subagent',width:560});
   assert.deepEqual(modal.items.map(item=>item.selector),['role-editor',null]);
   owner.creating=false;setup.render();
   modal=setup.nodes.get('dialog');
@@ -155,13 +156,15 @@ test('readonly copy exists in every supported locale',()=>{
   }
 });
 
-test('populated roles retain action targets without decorative icons',()=>{
+test('populated roles show their appearance beside action targets',()=>{
   const setup=fixture(),appearance={icon:'code',color:'blue'};
   setup.view.roles=[{id:'retained',name:'Retained role',key:'review',appearance}];setup.render();
   assert.equal(setup.nodes.has('role-empty'),false);
-  assert.equal(setup.nodes.has('role-icon-retained'),false);
+  const icon=setup.nodes.get('role-appearance-retained');
+  assert.equal(icon.kind,'Appearance');
+  assert.deepEqual(plain(icon.props),{value:appearance});
   assert.deepEqual(plain(setup.nodes.get('role-edit-retained').props),{icon:'settings-2',label:'Edit',disabled:false});
-  assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'circle-x',label:'Delete',disabled:false});
+  assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'trash-2',label:'Delete',disabled:false});
   setup.view.loading=true;setup.render();
   assert.ok(setup.nodes.has('role-edit-retained'));
   assert.equal(setup.nodes.has('role-loading'),false);
@@ -190,4 +193,16 @@ test('effort values retain raw names and budgets without changing inheritance',(
       assert.deepEqual(value,{budget});
     }
   }
+});
+
+test('new drafts offer complete preset roles first',()=>{
+  const setup=fixture(),owner={kind:'edit',token:'dialog',creating:true,readOnly:false,request:null,
+    fields:{key:'key',name:'name',turns:'turns',instructions:'instructions'},models:[],fixed:false,model:null};
+  setup.view.text=messages('en');setup.view.dialog=owner;setup.render();
+  const presets=setup.nodes.get('role-presets');
+  assert.equal(presets.props.form,true);
+  assert.deepEqual(plain(presets.props.items.map(item=>item.label)),
+    ['Code review','Verification','Implementation','Research','Documentation']);
+  owner.creating=false;setup.render();
+  assert.equal(setup.nodes.get('role-presets').props.small,true);
 });

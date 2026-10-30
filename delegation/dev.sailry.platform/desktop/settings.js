@@ -145,9 +145,9 @@ export default class Settings extends View {
     } else if (event.menu === 'role-effort' && owner.model) {
       const effort = draft.efforts(owner).find(effort => JSON.stringify(effort) === value);
       if (effort !== undefined) { owner.model.effort = effort; owner.error = null; }
-    } else if (event.menu === 'role-presets' && ['review','research','implement'].includes(value)) {
-      const fields = value === 'research' && owner.creating
-        ? draft.applyResearch(owner,this.text.role_preset_research,this.text.role_research_description) : null;
+    } else if (event.menu === 'role-presets' && value in draft.PRESETS) {
+      const text = this.text, fields = draft.applyPreset(owner,value,text[`role_preset_${value}`],
+        text[`role_${value}_description`],text[`role_prompt_${value}`]);
       if (fields) {
         for (const [key,text] of Object.entries(fields)) setText(owner.fields[key],text);
       } else setText(owner.fields.instructions,this.text[`role_prompt_${value}`]);

@@ -14,7 +14,7 @@ const exports = {
   'sailry/forms':['createText','readText','setText','releaseText','nextTextEvent','TextField','SliderField','createSlider','setSlider','nextSliderEvent'],
   'sailry/settings':['prepareSettings'],
   'sailry/ui':['nextControlEvent','nextMenuEvent','modal_closed','toast','dismissToast',
-    'EmptyState','SettingsGroup','SettingsRow','IconButton','AppearancePicker','Menu','Modal','Loading'],
+    'EmptyState','SettingsGroup','SettingsRow','IconButton','Appearance','AppearancePicker','Menu','Modal','Loading'],
 };
 
 test('settings link against public module exports',async()=>{
