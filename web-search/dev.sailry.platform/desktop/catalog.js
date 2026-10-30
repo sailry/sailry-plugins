@@ -3,7 +3,7 @@ export const drivers = ['exa','tinyfish','tavily','brave','searxng','bocha','vol
 const native = ['responses','anthropic','gemini'];
 
 export function available(settings) {
-  return drivers.filter(driver => Object.hasOwn(settings?.providers ?? {},driver));
+  return (settings?.order ?? drivers).filter(driver => drivers.includes(driver) && Object.hasOwn(settings?.providers ?? {},driver));
 }
 
 export function needsKey(capability) {

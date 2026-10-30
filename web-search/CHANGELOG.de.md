@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+Suchdienste lassen sich nach oben und unten verschieben. Die automatische Suche folgt der Reihenfolge aktiver Dienste einschließlich Modellsuche und wechselt bei fehlender Unterstützung zum nächsten Dienst.
+
 ## 0.1.10
 
 - Nicht unterstützte Copilot-Konten von der Modellsuche ausschließen

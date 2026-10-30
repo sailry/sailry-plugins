@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+Reorder search channels with up and down buttons. Automatic search follows the enabled channel order, including model search, and falls back on unsupported model services.
+
 ## 0.1.10
 
 - Exclude unsupported Copilot accounts from native model search

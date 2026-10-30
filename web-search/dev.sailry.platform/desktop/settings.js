@@ -61,6 +61,13 @@ export default class Settings extends View {
     if(this.busy())return;const settings=clone(this.saved);settings.providers[driver].enabled=value;this.save(settings,cx);
   }
   available() {return catalog.available(this.saved);}
+  move(driver,direction,cx) {
+    if(this.busy())return;
+    const order=this.available(),index=order.indexOf(driver),target=index+direction;
+    if(index<0||target<0||target>=order.length)return;
+    [order[index],order[target]]=[order[target],order[index]];
+    const settings=clone(this.saved);settings.order=order;this.save(settings,cx);
+  }
   test(driver,cx) {
     if(this.busy())return;
     this.request={id:prepareRequest({kind:'test_search_driver',data:{driver}}),testing:true};this.retry(cx);
@@ -149,6 +156,8 @@ export default class Settings extends View {
       this.save(settings,cx);
     }
     for(const driver of this.available()) {
+      if(event.id===`search-up-${driver}`)this.move(driver,-1,cx);
+      if(event.id===`search-down-${driver}`)this.move(driver,1,cx);
       if(event.id===`search-edit-${driver}`)this.edit(driver,cx);
       if(event.id===`search-test-${driver}`)this.test(driver,cx);
     }

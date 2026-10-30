@@ -54,7 +54,7 @@ function editor(view) {
 export function render(view) {
   const text=view.text,settings=view.saved??{providers:{}},locked=view.busy(),drivers=view.available();
   const selected=settings.driver?.kind==='driver'?settings.driver.driver:settings.driver?.kind??'none';
-  const providers=drivers.map(driver=>{
+  const providers=drivers.map((driver,index)=>{
     const config=settings.providers[driver]??{},capability=settings.capabilities?.[driver];
     const status=!config.enabled?'search_disabled':catalog.needsKey(capability)&&!config.key_configured
       ?'search_key_required':driver==='searxng'&&!config.endpoint?'search_endpoint_required'
@@ -64,6 +64,8 @@ export function render(view) {
         .child(div().text_sm().text_color(theme().colors.muted_foreground).child(text[status]))
         .children(capability?.quota?[div().text_sm().text_color(theme().colors.muted_foreground).child(text[`search_quota_${capability.quota}`])]:[]))
       .child(toggle(`search-enabled-${driver}`,config.enabled,locked,(value,cx)=>view.enabled(driver,value,cx)))
+      .child(IconButton.new(`search-up-${driver}`,{icon:'arrow-up',label:text.search_move_up,disabled:locked||index===0}))
+      .child(IconButton.new(`search-down-${driver}`,{icon:'arrow-down',label:text.search_move_down,disabled:locked||index===drivers.length-1}))
       .child(IconButton.new(`search-edit-${driver}`,{icon:'settings-2',label:text.settings_edit,disabled:locked}))
       .child(IconButton.new(`search-test-${driver}`,{icon:'play',label:text.search_test,disabled:locked}));
   });

@@ -35,7 +35,7 @@ test('research follows available search and page-reading capabilities', () => {
 });
 
 test('contributes packaged search settings and enable control', () => {
-  assert.equal(manifest.version, '0.1.10');
+  assert.equal(manifest.version, '0.1.11');
   assert.equal(extension.min_sailry_version, '0.1.0-alpha.5');
   assert.equal(extension.settings_page.native, undefined);
   assert.equal(extension.settings_page.entry, 'dev.sailry.platform/desktop/settings.js');
@@ -80,10 +80,10 @@ test('translates new controls and release notes',()=>{
   for(const [locale,entries] of Object.entries(locales)) {
     for(const key of ['search_driver_tinyfish','search_driver_volcengine','search_driver_deepseek','search_driver_model',
       'search_quota_keyless','search_quota_anonymous_quota','search_quota_free_quota','search_quota_paid',
-      'search_model_provider','search_model_name','search_model_required','search_model_unavailable','search_not_supported','search_sign_in']) {
+      'search_move_up','search_move_down','search_model_provider','search_model_name','search_model_required','search_model_unavailable','search_not_supported','search_sign_in']) {
       assert.equal(typeof entries[key],'string',`${locale}: ${key}`);assert(entries[key]);
     }
     const name=locale==='en'?'CHANGELOG.md':`CHANGELOG.${locale}.md`;
-    assert.match(fs.readFileSync(new URL(`../${name}`,import.meta.url),'utf8'),/^## 0\.1\.9$/m);
+    assert.match(fs.readFileSync(new URL(`../${name}`,import.meta.url),'utf8'),/^## 0\.1\.11$/m);
   }
 });

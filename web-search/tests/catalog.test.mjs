@@ -30,3 +30,8 @@ test('filters unsupported interfaces and login methods',()=>{
   assert.equal(contains(choices,{provider:'one',model:'vendor/model'}),false);
   assert.equal(contains(choices,null),false);
 });
+
+test('uses the saved service order',()=>{
+  assert.deepEqual(available({order:['model','exa','tinyfish'],providers:{exa:{},model:{},tinyfish:{}}}),
+    ['model','exa','tinyfish']);
+});

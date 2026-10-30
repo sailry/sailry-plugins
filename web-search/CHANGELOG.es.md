@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+Reordena los servicios con los botones de subir y bajar. La búsqueda automática sigue el orden de los servicios activos, incluida la búsqueda con modelos, y recurre al siguiente si no es compatible.
+
 ## 0.1.10
 
 - Excluir las cuentas de Copilot no compatibles de la búsqueda con modelos

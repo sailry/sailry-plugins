@@ -5,7 +5,7 @@ An ordinary Agent Plugins package declaring read-only Node web tools.
 `web_fetch` reads relevant public HTTP(S) pages and APIs on the execution Node.
 Use freshness and domain filters to focus results. The Node caches up to 50 recent searches for five minutes and clears this cache when search settings change.
 
-Select model search explicitly to use a configured Responses, Anthropic or Gemini model service. Model search does not participate in automatic selection or fallback. It returns cited links and an untrusted model-generated answer summary. Search settings show each service’s quota type.
+Automatic search tries enabled, configured channels from top to bottom. Use the up and down buttons in search settings to change their priority. Model search participates at its saved position and uses a configured Responses, Anthropic or Gemini model service. With fallback enabled, unsupported model search and recoverable service failures advance to the next channel. Manual model selection uses only that model channel. It returns cited links and an untrusted model-generated answer summary. Search settings show each service’s quota type.
 
 A configured TinyFish service can retry public pages with little directly fetched text. Use a browser for interaction or login.
 

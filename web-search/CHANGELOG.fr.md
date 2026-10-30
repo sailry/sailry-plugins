@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+Réorganisez les services avec les boutons haut et bas. La recherche automatique suit l’ordre des services activés, y compris les modèles, et passe au suivant en cas d’incompatibilité.
+
 ## 0.1.10
 
 - Exclure les comptes Copilot non pris en charge de la recherche par modèle

@@ -153,3 +153,32 @@ test('search response failures do not blame settings',async()=>{
   f.view.fail({code:'invalid_request'},true,false);
   assert.equal(f.notices.at(-1).message,messages('en').search_settings_invalid);
 });
+
+test('moves services and preserves enable choices',async()=>{
+  const f=await fixture(),providers=plain(f.view.saved.providers);
+  f.view.control({id:'search-up-model'},f.cx);await f.settle();
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
+  assert.deepEqual(plain(f.view.saved.order),f.view.available());
+  assert.deepEqual(plain(f.view.saved.providers),providers);
+  f.view.control({id:'search-down-model'},f.cx);await f.settle();
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
+});
+
+test('ignores moves beyond either list boundary',async()=>{
+  const f=await fixture(),revision=f.view.saved.revision;
+  f.view.move('exa',-1,f.cx);f.view.move('model',1,f.cx);f.view.move('missing',1,f.cx);
+  await f.settle();assert.equal(f.view.saved.revision,revision);
+});
+
+test('blocks moves until pending saves complete',async()=>{
+  const f=await fixture();
+  f.view.move('model',-1,f.cx);f.view.move('model',-1,f.cx);await f.settle();
+  assert.equal(f.view.saved.revision,1);
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
+});
+
+test('reloads authoritative order after a conflict',async()=>{
+  const f=await fixture();f.external();f.view.move('model',-1,f.cx);await f.settle();
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
+  assert.equal(f.notices.at(-1).message,messages('en').search_settings_conflict);
+});
