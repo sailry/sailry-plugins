@@ -1,6 +1,7 @@
 ## 0.1.24
 
 - Show step bars from the first step and fill the connection row with session speed when API response time is unavailable
+- Group tool calls by tool name instead of internal plugin and MCP aliases
 
 ## 0.1.23
 

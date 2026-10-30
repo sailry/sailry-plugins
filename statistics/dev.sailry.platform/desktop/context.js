@@ -92,6 +92,13 @@ export function current(state) {
 }
 
 /** Historical selection never changes current occupancy or the current connection. */
+/** Model-facing aliases carry plugin and MCP digests; counts group by the tool's own name. */
+export function toolName(name) {
+  return /^plugin_[0-9a-f]{16}_(.+)$/.exec(name)?.[1]
+    ?? /^mcp_(.+)_[0-9a-f]{24}$/.exec(name)?.[1]
+    ?? name;
+}
+
 export function overview(state,selected) {
   const statistics=state.statistics, observations=statistics?.observations;
   const snapshots=history(statistics),latest=snapshot(observations?.recent?.at(-1));
@@ -101,7 +108,12 @@ export function overview(state,selected) {
   const priced=statistics?.cost && integer(statistics.cost.responses)===integer(statistics.responses);
   const input=integer(usage?.input),output=integer(usage?.output);
   const cached=integer(observations?.cache_read),reasoning=integer(observations?.reasoning);
-  const tools=Object.entries(observations?.tools??{}).map(([name,count])=>({name,count:integer(count)}))
+  const grouped=new Map();
+  for(const [name,count] of Object.entries(observations?.tools??{})) {
+    const label=toolName(name);
+    grouped.set(label,(grouped.get(label)??0n)+(integer(count)??0n));
+  }
+  const tools=[...grouped].map(([name,count])=>({name,count}))
     .sort((left,right)=>left.count===right.count ? left.name.localeCompare(right.name) : left.count>right.count ? -1 : 1);
   return {used,snapshots:snapshots.map(item=>({...item,selected:item===chosen,
       color:chosen && item!==chosen?'muted_foreground':'chart_2'})),

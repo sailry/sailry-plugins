@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {overview,history,connection,timing,latency,shares,CATEGORIES} from '../dev.sailry.platform/desktop/context.js';
+import {overview,history,connection,timing,latency,shares,CATEGORIES,toolName} from '../dev.sailry.platform/desktop/context.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
@@ -398,4 +398,14 @@ test('restored statistics appear before message pages arrive',()=>{
   for(const statistics of [null,{turns:'0',responses:'0'},{turns:'0',responses:'0',usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'}}]) {
     assert.deepEqual(visible({has_messages:false,statistics}),['context_panel','context']);
   }
+});
+
+test('tool counts group aliases by tool name',()=>{
+  assert.equal(toolName('plugin_dcce851b42e39f49_read_file'),'read_file');
+  assert.equal(toolName('mcp_github_github_list_releases_9be8421ef547661b5ae1577f'),'github_github_list_releases');
+  assert.equal(toolName('load_skill'),'load_skill');
+  const {usage}=overview({statistics:{observations:{tools:{
+    plugin_dcce851b42e39f49_read_file:'2',plugin_d85a01662209477f_read_file:'1',load_skill:'1'}}}},null);
+  assert.deepEqual(usage.tools,[{name:'read_file',count:3n},{name:'load_skill',count:1n}]);
+  assert.equal(usage.toolCount,4n);
 });
