@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Show confirmed file writes and edits as line-numbered diffs
+
 ## 0.1.18
 
 - Remove the redundant written notice from file write and edit results

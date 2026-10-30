@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -503,18 +503,7 @@
                   "path": "/path"
                 },
                 "diff": {
-                  "format": "added",
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "arguments",
-                          "path": "/expected_revision"
-                        },
-                        "equals": null
-                      }
-                    ]
-                  }
+                  "format": "checkpoint"
                 },
                 "empty": {
                   "label": "No output",
@@ -702,6 +691,13 @@
                 "text": {
                   "source": "arguments",
                   "path": "/new_text"
+                },
+                "path": {
+                  "source": "arguments",
+                  "path": "/path"
+                },
+                "diff": {
+                  "format": "checkpoint"
                 }
               },
               "preview": {

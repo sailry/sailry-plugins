@@ -170,9 +170,10 @@ test('result recipes refer to original data and preserve file-specific choices',
     value:reference('result','/data/matches'),item:'/path',
   });
   assert.deepEqual(tool('write_file').display.output.body.text,reference('arguments','/text'));
-  assert.deepEqual(tool('write_file').display.output.body.diff,{
-    format:'added',when:{any:[{value:reference('arguments','/expected_revision'),equals:null}]},
-  });
+  for (const name of ['write_file','edit_file']) {
+    assert.deepEqual(tool(name).display.output.body.diff,{format:'checkpoint'});
+    assert.deepEqual(tool(name).display.output.body.path,reference('arguments','/path'));
+  }
   const prompts = tool('write_file').display.approval;
   assert.deepEqual(prompts[0].when,{any:[{value:reference('arguments','/expected_revision'),equals:null}]});
   assert.equal(prompts[0].message.label,'Create %{path}');
