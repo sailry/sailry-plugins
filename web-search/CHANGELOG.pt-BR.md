@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Excluir contas Copilot incompatíveis da pesquisa por modelo
+
 ## 0.1.9
 
 - Adiciona filtros de período e domínio

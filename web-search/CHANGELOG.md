@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Exclude unsupported Copilot accounts from native model search
+
 ## 0.1.9
 
 - Add freshness and domain filters

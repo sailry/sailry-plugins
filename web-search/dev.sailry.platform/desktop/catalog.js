@@ -12,7 +12,7 @@ export function needsKey(capability) {
 
 export function models(catalog) {
   return (catalog?.models ?? []).flatMap(item => {
-    if(item.kind !== 'provider' || !native.includes(item.api) || typeof item.id !== 'string')return [];
+    if(item.kind !== 'provider' || !native.includes(item.api) || item.authentication === 'copilot' || typeof item.id !== 'string')return [];
     const slash=item.id.indexOf('/');
     if(slash < 1 || slash === item.id.length-1)return [];
     return [{provider:item.id.slice(0,slash),provider_name:item.provider,model:item.id.slice(slash+1),default:item.default === true}];

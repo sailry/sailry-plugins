@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Nicht unterstützte Copilot-Konten von der Modellsuche ausschließen
+
 ## 0.1.9
 
 - Zeit- und Domainfilter hinzugefügt

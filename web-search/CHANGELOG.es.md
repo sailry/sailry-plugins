@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Excluir las cuentas de Copilot no compatibles de la búsqueda con modelos
+
 ## 0.1.9
 
 - Añade filtros de fecha y dominio

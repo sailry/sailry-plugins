@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Exclure les comptes Copilot non pris en charge de la recherche par modèle
+
 ## 0.1.9
 
 - Ajout de filtres de date et de domaine

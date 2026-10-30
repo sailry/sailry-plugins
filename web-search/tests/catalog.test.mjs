@@ -10,7 +10,7 @@ test('offers only advertised drivers',()=>{
   assert.equal(needsKey({key_required:false}),false);
 });
 
-test('filters interfaces without filtering login methods',()=>{
+test('filters unsupported interfaces and login methods',()=>{
   const choices=models({models:[
     {kind:'provider',id:'one/first',provider:'One',api:'responses',authentication:'api_key'},
     {kind:'provider',id:'one/second',provider:'One',api:'responses',authentication:'chat_gpt_o_auth',default:true},
@@ -18,6 +18,8 @@ test('filters interfaces without filtering login methods',()=>{
     {kind:'provider',id:'three/search',provider:'Three',api:'gemini',authentication:'api_key'},
     {kind:'provider',id:'four/chat',provider:'Four',api:'chat_completions'},
     {kind:'provider',id:'five/plugin',provider:'Five',api:'plugin'},
+    {kind:'provider',id:'copilot/search',provider:'Copilot',api:'responses',authentication:'copilot'},
+    {kind:'provider',id:'copilot/claude',provider:'Copilot',api:'anthropic',authentication:'copilot'},
     {kind:'provider',id:'invalid',provider:'Invalid',api:'responses'},
   ]});
   assert.deepEqual(providers(choices),[{id:'one',label:'One'},{id:'two',label:'Two'},{id:'three',label:'Three'}]);
