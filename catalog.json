@@ -20158,7 +20158,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -20285,6 +20285,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.10",
+          "commit": "eeaafc0598aefa6bb1a342e46c6047eb20d14631",
+          "min_sailry_version": "0.1.0-alpha.5",
+          "release_notes": {
+            "text": "- Exclude unsupported Copilot accounts from native model search",
+            "locales": {
+              "zh-CN": "- 模型搜索不再显示不受支持的 Copilot 账号",
+              "zh-TW": "- 模型搜尋不再顯示不支援的 Copilot 帳號",
+              "ja": "- モデル検索で未対応の Copilot アカウントを除外",
+              "ko": "- 모델 검색에서 지원하지 않는 Copilot 계정 제외",
+              "fr": "- Exclure les comptes Copilot non pris en charge de la recherche par modèle",
+              "de": "- Nicht unterstützte Copilot-Konten von der Modellsuche ausschließen",
+              "es": "- Excluir las cuentas de Copilot no compatibles de la búsqueda con modelos",
+              "pt-BR": "- Excluir contas Copilot incompatíveis da pesquisa por modelo",
+              "ru": "- Исключить неподдерживаемые учётные записи Copilot из поиска с моделями"
+            }
+          }
+        },
+        {
           "version": "0.1.9",
           "commit": "a49df558491a8d57ffff7be62a86f30e506e5ade",
           "min_sailry_version": "0.1.0-alpha.5",
@@ -20378,17 +20397,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Add freshness and domain filters\n- Add configurable search services and rendered-page fallback\n- Cache recent searches and show service quota types\n- Add explicit model search using configured model services",
+        "text": "- Exclude unsupported Copilot accounts from native model search",
         "locales": {
-          "zh-CN": "- 新增时间范围和域名筛选\n- 新增可配置搜索服务和动态网页抓取后备\n- 缓存近期搜索并显示服务额度类型\n- 支持明确选择模型服务进行搜索",
-          "zh-TW": "- 新增時間範圍與網域篩選\n- 新增可設定搜尋服務與動態網頁擷取後備\n- 快取近期搜尋並顯示服務額度類型\n- 支援明確選擇模型服務進行搜尋",
-          "ja": "- 期間とドメインの絞り込みを追加\n- 検索サービス設定と動的ページ取得のフォールバックを追加\n- 最近の検索をキャッシュしサービスの利用枠を表示\n- 設定済みモデルサービスを明示的に選択する検索を追加",
-          "ko": "- 기간 및 도메인 필터 추가\n- 검색 서비스 설정 및 동적 페이지 가져오기 대체 경로 추가\n- 최근 검색 캐시 및 서비스 할당량 유형 표시\n- 설정된 모델 서비스를 직접 선택하는 검색 추가",
-          "fr": "- Ajout de filtres de date et de domaine\n- Ajout de services de recherche configurables et d’un recours pour les pages dynamiques\n- Mise en cache des recherches récentes et affichage des types de quota\n- Ajout de la recherche avec un service de modèles explicitement sélectionné",
-          "de": "- Zeit- und Domainfilter hinzugefügt\n- Konfigurierbare Suchdienste und Ersatzabruf dynamischer Seiten hinzugefügt\n- Aktuelle Suchergebnisse werden zwischengespeichert und Dienstkontingente angezeigt\n- Explizite Suche mit konfigurierten Modelldiensten hinzugefügt",
-          "es": "- Añade filtros de fecha y dominio\n- Añade servicios de búsqueda configurables y una alternativa para páginas dinámicas\n- Guarda búsquedas recientes en caché y muestra los tipos de cuota\n- Añade búsqueda con servicios de modelos seleccionados explícitamente",
-          "pt-BR": "- Adiciona filtros de período e domínio\n- Adiciona serviços de pesquisa configuráveis e alternativa para páginas dinâmicas\n- Armazena pesquisas recentes em cache e exibe os tipos de cota\n- Adiciona pesquisa com serviços de modelos selecionados explicitamente",
-          "ru": "- Добавлены фильтры по времени и доменам\n- Добавлены настраиваемые поисковые сервисы и резервная загрузка динамических страниц\n- Добавлены кеширование недавних поисков и отображение типов квот\n- Добавлен поиск через явно выбранный сервис моделей"
+          "zh-CN": "- 模型搜索不再显示不受支持的 Copilot 账号",
+          "zh-TW": "- 模型搜尋不再顯示不支援的 Copilot 帳號",
+          "ja": "- モデル検索で未対応の Copilot アカウントを除外",
+          "ko": "- 모델 검색에서 지원하지 않는 Copilot 계정 제외",
+          "fr": "- Exclure les comptes Copilot non pris en charge de la recherche par modèle",
+          "de": "- Nicht unterstützte Copilot-Konten von der Modellsuche ausschließen",
+          "es": "- Excluir las cuentas de Copilot no compatibles de la búsqueda con modelos",
+          "pt-BR": "- Excluir contas Copilot incompatíveis da pesquisa por modelo",
+          "ru": "- Исключить неподдерживаемые учётные записи Copilot из поиска с моделями"
         }
       }
     },
