@@ -1,3 +1,9 @@
+## 0.1.4
+
+- Add browser sign-in with PKCE and the fixed local callback
+- Support pasted callback addresses when the local port is unavailable
+- Replace device-code sign-in with browser authorization
+
 ## 0.1.3
 
 - Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions

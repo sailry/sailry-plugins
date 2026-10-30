@@ -1,12 +1,10 @@
 // Existing Sailry SIWC and Codex protocols, executed by the shared private auth host.
-const CODEX_REDIRECT = 'https://auth.openai.com/deviceauth/callback';
 const RESOURCE = 'https://api.openai.com/v1';
 const invalid = () => ({kind:'reject',code:'invalid_request'});
 const denied = () => ({kind:'reject',code:'permission_denied'});
 const text = value => typeof value === 'string' && value.length > 0 && value.length <= 16384 && !/[\x00-\x1f\x7f-\x9f]/.test(value);
 const client = value => typeof value === 'string' && value.length <= 256 && /^[A-Za-z0-9_-]+$/.test(value) && value !== 'dynamic_agent_client';
 const request = (name,fields,state) => ({kind:'request',name,fields,state});
-const wait = state => ({kind:'wait',delay_ms:state.interval_ms,state});
 const expires = (now,seconds) => Number.isSafeInteger(seconds) && seconds > 0 && Number.isSafeInteger(now+seconds*1000) ? now+seconds*1000 : null;
 const query = (base,fields) => `${base}?${Object.entries(fields).map(([key,value])=>`${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&')}`;
 function error(event) {
@@ -48,7 +46,7 @@ function verified(kind,event,state,context,now) {
   if (!context.previous || !state.refreshing) return invalid();
   return finish(kind,tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id,state.refreshing===true);
 }
-// Device tokens come from the declared TLS/PKCE exchange. Claims are metadata,
+// Codex tokens come from the declared TLS/PKCE exchange. Claims are metadata,
 // not authority: they never select an issuer, client, endpoint or permission.
 function metadata(token) {
   if (!text(token)) return null;
@@ -73,7 +71,7 @@ function metadata(token) {
     return claims && typeof claims === 'object' && !Array.isArray(claims) ? claims : null;
   } catch { return null; }
 }
-function deviceTokens(event,state,context,now) {
+function codexTokens(event,state,context,now) {
   if (event.kind !== 'response') return invalid();
   const tokens=event.body;
   if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) return invalid();
@@ -83,42 +81,6 @@ function deviceTokens(event,state,context,now) {
   }
   if (!context.previous || !state.refreshing) return invalid();
   return finish('chat_gpt_oauth',tokens,{sub:context.previous.subject,email:context.previous.email,chatgpt_account_id:context.previous.account_id},context,now,state.client_id,state.refreshing===true);
-}
-export function codex({event,context,state,now_ms:now}) {
-  const CLIENT=context.fields?.client_id;
-  if (!client(CLIENT)) return invalid();
-  if (event.kind === 'start') return request('device',{client_id:CLIENT},{phase:'device',client_id:CLIENT});
-  if (event.kind === 'refresh') return request('refresh',{client_id:CLIENT,refresh:context.previous?.refresh},{phase:'tokens',client_id:CLIENT,refreshing:true});
-  if (state?.phase === 'poll' && event.kind === 'response') {
-    const code=typeof event.body?.error === 'string' ? event.body.error : event.body?.error?.code;
-    if ([403,404].includes(event.status) || event.status >= 300 && ['deviceauth_authorization_pending','slow_down'].includes(code)) {
-      const interval_ms=state.interval_ms+(code === 'slow_down' ? 5000 : 0);
-      return Number.isSafeInteger(interval_ms) ? wait({...state,interval_ms}) : invalid();
-    }
-  }
-  const failed=error(event); if (failed) return failed;
-  switch (state?.phase) {
-    case 'device': {
-      const body=event.body;
-      if (body?.user_code !== undefined && body?.usercode !== undefined) return invalid();
-      const userCode=body?.user_code ?? body?.usercode;
-      if (body?.expires_in != null && (!Number.isSafeInteger(body.expires_in) || body.expires_in < 0)) return invalid();
-      const duration=body?.expires_in == null ? 900 : Math.min(body.expires_in,900);
-      if (duration === 0) return {kind:'reject',code:'expired'};
-      const expiry=expires(now,duration);
-      if (!text(body?.device_auth_id) || !text(userCode) || userCode.length > 64 || !/^[A-Za-z0-9-]+$/.test(userCode) || expiry === null) return invalid();
-      const parsed=typeof body.interval === 'number' || typeof body.interval === 'string' && /^\+?\d+$/.test(body.interval.trim()) ? Number(body.interval) : 5;
-      const interval_ms=(Number.isSafeInteger(parsed) && parsed >= 0 ? Math.max(1,Math.min(parsed,900)) : 5)*1000;
-      return {kind:'prompt',url:'https://auth.openai.com/codex/device',user_code:userCode,expires_at_ms:expiry,state:{phase:'presented',device_auth_id:body.device_auth_id,user_code:userCode,interval_ms,client_id:CLIENT}};
-    }
-    case 'presented': return wait({...state,phase:'poll'});
-    case 'poll':
-      if (event.kind === 'elapsed') return request('poll',{device_auth_id:state.device_auth_id,user_code:state.user_code},state);
-      if (!text(event.body?.authorization_code) || !text(event.body?.code_verifier)) return invalid();
-      return request('token',{client_id:CLIENT,redirect_uri:CODEX_REDIRECT,code:event.body.authorization_code,verifier:event.body.code_verifier},{phase:'tokens',client_id:CLIENT});
-    case 'tokens': return deviceTokens(event,state,context,now);
-    default: return invalid();
-  }
 }
 export function siwc({event,context,state,now_ms:now}) {
   if (event.kind === 'refresh') {
@@ -142,6 +104,32 @@ export function siwc({event,context,state,now_ms:now}) {
     }
     case 'registered': return request('token',{client_id:state.client_id,redirect_uri:context.redirect,resource:RESOURCE,code:state.code,verifier:context.proof.verifier},{phase:'tokens',client_id:state.client_id,nonce:context.proof.nonce});
     case 'tokens': return verified('chat_gpt',event,state,context,now);
+    default: return invalid();
+  }
+}
+
+// Reference: yetone/magpie e8d42c02, internal/provider/signin.go.
+// The public Codex client requires this exact loopback URI.
+export function codex({event,context,state,now_ms:now}) {
+  const CLIENT=context.fields?.client_id;
+  if (!client(CLIENT)) return invalid();
+  if (event.kind === 'refresh') return request('refresh',{client_id:CLIENT,refresh:context.previous?.refresh},{phase:'tokens',client_id:CLIENT,refreshing:true});
+  if (!state?.refreshing && context.redirect !== 'http://localhost:1455/auth/callback') return invalid();
+  if (event.kind === 'start') return {
+    kind:'prompt',url:query('https://auth.openai.com/oauth/authorize',{
+      response_type:'code',client_id:CLIENT,redirect_uri:context.redirect,
+      scope:context.scopes.join(' '),code_challenge:context.proof.challenge,
+      code_challenge_method:'S256',state:context.proof.state,
+      id_token_add_organizations:'true',codex_cli_simplified_flow:'true',originator:'codex_cli_rs'
+    }),user_code:null,expires_at_ms:now+900000,state:{phase:'callback',client_id:CLIENT}
+  };
+  const failed=error(event); if (failed) return failed;
+  switch (state?.phase) {
+    case 'callback': return {kind:'callback',proof:'state',allow_code:false,state:{...state,phase:'returned'}};
+    case 'returned':
+      if (event.kind !== 'callback' || !text(event.fields?.code)) return invalid();
+      return request('token',{client_id:CLIENT,redirect_uri:context.redirect,code:event.fields.code,verifier:context.proof.verifier},{phase:'tokens',client_id:CLIENT});
+    case 'tokens': return codexTokens(event,state,context,now);
     default: return invalid();
   }
 }
