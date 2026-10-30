@@ -32,25 +32,26 @@ test('composer toggles steps and clears stale selections',async()=>{
   view.select('removed');assert.equal(view.selected,null);
 });
 
-test('connection observations resolve every background through semantic colors',()=>{
-  const backgrounds=[];
-  const colors={muted:'#161616',muted_foreground:'#aaaaaa',border:'#333333',
+test('connection colors latency and hides without observations',()=>{
+  const tones=[];
+  const colors={muted:'#161616',muted_foreground:'#aaaaaa',foreground:'#ffffff',border:'#333333',
     success:'#00aa00',warning:'#aa8800',destructive:'#cc0000'};
   const element=()=>new Proxy({}, {get:(_target,key)=>{
-    if(key==='bg')return color=>{
-      assert.equal(typeof color,'string','background must resolve to a semantic color');
-      backgrounds.push(color);return element();
+    if(key==='text_color')return color=>{
+      assert.equal(typeof color,'string','text color must resolve to a semantic color');
+      tones.push(color);return element();
     };
     return ()=>element();
   }});
   const {connection}=vm.runInNewContext(`${source}\n({connection})`,{
     div:element,Button:{new:element},TextLine:{new:element},Collapsible:class {constructor(){return element();}},
-    Icon:class {constructor(){return element();}},theme:()=>({colors}),latency,compact,duration,
+    Icon:class {constructor(){return element();}},theme:()=>({colors}),latency,shares:()=>[],compact,duration,
   });
-  for(const value of [null,0n,2000000n,15000000n]) {
-    backgrounds.length=0;
-    connection({text:messages('en'),expanded:new Set()},{connection:{response:value,waiting:value}});
-    const expected=colors[value==null?'muted_foreground':value===0n?'success':value===2000000n?'warning':'destructive'];
-    assert.ok(backgrounds.includes(expected));
+  const view={text:messages('en'),expanded:new Set()};
+  assert.equal(connection(view,{connection:{response:null,first:null,elapsed:null}}),null);
+  for(const value of [0n,2000000n,15000000n]) {
+    tones.length=0;
+    assert.notEqual(connection(view,{connection:{response:value,first:null,elapsed:null}}),null);
+    assert.ok(tones.includes(colors[value===0n?'success':value===2000000n?'warning':'destructive']));
   }
 });

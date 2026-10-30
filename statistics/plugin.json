@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -96,7 +96,7 @@
           "icon": "chart-pie",
           "order": 20,
           "handler": "context",
-          "width": 480,
+          "width": 380,
           "align": "end"
         },
         {
