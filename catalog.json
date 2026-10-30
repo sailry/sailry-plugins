@@ -8602,7 +8602,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9094,16 +9094,6 @@
                     }
                   },
                   "output": {
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Written",
-                          "locales": {
-                            "zh-CN": "已写入"
-                          }
-                        }
-                      }
-                    ],
                     "body": {
                       "text": {
                         "source": "arguments",
@@ -9309,16 +9299,6 @@
                     }
                   },
                   "output": {
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Written",
-                          "locales": {
-                            "zh-CN": "已写入"
-                          }
-                        }
-                      }
-                    ],
                     "body": {
                       "text": {
                         "source": "arguments",
@@ -10398,6 +10378,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "bd2238c25d55132b64fd2269986bacbf070e8d7c",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Remove the redundant written notice from file write and edit results"
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "bc8fba07fe480dadc7e2569d12dcfe48bbaac7f1",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -10516,7 +10504,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Align declaration checks with the current paged-read guidance"
+        "text": "- Remove the redundant written notice from file write and edit results"
       }
     },
     {
