@@ -19456,7 +19456,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -19551,7 +19551,7 @@
                 "icon": "chart-pie",
                 "order": 20,
                 "handler": "context",
-                "width": 480,
+                "width": 380,
                 "align": "end"
               },
               {
@@ -19624,6 +19624,16 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.23",
+          "commit": "ee16ed0cf97d9b9eb5e2656d0f546fe4ea4cfc27",
+          "release_notes": {
+            "text": "- Narrow the context panel and show only measured values, with fixed-width step bars and a cache hit bar",
+            "locales": {
+              "zh-CN": "- 上下文面板收窄，只显示有数据的项，步骤柱固定宽度并新增缓存命中进度条"
+            }
+          }
+        },
         {
           "version": "0.1.22",
           "commit": "b25c2f113953b29aec3b634a52e813b0227e2a33",
@@ -19857,7 +19867,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Show measured session composition when some categories are unknown and separate bar segments"
+        "text": "- Narrow the context panel and show only measured values, with fixed-width step bars and a cache hit bar",
+        "locales": {
+          "zh-CN": "- 上下文面板收窄，只显示有数据的项，步骤柱固定宽度并新增缓存命中进度条"
+        }
       }
     },
     {
