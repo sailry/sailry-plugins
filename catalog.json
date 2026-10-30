@@ -20158,7 +20158,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -20284,6 +20284,25 @@
         "models.read"
       ],
       "versions": [
+        {
+          "version": "0.1.12",
+          "commit": "61df7a392688206194310defe0162f08ff3488fe",
+          "min_sailry_version": "0.1.0-alpha.5",
+          "release_notes": {
+            "text": "Automatic search moves to the next enabled channel after any failure, including model search that does not search.",
+            "locales": {
+              "zh-CN": "自动搜索在任一渠道失败后都会尝试下一个已启用渠道，包括模型没有执行搜索的情况。",
+              "zh-TW": "自動搜尋在任一管道失敗後都會嘗試下一個已啟用管道，包括模型沒有執行搜尋的情況。",
+              "ja": "自動検索は、モデルが検索を行わなかった場合を含め、失敗したサービスの次の有効なサービスを試します。",
+              "ko": "자동 검색은 모델이 검색을 수행하지 않은 경우를 포함해 실패한 서비스 다음의 활성 서비스를 시도합니다.",
+              "fr": "La recherche automatique passe au service activé suivant après tout échec, y compris lorsqu’un modèle n’effectue pas de recherche.",
+              "de": "Die automatische Suche wechselt nach jedem Fehler zum nächsten aktiven Dienst, auch wenn ein Modell keine Suche ausführt.",
+              "es": "La búsqueda automática pasa al siguiente servicio activo tras cualquier fallo, incluso cuando un modelo no realiza la búsqueda.",
+              "pt-BR": "A pesquisa automática passa para o próximo serviço ativo após qualquer falha, inclusive quando um modelo não realiza a pesquisa.",
+              "ru": "Автоматический поиск переходит к следующей включённой службе после любой ошибки, в том числе если модель не выполнила поиск."
+            }
+          }
+        },
         {
           "version": "0.1.11",
           "commit": "a743783d142132b4d78f6fcd9ec8ffcd8e398c7b",
@@ -20416,17 +20435,17 @@
         }
       ],
       "release_notes": {
-        "text": "Reorder search channels with up and down buttons. Automatic search follows the enabled channel order, including model search, and falls back on unsupported model services.",
+        "text": "Automatic search moves to the next enabled channel after any failure, including model search that does not search.",
         "locales": {
-          "zh-CN": "支持上下移动搜索渠道。自动搜索按已启用渠道的列表顺序尝试，包含模型搜索；模型服务不支持搜索时可回退。",
-          "zh-TW": "支援上下移動搜尋管道。自動搜尋依已啟用管道的清單順序嘗試，包含模型搜尋；模型服務不支援搜尋時可使用備用管道。",
-          "ja": "上下ボタンで検索サービスを並べ替えられます。自動検索はモデル検索を含む有効なサービスを一覧順に試し、未対応の場合は次へ進みます。",
-          "ko": "위아래 버튼으로 검색 서비스 순서를 변경할 수 있습니다. 자동 검색은 모델 검색을 포함한 활성 서비스 순서를 따르며 미지원 시 다음 서비스를 시도합니다.",
-          "fr": "Réorganisez les services avec les boutons haut et bas. La recherche automatique suit l’ordre des services activés, y compris les modèles, et passe au suivant en cas d’incompatibilité.",
-          "de": "Suchdienste lassen sich nach oben und unten verschieben. Die automatische Suche folgt der Reihenfolge aktiver Dienste einschließlich Modellsuche und wechselt bei fehlender Unterstützung zum nächsten Dienst.",
-          "es": "Reordena los servicios con los botones de subir y bajar. La búsqueda automática sigue el orden de los servicios activos, incluida la búsqueda con modelos, y recurre al siguiente si no es compatible.",
-          "pt-BR": "Reordene os serviços com os botões para cima e para baixo. A pesquisa automática segue a ordem dos serviços ativos, incluindo modelos, e tenta o próximo quando não há suporte.",
-          "ru": "Меняйте порядок поисковых служб кнопками вверх и вниз. Автоматический поиск следует порядку включённых служб, включая модели, и переходит к следующей при отсутствии поддержки."
+          "zh-CN": "自动搜索在任一渠道失败后都会尝试下一个已启用渠道，包括模型没有执行搜索的情况。",
+          "zh-TW": "自動搜尋在任一管道失敗後都會嘗試下一個已啟用管道，包括模型沒有執行搜尋的情況。",
+          "ja": "自動検索は、モデルが検索を行わなかった場合を含め、失敗したサービスの次の有効なサービスを試します。",
+          "ko": "자동 검색은 모델이 검색을 수행하지 않은 경우를 포함해 실패한 서비스 다음의 활성 서비스를 시도합니다.",
+          "fr": "La recherche automatique passe au service activé suivant après tout échec, y compris lorsqu’un modèle n’effectue pas de recherche.",
+          "de": "Die automatische Suche wechselt nach jedem Fehler zum nächsten aktiven Dienst, auch wenn ein Modell keine Suche ausführt.",
+          "es": "La búsqueda automática pasa al siguiente servicio activo tras cualquier fallo, incluso cuando un modelo no realiza la búsqueda.",
+          "pt-BR": "A pesquisa automática passa para o próximo serviço ativo após qualquer falha, inclusive quando um modelo não realiza a pesquisa.",
+          "ru": "Автоматический поиск переходит к следующей включённой службе после любой ошибки, в том числе если модель не выполнила поиск."
         }
       }
     },
