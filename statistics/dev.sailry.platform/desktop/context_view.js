@@ -85,7 +85,7 @@ function figures(id,values,size=20) {
 
 function history(view,data) {
   const {text}=view,{snapshots,chosen}=data;
-  if(snapshots.length<2)return null;
+  if(!snapshots.length)return null;
   const recent=snapshots.slice(-HISTORY_SLOTS);
   const peak=Math.max(1,...recent.map(item=>Number(item.tokens??0n)));
   const stub=()=>div().w_full().h(STUB_HEIGHT).rounded_t(1).bg(colors().muted);
@@ -184,14 +184,17 @@ function timing(view,data) {
   return section('timing',text.context_session_time,value.active==null?null:span(value.active,text),[
     bars('context-time-bar',parts,value.active),
     column().gap(6).children(pairs),
-    value.speed==null?null:muted(`${text.context_output_speed} ${value.speed} ${text.usage_speed_unit}`),
+    // Speed fills the connection row when no API response time is measured.
+    value.speed==null||data.connection.response==null?null:muted(`${text.context_output_speed} ${value.speed} ${text.usage_speed_unit}`),
   ]);
 }
 
 function connection(view,data) {
-  const {text}=view,value=data.connection;
+  const {text}=view,value=data.connection,speed=data.timing?.speed;
   const numbers=figures('connection',[
-    [text.context_api_response,value.response==null?null:span(value.response,text),text.context_headers_note,latency(value.response,'response')],
+    value.response==null
+      ?[text.context_output_speed,speed==null?null:`${speed} ${text.usage_speed_unit}`]
+      :[text.context_api_response,span(value.response,text),text.context_headers_note,latency(value.response,'response')],
     [text.context_first_response,value.first==null?null:span(value.first,text),text.context_first_note,latency(value.first,'waiting')],
     [text.context_request_time,value.elapsed==null?null:span(value.elapsed,text)],
   ],16);

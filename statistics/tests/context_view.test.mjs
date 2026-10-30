@@ -49,6 +49,7 @@ test('connection colors latency and hides without observations',()=>{
   });
   const view={text:messages('en'),expanded:new Set()};
   assert.equal(connection(view,{connection:{response:null,first:null,elapsed:null}}),null);
+  assert.notEqual(connection(view,{connection:{response:null,first:null,elapsed:null},timing:{speed:'17.0'}}),null);
   for(const value of [0n,2000000n,15000000n]) {
     tones.length=0;
     assert.notEqual(connection(view,{connection:{response:value,first:null,elapsed:null}}),null);

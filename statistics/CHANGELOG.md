@@ -1,3 +1,7 @@
+## 0.1.24
+
+- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable
+
 ## 0.1.23
 
 - Narrow the context panel and show only measured values, with fixed-width step bars and a cache hit bar
