@@ -8602,7 +8602,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9104,18 +9104,7 @@
                         "path": "/path"
                       },
                       "diff": {
-                        "format": "added",
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "arguments",
-                                "path": "/expected_revision"
-                              },
-                              "equals": null
-                            }
-                          ]
-                        }
+                        "format": "checkpoint"
                       },
                       "empty": {
                         "label": "No output",
@@ -9303,6 +9292,13 @@
                       "text": {
                         "source": "arguments",
                         "path": "/new_text"
+                      },
+                      "path": {
+                        "source": "arguments",
+                        "path": "/path"
+                      },
+                      "diff": {
+                        "format": "checkpoint"
                       }
                     },
                     "preview": {
@@ -10378,6 +10374,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "df5bbf6249b888d090f5033b8bcd501a276181c2",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Show confirmed file writes and edits as line-numbered diffs"
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "bd2238c25d55132b64fd2269986bacbf070e8d7c",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -10504,7 +10508,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove the redundant written notice from file write and edit results"
+        "text": "- Show confirmed file writes and edits as line-numbered diffs"
       }
     },
     {
