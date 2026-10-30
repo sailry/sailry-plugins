@@ -16124,7 +16124,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "openai-auth",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Sign in to use ChatGPT models",
         "license": "Apache-2.0",
         "extensions": {
@@ -16234,31 +16234,6 @@
                   },
                   "handler": "codex",
                   "requests": {
-                    "device": {
-                      "url": "https://auth.openai.com/api/accounts/deviceauth/usercode",
-                      "body": {
-                        "kind": "json",
-                        "value": {
-                          "client_id": "{client_id}"
-                        }
-                      },
-                      "headers": {
-                        "User-Agent": "{user_agent}"
-                      }
-                    },
-                    "poll": {
-                      "url": "https://auth.openai.com/api/accounts/deviceauth/token",
-                      "body": {
-                        "kind": "json",
-                        "value": {
-                          "device_auth_id": "{device_auth_id}",
-                          "user_code": "{user_code}"
-                        }
-                      },
-                      "headers": {
-                        "User-Agent": "{user_agent}"
-                      }
-                    },
                     "token": {
                       "url": "https://auth.openai.com/oauth/token",
                       "body": {
@@ -16291,15 +16266,28 @@
                       }
                     }
                   },
-                  "callback": null,
+                  "callback": {
+                    "path": "/auth/callback",
+                    "port": 1455,
+                    "redirect_uri": "http://localhost:1455/auth/callback",
+                    "manual": true,
+                    "allow_localhost": true
+                  },
                   "issuer": "https://auth.openai.com",
                   "refresh": true
                 },
                 "client": {
                   "client_id": "app_EMoamEEZ73f0CkXaXp7hrann"
-                }
+                },
+                "scopes": [
+                  "openid",
+                  "profile",
+                  "email",
+                  "offline_access"
+                ]
               }
-            ]
+            ],
+            "min_sailry_version": "0.1.0-alpha.5"
           }
         }
       },
@@ -16309,6 +16297,14 @@
         "credentials.inspect"
       ],
       "versions": [
+        {
+          "version": "0.1.4",
+          "commit": "05219d1fd778032fd13b58956380d34f6730d47e",
+          "min_sailry_version": "0.1.0-alpha.5",
+          "release_notes": {
+            "text": "- Add browser sign-in with PKCE and the fixed local callback\n- Support pasted callback addresses when the local port is unavailable\n- Replace device-code sign-in with browser authorization"
+          }
+        },
         {
           "version": "0.1.3",
           "commit": "35b100490d135d79101e2d2fc13e80cbd8f6d3aa",
@@ -16339,7 +16335,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep OAuth and SIWC names in their original form and clarify model sign-in descriptions"
+        "text": "- Add browser sign-in with PKCE and the fixed local callback\n- Support pasted callback addresses when the local port is unavailable\n- Replace device-code sign-in with browser authorization"
       }
     },
     {
