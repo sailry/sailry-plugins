@@ -19626,11 +19626,11 @@
       "versions": [
         {
           "version": "0.1.24",
-          "commit": "bf89dbc1c524f2c9cbc53a97644a29e76628ba3e",
+          "commit": "bd4a6875d4d9894652968c8240f057a585f2af1f",
           "release_notes": {
-            "text": "- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable",
+            "text": "- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable\n- Group tool calls by tool name instead of internal plugin and MCP aliases",
             "locales": {
-              "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位"
+              "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位\n- 工具调用按工具名分组显示，不再显示插件与 MCP 内部别名"
             }
           }
         },
@@ -19877,9 +19877,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable",
+        "text": "- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable\n- Group tool calls by tool name instead of internal plugin and MCP aliases",
         "locales": {
-          "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位"
+          "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位\n- 工具调用按工具名分组显示，不再显示插件与 MCP 内部别名"
         }
       }
     },
