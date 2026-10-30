@@ -20158,7 +20158,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.10",
+        "version": "0.1.11",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -20285,6 +20285,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.11",
+          "commit": "a743783d142132b4d78f6fcd9ec8ffcd8e398c7b",
+          "min_sailry_version": "0.1.0-alpha.5",
+          "release_notes": {
+            "text": "Reorder search channels with up and down buttons. Automatic search follows the enabled channel order, including model search, and falls back on unsupported model services.",
+            "locales": {
+              "zh-CN": "支持上下移动搜索渠道。自动搜索按已启用渠道的列表顺序尝试，包含模型搜索；模型服务不支持搜索时可回退。",
+              "zh-TW": "支援上下移動搜尋管道。自動搜尋依已啟用管道的清單順序嘗試，包含模型搜尋；模型服務不支援搜尋時可使用備用管道。",
+              "ja": "上下ボタンで検索サービスを並べ替えられます。自動検索はモデル検索を含む有効なサービスを一覧順に試し、未対応の場合は次へ進みます。",
+              "ko": "위아래 버튼으로 검색 서비스 순서를 변경할 수 있습니다. 자동 검색은 모델 검색을 포함한 활성 서비스 순서를 따르며 미지원 시 다음 서비스를 시도합니다.",
+              "fr": "Réorganisez les services avec les boutons haut et bas. La recherche automatique suit l’ordre des services activés, y compris les modèles, et passe au suivant en cas d’incompatibilité.",
+              "de": "Suchdienste lassen sich nach oben und unten verschieben. Die automatische Suche folgt der Reihenfolge aktiver Dienste einschließlich Modellsuche und wechselt bei fehlender Unterstützung zum nächsten Dienst.",
+              "es": "Reordena los servicios con los botones de subir y bajar. La búsqueda automática sigue el orden de los servicios activos, incluida la búsqueda con modelos, y recurre al siguiente si no es compatible.",
+              "pt-BR": "Reordene os serviços com os botões para cima e para baixo. A pesquisa automática segue a ordem dos serviços ativos, incluindo modelos, e tenta o próximo quando não há suporte.",
+              "ru": "Меняйте порядок поисковых служб кнопками вверх и вниз. Автоматический поиск следует порядку включённых служб, включая модели, и переходит к следующей при отсутствии поддержки."
+            }
+          }
+        },
+        {
           "version": "0.1.10",
           "commit": "eeaafc0598aefa6bb1a342e46c6047eb20d14631",
           "min_sailry_version": "0.1.0-alpha.5",
@@ -20397,17 +20416,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Exclude unsupported Copilot accounts from native model search",
+        "text": "Reorder search channels with up and down buttons. Automatic search follows the enabled channel order, including model search, and falls back on unsupported model services.",
         "locales": {
-          "zh-CN": "- 模型搜索不再显示不受支持的 Copilot 账号",
-          "zh-TW": "- 模型搜尋不再顯示不支援的 Copilot 帳號",
-          "ja": "- モデル検索で未対応の Copilot アカウントを除外",
-          "ko": "- 모델 검색에서 지원하지 않는 Copilot 계정 제외",
-          "fr": "- Exclure les comptes Copilot non pris en charge de la recherche par modèle",
-          "de": "- Nicht unterstützte Copilot-Konten von der Modellsuche ausschließen",
-          "es": "- Excluir las cuentas de Copilot no compatibles de la búsqueda con modelos",
-          "pt-BR": "- Excluir contas Copilot incompatíveis da pesquisa por modelo",
-          "ru": "- Исключить неподдерживаемые учётные записи Copilot из поиска с моделями"
+          "zh-CN": "支持上下移动搜索渠道。自动搜索按已启用渠道的列表顺序尝试，包含模型搜索；模型服务不支持搜索时可回退。",
+          "zh-TW": "支援上下移動搜尋管道。自動搜尋依已啟用管道的清單順序嘗試，包含模型搜尋；模型服務不支援搜尋時可使用備用管道。",
+          "ja": "上下ボタンで検索サービスを並べ替えられます。自動検索はモデル検索を含む有効なサービスを一覧順に試し、未対応の場合は次へ進みます。",
+          "ko": "위아래 버튼으로 검색 서비스 순서를 변경할 수 있습니다. 자동 검색은 모델 검색을 포함한 활성 서비스 순서를 따르며 미지원 시 다음 서비스를 시도합니다.",
+          "fr": "Réorganisez les services avec les boutons haut et bas. La recherche automatique suit l’ordre des services activés, y compris les modèles, et passe au suivant en cas d’incompatibilité.",
+          "de": "Suchdienste lassen sich nach oben und unten verschieben. Die automatische Suche folgt der Reihenfolge aktiver Dienste einschließlich Modellsuche und wechselt bei fehlender Unterstützung zum nächsten Dienst.",
+          "es": "Reordena los servicios con los botones de subir y bajar. La búsqueda automática sigue el orden de los servicios activos, incluida la búsqueda con modelos, y recurre al siguiente si no es compatible.",
+          "pt-BR": "Reordene os serviços com os botões para cima e para baixo. A pesquisa automática segue a ordem dos serviços ativos, incluindo modelos, e tenta o próximo quando não há suporte.",
+          "ru": "Меняйте порядок поисковых служб кнопками вверх и вниз. Автоматический поиск следует порядку включённых служб, включая модели, и переходит к следующей при отсутствии поддержки."
         }
       }
     },
