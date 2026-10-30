@@ -4727,7 +4727,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.27",
+        "version": "0.1.28",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -5332,6 +5332,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.28",
+          "commit": "8f82efa9c32961f1878bbff5b69111db3ee7a438",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Show each subagent's icon and description, and start new subagents from complete preset roles\n- Use a compact editor layout with regular-size fields",
+            "locales": {
+              "zh-CN": "- 子代理列表显示图标和描述，新建时可从完整的预设角色开始\n- 编辑器改为紧凑布局和常规尺寸控件"
+            }
+          }
+        },
+        {
           "version": "0.1.27",
           "commit": "64ebf4f6c9f8f992c4ba6d56034fded69b8c1f63",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -5529,7 +5540,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep delegation tool declarations stable when captured roles change"
+        "text": "- Show each subagent's icon and description, and start new subagents from complete preset roles\n- Use a compact editor layout with regular-size fields",
+        "locales": {
+          "zh-CN": "- 子代理列表显示图标和描述，新建时可从完整的预设角色开始\n- 编辑器改为紧凑布局和常规尺寸控件"
+        }
       }
     },
     {
