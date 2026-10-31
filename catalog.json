@@ -2875,7 +2875,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.0-alpha.7",
@@ -3308,6 +3308,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.13",
+          "commit": "a69686a95d9b5b9a37bbf6b95cbca53033b7f910",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Keep background command starts as activities without empty output expansion"
+          }
+        },
+        {
           "version": "0.1.12",
           "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -3400,7 +3408,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Refresh stable catalogs only when their settings or repository references change."
+        "text": "- Keep background command starts as activities without empty output expansion"
       }
     },
     {
