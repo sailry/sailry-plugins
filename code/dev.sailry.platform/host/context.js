@@ -73,6 +73,16 @@ function metadata(page, limit, budget) {
   return data;
 }
 
+/** Model-facing symbols use one-based inclusive lines without byte ranges. */
+function compact(symbol) {
+  const range = symbol.range;
+  const start = range.start_line+1;
+  const item = {path:symbol.path,language:symbol.language,name:symbol.name,kind:symbol.kind,depth:symbol.depth,
+    start_line:start,end_line:Math.max(start,range.end_line+(range.end_column > 0 ? 1 : 0))};
+  if (typeof symbol.signature === 'string') item.signature = symbol.signature;
+  return item;
+}
+
 function ranges(data, limit) {
   const files = new Map();
   for (const symbol of data.symbols) {
@@ -155,6 +165,7 @@ export function context({arguments:input={},step,state,outcome}) {
     if (step === 1) {
       const data = metadata(outcome?.data,state.query.limit,state.budget);
       state = {...state,data,ranges:ranges(data,state.snippets)};
+      data.symbols = data.symbols.map(compact);
     } else {
       if (!state?.ranges || state.next !== step-2) return invalid('Invalid code context continuation');
       append(state,outcome?.data);

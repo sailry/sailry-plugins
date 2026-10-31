@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -30,7 +30,7 @@
           "zh-CN": "检索代码符号与源码上下文"
         }
       },
-      "instructions": "Use code_search to find symbols, code_outline for one file's structure, and code_context for bounded symbol and source context. These tools parse saved source, not types or runtime behavior; compilation and tests remain necessary for diagnostics and verification. Use existing text search, file reads, commands, builds and tests when they better match the task or structure extraction is unavailable. First outline parses only its requested file; repository search and context reconcile the current worktree index lazily. Grammar availability does not guarantee every structural capability. Report unsupported, partial and truncated results accurately. Paths are relative to the current worktree. Symbol positions use zero-based lines and UTF-8 byte columns with exclusive byte ends; snippet line numbers are one-based. Use returned file revisions when expanding source. A revision conflict requires a fresh search or outline; never reuse stale ranges against new content. Code context returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON. Respect the Node code-index enable setting; these tools do not install or start language servers.",
+      "instructions": "Use code_search to find where functions, types, methods or constants are defined, code_context to get a definition's source in one call, and code_outline to see one file's declarations before reading it. These tools see declarations in saved source, not usages, strings, comments or types; use search_files for text and builds or tests for verification. Line numbers in results are 1-based and inclusive, and paths are relative to the current worktree. After a revision conflict, run a fresh search instead of reusing old ranges.",
       "tools": [
         {
           "name": "code_search",
@@ -40,7 +40,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Search indexed symbols by literal query terms, optional name substring, worktree-relative path prefix and language. Default 20 results, maximum 100. Returns source ranges, full-content file revisions, index revision and partial/truncated status; first repository search lazily reconciles the worktree. This is source structure, not type analysis.",
+          "description": "Find where functions, types, methods, constants or modules are defined, by name or partial name. Faster and more precise than text search when you know or can guess the identifier. Does not find call sites, strings or comments; use search_files for those.",
           "display": {
             "label": "Search code",
             "locales": {
@@ -71,7 +71,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Return the requested saved file's source-ordered declarations, nesting depth and limited signatures. Parses only this file when needed; complete input is limited to 1 MiB. Returns actual extraction capabilities, file/index revisions, UTF-8 source ranges and partial/truncated status. Unsupported structure is explicit.",
+          "description": "List the declarations in one file (functions, types, methods) with line ranges. Use before reading a large file.",
           "display": {
             "label": "File structure",
             "locales": {
@@ -101,7 +101,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Combine symbol search and revision-checked source expansion for the current worktree. Returns at most 20 symbols, 5 merged source snippets and 16 KiB of UTF-8 JSON, with file/index revisions and honest partial/truncated status. Symbol lines are zero-based; snippet lines are one-based. A changed source revision fails instead of reading a stale range.",
+          "description": "Find a definition by name and return its source in one call. Use instead of code_search followed by read_file.",
           "handler": {
             "name": "context",
             "read_only": true,

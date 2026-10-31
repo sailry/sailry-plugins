@@ -6,7 +6,7 @@ const extension = manifest.extensions['dev.sailry.platform'];
 
 test('preserves package identity and enable binding',() => {
   assert.equal(manifest.name,'code');
-  assert.equal(manifest.version,'0.1.10');
+  assert.equal(manifest.version,'0.1.11');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.scope,'host');
   assert.equal(extension.enabled_service,'code_index');
@@ -35,11 +35,15 @@ test('declares only bounded structure tools',() => {
   }
 });
 
-test('states source capabilities and revision semantics',() => {
-  assert.match(extension.instructions,/not types or runtime behavior/);
-  assert.match(extension.instructions,/text search, file reads, commands, builds and tests/);
-  assert.match(extension.instructions,/zero-based lines and UTF-8 byte columns/);
-  assert.match(extension.instructions,/never reuse stale ranges/);
-  assert.match(extension.instructions,/partial and truncated/);
+test('states when to use each tool',() => {
+  assert.match(extension.instructions,/not usages, strings, comments or types/);
+  assert.match(extension.instructions,/use search_files for text/);
+  assert.match(extension.instructions,/1-based and inclusive/);
+  assert.match(extension.instructions,/fresh search instead of reusing old ranges/);
   assert.doesNotMatch(extension.instructions,/code_diagnostics|code_install|code_start|not_installed/);
+  const descriptions = Object.fromEntries(extension.tools.map(tool => [tool.name,tool.description]));
+  assert.match(descriptions.code_search,/where functions, types, methods, constants or modules are defined/);
+  assert.match(descriptions.code_search,/use search_files for those/);
+  assert.match(descriptions.code_context,/source in one call/);
+  assert.match(descriptions.code_outline,/Use before reading a large file/);
 });

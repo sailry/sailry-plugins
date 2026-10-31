@@ -1,3 +1,8 @@
+## 0.1.11
+
+- Describe when to use code search, context and outline instead of text search.
+- Return compact symbols with 1-based lines from code context.
+
 ## 0.1.10
 
 - Remove the empty code index settings entry while preserving tools and the enable choice.

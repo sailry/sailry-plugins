@@ -33,6 +33,16 @@ test('merges overlapping ranges before expansion',() => {
   assert.equal(completed.result.partial,false);
 });
 
+test('returns compact one-based symbols',() => {
+  const pending = search([symbol('main.rs',2,4),{...symbol('main.rs',6,8),signature:null,
+    range:{start_byte:60,end_byte:80,start_line:6,start_column:0,end_line:8,end_column:0}}]);
+  const completed = context({step:2,state:pending.state,outcome:reply(pending,'line\n',9)});
+  assert.deepEqual(completed.result.symbols,[
+    {path:'main.rs',language:'rust',name:'entry',kind:'function',depth:0,start_line:3,end_line:5,signature:'fn entry()'},
+    {path:'main.rs',language:'rust',name:'entry',kind:'function',depth:0,start_line:7,end_line:8},
+  ]);
+});
+
 test('reports pagination before the requested range ends',() => {
   const pending = search([symbol('main.rs',10,11)]);
   const outcome = reply(pending,'first line\n');
