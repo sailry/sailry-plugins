@@ -1,3 +1,4 @@
+import {observeVisibility} from './visibility.js';
 import {publishContributions,requestProviderHttp} from 'sailry/sdk';
 import {readProviderContexts,nextProviderContexts} from 'sailry/ui';
 import * as claude from '../adapters/claude.js';
@@ -14,15 +15,13 @@ function measurement(response,provider,text) {
 export default class Providers {
   constructor(cx,text) {
     this.text=text;this.entries=new Map();
+    observeVisibility(this,cx);
     this.accept(readProviderContexts(),cx);
     cx.spawn(async cx=>{
       try {while(true) this.accept(await nextProviderContexts(this.state.cursor),cx);}
       catch (_) { /* Closing the page releases its context observation. */ }
     });
-    cx.spawn(async cx=>{
-      try {while(true) {await cx.sleep(60000);this.refresh(cx);}}
-      catch (_) { /* The existing host owns the single refresh loop. */ }
-    });
+
   }
 
   accept(state,cx) {
@@ -31,7 +30,7 @@ export default class Providers {
       const key=JSON.stringify(provider.scope);
       next.set(key,this.entries.get(key) ?? {provider,measurement:null,refreshAt:0});
     }
-    this.entries=next;this.state=state;this.publish();this.refresh(cx);
+    this.entries=next;this.state=state;this.publish();this.wake();
   }
 
   publish() {
@@ -43,6 +42,7 @@ export default class Providers {
   }
 
   refresh(cx) {
+    if (!this.visible || !this.state.connected) return;
     const pending=[...this.entries.entries()].filter(([,entry])=>!entry.pending&&Date.now()>=entry.refreshAt);
     if(!pending.length) return;
     for(const [,entry] of pending)entry.pending=true;

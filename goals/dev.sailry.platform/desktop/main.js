@@ -10,18 +10,19 @@ export default class Goals extends View {
     this.scope=JSON.parse(context()); this.text=messages(this.scope.locale);
     this.state=readComposer(); this.goal=null; this.open=false;
     this.busy=false; this.loading=false; this.pending=null; this.readFailed=false; this.readError=null;
+    this.packageCursor=null;this.runsCursor=null;this.readKey=null;
     this.publish(); this.refresh(cx);
     cx.spawn(async cx=>{
       try {while(true) {
         const previous=this.state;
         this.accept(await nextComposerChange(previous.cursor));
-        if (this.state.session!==previous.session || this.state.connected!==previous.connected || this.state.busy!==previous.busy) {this.refresh(cx);this.observeConversation(cx);}
+        if (this.state.session!==previous.session || this.state.connected!==previous.connected) {this.refresh(cx);this.observeConversation(cx);}
         this.publish(); cx.notify();
       }} catch (_) {}
     });
     cx.spawn(async cx=>{
       let cursor='';
-      try {while(true) {const change=await nextChange(cursor,'package');cursor=change.cursor;this.refresh(cx);this.observeConversation(cx);}}
+      try {while(true) {const change=await nextChange(cursor,'package');cursor=change.cursor;this.packageCursor=change.revision;this.refresh(cx);this.observeConversation(cx);}}
       catch (_) {}
     });
     cx.spawn(async cx=>{
@@ -41,14 +42,14 @@ export default class Goals extends View {
     if (this.watching || !active()) return;
     this.watching=true;
     cx.spawn(async cx=>{
-      let cursor='',runs=null;
+      let cursor='';
       try {while(active()) {
         const change=await nextConversation(cursor,'runs');cursor=change.cursor;
         if (!active()) break;
         const page=change.view.snapshot?.page;
         if (!page || page.session!==this.scope.session || page.session!==this.state.session) continue;
-        const next=JSON.stringify(page.runs.map(run=>[run.turn,run.status]));
-        if (next!==runs) {runs=next;this.refresh(cx);}
+        const next=JSON.stringify([page.revision,page.runs.map(run=>[run.turn,run.sequence,run.status,run.error?.code])]);
+        if (next!==this.runsCursor) {this.runsCursor=next;this.refresh(cx);}
       }} catch (_) {}
       finally {this.watching=false;}
     });
@@ -70,14 +71,18 @@ export default class Goals extends View {
     ]);
   }
   fail(key) {toast({id:'goal-error',kind:'error',message:this.text[key]});}
-  refresh(cx) {
-    if (!this.current()) {this.goal=null;return;}
-    if (this.loading) {this.dirty=true;return;}
+  refreshKey() {return JSON.stringify([this.state.session,this.state.connected,this.packageCursor,this.runsCursor]);}
+  refresh(cx,force=false) {
+    if (!this.current()) {this.goal=null;this.readKey=null;return;}
+    if (force) this.readKey=null;
+    if (this.readKey===this.refreshKey() && !this.readFailed) return;
+    if (this.loading) return;
     this.loading=true;
     this.publish();cx.notify();
     cx.spawn(async cx=>{
       try {do {
-        this.dirty=false;
+        const key=this.refreshKey();
+        this.readKey=key;
         const id=prepareRequest({kind:'read_plugin_callback',data:{handler:'read',input:{}}});
         let result;
         try {result=await completeRequest(id);}
@@ -87,7 +92,7 @@ export default class Goals extends View {
         this.goal=result.Ok.data.goal;
         this.readFailed=false;
         this.readError=null;
-      } while(this.dirty);}
+      } while(this.current() && this.readKey!==this.refreshKey());}
       catch (error) {
         this.readError={code:error.code ?? faultCode(error.message ?? String(error)),message:error.message ?? String(error)};
         if (!this.readFailed) this.fail('readFailed');this.readFailed=true;
@@ -116,7 +121,7 @@ export default class Goals extends View {
         const uncertain=['outcome_unknown','unavailable','busy'].includes(code);
         this.fail(uncertain?'uncertain':'error');
         if (!uncertain) {forgetRequest(pending.id);this.pending=null;}
-      } finally {this.busy=false;this.refresh(cx);this.publish();cx.notify();}
+      } finally {this.busy=false;this.refresh(cx,true);this.publish();cx.notify();}
     });
   }
   render() {return render(this);}

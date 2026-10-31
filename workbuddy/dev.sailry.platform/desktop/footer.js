@@ -1,3 +1,4 @@
+import {observeVisibility} from './visibility.js';
 import Providers from './providers.js';
 import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
@@ -19,26 +20,25 @@ export default class Footer extends View {
     this.locale = JSON.parse(context()).locale;
     this.text = messages(this.locale);
     this.state = readModelContext(); this.key = identity(this.state);
-    this.balance = null; this.pending = null;
-    this.publish(); this.refresh(cx); this.ensure(cx);
+    this.balance = null; this.pending = null; this.refreshAt=0;
+    observeVisibility(this,cx);
+    this.publish(); this.wake();
     cx.spawn(async cx => {
       try {while (true) this.accept(await nextModelContext(this.state.cursor),cx);}
       catch (_) { /* The captured footer owns its observation. */ }
     });
-    cx.spawn(async cx => {
-      try {while (true) {await cx.sleep(60000);this.refresh(cx);}}
-      catch (_) { /* Releasing the footer ends its refresh loop. */ }
-    });
+
   }
 
   accept(state,cx) {
     const key = identity(state);
-    if (key !== this.key || state.cursor !== this.state.cursor) {this.balance = null;}
+    if (key !== this.key || state.cursor !== this.state.cursor) {this.balance = null;this.refreshAt=0;}
     this.state = state; this.key = key;
-    this.publish(); this.refresh(cx); this.ensure(cx);
+    this.publish(); this.wake();
   }
 
   ensure(cx) {
+    if (!this.visible) return;
     const provider = this.state.connected ? this.state.provider : null;
     if (provider?.preset?.id !== 'china') return;
     const key = JSON.stringify([provider.id,provider.revision,provider.preset]);
@@ -62,17 +62,18 @@ export default class Footer extends View {
   }
 
   refresh(cx) {
-    if ((this.pending?.key === this.key && this.pending.cursor === this.state.cursor) || !this.key || !this.state.connected) return;
+    if (!this.visible || !this.state.connected) return;
+    if ((this.pending?.key === this.key && this.pending.cursor === this.state.cursor) || !this.key || Date.now()<this.refreshAt) return;
     const key = this.key, cursor = this.state.cursor, provider = this.state.provider;
     const pending = {key,cursor};this.pending = pending;
     cx.spawn(async cx => {
       try {
         const response = await requestProviderHttp(provider.id,provider.revision,'credits',range());
         if (this.key !== key || this.state.cursor !== cursor) return;
-        this.balance = decode(response);
+        this.balance = decode(response);this.refreshAt=Date.now()+60000;
       } catch (_) {
         if (this.key !== key || this.state.cursor !== cursor) return;
-        this.balance = null;
+        this.balance = null;this.refreshAt=Date.now()+60000;
       } finally {
         if(this.pending===pending)this.pending = null;
         this.publish(); cx.notify();

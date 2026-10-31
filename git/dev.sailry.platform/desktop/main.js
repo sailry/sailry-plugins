@@ -61,6 +61,7 @@ export default class Git extends View {
       let cursor = '';
       try { while (true) {
         const change = await sdk.nextChange(cursor,'repository'); cursor = change.cursor;
+        this.repo.references = change.references;
         this.repo.connected = change.connected;
         this.repo.visible = change.visible !== false;
         if (change.connected && this.repo.visible) {

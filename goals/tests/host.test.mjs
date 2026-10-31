@@ -11,7 +11,7 @@ test('continuation markers remain localized package declarations',async()=>{
   const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
   assert.deepEqual(manifest.extensions['dev.sailry.platform'].host.read_only,['read']);
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.6');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+  assert.equal(manifest.version,'0.1.7');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;
@@ -35,15 +35,16 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     }
     return {Ok:{data:operations.length===1 ? plain(current) : operations.map(()=>({data:{}}))}};
   },forgetRequest:()=>{},readSession:async()=>plain(session),
-  readConversation:async(before=null,limit=20)=>{
+  readConversationRuns:async(before=null,limit=100)=>{
     reads.push({before,limit});
     const result=before===null ? history : pages.get(before);
     if (!result) throw new Error('Unexpected history page');
-    return plain(result);
-  },readTurn:async turn=>{
+    return {revision:result.page.revision,runs:plain(result.page.runs).map(({error,...run})=>({...run,error_code:error?.code ?? null})),next_before:result.page.next_before,queue_revision:history.page.queue.revision};
+  },readConversationRun:async (turn,revision)=>{
     const run=[history,...pages.values()].flatMap(history=>history.page.runs).find(run=>run.turn===turn);
     if (!run) {const error=new Error('Turn not found');error.code='not_found';throw error;}
-    return {run:plain(run)};
+    if (revision!==undefined) assert.equal(revision,history.page.revision);
+    const {error,...metadata}=plain(run);return {...metadata,error_code:error?.code ?? null};
   },
   readTurnState:()=>state,stageTurnState:value=>state=plain(value)};
   function prepare(operations) {requests.push(plain(operations));return String(requests.length-1);}

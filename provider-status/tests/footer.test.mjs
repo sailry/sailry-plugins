@@ -19,7 +19,7 @@ const deferred = () => {
 };
 
 async function fixture(initial=state(),providers=null) {
-  const requests=[],published=[],watches=[],sleeps=[],toasts=[],failures=[];
+  const requests=[],published=[],watches=[],sleeps=[],toasts=[],failures=[],visibility=[];
   let clock=1000;
   class Clock extends Date {static now() {return clock;}}
   const context = vm.createContext({Date:Clock});
@@ -33,6 +33,7 @@ async function fixture(initial=state(),providers=null) {
   synthetic('gpui-kit',{View:class {},div:()=>({})});
   synthetic('sailry',{context:()=>JSON.stringify({locale:'en',surface:providers ? 'provider' : 'composer'})});
   synthetic('sailry/sdk',{
+    nextChange:cursor=>{if(!cursor)return Promise.resolve({cursor:'1',visible:true,connected:true});const next=deferred();visibility.push(next);return next.promise;},
     publishContributions:values=>published.push(plain(values)),
     requestProviderHttp:(...args)=>{const request={args:plain(args),...deferred()};requests.push(request);return request.promise;},
     faultCode:message=>{try{return JSON.parse(message).code;}catch{return 'failed';}},
@@ -60,9 +61,10 @@ async function fixture(initial=state(),providers=null) {
   await module.evaluate();
   const cx={notify(){},sleep:ms=>{const next={ms,...deferred()};sleeps.push(next);return next.promise;},
     spawn:callback=>{const promise=callback(cx);promise.catch(error=>failures.push(error));return promise;}};
-  const view=new module.namespace.default();view.init({},cx);
+  const view=new module.namespace.default();view.init({},cx);await settle();
   return {view,cx,requests,published,watches,sleeps,toasts,failures,
     latest:()=>published.at(-1)[0],advance:ms=>{clock+=ms;},
+    async visible(value) {visibility.shift().resolve({cursor:String(clock),visible:value,connected:true});await settle();},
     async update(value) {watches.shift().resolve(plain(value));await settle();},
   };
 }
@@ -294,5 +296,23 @@ test('discards late replies after same-credential renewal',async()=>{
   assert.deepEqual(setup.requests[1].args,['same','1','usage',{}]);
   setup.requests[1].resolve(response(20));await settle();
   assert.equal(current(setup,'same').value,'80%');
+  assert.deepEqual(setup.failures,[]);
+});
+
+test('pauses hidden refreshes and preserves fresh results',async()=>{
+  const setup=await fixture();
+  setup.requests[0].resolve(response());await settle();
+  await setup.visible(false);
+  setup.sleeps.shift().resolve();await settle();
+  assert.equal(setup.sleeps.length,0);
+  assert.equal(setup.requests.length,1);
+  await setup.visible(true);
+  assert.equal(setup.requests.length,1);
+  await setup.visible(false);
+  setup.advance(180000);
+  setup.sleeps.shift().resolve();await settle();
+  const count=setup.requests.length;
+  await setup.visible(true);
+  assert.equal(setup.requests.length,count+1);
   assert.deepEqual(setup.failures,[]);
 });

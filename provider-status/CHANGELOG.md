@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+
+- Pause account refresh timers while their views are hidden and reuse unexpired results on reveal
+
 ## 0.1.6
 
 - Read provider accounts and new contexts concurrently

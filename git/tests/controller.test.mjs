@@ -419,3 +419,23 @@ test('amend toggles restore the draft and commit scope remains explicit',()=>{
   assert.deepEqual(owner.commitChoices(),['tracked','all']);assert.equal(owner.commitChoices('staged'),null);
   owner.status.entries.shift();assert.deepEqual(owner.commitChoices(),['all']);
 });
+
+
+test('branches follow references and explicit refreshes',async()=>{
+  let reads=0;
+  const {owner}=fixture({listGitBranches:async()=>{reads++;return {sync:{head_message:'Previous'}};}});
+  owner.references='1';await owner.invalidate();assert.equal(reads,1);
+  await owner.invalidate();await owner.invalidate();assert.equal(reads,1);
+  owner.references='2';await owner.invalidate();assert.equal(reads,2);
+  owner.status.head='older';await owner.invalidate();assert.equal(reads,3);
+  await owner.refresh(true);assert.equal(reads,4);
+});
+
+test('reference changes during reads retain invalidation',async()=>{
+  const pending=deferred();let reads=0;
+  const {owner}=fixture({listGitBranches:async()=>{reads++;return reads===1 ? pending.promise : {sync:{}};}});
+  owner.references='1';const first=owner.invalidate();await settle();
+  owner.references='2';owner.invalidate();
+  pending.resolve({sync:{}});await first;assert.equal(reads,2);
+  await owner.invalidate();assert.equal(reads,2);
+});

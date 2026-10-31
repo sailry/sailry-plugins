@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "provider-status",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Account usage for configured OAuth model channels",
   "license": "Apache-2.0",
   "extensions": {
@@ -141,7 +141,8 @@
           "dev.sailry.platform/adapters/response.js",
           "dev.sailry.platform/adapters/claude.js",
           "dev.sailry.platform/adapters/codex.js",
-          "dev.sailry.platform/desktop/providers.js"
+          "dev.sailry.platform/desktop/providers.js",
+          "dev.sailry.platform/desktop/visibility.js"
         ]
       }
     }

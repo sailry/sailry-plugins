@@ -17,6 +17,7 @@ export default class Commands extends View {
     this.openAttempts = new Map(); this.openRetry = null;
     this.openIntent = null;
     this.visible = true; this.connected = true; this.lastRead = 0;
+    this.toolsRevision = null; this.loadedToolsRevision = null;
     this.closingTerminals = new Set();
     if (this.resource) cx.spawn(async cx => {
       try { while (true) {
@@ -35,6 +36,7 @@ export default class Commands extends View {
       let cursor = '', entry = '0';
       try { while (true) {
         const change = await nextChange(cursor,'package'); cursor = change.cursor;
+        this.toolsRevision = change.terminal_tools;
         this.visible = change.visible !== false; this.connected = change.connected;
         if (change.entry !== entry) {
           entry = change.entry;
@@ -57,7 +59,10 @@ export default class Commands extends View {
         this.lastRead = Date.now();
         this.dirty = false;
         const selected = this.selected;
-        const [items, tools] = await Promise.all([listTerminals(), listTerminalTools()]);
+        const toolsRevision = this.toolsRevision;
+        const [items, tools] = await Promise.all([listTerminals(),
+          this.loaded && this.loadedToolsRevision === toolsRevision ? this.tools : listTerminalTools()]);
+        this.loadedToolsRevision = toolsRevision;
         this.items = items.filter(item => item.status.kind !== 'closed'); this.tools = tools; this.loaded = true;
         for (const id of this.closingTerminals) if (!this.items.some(item => item.id === id)) this.closingTerminals.delete(id);
         if (this.resource) {

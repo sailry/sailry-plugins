@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Refresh stable catalogs only when their settings or repository references change.
+
 ## 0.1.21
 
 - Keep captured Git targets and snapshots opaque in model schemas

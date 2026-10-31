@@ -24,6 +24,7 @@ export class Repository {
     this.tabs = []; this.selected = null; this.documents = new Map();
     this.read = 0; this.historyRead = 0; this.documentRead = 0; this.closed = false;
     this.refreshing = null;
+    this.references = null; this.loadedReferences = null; this.branchesDirty = true;
     this.navigation = {hierarchical:true,grouping:'tracked',sort:'path'};
   }
 
@@ -34,6 +35,7 @@ export class Repository {
   revisions() { return {expected_index:this.status.index_revision,expected_head:this.status.head,expected_branch:this.status.branch}; }
 
   refresh(review = false, quiet = false) {
+    if (!quiet) this.branchesDirty = true;
     this.readCode = null;
     if (this.closed || !this.connected || !this.visible || this.pending?.busy) {
       this.dirty = !this.closed;
@@ -80,15 +82,20 @@ export class Repository {
           const status = await this.api.inspectGit();
           if (this.closed || sequence !== this.read) return this.latest(sequence);
           const report = !current.quiet || !this.status;
+          const identityChanged = !this.status || this.status.kind !== status.kind || this.status.head !== status.head || this.status.branch !== status.branch;
           this.status = status;
           this.readCode = null;
           if (!this.connected || !this.visible) { this.dirty = true; return false; }
-          let branches = null, branchError = null;
-          try { if (status.kind !== 'directory') branches = await this.api.listGitBranches(); }
+          let branches = this.branches, branchError = null;
+          const references = this.references;
+          try {
+            if (status.kind === 'directory') branches = null;
+            else if (!branches || this.branchesDirty || identityChanged || this.loadedReferences !== references) branches = await this.api.listGitBranches();
+          }
           catch (_) { branchError = 'git_branches_failed'; }
           if (this.closed || sequence !== this.read) return this.latest(sequence);
           if (!this.connected || !this.visible) { this.dirty = true; return false; }
-          if (!branchError) this.branches = branches;
+          if (!branchError) {this.branches = branches;this.loadedReferences = references;this.branchesDirty = false;}
           if (!branchError || report) this.error = branchError;
           if (branchError && report && !current.invalidated) this.report(branchError);
           if (this.pending?.reviewing || current.review) {

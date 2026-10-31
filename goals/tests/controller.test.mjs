@@ -21,7 +21,7 @@ async function fixture(options={}) {
     assert.ok(listeners[kind]);
     const first=jobs.length;
     const accepted=new Promise(resolve=>{ready[kind]=resolve;});
-    const resolve=listeners[kind];listeners[kind]=null;resolve(value);
+    const resolve=listeners[kind];listeners[kind]=null;resolve(kind==='change' ? {revision:value.cursor,...value} : value);
     await accepted;delete ready[kind];
     if(!host.hold) await Promise.all(jobs.slice(first));
   }
@@ -89,7 +89,7 @@ async function fixture(options={}) {
   }
   async function deliver(kind,value) {
     assert.ok(listeners[kind]);
-    const resolve=listeners[kind];listeners[kind]=null;resolve(value);
+    const resolve=listeners[kind];listeners[kind]=null;resolve(kind==='change' ? {revision:value.cursor,...value} : value);
     await new Promise(setImmediate);
   }
   return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices,emit,deliver,scopes,conversations};
@@ -101,7 +101,7 @@ test('unused conversations do not subscribe',async()=>{
   assert.equal(setup.prepared.length,1);
   assert.equal(setup.conversations.length,0);
   await setup.emit('composer',{...setup.view.state,cursor:'2',busy:true});
-  assert.equal(setup.prepared.length,2);
+  assert.equal(setup.prepared.length,1);
   assert.equal(setup.conversations.length,0);
 });
 
@@ -167,7 +167,7 @@ test('description remains literal prose with fixed controls',async()=>{
 test('completed status stays inspectable without activity',async()=>{
   const setup=await fixture();
   setup.host.goal={...setup.host.goal,state:'completed'};
-  setup.view.refresh(setup.cx);await setup.jobs.at(-1);
+  setup.view.refresh(setup.cx,true);await setup.jobs.at(-1);
   const status=()=>setup.contributions.at(-1).find(item=>item.id==='status');
   assert.equal(status().visible,false);
   assert.equal(setup.view.goal.state,'completed');
@@ -214,12 +214,12 @@ test('held refresh blocks stale controls until current revision',async()=>{
 test('dirty refresh remains blocked until latest read',async()=>{
   const setup=await fixture();
   setup.host.hold=true;
-  setup.view.refresh(setup.cx);
+  setup.view.refresh(setup.cx,true);
   await Promise.resolve();
   assert.equal(setup.view.enabled(),true);
   assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
   setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
-  setup.view.refresh(setup.cx);
+  setup.view.refresh(setup.cx,true);
   setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
   assert.equal(setup.view.goal.revision,'6');
   assert.equal(setup.view.goal.description,'Changed elsewhere');
@@ -235,7 +235,7 @@ test('refresh preserves new task command and draft',async()=>{
     command:{name:'goal',package:{name:'goals'},arguments:argumentsText}});
   const first=setup.contributions.length;
   setup.host.hold=true;
-  setup.view.refresh(setup.cx);await Promise.resolve();
+  setup.view.refresh(setup.cx,true);await Promise.resolve();
   assert.equal(setup.view.draft(),argumentsText);
   assert.ok(setup.contributions.slice(first).every(entries=>entries.find(item=>item.id==='goal').enabled));
   assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
@@ -272,7 +272,7 @@ test('failed reads release capacity and preserve current goal',async()=>{
   const setup=await fixture(), previous=plain(setup.view.goal);
   for(let index=0;index<20;index++) {
     setup.host.readFailure=index%2 ? new Error('Read disconnected') : 'busy';
-    setup.view.refresh(setup.cx);
+    setup.view.refresh(setup.cx,true);
     await setup.jobs.at(-1);
     assert.deepEqual(plain(setup.view.goal),previous);
     assert.equal(setup.prepared.length,setup.forgotten.length);
@@ -281,7 +281,7 @@ test('failed reads release capacity and preserve current goal',async()=>{
   }
   assert.equal(setup.notices.length,1);
   setup.host.readFailure=null;
-  setup.view.refresh(setup.cx);await setup.jobs.at(-1);
+  setup.view.refresh(setup.cx,true);await setup.jobs.at(-1);
   assert.equal(setup.view.readFailed,false);
   assert.equal(setup.view.readError,null);
   assert.equal(setup.prepared.length,22);
@@ -298,11 +298,11 @@ test('reads stay nondurable while controls retain admission',async()=>{
   await setup.emit('composer',{...setup.view.state,cursor:'2',draft:'changed',locale:'de'});
   assert.equal(setup.prepared.length,1);
   await setup.emit('composer',{...setup.view.state,cursor:'3',busy:true});
-  assert.equal(setup.prepared.length,2);
+  assert.equal(setup.prepared.length,1);
   setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
   await setup.emit('change',{cursor:'package-1',connected:true,entry:'0'});
   assert.equal(setup.view.goal.description,'Changed elsewhere');
-  assert.equal(setup.prepared.length,3);
+  assert.equal(setup.prepared.length,2);
   assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
   await setup.emit('composer',{...setup.view.state,cursor:'4',busy:false});
   await setup.perform('pause');
@@ -332,4 +332,20 @@ test('external stops refresh without storage changes',async()=>{
   await setup.deliver('conversation',change('5','cancelled','session','Unrelated output'));
   assert.equal(setup.prepared.length,before+1);
   assert.equal(setup.view.watching,false);
+});
+
+
+test('identical status triggers share a read',async()=>{
+  const setup=await fixture();
+  const change={cursor:'2',connected:true};
+  await setup.deliver('change',change);
+  const count=setup.prepared.length;
+  await setup.deliver('change',change);
+  setup.view.refresh(setup.cx);
+  await new Promise(setImmediate);
+  assert.equal(setup.prepared.length,count);
+  await setup.deliver('composer',{...setup.view.state,cursor:'2',busy:true});
+  assert.equal(setup.prepared.length,count);
+  await setup.deliver('change',{cursor:'3',connected:true});
+  assert.equal(setup.prepared.length,count+1);
 });

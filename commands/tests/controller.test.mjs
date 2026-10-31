@@ -9,7 +9,7 @@ const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{k
 async function fixture(items = [shell()], resource = {kind:'terminal', id:items[0]?.id}, initialEntry = 0) {
   const context = vm.createContext({});
   const prepared = [], completed = [], forgotten = [], panes = [], updates = [], notices = [], closed = [], released = [], requests = new Map();
-  const host = {items, complete:null, prepareError:null, change:null,reads:0,scopes:[],readError:null};
+  const host = {items, complete:null, prepareError:null, change:null,reads:0,scopes:[],readError:null,toolReads:0,toolsRevision:1};
   const prepare = (action, target) => {
     const id = `request-${prepared.length}`;
     const request = {id, action, target};
@@ -20,7 +20,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     sailry:{context:() => JSON.stringify({locale:'en'}),releaseTerminal:id=>released.push(id)},
     'sailry/sdk':{
       listTerminals:async () => {host.reads++;if(host.readError)throw host.readError;return host.list ? host.list() : host.items;},
-      listTerminalTools:async () => [],
+      listTerminalTools:async () => {host.toolReads++;return [];},
       prepareTerminal:(target,access) => { const id = prepare('create', target); requests.get(id).access = access; return id; },
       prepareOpenTerminal:target => { if (host.prepareError) throw host.prepareError; return prepare('open', target); },
       prepareCloseTerminal:target => prepare('close', target),
@@ -60,7 +60,7 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
   const observe = async (visible = true) => {
     while (!host.change) await Promise.resolve();
     const receive = host.change; host.change = null;
-    receive({cursor:String(++changes), connected:true, visible, entry:String(entry)});
+    receive({cursor:String(++changes), connected:true, visible, entry:String(entry), terminal_tools:String(host.toolsRevision)});
     while (!host.change) await Promise.resolve();
     await settle();
   };
@@ -367,4 +367,17 @@ test('uncertain close retains release and the original request identity', async 
     assert.deepEqual(setup.released,[item.id]);assert.equal(setup.prepared.length,1);
     assert.deepEqual(setup.completed,['request-0','request-0']);
   }
+});
+
+
+test('terminal tools follow settings revisions',async()=>{
+  const setup=await fixture();
+  assert.equal(setup.host.toolReads,1);
+  await setup.observe();await setup.enter();
+  assert.equal(setup.host.toolReads,1);
+  setup.host.toolsRevision++;await setup.observe();
+  assert.equal(setup.host.toolReads,2);
+  await setup.observe(false);setup.host.toolsRevision++;
+  assert.equal(setup.host.toolReads,2);
+  await setup.observe(true);assert.equal(setup.host.toolReads,3);
 });

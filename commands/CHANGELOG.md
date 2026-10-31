@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Refresh stable catalogs only when their settings or repository references change.
+
 ## 0.1.11
 
 - Keep command access guidance in one parameter description

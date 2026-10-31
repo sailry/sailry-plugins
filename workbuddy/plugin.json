@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -638,7 +638,8 @@
           "dev.sailry.platform/desktop/credits.js",
           "dev.sailry.platform/desktop/locales.js",
           "dev.sailry.platform/errors.js",
-          "dev.sailry.platform/desktop/providers.js"
+          "dev.sailry.platform/desktop/providers.js",
+          "dev.sailry.platform/desktop/visibility.js"
         ]
       },
       "host": {

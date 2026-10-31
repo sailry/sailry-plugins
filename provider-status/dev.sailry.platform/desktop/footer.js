@@ -1,3 +1,4 @@
+import {observeVisibility} from './visibility.js';
 import Providers from './providers.js';
 import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
@@ -24,15 +25,11 @@ export default class Footer extends View {
     this.text = messages(JSON.parse(context()).locale);
     this.state = readModelContext();this.key = identity(this.state);
     this.snapshot = null;this.pending = null;this.refreshAt = 0;
-    this.publish();this.refresh(cx);
+    observeVisibility(this,cx);
+    this.publish();this.wake();
     cx.spawn(async cx => {
       try {while (true) this.accept(await nextModelContext(this.state.cursor),cx);}
       catch (_) { /* Releasing the footer ends its observation. */ }
-    });
-    // One refresh owner serves every adapter, using the existing view lifetime.
-    cx.spawn(async cx => {
-      try {while (true) {await cx.sleep(60000);this.refresh(cx);}}
-      catch (_) { /* Releasing the footer ends its refresh loop. */ }
     });
   }
 
@@ -42,7 +39,7 @@ export default class Footer extends View {
       this.snapshot = null;this.refreshAt = 0;
     }
     this.state = state;this.key = key;
-    this.publish();this.refresh(cx);
+    this.publish();this.wake();
   }
 
   publish() {
@@ -51,6 +48,7 @@ export default class Footer extends View {
   }
 
   refresh(cx) {
+    if (!this.visible || !this.state.connected) return;
     if ((this.pending?.key === this.key && this.pending.cursor === this.state.cursor) || !this.key || Date.now() < this.refreshAt) return;
     const key = this.key,cursor = this.state.cursor,provider = this.state.provider;
     const pending = {key,cursor};this.pending = pending;

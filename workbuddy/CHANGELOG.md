@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Pause hidden credit refresh timers and reuse results until the refresh interval expires
+
 ## 0.1.16
 
 - Preserve tool declarations when disabling tool calls for context summaries

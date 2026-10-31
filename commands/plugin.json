@@ -1,10 +1,10 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "extensions": {
     "dev.sailry.platform": {
-      "min_sailry_version": "0.1.0-alpha.4",
+      "min_sailry_version": "0.1.0-alpha.7",
       "api_version": "v1",
       "actions": [
         "process.read",

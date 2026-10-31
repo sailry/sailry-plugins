@@ -1,4 +1,4 @@
-import {context,newId,getConversationValue,setConversationValue,prepareTransaction,completeRequest,forgetRequest,readSession,readConversation,readTurn,readTurnState,stageTurnState} from 'sailry/sdk';
+import {context,newId,getConversationValue,setConversationValue,prepareTransaction,completeRequest,forgetRequest,readSession,readConversationRuns,readConversationRun,readTurnState,stageTurnState} from 'sailry/sdk';
 import {present} from './labels.js';
 
 const key='goal';
@@ -10,11 +10,11 @@ async function current(entry=undefined) {
   entry ??= await getConversationValue(key);
   const value=goal(entry);
   if (value?.state!=='active') return {entry,value};
-  let history=await readConversation(null,100);
-  const revision=history.page.revision;
-  let anchor=history.page.runs.find(run=>run.turn===value.after);
+  let history=await readConversationRuns(null,100);
+  const revision=history.revision;
+  let anchor=history.runs.find(run=>run.turn===value.after);
   if (value.after && !anchor) {
-    try {anchor=(await readTurn(value.after)).run;}
+    try {anchor=await readConversationRun(value.after,revision);}
     catch(error) {
       if (!['not_found','wrong_target'].includes(error.code)) throw error;
       value.state='paused';return {entry,value};
@@ -23,20 +23,20 @@ async function current(entry=undefined) {
   const seen=new Set();
   let ceiling=null;
   while (true) {
-    if (history.page.revision!==revision || ceiling!==null && history.page.runs.some(run=>run.sequence>=ceiling)) failHistory();
-    if (history.page.runs.some(run=>run.turn!==context().turn && (!anchor || run.sequence>anchor.sequence)
+    if (history.revision!==revision || ceiling!==null && history.runs.some(run=>run.sequence>=ceiling)) failHistory();
+    if (history.runs.some(run=>run.turn!==context().turn && (!anchor || run.sequence>anchor.sequence)
       && ['interrupted','cancelled','failed'].includes(run.status)
-      && !(run.status==='cancelled' && run.error?.code==='conflict'))) {
+      && !(run.status==='cancelled' && run.error_code==='conflict'))) {
       value.state='paused';break;
     }
-    const before=history.page.next_before;
+    const before=history.next_before;
     if (before==null) break;
-    const boundary=history.page.runs.find(run=>run.turn===before);
+    const boundary=history.runs.find(run=>run.turn===before);
     if (!boundary || seen.has(before)) failHistory();
     if (anchor && boundary.sequence<=anchor.sequence) break;
     seen.add(before);
     ceiling=boundary.sequence;
-    history=await readConversation(before,100);
+    history=await readConversationRuns(before,100);
   }
   return {entry,value};
 }
@@ -45,8 +45,8 @@ function failHistory() {
   error.code='revision_conflict';throw error;
 }
 async function anchor(history=undefined) {
-  history ??= await readConversation();
-  return history.page.runs.filter(run=>run.turn!==context().turn).at(-1)?.turn ?? null;
+  history ??= await readConversationRuns();
+  return history.runs.filter(run=>run.turn!==context().turn).at(-1)?.turn ?? null;
 }
 function argumentsOf(args,keys) {
   if (!args || typeof args!=='object' || Array.isArray(args) || keys.some(key=>!Object.hasOwn(args,key)) || Object.keys(args).some(key=>!keys.includes(key))) throw new Error('Invalid goal arguments');
@@ -95,7 +95,7 @@ export async function observe() {
 export async function completed(args) {
   const {entry,value}=await current();
   if (value?.state!=='active') return {};
-  const {run}=await readTurn(args.turn);
+  const run=await readConversationRun(args.turn);
   const session=await readSession();
   if (run.status==='continued') return {};
   if (run.status!=='completed' || session.config.mode==='plan') {
@@ -118,13 +118,13 @@ export async function control(args) {
   const operations=[];
   if (args.kind==='pause' || args.kind==='clear') {
     operations.push(args.kind==='clear' ? {kind:'conversation_remove',data:{key,expected_revision:entry.revision}} : write(entry,{...entry.value,state:'paused'}));
-    const history=await readConversation();
-    if (value.state==='active') for (const run of history.page.runs) if (run.turn!==context().turn && run.origin==null && ['running','stopping'].includes(run.status)) operations.push({kind:'stop',data:{turn:run.turn}});
+    const history=await readConversationRuns();
+    if (value.state==='active') for (const run of history.runs) if (run.turn!==context().turn && run.origin==null && ['running','stopping'].includes(run.status)) operations.push({kind:'stop',data:{turn:run.turn}});
   } else if (args.kind==='resume' && ['paused','blocked','failed'].includes(value.state)) {
     const session=await readSession();
     if (session.config.mode==='plan') throw new Error('Goal execution requires Code mode');
-    const history=await readConversation();
-    operations.push({kind:'queue_pause',data:{session:context().session,expected_revision:history.page.queue.revision,paused:false}});
+    const history=await readConversationRuns();
+    operations.push({kind:'queue_pause',data:{session:context().session,expected_revision:history.queue_revision,paused:false}});
     operations.push(write(entry,{...entry.value,state:'active',after:await anchor(history)}));
     if (!context().turn) operations.push(next({...entry,revision:String(BigInt(entry.revision)+1n)}));
   } else throw new Error('Invalid goal action');
