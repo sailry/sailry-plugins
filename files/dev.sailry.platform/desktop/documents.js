@@ -83,10 +83,10 @@ export class Documents {
     this.refresh(cx);
   }
 
-  async action(kind, cx) {
+  async action(kind, cx, options = {}) {
     const id = this.selected;
     if (!id) return;
-    await documentAction(id,{kind});
+    await documentAction(id,{...options,kind});
     this.refresh(cx);
   }
 

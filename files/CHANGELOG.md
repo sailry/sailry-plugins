@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.20
+
+- Add Markdown formatting, block type, insert, link and soft wrap controls to the editor toolbar
+- Add Find and replace and soft wrap for code files
+- Switch modes with icons and move narrow-width controls into More
+- Remove copy, cut and paste from the toolbar
+
 ## 0.1.19
 
 - Show confirmed file writes and edits as line-numbered diffs

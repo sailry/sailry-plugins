@@ -193,13 +193,15 @@ test('open documents retain path actions and native status content', async () =>
   const content = vm.runInNewContext(`${documentSource}\ncontent`,{
     div:() => element('div'),theme:() => ({colors:{}}),
     IconButton:{new:(id,props) => element('button',{id,...props})},
+    Menu:{new:(id,props) => element('dropdown',{id,...props})},
+    SegmentedTabs:{new:(id,props) => element('tabs',{id,...props})},Measure:{new:id => element('measure',{id})},
     StatusBar:function() {return element('status');},
     NativeContextMenu:{new:(id,props) => element('menu',{id,...props})},
     DocumentSurface:{new:(id,props) => element('editor',{id,...props})},
     EmptyState:{new:() => assert.fail('an open document must not mount an empty state')},
   });
   const actions = [{id:'copy',label:'Copy path'}];
-  const document = {id:'draft',path:'notes.txt',position:{line:2,column:4},language:'Plain text',saving:true};
+  const document = {id:'draft',path:'notes.txt',position:{line:2,column:4},language:'Plain text',saving:true,wrap:true};
   const tree = content({text:{files_saving:'Saving',files_cursor_position:'Line {line}, Column {column}'},
     documents:{current:() => document},pathItems:target => {assert.equal(target,document);return actions;}});
   const nodes = all(tree),bar = nodes.find(node => node?.kind === 'status');
@@ -245,23 +247,126 @@ test('populated explorers retain native tree insets and header control states', 
 });
 
 
-test('notebooks use the existing document and source tabs', async () => {
+async function toolbarScope() {
   const documentSource = (await readFile(new URL('../dev.sailry.platform/desktop/document-view.js',import.meta.url),'utf8'))
     .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
-  const toolbar = vm.runInNewContext(`${documentSource}\ntoolbar`,{
+  return vm.runInNewContext(`${documentSource}\n({toolbar,groups,fit})`,{
     div:() => element('div'),IconButton:{new:(id,props) => element('button',{id,...props})},
-    TabBar:function(id) { return element('tabs',{id}); },Tab:function() { return element('tab'); },
+    Menu:{new:(id,props) => element('menu',{id,...props})},
+    SegmentedTabs:{new:(id,props) => element('tabs',{id,...props})},
+    Measure:{new:id => element('measure',{id})},
   });
-  const changes = [],cx = {};
-  const view = {text:{content_document:'Document',content_source:'Source'},
-    documents:{action:async (kind,context) => changes.push([kind,context])},
-    run:(action,context) => { assert.equal(context,cx); return action(context); }};
-  const document = {notebook:true,markdown:false,mode:'document',can_edit:false,can_copy:true,can_cut_paste:false,can_save:false};
-  const nodes = all(toolbar(view,document,{}));
-  const tabs = nodes.find(node => node?.kind === 'tabs');
-  assert.equal(tabs.props.selected_index,0);
-  assert.deepEqual(tabs.items.map(tab => tab.props.label),['Document','Source']);
-  assert.equal(nodes.find(node => node?.props?.id === 'files_cut').props.disabled,true);
-  await tabs.props.on_change(1,cx);
-  assert.deepEqual(changes,[['source',cx]]);
+}
+
+const toolbarText = {content_document:'Document',content_source:'Source',content_preview:'Preview',
+  files_save:'Save',files_undo:'Undo',files_redo:'Redo',files_find:'Find',files_replace:'Find and replace',
+  files_wrap:'Soft wrap',files_more:'More',files_bold:'Bold',files_italic:'Italic',files_strike:'Strikethrough',
+  files_inline_code:'Inline code',files_link:'Link',files_block:'Text',files_block_paragraph:'Paragraph',
+  files_block_heading:'Heading {level}',files_block_bullet:'Bulleted list',files_block_ordered:'Numbered list',
+  files_block_task:'Task list',files_block_quote:'Quote',files_block_callout:'Callout',files_block_code:'Code block',
+  files_insert:'Insert',files_insert_table:'Table',files_insert_image:'Image',files_insert_rule:'Divider',
+  files_insert_code:'Code block',files_insert_diagrams:'Diagrams',files_insert_mermaid:'Mermaid',
+  files_insert_math:'Math',files_insert_chart:'Chart',files_insert_html:'HTML block'};
+
+const plain = value => JSON.parse(JSON.stringify(value));
+const ids = nodes => nodes.filter(node => node?.kind === 'button' || node?.kind === 'menu' || node?.kind === 'tabs')
+  .map(node => node.props.id);
+
+test('markdown documents compose formatting groups and an icon mode switch', async () => {
+  const {toolbar} = await toolbarScope();
+  const document = {markdown:true,notebook:false,mode:'document',can_edit:true,can_save:true,dirty:true,wrap:true,
+    format:{bold:true,italic:false,strike:false,code:false,link:true,block:'heading2'}};
+  const nodes = all(toolbar({text:toolbarText},document,{}));
+  assert.deepEqual(ids(nodes),['files_save','files_undo','files_redo','file-block-menu','files_bold',
+    'files_italic','files_strike','files_inline_code','files_link',
+    'block:bullet','block:ordered','block:task','block:quote','insert:table','file-insert-menu',
+    'files_find','file-editor-mode']);
+  const find = id => nodes.find(node => node?.props?.id === id);
+  assert.equal(find('files_save').props.tone,'success');
+  assert.equal(find('files_bold').props.shortcut,'secondary-b');
+  assert.equal(find('files_link').props.selected,true);
+  assert.equal(find('files_italic').props.selected,false);
+  const block = find('file-block-menu');
+  assert.equal(block.props.label,'Heading 2');
+  assert.equal(block.props.caret,true);
+  assert.equal(block.props.items.find(item => item.checked).id,'block:heading2');
+  assert.equal(block.props.items[2].shortcut,'secondary-alt-2');
+  const insert = find('file-insert-menu');
+  assert.ok(insert.props.items.some(item => item.header && item.label === 'Diagrams'));
+  assert.deepEqual(plain(insert.props.items.filter(item => item.id).map(item => item.id)),
+    ['insert:image','insert:rule','insert:code','insert:mermaid','insert:math','insert:chart','insert:html']);
+  const tabs = find('file-editor-mode');
+  assert.equal(tabs.props.selected,'document');
+  assert.deepEqual(plain(tabs.props.items.map(item => [item.id,item.icon,item.label])),
+    [['document','eye','Document'],['source','code-xml','Source']]);
+  for (const removed of ['files_copy','files_cut','files_paste']) assert.equal(find(removed),undefined);
+  assert.ok(nodes.some(node => node?.kind === 'measure'));
+});
+
+test('markdown source adds soft wrap; plain code offers replace and wrap', async () => {
+  const {toolbar} = await toolbarScope();
+  const source = {markdown:true,notebook:false,mode:'source',can_edit:true,can_save:false,wrap:false,format:{block:null}};
+  let nodes = all(toolbar({text:toolbarText},source,{}));
+  assert.deepEqual(ids(nodes).slice(-3),['files_find','files_wrap','file-editor-mode']);
+  assert.equal(nodes.find(node => node?.props?.id === 'file-block-menu').props.label,'Text');
+  assert.equal(nodes.find(node => node?.props?.id === 'files_save').props.tone,'muted');
+  const code = {markdown:false,notebook:false,mode:'source',can_edit:false,can_save:false,wrap:true,format:null};
+  nodes = all(toolbar({text:toolbarText},code,{}));
+  assert.deepEqual(ids(nodes),['files_save','files_undo','files_redo','files_find','files_replace','files_wrap']);
+  const find = id => nodes.find(node => node?.props?.id === id);
+  assert.equal(find('files_replace').props.disabled,true);
+  assert.equal(find('files_find').props.disabled,false);
+  assert.equal(find('files_wrap').props.selected,true);
+});
+
+test('notebook previews keep Save, Find and a Preview switch', async () => {
+  const {toolbar} = await toolbarScope();
+  const document = {notebook:true,markdown:false,mode:'document',can_edit:false,can_save:false,wrap:true,format:null};
+  let nodes = all(toolbar({text:toolbarText},document,{}));
+  assert.deepEqual(ids(nodes),['files_save','files_find','file-editor-mode']);
+  const tabs = nodes.find(node => node?.props?.id === 'file-editor-mode');
+  assert.equal(tabs.props.items[0].label,'Preview');
+  document.mode = 'source'; document.can_edit = true;
+  nodes = all(toolbar({text:toolbarText},document,{}));
+  assert.deepEqual(ids(nodes),['files_save','files_undo','files_redo','files_find','files_replace','files_wrap','file-editor-mode']);
+});
+
+test('narrow toolbars collapse controls right to left into More', async () => {
+  const {toolbar,groups,fit} = await toolbarScope();
+  const document = {markdown:true,notebook:false,mode:'source',can_edit:true,can_save:false,wrap:true,
+    format:{bold:false,italic:true,strike:false,code:false,link:false,block:'paragraph'}};
+  const all_groups = groups({text:toolbarText},document);
+  assert.equal(fit(all_groups,undefined).hidden.length,0);
+  assert.equal(fit(all_groups,10000).hidden.length,0);
+  const narrow = fit(all_groups,150);
+  assert.deepEqual(plain(narrow.visible.flat().map(item => item.id)),['files_italic','files_strike','files_inline_code']);
+  assert.deepEqual(plain(narrow.hidden.flat().map(item => item.id)),['files_link','block:bullet','block:ordered',
+    'block:task','block:quote','insert:table','files_insert','files_find','files_wrap']);
+  const nodes = all(toolbar({text:toolbarText,toolbarWidth:300},document,{}));
+  const shown = ids(nodes);
+  for (const kept of ['files_save','files_undo','files_redo','file-block-menu','files_bold','file-editor-mode','file-more-menu'])
+    assert.ok(shown.includes(kept),kept);
+  const more = nodes.find(node => node?.props?.id === 'file-more-menu');
+  assert.equal(more.props.icon,'ellipsis');
+  const insert = more.props.items.find(item => item.children);
+  assert.equal(insert.label,'Insert');
+  assert.ok(more.props.items.some(item => item.id === 'files_wrap' && item.checked));
+  assert.equal(all(toolbar({text:toolbarText,toolbarWidth:4000},document,{})).some(node => node?.props?.id === 'file-more-menu'),false);
+});
+
+test('toolbar events dispatch document actions with their parameters', async () => {
+  const main = (await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
+    .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
+  const Files = vm.runInNewContext(`${main}\nFiles`,{View:class {}});
+  const view = new Files(), calls = [], cx = {};
+  Object.assign(view,{run:action => action(cx),documents:{
+    action:async (kind,_cx,options) => calls.push(options ? [kind,options] : [kind]),
+    save:async () => calls.push(['save'])}});
+  for (const id of ['files_save','files_bold','files_inline_code','block:heading3','insert:mermaid','files_wrap','files_replace','unknown'])
+    view.toolbar(id,cx);
+  view.control('file-editor-mode',cx,'source');
+  view.control('file-toolbar-width',cx,420);
+  assert.equal(view.toolbarWidth,420);
+  assert.deepEqual(plain(calls),[['save'],['bold'],['inline_code'],['block',{block:'heading3'}],['insert',{block:'mermaid'}],
+    ['wrap'],['replace'],['source']]);
 });

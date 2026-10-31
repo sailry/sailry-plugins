@@ -173,7 +173,8 @@ test('native events and asynchronous document actions use the spawned context', 
     canInsertFileReferences:async () => false,next_change:stopped,
     nextControlEvent:event({id:'files_find'}),
     nextNavigationTabEvent:event({bar:'file-tabs',id:'draft',kind:'close'}),
-    nextMenuEvent:event({id:'new-file'}),nextContextMenuEvent:stopped,
+    nextMenuEvent:event({menu:'file-create-menu',id:'new-file'}),nextContextMenuEvent:stopped,
+    documentView:{toolbarMenus:new Set(['file-more-menu'])},
     nextTreeEvent:stopped,nextTextEvent:stopped,modal_closed:stopped,
     Documents:class {
       observe() {}

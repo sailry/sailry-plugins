@@ -34,12 +34,13 @@ export default class Files extends View {
     this.transferInput = null; this.transferId = null;
     this.documents.observe(cx); this.transfers.observe(cx);
     this.run(cx => this.refresh(cx),cx);
-    this.watch(nextControlEvent,(event,cx) => this.control(event.id,cx),cx);
+    this.watch(nextControlEvent,(event,cx) => this.control(event.id,cx,event.value),cx);
     this.watch(nextNavigationTabEvent,(event,cx) => {
       if (event.bar !== 'file-tabs') return;
       this.run(cx => event.kind === 'close' ? this.documents.close(event.id,cx) : this.documents.select(event.id,cx),cx);
     },cx);
-    this.watch(nextMenuEvent,(event,cx) => this.run(cx => this.actions.invoke(event.id,cx),cx),cx);
+    this.watch(nextMenuEvent,(event,cx) => documentView.toolbarMenus.has(event.menu) ? this.toolbar(event.id,cx)
+      : this.run(cx => this.actions.invoke(event.id,cx),cx),cx);
     this.watch(nextContextMenuEvent,(event,cx) => this.run(cx => this.actions.invoke(event.id,cx),cx),cx);
     this.watch(nextTreeEvent,(event,cx) => this.run(cx => this.tree(event,cx),cx),cx);
     this.watch(nextTextEvent,(event,cx) => this.textEvent(event,cx),cx);
@@ -135,7 +136,9 @@ export default class Files extends View {
     }
   }
 
-  control(id,cx) {
+  control(id,cx,value) {
+    if (id === 'file-toolbar-width') { this.toolbarWidth = value; return; }
+    if (id === 'file-editor-mode') { this.run(cx => this.documents.action(value,cx),cx); return; }
     if (id === 'files-close-current') {
       const current = this.documents.current();
       if (current) this.run(cx => this.documents.close(current.id,cx),cx);
@@ -154,10 +157,15 @@ export default class Files extends View {
     }
     if (id === 'file-search-case' && this.search) { this.search.toggle('case_sensitive',cx); return; }
     if (id === 'file-search-regex' && this.search) { this.search.toggle('regex',cx); return; }
-    if (id === 'files_save') this.run(cx => this.documents.save(cx),cx);
-    else if (['files_undo','files_redo','files_copy','files_cut','files_paste','files_find'].includes(id)) {
-      this.run(cx => this.documents.action(id.slice(6),cx),cx);
-    }
+    this.toolbar(id,cx);
+  }
+
+  toolbar(id,cx) {
+    if (id === 'files_save') return this.run(cx => this.documents.save(cx),cx);
+    const [kind,block] = id.split(':');
+    if (block && ['block','insert'].includes(kind)) return this.run(cx => this.documents.action(kind,cx,{block}),cx);
+    const actions = ['undo','redo','find','replace','wrap','bold','italic','strike','inline_code','link'];
+    if (id.startsWith('files_') && actions.includes(id.slice(6))) this.run(cx => this.documents.action(id.slice(6),cx),cx);
   }
 
   textEvent(event,cx) {
