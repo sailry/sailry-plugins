@@ -70,8 +70,6 @@ export function result({ output }) {
       if (capture.invalid_utf8) notices.push(captions.encoding);
       return {kind:'text',path:`/data/${stream}/text`,notices};
     });
-  } else if (output.kind === 'command_started') {
-    blocks = [{kind:'notice',message:captions.started}];
   } else if (output.kind === 'command_output_page' || output.kind === 'tool_output') {
     blocks = [{kind:'text',path:'/data/text',notices:[]}];
   }

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Keep background command starts as activities without empty output expansion
+
 ## 0.1.12
 
 - Refresh stable catalogs only when their settings or repository references change.
