@@ -2,7 +2,7 @@ import {div} from 'gpui-kit';
 import {Button} from 'gpui-base';
 import {Collapsible,Icon} from 'gpui-component';
 import {theme} from 'sailry';
-import {TextLine} from 'sailry/ui';
+import {TextLine,Tooltip} from 'sailry/ui';
 import {compact,duration} from './format.js';
 import {overview,latency,shares} from './context.js';
 
@@ -25,14 +25,21 @@ const span=(value,text)=>value!=null && Number(value)>=60000000
   ?text.context_minutes.replace('%{minutes}',String(Math.floor(Number(value)/60000000)))
     .replace('%{seconds}',String(Math.floor(Number(value)/1000000)%60))
   :duration(value,text);
+// Kit div tooltips target ShellRoot, which embedded plugin views lack; use the host trigger.
+const tip=(id,text,element)=>text?Tooltip.new(id,{text}).child(element):element;
 
-function row(label,value,{color=null,note=null}={}) {
-  let content=div().h_flex().w_full().min_w_0().gap(8).items_center().py(4).text_size(13)
+/** Bar tooltip: step, tokens and the model when known. */
+export function stepLabel(item,text) {
+  return [text.context_step.replace('%{count}',String(item.step)),tokens(item.tokens,item.estimated),item.model]
+    .filter(known).join(' · ');
+}
+
+function row(label,value,{color=null,note=null,id=null}={}) {
+  const content=div().h_flex().w_full().min_w_0().gap(8).items_center().py(4).text_size(13)
     .children(color?[dot(color)]:[])
     .child(div().flex_1().min_w_0().text_color(colors().muted_foreground).child(label))
     .child(div().flex_shrink_0().text_right().child(value));
-  if(note) content=content.tooltip(note);
-  return content;
+  return note?tip(`context-row-tip-${id}`,note,content):content;
 }
 
 function fold(view,id,body,label,value=null) {
@@ -77,9 +84,9 @@ function figures(id,values,size=20) {
   const present=values.filter(([,value])=>value!=null);
   if(!present.length)return null;
   return div().h_flex().w_full().gap(12).children(present.map(([label,value,note,tone],index)=>{
-    const cell=div().id(`context-${id}-figure-${index}`).v_flex().flex_1().min_w_0().gap(6).child(muted(label))
+    const cell=div().id(`context-${id}-figure-${index}`).v_flex().w_full().min_w_0().gap(6).child(muted(label))
       .child(div().text_size(size).font_medium().text_color(colors()[tone??'foreground']).child(value));
-    return note?cell.tooltip(note):cell;
+    return div().flex_1().min_w_0().child(tip(`context-${id}-figure-tip-${index}`,note,cell));
   }));
 }
 
@@ -93,12 +100,13 @@ function history(view,data) {
     const item=recent[index];
     if(!item)return div().flex_1().min_w(0).h(HISTORY_HEIGHT).v_flex().justify_end().child(stub());
     const measured=item.tokens!=null && item.tokens>0n;
-    return Button.new(`context-snapshot-${item.id}`).flex_1().min_w(0).h(HISTORY_HEIGHT).p(0).items_end()
+    const bar=Button.new(`context-snapshot-${item.id}`).w_full().h(HISTORY_HEIGHT).p(0).items_end()
       .selected(item.selected).accessibility_label(`${text.context_step.replace('%{count}',String(item.step))}: ${tokens(item.tokens,item.estimated)}`)
-      .tooltip(`${text.context_step.replace('%{count}',String(item.step))} · ${tokens(item.tokens,item.estimated)}`)
       .child(measured?div().w_full().flex_shrink_0()
         .h(Math.max(STUB_HEIGHT,Number(item.tokens)/peak*HISTORY_HEIGHT)).rounded_t(2).bg(colors()[item.color]):stub())
       .on_click((_,cx)=>{view.select(item.id);cx.notify();});
+    return div().flex_1().min_w(0).h(HISTORY_HEIGHT)
+      .child(Tooltip.new(`context-snapshot-tip-${item.id}`,{text:stepLabel(item,text)}).child(bar));
   });
   return column().gap(6).child(div().h_flex().w_full().h(HISTORY_HEIGHT).items_end().gap(4).children(slots))
     .children(chosen?[muted(`${text.context_step.replace('%{count}',String(chosen.step))} · ${tokens(chosen.tokens,chosen.estimated)}`)]:[]);
@@ -109,29 +117,28 @@ function occupancy(view,data) {
   const compactions=data.usage.compactions!=null && data.usage.compactions>0n
     ?text.context_compactions.replace('%{count}',number(data.usage.compactions)):null;
   const basis=used.basis?text[used.basis]:null;
-  const header=div().h_flex().items_baseline().gap(5)
+  const figure=div().h_flex().items_baseline().gap(5)
     .child(metric('context-occupancy-tokens',tokens(used.tokens,used.estimated),26,'foreground',
       used.limit==null?null:`/ ${number(used.limit)}`,26))
     .child(div().flex_1())
     .children(used.percent==null?[]:[metric('context-occupancy-percent',percent(used.percent),15,'muted_foreground',null,26)]);
-  if(basis)header.tooltip(basis);
+  const header=tip('context-occupancy-basis-tip',basis,figure);
   const meter=div().relative().w_full().child(bars('context-occupancy-bar',[{value:used.tokens,color:'chart_2'}],used.limit));
   if(used.limit>0n && used.threshold!=null) meter.child(div().absolute().top(-3).bottom(-3).w(1)
     .left(`${Math.min(100,Math.max(0,Number(used.threshold)/Number(used.limit)*100))}%`).bg(colors().muted_foreground)
-    .tooltip(`${text.context_threshold} ${number(used.threshold)}`));
+    .child(tip('context-threshold-tip',`${text.context_threshold} ${number(used.threshold)}`,div().size_full())));
   if(used.limit>0n && used.reserve!=null) meter.child(div().absolute().top(0).bottom(0).right(0)
     .w(`${Math.min(100,Number(used.reserve)/Number(used.limit)*100)}%`).border_l_1().border_color(colors().muted_foreground)
-    .tooltip(`${text.context_reserve} ${number(used.reserve)}`));
+    .child(tip('context-reserve-tip',`${text.context_reserve} ${number(used.reserve)}`,div().size_full())));
   const remaining=used.threshold==null||used.tokens==null?null:used.threshold>used.tokens?used.threshold-used.tokens:0n;
   const notes=[remaining==null?null:text.context_remaining.replace('%{count}',number(remaining)),
     used.reserve==null?null:`${text.context_reserve} ${number(used.reserve)}`].filter(Boolean);
   const parts=detail.parts.filter(part=>part.tokens!=null && part.tokens>0n);
   const details=column().gap(0)
-    .children(parts.map(part=>row(text[part.label],tokens(part.tokens,true),{color:part.color,
+    .children(parts.map(part=>row(text[part.label],tokens(part.tokens,true),{color:part.color,id:part.label,
       note:part.method==='identified_source_characters_quarter'?text.context_identified_note:null})));
   const note=[chosen?`${chosen.model} · ${number(chosen.limit)}`:null,
     detail.complete?null:text.context_payload_partial].filter(Boolean).join(' · ');
-  if(note)details.tooltip(note);
   const record=view.state.statistics?.last_compaction;
   const revealable=record?.id && record.turn && record.turn_sequence;
   if(revealable) details.child(Button.new('context-record').w_full().p(0)
@@ -141,7 +148,7 @@ function occupancy(view,data) {
     header,meter,
     notes.length?div().h_flex().justify_between().gap(12).children(notes.map(muted)):null,
     history(view,data),
-    parts.length||revealable?fold(view,'occupancy',details,text.context_details):null,
+    parts.length||revealable?fold(view,'occupancy',tip('context-details-tip',note,details),text.context_details):null,
   ]);
 }
 

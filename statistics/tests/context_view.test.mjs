@@ -44,7 +44,7 @@ test('connection colors latency and hides without observations',()=>{
     return ()=>element();
   }});
   const {connection}=vm.runInNewContext(`${source}\n({connection})`,{
-    div:element,Button:{new:element},TextLine:{new:element},Collapsible:class {constructor(){return element();}},
+    div:element,Button:{new:element},TextLine:{new:element},Tooltip:{new:element},Collapsible:class {constructor(){return element();}},
     Icon:class {constructor(){return element();}},theme:()=>({colors}),latency,shares:()=>[],compact,duration,
   });
   const view={text:messages('en'),expanded:new Set()};
@@ -55,4 +55,12 @@ test('connection colors latency and hides without observations',()=>{
     assert.notEqual(connection(view,{connection:{response:value,first:null,elapsed:null}}),null);
     assert.ok(tones.includes(colors[value===0n?'success':value===2000000n?'warning':'destructive']));
   }
+});
+
+test('bar tooltip names the step, tokens and model',()=>{
+  const {stepLabel}=vm.runInNewContext(`${source}\n({stepLabel})`,{compact,duration,latency,shares:()=>[]});
+  const text=messages('en');
+  const step=text.context_step.replace('%{count}','3');
+  assert.equal(stepLabel({step:3,tokens:32900n,estimated:false,model:'fixture'},text),`${step} · ${compact(32900n)} · fixture`);
+  assert.equal(stepLabel({step:3,tokens:32900n,estimated:true,model:null},text),`${step} · ≈ ${compact(32900n)}`);
 });

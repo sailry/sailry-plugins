@@ -1,3 +1,7 @@
+## 0.1.25
+
+- Show tooltips on context step bars, markers and notes, including the step's model
+
 ## 0.1.24
 
 - Show step bars from the first step and fill the connection row with session speed when API response time is unavailable
