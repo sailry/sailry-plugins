@@ -13948,7 +13948,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -15443,6 +15443,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "d633fbab0c217768058668b8efa805cf34765a09",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Return similar memories without replacing them; updates require an explicit ID and revision"
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "747a1af3d0b6db00a41264448dd2e57eee9c2c1d",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -15561,7 +15569,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep the memory policy in the system prompt and stop adding it to every turn\n- Add up to three matching memories to a turn, and nothing when none match\n- Suggest saving only after preference, correction or decision cues\n- Remove the title index and recall counts"
+        "text": "- Return similar memories without replacing them; updates require an explicit ID and revision"
       }
     },
     {
