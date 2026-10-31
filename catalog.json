@@ -2868,10 +2868,10 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
-            "min_sailry_version": "0.1.0-alpha.4",
+            "min_sailry_version": "0.1.0-alpha.7",
             "api_version": "v1",
             "actions": [
               "process.read",
@@ -3301,6 +3301,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.12",
+          "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Refresh stable catalogs only when their settings or repository references change."
+          }
+        },
+        {
           "version": "0.1.11",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -3385,7 +3393,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep command access guidance in one parameter description\n- Declare a 600000 ms timeout maximum without changing execution validation"
+        "text": "- Refresh stable catalogs only when their settings or repository references change."
       }
     },
     {
@@ -10565,11 +10573,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.0-alpha.4",
+            "min_sailry_version": "0.1.0-alpha.7",
             "actions": [
               "git.read",
               "git.write",
@@ -12135,6 +12143,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Refresh stable catalogs only when their settings or repository references change."
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -12287,7 +12303,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep captured Git targets and snapshots opaque in model schemas\n- Preserve host validation while removing redundant numeric schema bounds"
+        "text": "- Refresh stable catalogs only when their settings or repository references change."
       }
     },
     {
@@ -12468,7 +12484,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12880,7 +12896,8 @@
               }
             },
             "category": "automation",
-            "tint": "amber"
+            "tint": "amber",
+            "min_sailry_version": "0.1.0-alpha.7"
           }
         }
       },
@@ -12892,6 +12909,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Read bounded run metadata for goal checks and coalesce repeated status refreshes."
+          }
+        },
         {
           "version": "0.1.6",
           "commit": "e395dcb5513795c20c189fb6dc0a64ab79d0aea2",
@@ -12953,18 +12978,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep inactive goals idle and observe only run status changes",
-        "locales": {
-          "zh-CN": "- 未使用目标时不订阅会话，执行中仅跟踪状态变化",
-          "zh-TW": "- 未使用目標時不訂閱對話，執行中僅追蹤狀態變化",
-          "ja": "- 未使用の目標では会話を購読せず、実行中は状態の変更のみを追跡",
-          "ko": "- 사용하지 않는 목표의 대화 구독을 중지하고 실행 상태 변경만 추적",
-          "fr": "- Suspendre les abonnements des objectifs inactifs et suivre les changements d’état",
-          "de": "- Inaktive Ziele ohne Abfragen belassen und nur Statusänderungen verfolgen",
-          "es": "- Mantener inactivos los objetivos sin uso y observar solo los cambios de estado",
-          "pt-BR": "- Manter objetivos sem uso inativos e observar apenas mudanças de estado",
-          "ru": "- Не опрашивать неиспользуемые цели и отслеживать только изменения состояния"
-        }
+        "text": "- Read bounded run metadata for goal checks and coalesce repeated status refreshes."
       }
     },
     {
@@ -16802,7 +16816,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -16942,7 +16956,8 @@
                 "dev.sailry.platform/adapters/response.js",
                 "dev.sailry.platform/adapters/claude.js",
                 "dev.sailry.platform/adapters/codex.js",
-                "dev.sailry.platform/desktop/providers.js"
+                "dev.sailry.platform/desktop/providers.js",
+                "dev.sailry.platform/desktop/visibility.js"
               ]
             }
           }
@@ -16953,6 +16968,13 @@
         "http.request"
       ],
       "versions": [
+        {
+          "version": "0.1.7",
+          "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
+          "release_notes": {
+            "text": "- Pause account refresh timers while their views are hidden and reuse unexpired results on reveal"
+          }
+        },
         {
           "version": "0.1.6",
           "commit": "08b8c3e943edb6d51db0a4933ff1d9c1d3b1bd75",
@@ -17004,7 +17026,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read provider accounts and new contexts concurrently"
+        "text": "- Pause account refresh timers while their views are hidden and reuse unexpired results on reveal"
       }
     },
     {
@@ -20865,7 +20887,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -21502,7 +21524,8 @@
                 "dev.sailry.platform/desktop/credits.js",
                 "dev.sailry.platform/desktop/locales.js",
                 "dev.sailry.platform/errors.js",
-                "dev.sailry.platform/desktop/providers.js"
+                "dev.sailry.platform/desktop/providers.js",
+                "dev.sailry.platform/desktop/visibility.js"
               ]
             },
             "host": {
@@ -21538,6 +21561,13 @@
         "notifications.publish"
       ],
       "versions": [
+        {
+          "version": "0.1.17",
+          "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
+          "release_notes": {
+            "text": "- Pause hidden credit refresh timers and reuse results until the refresh interval expires"
+          }
+        },
         {
           "version": "0.1.16",
           "commit": "d1a9f5dfeb0b409b5e2188f856d3d162f00bd169",
@@ -21657,7 +21687,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Preserve tool declarations when disabling tool calls for context summaries"
+        "text": "- Pause hidden credit refresh timers and reuse results until the refresh interval expires"
       }
     },
     {
