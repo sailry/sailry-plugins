@@ -14,6 +14,8 @@ import {messages,format} from './locales.js';
 import {render} from './view.js';
 export const command=(kind,data)=>({kind,data});
 export default class Ssh extends View {
+  // Exited terminals: toasted once, then closed once.
+  ended=new Set();dismissed=new Set();
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale);this.profiles=[];this.projects=[];this.worktrees=[];this.connected=true;this.loaded=false;
     this.selected=null;this.terminals=[];this.terminal=null;this.browsers=new Map();this.pending=null;this.outcome=null;this.error=null;this.target=null;this.resume=false;this.refreshRevision=0;this.refreshing=null;this.refreshAgain=false;
@@ -87,8 +89,14 @@ export default class Ssh extends View {
     const [{profiles,selected,terminals},catalog]=await Promise.all([inventory,readProjectCatalog()]);
     if(revision!==this.refreshRevision)return;this.projects=catalog.projects;this.worktrees=catalog.worktrees;
     if(this.transfer?.worktree&&!this.worktrees.some(tree=>tree.project&&tree.id===this.transfer.worktree))this.transfer.worktree=null;
-    this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];this.loaded=true;for(const id of this.closingTerminals)if(!terminals.has(id))this.closingTerminals.delete(id);if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);
+    this.profiles=profiles;this.selected=selected;this.terminals=[...terminals.values()];this.loaded=true;for(const id of this.closingTerminals)if(!terminals.has(id))this.closingTerminals.delete(id);if(!this.terminals.some(info=>info.id===this.terminal))this.terminal=this.terminals[Math.min(Math.max(terminalIndex,0),this.terminals.length-1)]?.id??null;if(this.terminal)this.selectTerminal(this.terminal,cx);this.focusSuccessor(cx);this.endExited(cx);
   }
+  // Any exit closes the tab once; exit 0 is silent.
+  endExited(cx){for(const info of this.terminals){const kind=info.status.kind;if((kind!=='exited'&&kind!=='failed')||this.ended.has(info.id))continue;this.ended.add(info.id);
+    if(kind==='failed'||info.status.data?.code!==0)toast({id:`ssh-exit-${info.id}`,kind:'error',message:kind==='exited'?format(this.text.ssh_terminal_exited,{code:info.status.data?.code}):this.text.ssh_terminal_ended});}
+    this.closeEnded(cx);}
+  // Closing resets command outcomes; never discard a pending host-key decision.
+  closeEnded(cx){if(this.locked()||this.outcome?.kind==='host_key_required')return;const info=this.terminals.find(info=>this.ended.has(info.id)&&!this.dismissed.has(info.id)&&!this.closingTerminals.has(info.id));if(!info)return;this.dismissed.add(info.id);this.run(cx=>this.closeTerminal(info.id,cx),cx);}
   async readTerminal(previous){const id=prepareRequest(command('inspect_terminal',{terminal:previous.id}));try{const result=await completeRequest(id);if(result.Ok?.kind==='terminal_snapshot')return result.Ok.data.info;if(result.Err?.code==='not_found')return null;return previous;}catch(error){return faultCode(error.message??String(error))==='not_found'?null:previous;}finally{forgetRequest(id);}}
   async execute(value,cx,after=null,id=null,target=this.profile(),prepared=null){
     if(this.locked())return null;const request=prepared??new Request(value,id);this.pending={request,after,target};this.outcome=this.commandOpen&&this.outcome?.kind==='completed'?this.outcome:null;this.error=null;this.target=target?{id:target.id,revision:target.revision}:null;

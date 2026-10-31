@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Close SSH terminal tabs when their shell exits; report only non-zero exits
+
 ## 0.1.17
 
 - Keep dynamic connection schemas aligned with compact tool declarations

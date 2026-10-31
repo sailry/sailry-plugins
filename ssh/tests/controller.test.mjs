@@ -327,13 +327,21 @@ test('retains a captured running terminal after its profile is removed',async()=
   assert.equal(forgotten.length,1);
 });
 
-test('retains captured exited output without discovering unowned terminals',async()=>{
-  const {view,cx,host,terminal,reads}=await browsing();
-  const exited={...terminal,owner:null,status:{kind:'exited',code:7}};
-  host.terminals=[];host.inspect=async()=>({Ok:{kind:'terminal_snapshot',data:{info:exited}}});
-  await view.refresh(cx);assert.equal(view.terminal,terminal.id);assert.equal(view.terminals[0],exited);
-  assert.deepEqual(reads.map(value=>value.data.terminal),[terminal.id]);
-  const other=await fixture();other.host.terminals=[];other.host.inspect=host.inspect;
+test('exited captured terminals close once without discovering unowned terminals',async()=>{
+  for(const [status,toasted] of [[{kind:'exited',data:{code:0}},false],[{kind:'exited',data:{code:7}},true],[{kind:'failed',data:{message:'signal'}},true]]){
+    const {view,cx,host,terminal,reads,released,notices,settle}=await browsing();
+    let current={...terminal,owner:null,status};
+    host.terminals=[];host.inspect=async value=>{
+      if(value.kind!=='close_ssh_terminal')return {Ok:{kind:'terminal_snapshot',data:{info:current}}};
+      current={...current,status:{kind:'closed'}};return {Ok:{kind:'terminal',data:current}};
+    };
+    await view.refresh(cx);await settle();await view.refresh(cx);await settle();
+    assert.deepEqual(reads.map(value=>value.kind),['inspect_terminal','close_ssh_terminal','inspect_terminal']);
+    assert.equal(view.terminal,null);
+    assert.deepEqual(released,[terminal.id]);
+    assert.deepEqual(notices.map(notice=>notice.id),toasted?[`ssh-exit-${terminal.id}`]:[]);
+  }
+  const other=await fixture();other.host.terminals=[];
   await other.view.refresh(other.cx);assert.equal(other.view.terminals.length,0);assert.equal(other.reads.length,0);
 });
 
