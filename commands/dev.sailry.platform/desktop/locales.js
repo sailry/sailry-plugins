@@ -4,6 +4,7 @@ const en = {
   unknown: 'Terminal result is unconfirmed', stopped: 'Terminal stopped', terminal: 'Terminal',
   refresh: 'Refresh', toolsFailed: 'Could not load CLI tools',
   unavailable: 'CLI is no longer available', launchFailed: 'Terminal could not start',
+  exited: 'Terminal exited with code {code}', ended: 'Terminal ended unexpectedly',
   tools: {codex:'Codex',claude:'Claude',gemini:'Gemini',agy:'Agy',grok:'Grok',opencode:'OpenCode',kimi:'Kimi'},
 };
 const zh = {
@@ -12,6 +13,7 @@ const zh = {
   unknown: '终端结果尚未确认', stopped: '终端已停止', terminal: '终端', tools:en.tools,
   refresh: '刷新', toolsFailed: '无法读取 CLI',
   unavailable: 'CLI 已不可用', launchFailed: '终端启动失败',
+  exited: '终端已退出（退出码 {code}）', ended: '终端异常结束',
 };
 const access = {
   de:{access:'Zugriff',workspace:'Arbeitsbereich',full:'Voller Dateisystem- und Netzwerkzugriff'},

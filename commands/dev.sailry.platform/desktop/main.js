@@ -7,6 +7,7 @@ import {messages} from './locales.js';
 import {render} from './view.js';
 import {title, directory} from './labels.js';
 import {selection} from './access.js';
+import * as exit from './exit.js';
 
 export default class Commands extends View {
   init(_props, cx) {
@@ -19,6 +20,7 @@ export default class Commands extends View {
     this.visible = true; this.connected = true; this.lastRead = 0;
     this.toolsRevision = null; this.loadedToolsRevision = null;
     this.closingTerminals = new Set();
+    this.ended = new Set(); this.dismissed = new Set();
     if (this.resource) cx.spawn(async cx => {
       try { while (true) {
         const event = await nextPaneEvent();
@@ -65,6 +67,7 @@ export default class Commands extends View {
         this.loadedToolsRevision = toolsRevision;
         this.items = items.filter(item => item.status.kind !== 'closed'); this.tools = tools; this.loaded = true;
         for (const id of this.closingTerminals) if (!this.items.some(item => item.id === id)) this.closingTerminals.delete(id);
+        this.endExited();
         if (this.resource) {
           const index = this.items.findIndex(item => item.id === this.resource.id);
           if (index < 0) { closePane(); return; }
@@ -81,8 +84,29 @@ export default class Commands extends View {
         cx.notify();
       } while (this.dirty && this.visible && this.connected); }
       catch (_) { if (this.visible && (explicit || !this.loaded)) this.fail('loadFailed'); }
-      finally { this.loading = false; this.openSelected(cx); cx.notify(); }
+      finally { this.loading = false; this.openSelected(cx); this.closeEnded(cx); cx.notify(); }
     });
+  }
+  // A pane owns its own terminal; the page owns the inventory. Exit 0 is silent.
+  endExited() {
+    for (const item of this.items) {
+      if ((this.resource && item.id !== this.resource.id) || item.ssh || this.ended.has(item.id)) continue;
+      const ending = exit.action(item.status);
+      if (!ending.close) continue;
+      this.ended.add(item.id);
+      if (ending.toast) toast({id:`terminal-exit-${item.id}`, message:exit.message(item.status, this.text), kind:'error'});
+    }
+  }
+  closeEnded(cx) {
+    if (this.busy || this.pending) return;
+    const item = this.items.find(item => this.ended.has(item.id) && !this.dismissed.has(item.id)
+      && !this.closingTerminals.has(item.id));
+    if (!item) return;
+    this.dismissed.add(item.id);
+    // An automatic close must not clear another terminal's retry state.
+    const {error, openRetry} = this;
+    this.perform('close', item.id, cx);
+    this.error = error; this.openRetry = openRetry;
   }
   fail(key) { if(this.error!==key)toast({id:'terminal-error',message:this.text[key],kind:'error'});this.error=key; }
   select(index, cx) {
@@ -151,7 +175,8 @@ export default class Commands extends View {
         if (result.Err?.code === 'outcome_unknown') { this.fail('unknown'); return; }
         if (result.Err) {
           if (done === 'close') this.closingTerminals.delete(opened);
-          this.fail('failed');
+          // Another controller already removed the terminal.
+          if (done !== 'close' || result.Err.code !== 'not_found') this.fail('failed');
           if (done === 'open') this.openFailed(opened);
         }
         else if (done !== 'close') {
@@ -168,7 +193,7 @@ export default class Commands extends View {
       finally {
         this.busy = false;
         try { if (this.resource) updatePane({busy:!!this.pending}); } catch (_) { /* The renderer may have been released. */ }
-        this.openSelected(cx); cx.notify();
+        this.openSelected(cx); if (!closed) this.closeEnded(cx); cx.notify();
         if (closed) closePane();
       }
     });

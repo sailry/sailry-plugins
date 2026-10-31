@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Close terminals when their shell exits, collapsing split panes; report only non-zero exits
+
 ## 0.1.13
 
 - Keep background command starts as activities without empty output expansion

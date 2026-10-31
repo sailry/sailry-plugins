@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {selection} from '../dev.sailry.platform/desktop/access.js';
+import * as exit from '../dev.sailry.platform/desktop/exit.js';
 
 const shell = (id = 'shell') => ({id, revision:1, tool:null, ssh:null, status:{kind:'stopped'}});
 
@@ -38,7 +39,9 @@ async function fixture(items = [shell()], resource = {kind:'terminal', id:items[
     'sailry/ui':{nextMenuEvent() {}, pane:() => resource ? {resource} : null,
       openPane:value => { panes.push(value); return true; }, updatePane:value => updates.push(value),
       closePane:() => closed.push(true), nextPaneEvent() {},toast:value=>notices.push(value)},
-    './locales.js':{messages:() => ({terminal:'Terminal', tools:{},failed:'Terminal action failed',unknown:'Outcome unknown',loadFailed:'Could not load terminals'})},
+    './locales.js':{messages:() => ({terminal:'Terminal', tools:{},failed:'Terminal action failed',unknown:'Outcome unknown',loadFailed:'Could not load terminals',
+      exited:'Exited {code}',ended:'Ended'})},
+    './exit.js':{action:exit.action,message:exit.message},
     './view.js':{render() {}},
     './labels.js':{title:() => null, directory:() => null},
     './access.js':{selection},
@@ -112,7 +115,7 @@ test('opens selected ordinary shells without replaying CLI or SSH launches', asy
   ]) {
     const setup = await fixture([item]);
     await setup.enter();
-    assert.equal(setup.prepared.length, 0);
+    assert.deepEqual(setup.prepared.filter(request => request.action !== 'close'), []);
   }
   const setup = await fixture([shell('first'), shell('second')], null);
   setup.view.selected = 'second';
@@ -380,4 +383,52 @@ test('terminal tools follow settings revisions',async()=>{
   await setup.observe(false);setup.host.toolsRevision++;
   assert.equal(setup.host.toolReads,2);
   await setup.observe(true);assert.equal(setup.host.toolReads,3);
+});
+
+test('exit decisions close every ended terminal and report only failures',()=>{
+  assert.deepEqual(exit.action({kind:'exited',data:{code:0}}),{close:true,toast:false});
+  assert.deepEqual(exit.action({kind:'exited',data:{code:130}}),{close:true,toast:true});
+  assert.deepEqual(exit.action({kind:'failed',data:{message:'signal'}}),{close:true,toast:true});
+  for(const kind of ['running','stopped','closed'])assert.deepEqual(exit.action({kind}),{close:false,toast:false});
+  const text={exited:'Exited {code}',ended:'Ended'};
+  assert.equal(exit.message({kind:'exited',data:{code:2}},text),'Exited 2');
+  assert.equal(exit.message({kind:'failed',data:{message:'x'}},text),'Ended');
+});
+
+test('exited terminals close once and collapse their pane',async()=>{
+  for(const code of [0,2]){
+    const item={...shell(),status:{kind:'running'}},setup=await fixture([item]);
+    setup.host.complete=async request=>{
+      assert.equal(request.action,'close');setup.host.items=[];
+      return {Ok:{kind:'terminal',data:{...item,status:{kind:'closed'}}}};
+    };
+    setup.host.items=[{...item,revision:2,status:{kind:'exited',data:{code}}}];
+    await setup.observe();
+    assert.deepEqual(setup.prepared.map(request=>request.action),['close']);
+    assert.deepEqual(setup.released,[item.id]);assert.deepEqual(setup.closed,[true]);
+    assert.deepEqual(setup.notices.map(notice=>notice.message),code?['Exited 2']:[]);
+  }
+});
+
+test('the page closes exited shells and ignores other controllers',async()=>{
+  const first={...shell('first'),status:{kind:'running'}},second={...shell('second'),status:{kind:'running'}};
+  const setup=await fixture([first,second],null);
+  setup.host.complete=async request=>{
+    setup.host.items=setup.host.items.filter(item=>item.id!==request.target);
+    return request.target==='first'?{Err:{code:'not_found'}}:{Ok:{kind:'terminal',data:{id:request.target}}};
+  };
+  setup.host.items=[first,second].map(item=>({...item,revision:2,status:{kind:'failed',data:{message:'gone'}}}));
+  await setup.observe();await setup.observe();
+  assert.deepEqual(setup.prepared.map(request=>request.target),['first','second']);
+  assert.deepEqual(setup.notices.map(notice=>notice.message),['Ended','Ended']);
+  assert.equal(setup.view.error,null);assert.deepEqual(setup.view.items,[]);
+});
+
+test('a confirmed exit close failure is reported once without retry',async()=>{
+  const item={...shell(),status:{kind:'running'}},setup=await fixture([item],null);
+  setup.host.complete=async()=>({Err:{code:'busy'}});
+  setup.host.items=[{...item,revision:2,status:{kind:'exited',data:{code:0}}}];
+  await setup.observe();await setup.observe();
+  assert.equal(setup.prepared.length,1);assert.equal(setup.view.error,'failed');
+  assert.deepEqual(setup.notices.map(notice=>notice.message),['Terminal action failed']);
 });
