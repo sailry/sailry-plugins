@@ -8613,11 +8613,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.0-alpha.4",
+            "min_sailry_version": "0.1.0-alpha.6",
             "actions": [
               "files.read",
               "files.write",
@@ -10385,6 +10385,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.20",
+          "commit": "b925822a2b3cc81983770d7c4a67ba83f3031a0b",
+          "min_sailry_version": "0.1.0-alpha.6",
+          "release_notes": {
+            "text": "- Add Markdown formatting, block type, insert, link and soft wrap controls to the editor toolbar\n- Add Find and replace and soft wrap for code files\n- Switch modes with icons and move narrow-width controls into More\n- Remove copy, cut and paste from the toolbar",
+            "locales": {
+              "zh-CN": "- 编辑器工具栏新增 Markdown 格式、段落类型、插入、链接和自动换行\n- 代码文件新增查找替换和自动换行\n- 模式切换改为图标，窄宽度时控件收入“更多”\n- 工具栏移除复制、剪切和粘贴"
+            }
+          }
+        },
+        {
           "version": "0.1.19",
           "commit": "df5bbf6249b888d090f5033b8bcd501a276181c2",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -10519,7 +10530,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Show confirmed file writes and edits as line-numbered diffs"
+        "text": "- Add Markdown formatting, block type, insert, link and soft wrap controls to the editor toolbar\n- Add Find and replace and soft wrap for code files\n- Switch modes with icons and move narrow-width controls into More\n- Remove copy, cut and paste from the toolbar",
+        "locales": {
+          "zh-CN": "- 编辑器工具栏新增 Markdown 格式、段落类型、插入、链接和自动换行\n- 代码文件新增查找替换和自动换行\n- 模式切换改为图标，窄宽度时控件收入“更多”\n- 工具栏移除复制、剪切和粘贴"
+        }
       }
     },
     {
