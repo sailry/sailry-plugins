@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Show the delete icon on each subagent
+
 ## 0.1.28
 
 - Show each subagent's icon and description, and start new subagents from complete preset roles

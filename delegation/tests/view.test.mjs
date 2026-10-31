@@ -164,7 +164,7 @@ test('populated roles show their appearance beside action targets',()=>{
   assert.equal(icon.kind,'Appearance');
   assert.deepEqual(plain(icon.props),{value:appearance});
   assert.deepEqual(plain(setup.nodes.get('role-edit-retained').props),{icon:'settings-2',label:'Edit',disabled:false});
-  assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'trash-2',label:'Delete',disabled:false});
+  assert.deepEqual(plain(setup.nodes.get('role-delete-retained').props),{icon:'reicon:ui/trash2',label:'Delete',disabled:false});
   setup.view.loading=true;setup.render();
   assert.ok(setup.nodes.has('role-edit-retained'));
   assert.equal(setup.nodes.has('role-loading'),false);

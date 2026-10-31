@@ -83,7 +83,7 @@ export function render(view) {
           .child(role.description || `@${role.key}`)))
       .child(div().h_flex().flex_shrink(0).gap_1()
         .child(IconButton.new(`role-edit-${role.id}`,{icon:'settings-2',label:text.settings_edit,disabled}))
-        .child(IconButton.new(`role-delete-${role.id}`,{icon:'trash-2',label:text.settings_delete,disabled})))));
+        .child(IconButton.new(`role-delete-${role.id}`,{icon:'reicon:ui/trash2',label:text.settings_delete,disabled})))));
   const control = new Button('role-add').outline().size('small').label(text.settings_add).disabled(disabled)
     .on_click((_,cx) => view.edit(null,cx));
   const add = div().id('role-add').child(control);
