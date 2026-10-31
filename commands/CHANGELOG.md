@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Make conversation follow-up for background commands opt in
+
 ## 0.1.13
 
 - Keep background command starts as activities without empty output expansion
