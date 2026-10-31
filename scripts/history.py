@@ -122,6 +122,49 @@ def lineage(history, manifests, name):
     return [(commit, manifest(commit)[0]) for commit in graph if commit in selected]
 
 
+def collisions(history, entries):
+    groups = {}
+    for commit, manifest in entries:
+        groups.setdefault(manifest["version"], set()).add(commit)
+    result = {}
+    for version, commits in groups.items():
+        if len(commits) < 2:
+            continue
+        ancestors = set()
+        for commit, *parents in history:
+            if commit in commits or commit in ancestors:
+                ancestors.update(parents)
+        candidates = commits - ancestors
+        if len(candidates) > 1:
+            result[version] = candidates
+    return result
+
+
+def recorded(root, candidates):
+    pending = {(name, version): commits for name, versions in candidates.items()
+               for version, commits in versions.items()}
+    selected = {}
+    if not pending:
+        return selected
+    # The earliest recorded identity on the main lineage wins a divergent version collision.
+    commits = git(root, "log", "--first-parent", "--reverse", "--format=%H", "--",
+                  "catalog.json").splitlines()
+    for offset in range(0, len(commits), 16):
+        snapshots = objects(root, [f"{commit}:catalog.json" for commit in commits[offset:offset + 16]])
+        for text in snapshots.values():
+            if text is None:
+                continue
+            for package in json.loads(text).get("packages", []):
+                for record in package.get("versions", []):
+                    key = package["id"], record["version"]
+                    if key in pending and record["commit"] in pending[key]:
+                        selected[key] = record["commit"]
+                        del pending[key]
+            if not pending:
+                return selected
+    return selected
+
+
 def versions(root, packages):
     if git(root, "rev-parse", "--is-shallow-repository") == "true":
         raise ValueError("Catalog history requires a complete Git checkout")
@@ -133,11 +176,16 @@ def versions(root, packages):
                for name in packages}
     manifests = objects(root, [f"{row[0]}:{name}/plugin.json"
                                for name, history in commits.items() for row in history])
+    histories = {name: lineage(history, manifests, name) for name, history in commits.items()}
+    canonical = recorded(root, {name: collisions(commits[name], entries)
+                                for name, entries in histories.items()})
     result = {}
-    for name, history in commits.items():
+    for name, history in histories.items():
         selected = {}
-        for commit, manifest in lineage(history, manifests, name):
+        for commit, manifest in history:
             version = manifest["version"]
+            if (name, version) in canonical and commit != canonical[name, version]:
+                continue
             if version in selected:
                 continue
             record = {"version": version, "commit": commit}
