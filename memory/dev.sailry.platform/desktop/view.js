@@ -93,22 +93,20 @@ function editorFooter(view) {
       .disabled(owner.pending || owner.loading || !view.connected).on_click((_,cx)=>view.save(cx)));
 }
 function removal(view) {
-  const {text,removal:owner} = view;
-  return div().id('memory-removal').v_flex().gap_3()
-    .child(div().font_medium().child(owner.summary.title))
-    .child(div().text_sm().child(text.memory_delete_confirm));
+  const {removal:owner} = view;
+  return div().id('memory-removal').text_sm().child(owner.summary.title);
 }
 function removalFooter(view) {
   const {text,removal:owner} = view;
   return div().h_flex().justify_end().gap_2()
     .child(new Button('memory-delete-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
-    .child(new Button('memory-delete-confirm').primary().label(text[owner.request ? 'memory_retry' : 'settings_delete'])
+    .child(new Button('memory-delete-confirm').danger().label(text[owner.request ? 'memory_retry' : 'settings_delete'])
       .disabled(owner.pending || !view.connected).on_click((_,cx)=>view.confirmRemoval(cx)));
 }
 export function render(view) {
   const owner = view.editing ?? view.removal;
   const title = view.editing ? view.text[view.editing.entry.summary.revision ? 'memory_editor' : 'memory_create']
-    : view.removal ? view.text.settings_delete : '';
+    : view.removal ? view.text.memory_delete : '';
   return div().id('memory-settings').v_flex().gap_4()
     .child(configuration(view)).child(toolbar(view))
     .child(catalog(view))

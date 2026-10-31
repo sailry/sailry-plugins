@@ -74,7 +74,8 @@ test('settings choices use real selects and editor tabs fill their form control'
 test('memory forms use modal title and footer slots',()=>{
   const setup=fixture(),view=setup.view;
   view.text={...view.text,memory_editor:'Edit memory',memory_create:'New memory',memory_title:'Title',memory_kind:'Type',
-    memory_body:'Content',memory_retry:'Retry',memory_merge:'Merge',settings_save:'Save',settings_cancel:'Cancel'};
+    memory_body:'Content',memory_retry:'Retry',memory_merge:'Merge',settings_save:'Save',settings_cancel:'Cancel',
+    memory_delete:'Delete memory',settings_delete:'Delete'};
   view.editing={entry:{summary:{id:'draft',kind:'feedback',project:null,revision:0,archived:false}},title:'title',body:'body',
     sources:[],loading:false,pending:false,request:null};
   setup.functions.renderView(view);
@@ -83,9 +84,12 @@ test('memory forms use modal title and footer slots',()=>{
   assert.deepEqual(modal.items.map(item=>item.selector),['memory-editor',null]);
   view.editing=null;view.removal={summary:{title:'Keep this target'},pending:false,request:null};
   setup.functions.renderView(view);modal=setup.nodes.get('memory-dialog-0');
-  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Delete',width:448});
+  assert.deepEqual(plain(modal.props),{open:true,form:true,title:'Delete memory',width:448});
   assert.deepEqual(modal.items.map(item=>item.selector),['memory-removal',null]);
-  assert.equal(modal.items[0].items[0].items[0],'Keep this target');
+  assert.deepEqual(modal.items[0].items,['Keep this target']);
+  const confirm=setup.nodes.get('memory-delete-confirm');
+  assert.deepEqual(confirm.style.danger,[]);assert.equal('primary' in confirm.style,false);
+  assert.deepEqual(confirm.style.label,['Delete']);
 });
 
 test('settled empty catalogs keep their card during refresh',()=>{

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Shorten the delete confirmation to the memory title with a destructive button
+
 ## 0.1.17
 
 - Return similar memories without replacing them; updates require an explicit ID and revision
