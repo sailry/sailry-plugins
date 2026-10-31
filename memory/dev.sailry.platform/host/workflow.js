@@ -1,6 +1,9 @@
 import {readTurnState,stageTurnState,newId,isValueConflict} from 'sailry/sdk';
 import {readMemorySettings} from './settings.js';
 import {readMemory,head,unchanged,stable,snapshotChanged} from './storage.js';
+import {searchMemories} from './retrieval.js';
+import {terms} from './tokenize.js';
+import {near} from './review.js';
 import {putOperations,removeOperations,mergeOperations,memoryOutput,RecordChanged,EquivalentMemory} from './mutations.js';
 import {argumentsFor,requireRead,retrieve,fail} from './policy.js';
 
@@ -81,22 +84,59 @@ function writer(prepare) {
     }
   };
 }
+// Creation checks the same scope first, so saving needs no prior search.
+async function neighbors(entry,turn) {
+  let captured=[];
+  try { captured=await searchMemories(turn.project,Array.from(`${entry.summary.title}\n${entry.body}`).slice(0,1024).join(''),{keyword:true}); }
+  catch (error) { if (snapshotChanged(error)) throw error; }
+  const added=new Set(terms(entry.body));
+  const candidates=captured.filter(current=>current.summary.project===entry.summary.project);
+  const covers=(current,other)=>[...other].every(term=>current.has(term));
+  const known=added.size ? candidates.filter(current=>covers(new Set(terms(current.body)),added)) : [];
+  if (known.length) return {similar:known};
+  // A clearly extended fact replaces its shorter original without losing content.
+  const extended=candidates.find(current=>{
+    const existing=new Set(terms(current.body));
+    return existing.size>0 && existing.size<added.size && existing.size*2>=added.size && covers(added,existing);
+  });
+  if (extended) return {extended};
+  const close=candidates.filter(current=>near(current.body,entry.body));
+  return close.length ? {similar:close} : {};
+}
 export const save=writer(async(input,turn,state)=>{
-  const value=argumentsFor(input,['id','expected_revision','global','archived','kind','title','body'],['expected_revision','kind','title','body']);
+  const value=argumentsFor(input,['id','expected_revision','global','archived','kind','title','body'],['kind','title','body']);
   let project=value.global ? null : turn.project;
   if (value.id!=null) {
+    if (!('expected_revision' in value)) fail('pass expected_revision from search_memory to update this memory');
     requireRead(turn,value.id,value.expected_revision);
     let current;
     try { current=await readMemory(value.id,turn.project); }
     catch (error) { if (error.code==='not_found') throw new RecordChanged([value.id]); throw error; }
     if (current.summary.revision!==value.expected_revision) throw new RecordChanged([value.id]);
     project=current.summary.project;
+  } else if ((value.expected_revision ?? 0)!==0) fail('omit expected_revision to create a memory, or pass id to update one');
+  if (project===null && ((!value.global && value.id==null) || !['user','feedback'].includes(value.kind))) fail('global memory is only for cross-project user preferences or feedback; save project facts without global, inside a project');
+  let id=value.id ?? state?.id ?? newId(), revision=value.expected_revision ?? 0, mode=value.id!=null ? 'update' : state?.mode ?? 'create';
+  const entry={summary:{id,project,title:value.title,kind:value.kind,revision,updated_at_ms:0,archived:value.archived ?? false},body:value.body};
+  if (value.id==null && (!state || state.mode==='extend')) {
+    const found=await neighbors(entry,turn);
+    if (found.similar) {
+      const output={status:'similar',saved:false,existing:retrieve(found.similar,turn),
+        hint:'Similar memories exist. Update one with its id and revision, or save a distinct fact'};
+      stageTurnState(turn);
+      return {done:output};
+    }
+    if (found.extended) {
+      ({id,revision}=found.extended.summary);
+      mode='extend';
+    } else if (mode==='extend') {
+      id=newId();
+      mode='create';
+    }
+    Object.assign(entry.summary,{id,revision});
   }
-  if (project===null && ((!value.global && value.id==null) || !['user','feedback'].includes(value.kind))) fail('global memory requires an explicit cross-project preference or correction; project facts require a project');
-  const id=value.id ?? state?.id ?? newId();
-  const entry={summary:{id,project,title:value.title,kind:value.kind,revision:value.expected_revision,updated_at_ms:0,archived:value.archived ?? false},body:value.body};
-  const arguments_=await putOperations(entry,value.expected_revision,turn.project);
-  return {arguments:arguments_,state:{id,receipt:capture(arguments_,entry,value.expected_revision===0 ? 'created' : 'updated',turn)}};
+  const arguments_=await putOperations(entry,revision,turn.project);
+  return {arguments:arguments_,state:{id,mode,receipt:capture(arguments_,entry,revision===0 ? 'created' : 'updated',turn)}};
 });
 export const forget=writer(async(input,turn)=>{
   const value=argumentsFor(input,['id','expected_revision'],['id','expected_revision']);

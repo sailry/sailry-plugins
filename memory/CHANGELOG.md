@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.15
+
+- Recall relevant memories for each message and list the rest by title
+- Start search and save tools visible and replace repeated rules with one short policy
+- Return similar memories instead of saving duplicates and extend shorter originals in place
+- Track recall counts to order the index and judge staleness
+
 ## 0.1.14
 
 - Keep uncertain-write guidance available when memory tools are imported without the index

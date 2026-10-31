@@ -124,38 +124,42 @@ test('scope, archive, exact IDs and literal search stay in the package',async()=
   await assert.rejects(f.mutations.removeOperations(id(3),1,project),error=>error.code==='permission_denied');
 });
 
-test('new turns receive only short active scoped preference bodies',async()=>{
+const lines=(instruction,heading)=>(instruction.split('\n\n').find(part=>part.startsWith(heading)) ?? '').split('\n').slice(1);
+
+test('new turns receive relevant scoped bodies and active titles',async()=>{
   const f=await fixture(),preference='Use unittest and four spaces for Python tests',boundary='中文'.repeat(50);
   f.configure({enabled:true,auto_write:true,context_bytes:8192,review_after_days:90});
   f.seed([entry(1,preference,{kind:'user',project:null,title:'Python tests'}),
     entry(2,boundary,{kind:'feedback'}),entry(3,boundary+'!',{kind:'feedback'}),
     entry(4,'Project body stays out of the index'),entry(5,'Foreign preference',{project:id(9000),kind:'user'}),
     entry(6,'Archived preference',{archived:true,kind:'feedback'})]);
-  const initialized=await f.main.initialize({tools:['search_memory','save_memory'],project,resources:true});
-  const index=JSON.parse(initialized.instruction.split('Index:\n')[1]);
-  assert.equal(index.find(value=>value.id===id(1)).body,preference);
-  assert.equal(index.find(value=>value.id===id(2)).body,boundary);
-  for(const number of [3,4])assert.equal(index.find(value=>value.id===id(number)).body,undefined);
-  for(const number of [5,6])assert.equal(index.some(value=>value.id===id(number)),false);
-  assert.deepEqual(f.reads.filter(key=>key.startsWith('memory/body/')),['memory/body/0','memory/body/1']);
+  const initialized=await f.main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'How should Python tests look?',mode:'code'});
+  const relevant=lines(initialized.instruction,'Relevant memories:').map(line=>JSON.parse(line));
+  assert.deepEqual(relevant.map(value=>[value.id,value.body,value.global]),[[id(1),preference,true]]);
+  const titles=lines(initialized.instruction,'Other memories (title and ID):');
+  for(const number of [2,3,4])assert.ok(titles.includes(`- Verified constraint (${id(number)})`));
+  for(const number of [1,5,6])assert.equal(titles.some(line=>line.includes(id(number))),false);
   assert.equal(f.state.remaining,8192-Buffer.byteLength(initialized.instruction));
-  assert.deepEqual(f.state.reads,[],'injected preferences grant no mutation authority');
+  const recall=f.get('memory/recall/global').value.entries[id(1)];
+  assert.equal(recall.recalled,1);
+  assert.equal(f.get('memory/entry/'+id(1)).revision,'1','statistics never change the entry');
   const denied=await f.main.save({arguments:{id:id(2),expected_revision:1,kind:'feedback',title:'Replacement',body:'Changed'},step:0});
   assert.equal(denied.result.error.code,'invalid_request');
+  assert.match(denied.result.error.message,/call search_memory with this ID/);
 });
 
-test('preference indexing reads the latest consistent snapshot',async()=>{
+test('relevant recall reads the latest consistent snapshot',async()=>{
   const f=await fixture();
   f.seed([entry(1,'Use unittest',{kind:'user'})]);
   const changed=await f.storage.readMemory(id(1));changed.summary.title='Updated preference';
   const prepared=await f.mutations.putOperations(changed,1);
   f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(prepared.operations);}};
-  const initialized=await f.main.initialize({tools:['search_memory'],project,resources:true});
-  const index=JSON.parse(initialized.instruction.split('Index:\n')[1]);
-  assert.equal(index[0].title,'Updated preference');
-  assert.equal(index[0].body,'Use unittest');
-  assert.equal(index[0].revision,2);
-  assert.equal(f.prepared.length,0);
+  const initialized=await f.main.initialize({tools:['search_memory'],project,resources:true,message:'unittest',mode:'plan'});
+  const [value]=lines(initialized.instruction,'Relevant memories:').map(line=>JSON.parse(line));
+  assert.equal(value.title,'Updated preference');
+  assert.equal(value.body,'Use unittest');
+  assert.equal(value.revision,2);
+  assert.equal(f.prepared.length,0,'planning turns skip statistics');
   assert.equal(f.completed.length,0);
 });
 
@@ -236,6 +240,7 @@ test('review recaptures metadata changed during body reads',async()=>{
   f.seed([entry(1,'Verified conditions remain unchanged')]);
   const changed=await f.storage.readMemory(id(1));changed.summary.title='Updated title';
   const prepared=await f.mutations.putOperations(changed,1);
+  f.now=200*86_400_000;
   f.onRead=key=>{if(key.startsWith('memory/body/')) {f.onRead=null;f.apply(prepared.operations);}};
   const hints=await f.retrieval.reviewMemories({review_after_days:90},{project,all_projects:false});
   assert.equal(hints[0].summary.title,'Updated title');

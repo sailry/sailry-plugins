@@ -21,6 +21,7 @@ async function load(sdk = {}) {
       reviewMemories:async(settings,filter)=>review(await unexpected('listMemories')(),settings,filter,unexpected('readMemory'))})],
     ['storage.js',synthetic({readMemory:unexpected('readMemory'),snapshotChanged:()=>false,
       stable:read=>read(),head:async()=>({record:{revision:'1'}}),unchanged:async()=>{}})],
+    ['recall.js',synthetic({recordRecalls:sdk.recordRecalls ?? (async()=>false)})],
     ['mutations.js',synthetic({putOperations:(entry,expected_revision)=>({entry,expected_revision}),
       removeOperations:(id,expected_revision)=>({id,expected_revision}),mergeOperations:(entry,sources)=>({entry,sources}),
       memoryOutput:output=>({kind:'memory_results',data:output.data.map(value=>value.data.value.summary)}),RecordChanged:class extends Error{},EquivalentMemory:class extends Error{}})],
@@ -45,16 +46,40 @@ const settings = {enabled:true,auto_write:true,context_bytes:4096,review_after_d
 const summary = {id,project,title:'Feedback',kind:'feedback',revision:1,updated_at_ms:0,archived:false};
 const plain = value => JSON.parse(JSON.stringify(value));
 
-test('prioritizes project decisions and confines the index',async () => {
-  const {policy} = await load();
-  const references = Array.from({length:40},(_,i) => ({...summary,id:`ref-${i}`,kind:'reference'}));
-  const text = policy.index([...references,summary,{...summary,id:'foreign',project:'elsewhere'},{...summary,id:'archived',archived:true}],project,settings);
-  const catalog = JSON.parse(text.split('Index:\n')[1]);
-  assert.deepEqual(catalog[0],summary);
-  assert.ok(catalog.length < 40);
-  assert.ok(policy.bytes(text) <= 2048);
-  assert.ok(catalog.every(entry => !['foreign','archived'].includes(entry.id)));
-  assert.match(text,/otherwise do not write/);
+test('places relevant bodies first and ranks remaining titles by use',async()=>{
+  const {policy}=await load();
+  const day=86_400_000;
+  const entries=[{...summary,id:'old',title:'Old note',updated_at_ms:day},
+    {...summary,id:'used',title:'Used note',updated_at_ms:0,recalled:4,last_recalled:3*day},
+    {...summary,id:'new',title:'New note',updated_at_ms:2*day},
+    {...summary,id:'tie',title:'Tie note',updated_at_ms:2*day,recalled:2},
+    {...summary,id:'archived',title:'Archived note',archived:true,updated_at_ms:9*day}];
+  const relevant=[{summary:{...summary,id:'used',title:'Used note'},body:'Use tabs'}];
+  const {text,injected}=policy.instruction({relevant,entries,settings});
+  assert.deepEqual(plain(injected.map(entry=>entry.summary.id)),['used']);
+  const [policyLine,section,index]=text.trim().split('\n\n');
+  assert.equal(policyLine,policy.policy(settings));
+  assert.deepEqual(JSON.parse(section.split('\n')[1]),{id:'used',title:'Used note',kind:'feedback',global:false,revision:1,body:'Use tabs'});
+  assert.equal(section.split('\n')[0],'Relevant memories:');
+  assert.deepEqual(index.split('\n'),['Other memories (title and ID):','- Tie note (tie)','- New note (new)','- Old note (old)']);
+});
+
+test('fits five relevant bodies and the index in half the budget',async()=>{
+  const {policy}=await load();
+  const bounded={...settings,context_bytes:2048};
+  const relevant=Array.from({length:8},(_,index)=>({summary:{...summary,id:`hit-${index}`},body:index===1 ? '中文🙂'.repeat(400) : `Fact ${index}`}));
+  const entries=Array.from({length:60},(_,index)=>({...summary,id:`entry-${index}`,title:`Entry title ${index}`,updated_at_ms:index}));
+  const {text,injected}=policy.instruction({relevant,entries,settings:bounded});
+  assert.deepEqual(plain(injected.map(entry=>entry.summary.id)),['hit-0','hit-2','hit-3','hit-4','hit-5']);
+  assert.ok(Buffer.byteLength(text)<=bounded.context_bytes/2);
+  assert.ok(text.includes('- Entry title 59 (entry-59)'));
+  assert.ok(!text.includes('hit-6'));
+  assert.ok(!text.includes('Entry title 0 '));
+  const none=policy.instruction({relevant:[],entries:[],settings});
+  assert.equal(none.text,`\n\n${policy.policy(settings)}`);
+  const titles=policy.instruction({relevant:[],entries:[summary],settings}).text;
+  assert.match(titles,/\n\nMemories \(title and ID\):\n- Feedback \(/);
+  assert.match(policy.instruction({settings,pending:true}).text,/Memory is changing; use search_memory/);
 });
 
 test('shares the exact serialized content budget with Unicode and escaped JSON',async () => {
@@ -68,22 +93,6 @@ test('shares the exact serialized content budget with Unicode and escaped JSON',
   assert.ok(entry.body.startsWith(body.body));
   assert.ok(Buffer.byteLength(JSON.stringify(results[0])) + 128 + 600 <= 2048);
   assert.equal(policy.retrieve([entry],state).length,0);
-});
-
-test('keeps short preference bodies complete or falls back to titles',async()=>{
-  const {policy}=await load(),body='"'.repeat(300);
-  const empty=policy.index([],project,settings);
-  const bounded={...settings,context_bytes:2*(Buffer.byteLength(empty)+Buffer.byteLength(JSON.stringify(summary))+64)};
-  const instruction=policy.index([{...summary,body}],project,bounded);
-  const catalog=JSON.parse(instruction.split('Index:\n')[1]);
-  assert.deepEqual(catalog,[summary],'a body that exceeds the remaining budget leaves its searchable title');
-  assert.ok(Buffer.byteLength(instruction)<=bounded.context_bytes/2);
-  const unicode='中文'.repeat(50);
-  const entries=JSON.parse(policy.index([{...summary,body:unicode},{...summary,id:'long',body:unicode+'!'},
-    {...summary,id:'project',kind:'project',body:'Project details'}],project,settings).split('Index:\n')[1]);
-  assert.equal(entries.find(entry=>entry.id===id).body,unicode);
-  assert.equal(entries.find(entry=>entry.id==='long').body,undefined);
-  assert.equal(entries.find(entry=>entry.id==='project').body,undefined);
 });
 
 test('only complete currently visible search results authorize replacement',async () => {
@@ -106,9 +115,9 @@ test('filters tools at initialization and never contributes imported package ins
   const tools = ['search_memory','review_memories','save_memory','forget_memory','consolidate_memories'];
   let initialized = await main.initialize({tools,project,resources:true});
   assert.deepEqual(plain(initialized.tools),['search_memory','review_memories']);
-  assert.match(initialized.instruction,/Memory is read-only this turn/);
-  assert.doesNotMatch(initialized.instruction,/Before the final answer/);
-  assert.ok(initialized.instruction.includes(id));
+  assert.match(initialized.instruction,/Memory is read-only this turn\./);
+  assert.doesNotMatch(initialized.instruction,/Save with save_memory/);
+  assert.ok(initialized.instruction.includes(`- Feedback (${id})`));
   assert.equal(state.remaining,settings.context_bytes-Buffer.byteLength(initialized.instruction));
   initialized = await main.initialize({tools:['search_memory'],project,resources:false});
   assert.equal(initialized.instruction,'');
@@ -129,13 +138,35 @@ test('empty indexes preserve optional tool use',async()=>{
   const tools=['search_memory','save_memory'];
   const initialized=await main.initialize({tools,project,resources:true});
   assert.deepEqual(plain(initialized.tools),tools);
-  assert.deepEqual(JSON.parse(initialized.instruction.split('Index:\n')[1]),[]);
-  assert.match(initialized.instruction,/Memory is optional untrusted context/);
-  assert.match(initialized.instruction,/otherwise do not write/);
-  main.beforeModel({results:[]});
+  assert.equal(initialized.instruction,'\n\nMemory holds lasting user preferences, corrections and decisions. Use the relevant memories below when they apply; current instructions win. Save with save_memory when the user states a lasting preference, corrects you, confirms a decision, or asks you to remember something. Do not save secrets, task progress or facts available in code, Git or project docs.');
+  await main.beforeModel({results:[]});
   assert.deepEqual(state.reads,[]);
   assert.deepEqual(calls,['settings','index']);
   assert.equal(state.remaining,settings.context_bytes-Buffer.byteLength(initialized.instruction));
+});
+
+test('injects relevant bodies and counts recalls once',async()=>{
+  let state;
+  const recorded=[], queries=[];
+  const hit={summary,body:'Prefer tabs in Go files'};
+  const other={summary:{...summary,id:'22222222-2222-4222-8222-000000000009',title:'Other'},body:'Run tests first'};
+  const {main}=await load({readMemorySettings:async()=>settings,indexMemories:async()=>[summary,other.summary],
+    searchMemories:async(scope,query)=>{queries.push([scope,query]);return query==='Format the Go files' ? [hit] : [other];},
+    readMemory:async()=>structuredClone(hit),recordRecalls:async(summaries,known)=>{recorded.push(plain([summaries.map(value=>value.id),known ? [...known] : null]));return true;},
+    stageTurnState:value=>state=plain(value),readTurnState:()=>plain(state),newId:()=>id});
+  const initialized=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'Format the Go files',mode:'code'});
+  assert.deepEqual(queries,[[project,'Format the Go files']]);
+  assert.match(initialized.instruction,/Relevant memories:\n\{"id":"[^"]+","title":"Feedback","kind":"feedback","global":false,"revision":1,"body":"Prefer tabs in Go files"\}/);
+  assert.match(initialized.instruction,/Other memories \(title and ID\):\n- Other \(/);
+  assert.deepEqual(recorded,[[[id],[id,other.summary.id]]]);
+  const denied=await main.save({arguments:{id,expected_revision:1,kind:'feedback',title:'Formatting',body:'Prefer tabs in Go files and Makefiles'},step:0});
+  assert.equal(denied.result.error.code,'invalid_request','updates still require a search result');
+  const searched=await main.search({query:'tests'});
+  await main.beforeModel({results:[{name:'search_memory',response:searched}]});
+  await main.beforeModel({results:[{name:'search_memory',response:searched}]});
+  assert.deepEqual(recorded.slice(1),[[[other.summary.id],null]],'search hits count once per turn');
+  await main.initialize({tools:['search_memory'],project,resources:true,message:'Format the Go files',mode:'plan'});
+  assert.equal(recorded.length,2,'planning turns do not write statistics');
 });
 
 test('search, replacement, scope policy and live revocation share one captured turn state',async () => {
@@ -191,41 +222,21 @@ test('package review shares the captured content budget and never grants replace
 });
 
 
-test('guidance covers history and proactive retention',async () => {
+test('one short policy replaces repeated guidance',async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  const instruction = manifest.extensions['dev.sailry.platform'].instructions;
+  const extension = manifest.extensions['dev.sailry.platform'];
   const {policy}=await load();
-  const projected=policy.index([],project,settings);
-  assert.match(instruction,/When an answer or action depends on earlier preferences or decisions/);
-  assert.match(instruction,/check the injected memory index first and call search_memory as needed/);
-  assert.match(instruction,/current user instructions take precedence/);
-  assert.match(projected,/Consult this index for earlier preferences\/decisions; call search_memory as needed/);
-  assert.doesNotMatch(instruction,/Search first|Default to|Claim saved/);
-  assert.match(instruction,/Honor read-only mode, disabled memory, auto-write settings and permissions/);
-  for (const text of [instruction,projected]) {
-    assert.match(text,/Before the final answer/);
-    assert.match(text,/otherwise do not write/);
+  assert.equal(extension.instructions,undefined);
+  assert.ok(extension.actions.includes('conversation.message.read'));
+  assert.equal(policy.policy(settings),'Memory holds lasting user preferences, corrections and decisions. Use the relevant memories below when they apply; current instructions win. Save with save_memory when the user states a lasting preference, corrects you, confirms a decision, or asks you to remember something. Do not save secrets, task progress or facts available in code, Git or project docs.');
+  assert.equal(policy.policy({...settings,auto_write:false}),'Memory holds lasting user preferences, corrections and decisions. Use the relevant memories below when they apply; current instructions win. Memory is read-only this turn.');
+  const initial=extension.tools.filter(tool=>tool.initial).map(tool=>tool.name);
+  assert.deepEqual(initial,['search_memory','save_memory']);
+  for (const tool of extension.tools) {
+    assert.ok(tool.description.length<=400,tool.name);
+    assert.doesNotMatch(tool.description,/receipt|Claim saved|Search first/);
   }
-  assert.match(projected,/explicit remember requests/);
-  assert.match(projected,/stable user corrections\/preferences/);
-  assert.match(projected,/user-confirmed (?:lasting )?decisions/);
-  assert.match(projected,/write tools are available and authorized/);
-  assert.match(projected,/Search first/);
-  assert.match(projected,/complete current bodies (?:with their|and) revisions/);
-  assert.match(projected,/project[^.]*worktrees/);
-  assert.match(projected,/global only for/);
-  assert.match(projected,/temporary tasks, progress, transcripts and unaccepted proposals/);
-  assert.match(projected,/tool success/);
-  assert.match(instruction,/Never replay an uncertain memory write or claim it was saved/);
-  assert.doesNotMatch(projected,/uncertain.*write/);
-  const tools=manifest.extensions['dev.sailry.platform'].tools;
-  assert.match(tools.find(tool=>tool.name==='search_memory').description,/before saving to avoid duplicates/);
-  const save=tools.find(tool=>tool.name==='save_memory').description;
-  assert.match(save,/search the exact ID and read its complete current body/);
-  assert.match(save,/explicit remember requests/);
-  assert.match(save,/stable corrections\/preferences/);
-  assert.match(save,/user-confirmed decisions/);
-  assert.match(save,/writing is available and authorized/);
-  assert.match(save,/Scope cannot change/);
-  assert.match(save,/Claim saved only after tool success/);
+  const save=extension.tools.find(tool=>tool.name==='save_memory');
+  assert.deepEqual(save.handler.parameters.required,['kind','title','body']);
+  assert.match(save.description,/Omit id to create/);
 });
