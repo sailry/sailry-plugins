@@ -3323,10 +3323,10 @@
         },
         {
           "version": "0.1.14",
-          "commit": "570f1d180708aa95aa8f1e1f3d8f6a9efe369520",
+          "commit": "5fc89e65cb6925e90dd2d08ed971a903cf9054d1",
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
-            "text": "- Make conversation follow-up for background commands opt in"
+            "text": "- Close terminals when their shell exits, collapsing split panes; report only non-zero exits"
           }
         },
         {
