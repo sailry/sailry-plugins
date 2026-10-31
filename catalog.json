@@ -13948,12 +13948,13 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "min_sailry_version": "0.1.0-alpha.7",
+            "instructions": "Memory holds lasting user preferences, corrections and decisions. Use relevant memories from context or search_memory when they apply; current instructions win. When save_memory is available, save a lasting preference, correction or decision the user states, or anything they ask you to remember. Do not save secrets, task progress or facts available in code, Git or project docs.",
             "storage": {
               "collections": [
                 {
@@ -14155,45 +14156,6 @@
                       }
                     }
                   }
-                },
-                {
-                  "scope": "node",
-                  "prefix": "memory/recall/",
-                  "schema": {
-                    "type": "object",
-                    "required": [
-                      "v",
-                      "entries"
-                    ],
-                    "properties": {
-                      "v": {
-                        "const": 1
-                      },
-                      "entries": {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "object",
-                          "required": [
-                            "recalled",
-                            "last_recalled"
-                          ],
-                          "properties": {
-                            "recalled": {
-                              "type": "integer",
-                              "minimum": 0
-                            },
-                            "last_recalled": {
-                              "type": [
-                                "integer",
-                                "null"
-                              ],
-                              "minimum": 0
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
                 }
               ]
             },
@@ -14241,7 +14203,6 @@
                 "dev.sailry.platform/host/storage.js",
                 "dev.sailry.platform/host/settings.js",
                 "dev.sailry.platform/host/retrieval.js",
-                "dev.sailry.platform/host/recall.js",
                 "dev.sailry.platform/host/mutations.js"
               ]
             },
@@ -14256,7 +14217,6 @@
                 "dev.sailry.platform/host/storage.js",
                 "dev.sailry.platform/host/settings.js",
                 "dev.sailry.platform/host/retrieval.js",
-                "dev.sailry.platform/host/recall.js",
                 "dev.sailry.platform/host/mutations.js",
                 "dev.sailry.platform/host/workflow.js"
               ],
@@ -15483,6 +15443,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.16",
+          "commit": "747a1af3d0b6db00a41264448dd2e57eee9c2c1d",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Keep the memory policy in the system prompt and stop adding it to every turn\n- Add up to three matching memories to a turn, and nothing when none match\n- Suggest saving only after preference, correction or decision cues\n- Remove the title index and recall counts"
+          }
+        },
+        {
           "version": "0.1.15",
           "commit": "858b6e4aff72bd3d38b2602fb08b808adbb0db26",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -15593,7 +15561,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Recall relevant memories for each message and list the rest by title\n- Start search and save tools visible and replace repeated rules with one short policy\n- Return similar memories instead of saving duplicates and extend shorter originals in place\n- Track recall counts to order the index and judge staleness"
+        "text": "- Keep the memory policy in the system prompt and stop adding it to every turn\n- Add up to three matching memories to a turn, and nothing when none match\n- Suggest saving only after preference, correction or decision cues\n- Remove the title index and recall counts"
       }
     },
     {
