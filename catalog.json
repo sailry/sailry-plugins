@@ -4727,7 +4727,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "delegation",
-        "version": "0.1.28",
+        "version": "0.1.29",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -5332,6 +5332,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.29",
+          "commit": "bac58bf86613fee5fcfc5d22b46b4c25505d3d70",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Show the delete icon on each subagent",
+            "locales": {
+              "zh-CN": "- 修复子代理列表的删除图标不显示"
+            }
+          }
+        },
+        {
           "version": "0.1.28",
           "commit": "8f82efa9c32961f1878bbff5b69111db3ee7a438",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -5540,9 +5551,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show each subagent's icon and description, and start new subagents from complete preset roles\n- Use a compact editor layout with regular-size fields",
+        "text": "- Show the delete icon on each subagent",
         "locales": {
-          "zh-CN": "- 子代理列表显示图标和描述，新建时可从完整的预设角色开始\n- 编辑器改为紧凑布局和常规尺寸控件"
+          "zh-CN": "- 修复子代理列表的删除图标不显示"
         }
       }
     },
