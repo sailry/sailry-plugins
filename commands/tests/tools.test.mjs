@@ -63,7 +63,7 @@ test('description preserves command and optional metadata', () => {
   const command = "printf '%s' 'quoted\ncontent'";
   const description = 'Check the project configuration';
   assert.deepEqual(run({command,description}),
-    {command,description,cwd:'',timeout_ms:120000,background:false,pty:false,attachments:[],access:'workspace'});
+    {command,description,cwd:'',timeout_ms:120000,background:false,follow_up:false,pty:false,attachments:[],access:'workspace'});
   assert.equal(run({command}).description,null);
   assert.equal(run({command,description:null}).description,null);
   assert.equal(run({command,description:'🙂'.repeat(2001)}).isError,undefined);
@@ -77,6 +77,18 @@ test('PTY requires a background command', () => {
   assert.equal(run({command:'true'}).pty,false);
   for (const args of [{pty:true},{pty:'yes',background:true}])
     assert.equal(run({command:'cat',...args}).isError,true);
+});
+
+test('background follow-up requires an explicit boolean opt-in', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools
+    .find(tool => tool.name === 'run_command');
+  assert.deepEqual(declaration.handler.parameters.properties.follow_up.type, 'boolean');
+  assert.equal(declaration.handler.parameters.properties.follow_up.default, false);
+  const args = {command:'printf ready',background:true};
+  assert.equal(run(args).follow_up, false);
+  for (const follow_up of [false, true]) assert.equal(run({...args,follow_up}).follow_up, follow_up);
+  for (const follow_up of [null, 'true', 1, [], {}]) assert.equal(run({...args,follow_up}).isError, true);
 });
 
 test('input preserves bytes and validates its bound', () => {

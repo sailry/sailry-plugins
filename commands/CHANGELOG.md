@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.15
+
+- Make conversation follow-up for background commands opt in
+- Close terminals when their shell exits, collapsing split panes; report only non-zero exits
+
 ## 0.1.14
 
 - Close terminals when their shell exits, collapsing split panes; report only non-zero exits

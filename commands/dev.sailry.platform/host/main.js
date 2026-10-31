@@ -10,10 +10,10 @@ function invalid(message) {
 }
 
 export function run(args) {
-  if (!object(args, ['command', 'access', 'description', 'cwd', 'timeout_ms', 'background', 'pty', 'attachments']))
+  if (!object(args, ['command', 'access', 'description', 'cwd', 'timeout_ms', 'background', 'follow_up', 'pty', 'attachments']))
     return invalid('Invalid command arguments');
-  const { command, access = 'workspace', description = null, cwd = '', timeout_ms = 120000, background = false, pty = false, attachments = [] } = args;
-  if (!['workspace', 'unrestricted'].includes(access) || typeof command !== 'string' || typeof cwd !== 'string' || typeof background !== 'boolean' || typeof pty !== 'boolean' || (pty && !background) ||
+  const { command, access = 'workspace', description = null, cwd = '', timeout_ms = 120000, background = false, follow_up = false, pty = false, attachments = [] } = args;
+  if (!['workspace', 'unrestricted'].includes(access) || typeof command !== 'string' || typeof cwd !== 'string' || typeof background !== 'boolean' || typeof follow_up !== 'boolean' || typeof pty !== 'boolean' || (pty && !background) ||
       !Number.isSafeInteger(timeout_ms) || timeout_ms < 1 ||
       !Array.isArray(attachments) || attachments.some(id => typeof id !== 'string') ||
       new Set(attachments).size !== attachments.length) {
@@ -21,7 +21,7 @@ export function run(args) {
   }
   if (description !== null && (typeof description !== 'string' || !description.trim() ||
       description.includes('\0'))) return invalid('Invalid command description');
-  return { command, description, cwd, timeout_ms, background, pty, attachments, access };
+  return { command, description, cwd, timeout_ms, background, follow_up, pty, attachments, access };
 }
 
 export function read(args) {
