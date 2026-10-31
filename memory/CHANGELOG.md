@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.16
+
+- Keep the memory policy in the system prompt and stop adding it to every turn
+- Add up to three matching memories to a turn, and nothing when none match
+- Suggest saving only after preference, correction or decision cues
+- Remove the title index and recall counts
+
 ## 0.1.15
 
 - Recall relevant memories for each message and list the rest by title

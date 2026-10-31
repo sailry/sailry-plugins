@@ -58,9 +58,7 @@ export async function review(summaries, settings, filter, read, now = Date.now()
     const summary = selected[index];
     const previous = selected.slice(0,index).findIndex((other,otherIndex) => other.project === summary.project
       && duplicate(fingerprints[otherIndex],fingerprints[index]));
-    // A recent recall shows the fact is still in use, independent of its last edit.
-    const used = Math.max(summary.updated_at_ms,summary.last_recalled ?? 0);
-    const stale = Math.max(0,now-used) >= settings.review_after_days*86_400_000;
+    const stale = Math.max(0,now-summary.updated_at_ms) >= settings.review_after_days*86_400_000;
     if (previous !== -1 || stale) candidates.push({summary,duplicate_of:previous === -1 ? null : selected[previous].id,stale});
   }
   return candidates;

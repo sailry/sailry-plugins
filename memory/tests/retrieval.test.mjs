@@ -4,10 +4,8 @@ import {fixture,entry,id,project,fault} from './store.mjs';
 
 const settings={enabled:true,auto_write:true,context_bytes:8192,review_after_days:90};
 const initialize=(f,message=null)=>f.main.initialize({tools:['search_memory'],project,resources:true,message});
-const section=(result,heading)=>(result.instruction.split('\n\n').find(part=>part.startsWith(heading)) ?? '').split('\n').slice(1);
-const relevant=result=>section(result,'Relevant memories:').map(line=>JSON.parse(line));
-const titles=result=>section(result,'Memories (title and ID):').concat(section(result,'Other memories (title and ID):'));
-const statistics=f=>f.prepared.every(request=>request.operations.every(operation=>operation.data.key.startsWith('memory/recall/')));
+const tag='Relevant memory: ';
+const relevant=result=>Array.from(result.parts).filter(part=>part.startsWith(tag)).map(part=>JSON.parse(part.slice(tag.length)));
 
 for(const kind of ['search']) {
   test(`${kind} reads independent body pages concurrently`,async()=>{
@@ -25,15 +23,30 @@ for(const kind of ['search']) {
   });
 }
 
-test('index lists titles without reading bodies',async()=>{
+test('turns without a message read no storage and add no context',async()=>{
   const f=await fixture();
   f.configure(settings);
   f.seed([entry(1,'First preference',{kind:'user',title:'First'}),entry(2,'Second fact',{title:'Second',updated_at_ms:5})]);
-  const result=await initialize(f);
-  assert.deepEqual(titles(result),[`- Second (${id(2)})`,`- First (${id(1)})`]);
-  assert.deepEqual(relevant(result),[]);
-  assert.equal(f.reads.some(key=>key.startsWith('memory/body/')),false);
+  const before=f.reads.length;
+  for (const message of [null,'',' \n']) {
+    const result=await initialize(f,message);
+    assert.deepEqual(Array.from(result.parts),[]);
+    assert.equal(result.instruction,'');
+  }
+  assert.equal(f.reads.slice(before).some(key=>key.startsWith('memory/body/') || key==='memory/catalog'),false);
   assert.equal(f.prepared.length,0);
+});
+
+test('a miss adds no context and never lists titles',async()=>{
+  const f=await fixture();
+  f.configure(settings);
+  f.seed([entry(1,'First preference',{kind:'user',title:'First'}),entry(2,'Second fact',{title:'Second',updated_at_ms:5})]);
+  const result=await initialize(f,'Explain the stack trace');
+  assert.deepEqual(Array.from(result.parts),[]);
+  assert.equal(result.instruction,'');
+  assert.equal(JSON.stringify(result).includes('First'),false);
+  assert.equal(f.prepared.length,0);
+  assert.equal(f.completed.length,0);
 });
 
 for (const change of ['body','delete','foreign']) {
@@ -46,21 +59,22 @@ for (const change of ['body','delete','foreign']) {
     const pending=change==='delete' ? await f.mutations.removeOperations(id(1),1)
       : await f.mutations.putOperations(change==='foreign' ? entry(2,'Foreign project',{project:id(9000)}) : current,change==='foreign' ? 0 : 1);
     f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(pending.operations);}};
+    // Both versions of the body share this term, which is also a save cue.
     const result=await initialize(f,'preference');
     if (change==='delete') assert.deepEqual(relevant(result),[]);
     else {
       const [value]=relevant(result);
       assert.equal(value.id,id(1));
       assert.equal(value.body,change==='body' ? current.body : 'Original preference');
-      assert.equal(value.revision,change==='body' ? 2 : 1);
     }
-    assert.deepEqual(titles(result),[]);
-    assert.ok(statistics(f));
+    assert.equal(relevant(result).length,change==='delete' ? 0 : 1);
+    assert.equal(result.parts.length,relevant(result).length+1,'bodies and the cue');
+    assert.equal(f.prepared.length,0);
     assert.deepEqual(f.state.reads,[]);
   });
 }
 
-test('retries a head change while capturing metadata',async()=>{
+test('retries a head change while capturing relevant bodies',async()=>{
   const f=await fixture();
   f.configure(settings);
   f.seed([entry(1,'Original preference',{kind:'user'})]);
@@ -69,13 +83,13 @@ test('retries a head change while capturing metadata',async()=>{
   const pending=await f.mutations.putOperations(current,1);
   let heads=0;
   f.onRead=key=>{if(key==='memory/catalog' && ++heads===2)f.apply(pending.operations);};
-  assert.deepEqual(titles(await initialize(f)),[`- Current title (${id(1)})`]);
-  assert.equal(heads,8);
+  assert.deepEqual(relevant(await initialize(f,'original')).map(value=>value.title),['Current title']);
+  assert.equal(heads,4);
   assert.equal(f.prepared.length,0);
   assert.equal(f.completed.length,0);
 });
 
-test('defers a contended index without ending initialization',async()=>{
+test('adds no context after a contended catalog without ending initialization',async()=>{
   const f=await fixture();
   f.configure(settings);
   f.seed([entry(1,'Original preference',{kind:'user'})]);
@@ -87,50 +101,49 @@ test('defers a contended index without ending initialization',async()=>{
       heads++;
     }
   };
-  const output=await initialize(f);
-  assert.match(output.instruction,/Memory is changing; use search_memory/);
-  assert.deepEqual(titles(output),[]);
-  assert.equal(heads,21,"three bounded outer attempts");
-  assert.equal(f.state.index_pending,true);
+  const output=await initialize(f,'original');
+  assert.deepEqual(Array.from(output.parts),[]);
+  assert.equal(output.instruction,'');
+  assert.equal(heads,6,"three bounded attempts");
   assert.deepEqual(f.state.reads,[]);
   assert.equal(f.prepared.length,0);
   assert.equal(f.completed.length,0);
 });
 
 for (const code of ['cancelled','permission_denied','unavailable','internal']) {
-  test(`preserves ${code} without retrying the read`,async()=>{
+  test(`${code} during recall adds no context and is not retried`,async()=>{
     const f=await fixture();
     f.configure(settings);
     f.seed([entry(1,'Original preference',{kind:'user'})]);
     let heads=0;
-    const original=fault(code,'Original failure');
-    f.onRead=key=>{if(key==='memory/catalog'){heads++;throw original;}};
-    await assert.rejects(initialize(f),error=>error===original);
+    f.onRead=key=>{if(key==='memory/catalog'){heads++;throw fault(code,'Original failure');}};
+    const output=await initialize(f,'original');
+    assert.deepEqual(Array.from(output.parts),[]);
     assert.equal(heads,1);
-    assert.equal(f.state,null);
+    assert.deepEqual(f.state.reads,[]);
   });
 }
 
-test('relevance failures keep the index',async()=>{
+test('relevance failures add no context',async()=>{
   const f=await fixture();
   f.configure(settings);
   f.seed([entry(1,'Original preference',{kind:'user',title:'Preference'})]);
   f.onRead=key=>{if(key.startsWith('memory/body/'))throw fault('unavailable','Search failed');};
-  const output=await initialize(f,'preference');
-  assert.deepEqual(relevant(output),[]);
-  assert.deepEqual(titles(output),[`- Preference (${id(1)})`]);
+  const output=await initialize(f,'original');
+  assert.deepEqual(Array.from(output.parts),[]);
+  assert.equal(output.instruction,'');
 });
 
-test('preserves invalid stored catalogs without retrying',async()=>{
+test('invalid stored catalogs add no context and are not retried',async()=>{
   const f=await fixture();
   f.configure(settings);
   f.seed([entry(1,'Original preference',{kind:'user'})]);
   f.store('memory/catalog',{v:2,pages:{}});
   let heads=0;
   f.onRead=key=>{if(key==='memory/catalog')heads++;};
-  await assert.rejects(initialize(f),/memory storage is incompatible/);
+  const output=await initialize(f,'original');
+  assert.deepEqual(Array.from(output.parts),[]);
   assert.equal(heads,1);
-  assert.equal(f.state,null);
   assert.equal(f.prepared.length,0);
   assert.equal(f.completed.length,0);
 });

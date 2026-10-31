@@ -76,31 +76,3 @@ test('distinct facts are created beside related memories',async()=>{
   assert.equal(done.result.receipt.action,'created');
   assert.equal(memories(f).length,2);
 });
-
-test('counts relevant and searched recalls without changing entries',async()=>{
-  const f=await setup([entry(1,'Prefer tabs in Go files',{kind:'user',title:'Go formatting'}),
-    entry(2,'Run unit tests before commits',{title:'Testing'}),entry(3,'Deploy on Fridays',{title:'Release',project:null,kind:'user'})],'Format these Go files');
-  const recalls=()=>plain(f.get(`memory/recall/${project}`).value.entries);
-  assert.deepEqual(Object.keys(recalls()),[id(1)]);
-  assert.equal(recalls()[id(1)].recalled,1);
-  assert.equal(f.get('memory/recall/global').present,false);
-  const searched=await f.main.search({query:'tests'});
-  await f.main.beforeModel({results:[{name:'search_memory',response:searched}]});
-  await f.main.beforeModel({results:[{name:'search_memory',response:searched}]});
-  assert.equal(recalls()[id(2)].recalled,1,'one count per turn');
-  await f.main.initialize({tools:['search_memory'],project,resources:true,message:'Go files again',mode:'code'});
-  assert.equal(recalls()[id(1)].recalled,2);
-  for (const number of [1,2]) assert.equal(f.get(`memory/entry/${id(number)}`).revision,'1');
-  const hints=await f.retrieval.reviewMemories(settings,{project,all_projects:false});
-  const stale=Object.fromEntries(plain(hints).map(hint=>[hint.summary.id,hint.stale]));
-  assert.equal(stale[id(1)],undefined,'recently recalled memories are not stale');
-  assert.equal(stale[id(3)],true);
-  assert.equal(plain(hints).find(hint=>hint.summary.id===id(3)).summary.recalled,0);
-});
-
-test('ranks remaining titles by recent use',async()=>{
-  const f=await setup([entry(1,'Prefer tabs in Go files',{title:'Go formatting'}),entry(2,'Run unit tests',{title:'Testing',updated_at_ms:5})],'Go files');
-  const next=await f.main.initialize({tools:['search_memory'],project,resources:true,message:null,mode:'code'});
-  const titles=next.instruction.split('\n\n').at(-1).split('\n').slice(1);
-  assert.deepEqual(titles,[`- Go formatting (${id(1)})`,`- Testing (${id(2)})`]);
-});

@@ -4,7 +4,6 @@ import {ordered} from './model.js';
 import {query as tokenize} from './tokenize.js';
 import {fail} from './policy.js';
 import {review} from './review.js';
-import {readRecalls,withRecalls} from './recall.js';
 
 async function find({project,all_projects=false,archived=false,query,recall=false,keyword=false}) {
   if (typeof query !== 'string') fail('invalid memory query');
@@ -31,19 +30,11 @@ async function catalog(project) {
 export async function listMemories(project) {
   return stable(async()=>(await catalog(project)).entries.map(entry=>entry.summary).sort(ordered));
 }
-// Titles, IDs and recall statistics only; relevant bodies come from searchMemories.
-export async function indexMemories(project) {
-  return stable(async()=>{
-    const captured = await catalog(project);
-    const recalls = await readRecalls([null,project]);
-    return captured.entries.map(entry=>withRecalls(entry.summary,recalls)).sort(ordered);
-  });
-}
 async function reviewSnapshot(settings,filter) {
   const captured = await catalog(filter.all_projects ? undefined : filter.project);
   const entries = new Map(captured.entries.map(entry=>[entry.summary.id,entry])), pages = new Map();
-  const [recalls,now] = await Promise.all([readRecalls(captured.entries.map(entry=>entry.summary.project)),clock()]);
-  const hints = await review(captured.entries.map(entry=>withRecalls(entry.summary,recalls)),settings,filter,async id=>{
+  const now = await clock();
+  const hints = await review(captured.entries.map(entry=>entry.summary),settings,filter,async id=>{
     const entry = entries.get(id);
     if (!pages.has(entry.body_page)) pages.set(entry.body_page,page(entry.body_page));
     const source=await pages.get(entry.body_page);

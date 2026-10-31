@@ -1,5 +1,6 @@
 // Curated policy adapted from Sailry's original Memory package.
-// ZCode 872ad960 informed its curated categories; recall now ranks by relevance first.
+// ZCode 872ad960 informed its curated categories. The fixed policy text is the manifest's
+// `instructions`; per-turn output is only matched bodies and a save cue.
 export function bytes(text) {
   let size = 0;
   for (const character of text) {
@@ -11,39 +12,38 @@ export function bytes(text) {
 export const content = text => ({role:"user",parts:[{text}]});
 const cost = text => bytes(JSON.stringify(content(text))) + 128;
 
-const guidance = "Memory holds lasting user preferences, corrections and decisions. Use the relevant memories below when they apply; current instructions win.";
-const writing = "Save with save_memory when the user states a lasting preference, corrects you, confirms a decision, or asks you to remember something. Do not save secrets, task progress or facts available in code, Git or project docs.";
-export const policy = settings => `${guidance} ${settings.auto_write ? writing : "Memory is read-only this turn."}`;
-export const relevantLimit = 5;
-const activity = summary => Math.max(summary.updated_at_ms,summary.last_recalled ?? 0);
-export const ranked = (left,right) => activity(right)-activity(left) || (right.recalled ?? 0)-(left.recalled ?? 0)
-  || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
+export const relevantLimit = 3;
+// Lasting-preference, correction, decision and remember cues in Chinese and English. The Chinese
+// terms are escaped: don't, no more, don't use, later, from now on, next time, remember (twice),
+// always, forever, no longer, preference, like, habit, decide, switch to, forbid.
+const cues = [
+  /\u4e0d\u8981|\u522b\u518d|\u522b\u7528|\u4ee5\u540e|\u4eca\u540e|\u4e0b\u6b21|\u8bb0\u4f4f|\u8bb0\u5f97|\u603b\u662f|\u6c38\u8fdc|\u4e0d\u518d|\u504f\u597d|\u559c\u6b22|\u4e60\u60ef|\u51b3\u5b9a|\u6539\u7528|\u7981\u6b62/u,
+  /\b(?:always|never|prefer(?:s|red|ence|ences)?|remember|don['\u2019]?t|do not|from now on|going forward|next time|instead of|stop (?:using|doing)|decided|i (?:like|want you to))\b/i,
+];
+export const cued = message => typeof message === 'string' && cues.some(pattern=>pattern.test(message));
+export const cue = 'If this states a lasting preference or correction, save it with save_memory.';
 
-// Relevant complete bodies come first; remaining active titles share the same half budget.
-export function instruction({relevant=[],entries=[],settings,pending=false}) {
-  let text = `\n\n${policy(settings)}`;
-  if (pending) return {text:`${text} Memory is changing; use search_memory for current entries.`,injected:[]};
-  const limit = Math.floor(settings.context_bytes / 2);
-  let size = bytes(text);
-  const injected = [];
-  const append = (heading,line) => {
-    const addition = heading+line, added = bytes(addition);
-    if (size+added > limit) return false;
-    text += addition; size += added;
-    return true;
-  };
-  for (const entry of relevant) {
-    if (injected.length === relevantLimit) break;
-    const {id,title,kind,project,revision} = entry.summary;
-    const line = `\n${JSON.stringify({id,title,kind,global:project === null,revision,body:entry.body})}`;
-    if (append(injected.length ? '' : '\n\nRelevant memories:',line)) injected.push(entry);
+// Each relevant body is one context part. The leading parts that fit the limit are kept, up to three.
+export function relevantParts(relevant,limit) {
+  const parts = [];
+  let size = 0;
+  for (const {summary,body} of relevant) {
+    if (parts.length === relevantLimit) break;
+    const part = `Relevant memory: ${JSON.stringify({id:summary.id,title:summary.title,kind:summary.kind,global:summary.project === null,body})}`;
+    const added = bytes(part);
+    if (size+added > limit) continue;
+    parts.push(part); size += added;
   }
-  const shown = new Set(injected.map(entry=>entry.summary.id));
-  let heading = `\n\n${injected.length ? 'Other memories' : 'Memories'} (title and ID):`;
-  for (const summary of entries.filter(summary=>!summary.archived && !shown.has(summary.id)).sort(ranked)) {
-    if (append(heading,`\n- ${summary.title} (${summary.id})`)) heading = '';
-  }
-  return {text,injected};
+  return parts;
+}
+
+// Turn parts: matched bodies, then the save cue, within half the context budget together.
+// A turn without either adds no context.
+export function turnParts({relevant=[],message,settings,write}) {
+  const save = write && cued(message);
+  const parts = relevantParts(relevant,Math.floor(settings.context_bytes / 2) - (save ? bytes(cue) : 0));
+  if (save) parts.push(cue);
+  return parts;
 }
 
 export function values(entries, state) {

@@ -124,9 +124,10 @@ test('scope, archive, exact IDs and literal search stay in the package',async()=
   await assert.rejects(f.mutations.removeOperations(id(3),1,project),error=>error.code==='permission_denied');
 });
 
-const lines=(instruction,heading)=>(instruction.split('\n\n').find(part=>part.startsWith(heading)) ?? '').split('\n').slice(1);
+const tag='Relevant memory: ';
+const relevant=parts=>Array.from(parts).filter(part=>part.startsWith(tag)).map(part=>JSON.parse(part.slice(tag.length)));
 
-test('new turns receive relevant scoped bodies and active titles',async()=>{
+test('new turns receive only relevant scoped bodies as parts',async()=>{
   const f=await fixture(),preference='Use unittest and four spaces for Python tests',boundary='中文'.repeat(50);
   f.configure({enabled:true,auto_write:true,context_bytes:8192,review_after_days:90});
   f.seed([entry(1,preference,{kind:'user',project:null,title:'Python tests'}),
@@ -134,15 +135,15 @@ test('new turns receive relevant scoped bodies and active titles',async()=>{
     entry(4,'Project body stays out of the index'),entry(5,'Foreign preference',{project:id(9000),kind:'user'}),
     entry(6,'Archived preference',{archived:true,kind:'feedback'})]);
   const initialized=await f.main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'How should Python tests look?',mode:'code'});
-  const relevant=lines(initialized.instruction,'Relevant memories:').map(line=>JSON.parse(line));
-  assert.deepEqual(relevant.map(value=>[value.id,value.body,value.global]),[[id(1),preference,true]]);
-  const titles=lines(initialized.instruction,'Other memories (title and ID):');
-  for(const number of [2,3,4])assert.ok(titles.includes(`- Verified constraint (${id(number)})`));
-  for(const number of [1,5,6])assert.equal(titles.some(line=>line.includes(id(number))),false);
-  assert.equal(f.state.remaining,8192-Buffer.byteLength(initialized.instruction));
-  const recall=f.get('memory/recall/global').value.entries[id(1)];
-  assert.equal(recall.recalled,1);
-  assert.equal(f.get('memory/entry/'+id(1)).revision,'1','statistics never change the entry');
+  assert.equal(initialized.instruction,'');
+  assert.deepEqual(relevant(initialized.parts).map(value=>[value.id,value.body,value.global]),[[id(1),preference,true]]);
+  assert.equal(initialized.parts.length,1);
+  const text=JSON.stringify(initialized);
+  for(const number of [2,3,4,5,6])assert.equal(text.includes(id(number)),false,'only matched entries appear; titles are never indexed');
+  assert.equal(f.state.remaining,8192-Buffer.byteLength(initialized.parts[0]));
+  assert.equal(f.prepared.length,0,'recall writes no statistics');
+  assert.equal([...f.records.keys()].some(key=>key.startsWith('memory/recall/')),false);
+  assert.equal(f.get('memory/entry/'+id(1)).revision,'1');
   const denied=await f.main.save({arguments:{id:id(2),expected_revision:1,kind:'feedback',title:'Replacement',body:'Changed'},step:0});
   assert.equal(denied.result.error.code,'invalid_request');
   assert.match(denied.result.error.message,/call search_memory with this ID/);
@@ -155,11 +156,10 @@ test('relevant recall reads the latest consistent snapshot',async()=>{
   const prepared=await f.mutations.putOperations(changed,1);
   f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(prepared.operations);}};
   const initialized=await f.main.initialize({tools:['search_memory'],project,resources:true,message:'unittest',mode:'plan'});
-  const [value]=lines(initialized.instruction,'Relevant memories:').map(line=>JSON.parse(line));
+  const [value]=relevant(initialized.parts);
   assert.equal(value.title,'Updated preference');
   assert.equal(value.body,'Use unittest');
-  assert.equal(value.revision,2);
-  assert.equal(f.prepared.length,0,'planning turns skip statistics');
+  assert.equal(f.prepared.length,0);
   assert.equal(f.completed.length,0);
 });
 
