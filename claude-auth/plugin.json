@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "claude-auth",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sign in to use Claude models",
   "license": "MIT",
   "extensions": {
@@ -48,7 +48,7 @@
             "handler": "authorize",
             "requests": {
               "token": {
-                "url": "https://platform.claude.com/v1/oauth/token",
+                "url": "https://api.anthropic.com/v1/oauth/token",
                 "body": {
                   "kind": "json",
                   "value": {
@@ -60,12 +60,10 @@
                     "code_verifier": "{verifier}"
                   }
                 },
-                "headers": {
-                  "User-Agent": "{user_agent}"
-                }
+                "headers": {}
               },
               "refresh": {
-                "url": "https://platform.claude.com/v1/oauth/token",
+                "url": "https://api.anthropic.com/v1/oauth/token",
                 "body": {
                   "kind": "json",
                   "value": {
@@ -75,15 +73,32 @@
                   }
                 },
                 "headers": {
-                  "User-Agent": "{user_agent}"
+                  "anthropic-beta": "oauth-2025-04-20",
+                  "User-Agent": "anthropic-sdk-typescript/0.112.1 userOAuthProvider"
+                }
+              },
+              "identity": {
+                "url": "https://api.anthropic.com/api/claude_cli/bootstrap",
+                "method": "GET",
+                "query": {
+                  "entrypoint": "cli",
+                  "model": "claude-opus-4-8"
+                },
+                "headers": {
+                  "Accept": "application/json, text/plain, */*",
+                  "Authorization": "Bearer {access}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "{bootstrap_agent}",
+                  "anthropic-beta": "oauth-2025-04-20"
                 }
               }
             },
             "callback": {
               "path": "/callback",
-              "redirect_uri": "https://platform.claude.com/oauth/code/callback",
+              "redirect_uri": "http://localhost:54545/callback",
               "manual": true,
-              "allow_localhost": true
+              "allow_localhost": true,
+              "port": 54545
             },
             "issuer": null,
             "refresh": true
@@ -100,7 +115,8 @@
             "user:file_upload"
           ]
         }
-      ]
+      ],
+      "min_sailry_version": "0.1.0-alpha.7"
     }
   }
 }
