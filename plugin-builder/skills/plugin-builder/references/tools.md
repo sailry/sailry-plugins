@@ -79,6 +79,7 @@ export function count(args) {
 - Every handler name must appear in `host.handlers`.
 - Return JSON. Throw an `Error` (or return `{isError: true, error: {code, message}}`) for a failure the model should see.
 - Mark side-effect-free tools `read_only: true`. The Node still enforces Plan-mode restrictions.
+- Plugin tools start deferred and are found through tool search. Add `"initial": true` to show a tool to the main agent from the first request; it is allowed only on `read_only` handlers or tools whose operations are all storage operations.
 - To wrap a native operation, add `"operation": "files.read"` (or another operation) to the handler: the export receives the tool arguments and returns the operation's arguments; the Node runs the operation. An optional `"result": "result"` export receives `{output}` and returns what the model sees, for example `output.isError ? output : output.data`.
 - Operations available this way include `files.list`, `files.read`, `files.read_lines`, `files.write`, `files.edit`, `files.search`, `files.find`, `git.status`, `git.diff`, `git.log`, `git.show`, `git.blame`, `git.changes`, `git.change`, `worktrees.list`, `code.search`, `code.outline`, `process.run` and `http.request`, plus the storage operations above. Declare the matching action, and copy each operation's argument shape from the official plugin that wraps it (Files, Git, Worktrees, Code, Commands).
 

@@ -64,4 +64,4 @@ if (!result.Err) forgetRequest(id);
 
 ## Advanced
 
-`host.commands` routes a composer command (a `ui` entry in the `commands` slot) to a handler, and `host.turn` (`initialize`, `before_model`, `after_turn`) applies a bounded policy to each agent turn. Their handlers must also appear in `handlers`. Use them only when the user asks for that behavior, and follow the official Goals plugin as a model.
+`host.commands` routes a composer command (a `ui` entry in the `commands` slot) to a handler, and `host.turn` (`initialize`, `before_model`, `after_turn`) applies a bounded policy to each agent turn. Their handlers must also appear in `handlers`. Use them only when the user asks for that behavior, and follow the official Goals plugin as a model. With `conversation.message.read`, the `initialize` input also carries `message`: the user's text for that turn, capped at 4 KiB, or `null` when the turn has no user text.

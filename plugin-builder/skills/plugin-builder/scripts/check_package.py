@@ -45,6 +45,7 @@ ACTIONS = {
     "notifications.publish", "dispatch.manage", "files.read", "files.write", "git.read",
     "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control",
     "terminals.read", "terminals.control", "conversation.read", "conversation.control",
+    "conversation.message.read",
     "sessions.start", "projects.read", "http.request", "models.generate", "storage.read",
     "storage.write", "code.index.read", "artifacts.read", "artifacts.write",
     "code.index.settings.read", "code.index.settings.write", "web.read", "web.settings.read",
@@ -67,6 +68,9 @@ RETIRED_OPERATIONS = {
     "code.packages", "code.catalog", "code.servers", "code.start", "code.stop",
     "code.install", "code.uninstall", "code.diagnostics", "code.definition",
     "code.references", "code.hover", "code.symbols",
+}
+STORAGE_OPERATIONS = {
+    "storage.get", "storage.list", "storage.set", "storage.delete", "storage.transaction",
 }
 SETTING_KINDS = {"string", "integer", "number", "boolean"}
 
@@ -201,6 +205,7 @@ def check_tools(extension, servers, report):
         operation = tool.get("operation") or (handler or {}).get("operation")
         operations = [operation] if operation is not None else []
         flow = (handler or {}).get("flow")
+        declared = operation is not None or flow is not None or (handler or {}).get("read_only") is True
         if flow is not None:
             if not isinstance(flow, dict):
                 report.error(f"tool {name} flow must be an object")
@@ -217,6 +222,14 @@ def check_tools(extension, servers, report):
             needed = OPERATION_ACTIONS.get(operation)
             if needed and needed not in actions:
                 report.error(f"tool {name} uses {operation} and needs the {needed} action")
+        initial = tool.get("initial", False)
+        if not isinstance(initial, bool):
+            report.error(f"tool {name} initial must be a boolean")
+        elif initial:
+            # Initially visible tools may only read or change the package's own storage.
+            if tool.get("server") is not None or not declared or any(
+                    item not in STORAGE_OPERATIONS for item in operations):
+                report.error(f"tool {name} initial needs a read_only handler or only storage operations")
         server = tool.get("server")
         if server is not None and server not in servers:
             report.error(f"tool {name} names server {server!r}, which mcp.json does not declare")

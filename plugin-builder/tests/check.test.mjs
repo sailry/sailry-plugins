@@ -340,6 +340,29 @@ test('rejects retired operations in every binding', () => {
   }
 });
 
+test('limits initial tools to read-only or package-storage effects', () => {
+  const actions = ['storage.read', 'storage.write', 'files.write', 'conversation.message.read'];
+  const plain = {name: 'invoke', description: 'Invoke', handler: {name: 'invoke', parameters: {type: 'object'}}};
+  for (const tool of [
+    {...flow(['storage.get']), initial: true},
+    {...flow(['storage.transaction']), handler: {...flow([]).handler, read_only: false, flow: {operations: ['storage.transaction']}}, initial: true},
+    {name: 'invoke', operation: 'storage.get', initial: true},
+    {...plain, handler: {...plain.handler, read_only: true}, initial: true},
+  ]) {
+    const result = check(operationPackage(tool, actions));
+    assert.equal(result.code, 0, result.output);
+  }
+  for (const tool of [
+    {...flow(['storage.set', 'files.write']), initial: true},
+    {...plain, initial: true},
+    {...flow(['storage.get']), initial: 'yes'},
+  ]) {
+    const result = check(operationPackage(tool, actions));
+    assert.equal(result.code, 1, result.output);
+    assert.match(result.output, /initial/);
+  }
+});
+
 test('rejects a skill whose name differs from its folder', () => {
   const result = check(fixture({'plugin.json': manifest(), 'skills/notes/SKILL.md': skill}));
   assert.match(result.output, /skills\/notes: name must equal the folder name/);

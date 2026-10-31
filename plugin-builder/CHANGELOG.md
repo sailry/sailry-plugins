@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Validate initially visible tools and the message read action
+
 ## 0.1.10
 
 - Reject retired model-hosted tool declarations

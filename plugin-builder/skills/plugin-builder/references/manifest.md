@@ -123,6 +123,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `worktrees.read`, `worktrees.write` | Registered worktrees |
 | `projects.read` | The registered project catalog |
 | `conversation.read`, `conversation.control` | The captured conversation; sending messages and stopping turns |
+| `conversation.message.read` | The current turn's user text in the `turn.initialize` input |
 | `sessions.start` | Starting new conversations |
 | `models.read`, `models.install`, `models.generate` | The model catalog, managed installation and model requests through the Node |
 | `notifications.publish` | Application notifications |
