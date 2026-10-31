@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Return similar memories without replacing them; updates require an explicit ID and revision
+
 ## 0.1.16
 
 - Keep the memory policy in the system prompt and stop adding it to every turn

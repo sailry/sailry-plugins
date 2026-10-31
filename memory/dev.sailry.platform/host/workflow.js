@@ -94,14 +94,13 @@ async function neighbors(entry,turn) {
   const covers=(current,other)=>[...other].every(term=>current.has(term));
   const known=added.size ? candidates.filter(current=>covers(new Set(terms(current.body)),added)) : [];
   if (known.length) return {similar:known};
-  // A clearly extended fact replaces its shorter original without losing content.
-  const extended=candidates.find(current=>{
+  // Overlapping words suggest related facts, but never authorize replacing one.
+  const related=candidates.filter(current=>{
     const existing=new Set(terms(current.body));
-    return existing.size>0 && existing.size<added.size && existing.size*2>=added.size && covers(added,existing);
+    return (existing.size>0 && existing.size<added.size && existing.size*2>=added.size && covers(added,existing))
+      || near(current.body,entry.body);
   });
-  if (extended) return {extended};
-  const close=candidates.filter(current=>near(current.body,entry.body));
-  return close.length ? {similar:close} : {};
+  return related.length ? {similar:related} : {};
 }
 export const save=writer(async(input,turn,state)=>{
   const value=argumentsFor(input,['id','expected_revision','global','archived','kind','title','body'],['kind','title','body']);
@@ -116,9 +115,9 @@ export const save=writer(async(input,turn,state)=>{
     project=current.summary.project;
   } else if ((value.expected_revision ?? 0)!==0) fail('omit expected_revision to create a memory, or pass id to update one');
   if (project===null && ((!value.global && value.id==null) || !['user','feedback'].includes(value.kind))) fail('global memory is only for cross-project user preferences or feedback; save project facts without global, inside a project');
-  let id=value.id ?? state?.id ?? newId(), revision=value.expected_revision ?? 0, mode=value.id!=null ? 'update' : state?.mode ?? 'create';
+  const id=value.id ?? state?.id ?? newId(), revision=value.expected_revision ?? 0;
   const entry={summary:{id,project,title:value.title,kind:value.kind,revision,updated_at_ms:0,archived:value.archived ?? false},body:value.body};
-  if (value.id==null && (!state || state.mode==='extend')) {
+  if (value.id==null && !state) {
     const found=await neighbors(entry,turn);
     if (found.similar) {
       const output={status:'similar',saved:false,existing:retrieve(found.similar,turn),
@@ -126,17 +125,9 @@ export const save=writer(async(input,turn,state)=>{
       stageTurnState(turn);
       return {done:output};
     }
-    if (found.extended) {
-      ({id,revision}=found.extended.summary);
-      mode='extend';
-    } else if (mode==='extend') {
-      id=newId();
-      mode='create';
-    }
-    Object.assign(entry.summary,{id,revision});
   }
   const arguments_=await putOperations(entry,revision,turn.project);
-  return {arguments:arguments_,state:{id,mode,receipt:capture(arguments_,entry,revision===0 ? 'created' : 'updated',turn)}};
+  return {arguments:arguments_,state:{id,receipt:capture(arguments_,entry,revision===0 ? 'created' : 'updated',turn)}};
 });
 export const forget=writer(async(input,turn)=>{
   const value=argumentsFor(input,['id','expected_revision'],['id','expected_revision']);

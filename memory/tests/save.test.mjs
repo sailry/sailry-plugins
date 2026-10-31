@@ -52,18 +52,49 @@ test('returns similar memories without writing and grants their read authority',
   assert.equal(update.call.operation,'storage.transaction');
 });
 
-test('extends a shorter original in place',async()=>{
+test('requires explicit updates for extended facts',async()=>{
   const f=await setup([entry(1,'Use concise replies',{kind:'user'}),entry(2,'Run unit tests before commits')]);
   const args={kind:'user',title:'Reply style',body:'Use concise replies in Chinese'};
-  const prepared=await save(f,args);
-  assert.equal(prepared.state.id,id(1));
-  assert.equal(prepared.state.mode,'extend');
-  const done=await commit(f,{...prepared,args});
+  const records=plain([...f.records]);
+  const similar=await save(f,args);
+  assert.equal(similar.call,undefined);
+  assert.equal(similar.result.status,'similar');
+  assert.equal(similar.result.saved,false);
+  assert.deepEqual(plain([...f.records]),records);
+  const update={...args,id:id(1),expected_revision:1};
+  const denied=await save(f,update);
+  assert.equal(denied.result.error.code,'invalid_request');
+  assert.match(denied.result.error.message,/call search_memory/);
+  await f.main.beforeModel({results:[{name:'save_memory',response:similar.result}]});
+  const prepared=await save(f,update);
+  const done=await commit(f,{...prepared,args:update});
   assert.equal(done.result.receipt.action,'updated');
+  assert.equal(done.result.updated[0].id,id(1));
   assert.equal((await f.storage.readMemory(id(1))).body,args.body);
   assert.equal((await f.storage.readMemory(id(1))).summary.title,'Reply style');
+  assert.equal((await f.storage.readMemory(id(2))).body,'Run unit tests before commits');
   assert.equal(memories(f).length,2);
   assert.equal(f.get('memory/catalog').value.active,2);
+});
+
+test('preserves distinct facts on similar creates',async()=>{
+  for (const [original,body] of [
+    ['Alice reports to Bob','Bob reports to Alice and Carol'],
+    ['Run tests before deployment','Run deployment before tests in staging'],
+    ['Use tabs in Python','Do not use tabs in Python'],
+  ]) {
+    const f=await setup([entry(1,original,{title:'Original fact'})]);
+    const records=plain([...f.records]);
+    const done=await save(f,{kind:'project',title:'Different fact',body});
+    assert.equal(done.call,undefined,body);
+    assert.equal(done.result.status,'similar',body);
+    assert.equal(done.result.saved,false,body);
+    const existing=JSON.parse(done.result.existing[0].parts[0].text);
+    assert.equal(existing.summary.id,id(1),body);
+    assert.equal(existing.summary.title,'Original fact',body);
+    assert.equal(existing.body,original,body);
+    assert.deepEqual(plain([...f.records]),records,body);
+  }
 });
 
 test('distinct facts are created beside related memories',async()=>{
@@ -71,7 +102,6 @@ test('distinct facts are created beside related memories',async()=>{
   const args={kind:'user',title:'Commit style',body:'Write commit subjects in the imperative mood without replies'};
   const prepared=await save(f,args);
   assert.notEqual(prepared.state.id,id(1));
-  assert.equal(prepared.state.mode,'create');
   const done=await commit(f,{...prepared,args});
   assert.equal(done.result.receipt.action,'created');
   assert.equal(memories(f).length,2);
