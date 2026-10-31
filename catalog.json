@@ -2875,7 +2875,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.0-alpha.7",
@@ -3226,6 +3226,7 @@
                 "dev.sailry.platform/desktop/view.js",
                 "dev.sailry.platform/desktop/access.js",
                 "dev.sailry.platform/desktop/labels.js",
+                "dev.sailry.platform/desktop/exit.js",
                 "dev.sailry.platform/desktop/locales.js"
               ],
               "panel": {
@@ -3307,6 +3308,14 @@
         "terminals.control"
       ],
       "versions": [
+        {
+          "version": "0.1.14",
+          "commit": "5fc89e65cb6925e90dd2d08ed971a903cf9054d1",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Close terminals when their shell exits, collapsing split panes; report only non-zero exits"
+          }
+        },
         {
           "version": "0.1.13",
           "commit": "a69686a95d9b5b9a37bbf6b95cbca53033b7f910",
@@ -3408,7 +3417,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep background command starts as activities without empty output expansion"
+        "text": "- Close terminals when their shell exits, collapsing split panes; report only non-zero exits"
       }
     },
     {
@@ -13956,7 +13965,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -15451,6 +15460,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "3940d786163bfabe8613088f5d4d11c0fba5bb6e",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Shorten the delete confirmation to the memory title with a destructive button"
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "d633fbab0c217768058668b8efa805cf34765a09",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -15577,7 +15594,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Return similar memories without replacing them; updates require an explicit ID and revision"
+        "text": "- Shorten the delete confirmation to the memory title with a destructive button"
       }
     },
     {
@@ -18597,7 +18614,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.0-alpha.4",
@@ -19433,6 +19450,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "cf5085ed30d44561f57ce8b35c52defad5d66a89",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Close SSH terminal tabs when their shell exits; report only non-zero exits"
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "bc8fba07fe480dadc7e2569d12dcfe48bbaac7f1",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -19561,7 +19586,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep dynamic connection schemas aligned with compact tool declarations\n- Limit SSH command timeouts to ten minutes"
+        "text": "- Close SSH terminal tabs when their shell exits; report only non-zero exits"
       }
     },
     {
@@ -19569,7 +19594,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -19737,6 +19762,16 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.25",
+          "commit": "33d1900db4c79c17d75b0dc22f10efc3a70987fb",
+          "release_notes": {
+            "text": "- Show tooltips on context step bars, markers and notes, including the step's model",
+            "locales": {
+              "zh-CN": "- 上下文步骤柱、标记与说明恢复悬停提示，并显示该步模型"
+            }
+          }
+        },
         {
           "version": "0.1.24",
           "commit": "bd4a6875d4d9894652968c8240f057a585f2af1f",
@@ -19990,9 +20025,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show step bars from the first step and fill the connection row with session speed when API response time is unavailable\n- Group tool calls by tool name instead of internal plugin and MCP aliases",
+        "text": "- Show tooltips on context step bars, markers and notes, including the step's model",
         "locales": {
-          "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位\n- 工具调用按工具名分组显示，不再显示插件与 MCP 内部别名"
+          "zh-CN": "- 上下文步骤柱、标记与说明恢复悬停提示，并显示该步模型"
         }
       }
     },
