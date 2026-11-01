@@ -39,15 +39,20 @@ test('handoff contains complete authoritative frozen groups', async () => {
 });
 
 
-test('default receipt child inherits the current Code turn', async () => {
-  const current = await fixture();
-  initialize(current);
-  const scope = await current.invoke('scope',{});
-  const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true});
-  assert.equal(result.role,null);
-  assert.equal(captured(result.task).record_receipt,true);
-  assert.equal(Object.hasOwn(result,'model'),false);
-  assert.match(result.task,/review_complete/);
+test('writable turns preserve receipt child selection', async () => {
+  for (const mode of ['code','flagship']) {
+    for (const role of [undefined,'reviewer']) {
+      const current = await fixture();
+      initialize(current,{mode});
+      const scope = await current.invoke('scope',{});
+      const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true,role});
+      assert.equal(result.isError,undefined);
+      assert.equal(result.role,role ?? null);
+      assert.equal(captured(result.task).record_receipt,true);
+      assert.equal(Object.hasOwn(result,'model'),false);
+      assert.match(result.task,/review_complete/);
+    }
+  }
 });
 
 test('initialization binds roles without adding tools', async () => {
@@ -63,6 +68,7 @@ test('initialization binds roles without adding tools', async () => {
 test('receipt mode rejects plan and read-only roles', async () => {
   for (const [mode,role,available] of [
     ['plan','reviewer',tools],['code','evidence',tools],['code','reviewer',['delegate_review']],
+    ['flagship','evidence',tools],['flagship','reviewer',['delegate_review']],
   ]) {
     const current = await fixture();
     const scope = await current.invoke('scope',{});
@@ -77,30 +83,49 @@ test('receipt mode rejects plan and read-only roles', async () => {
 });
 
 test('tool-disabled roles cannot read review evidence', async () => {
-  const current = await fixture();
-  initialize(current);
-  const scope = await current.invoke('scope',{});
-  for (const record_receipt of [true,false]) {
-    const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],
-      record_receipt,role:'no-tools'});
-    assert.equal(result.isError,true);
-    assert.match(result.error.message,/cannot read frozen patches/);
+  for (const mode of ['code','flagship']) {
+    const current = await fixture();
+    initialize(current,{mode});
+    const scope = await current.invoke('scope',{});
+    for (const record_receipt of [true,false]) {
+      const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],
+        record_receipt,role:'no-tools'});
+      assert.equal(result.isError,true);
+      assert.match(result.error.message,/cannot read frozen patches/);
+    }
   }
 });
 
 test('evidence-only handoff cannot claim formal coverage', async () => {
-  const current = await fixture();
-  initialize(current);
-  const scope = await current.invoke('scope',{});
-  const output = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],
-    record_receipt:false,role:'evidence'});
-  assert.equal(output.role,'evidence');
-  assert.equal(captured(output.task).record_receipt,false);
-  assert.match(output.task,/Do not call review_scope, report_finding or review_complete/);
-  assert.match(output.task,/parent independently checks all files/);
-  const reread = await current.invoke('scope',{review_id:scope.review_id});
-  assert.equal(reread.status,'open');
-  assert.deepEqual(reread.reviewed_groups,[]);
+  for (const mode of ['plan','code','flagship']) {
+    const current = await fixture();
+    initialize(current,{mode});
+    const scope = await current.invoke('scope',{});
+    const output = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],
+      record_receipt:false,role:'evidence'});
+    assert.equal(output.role,'evidence');
+    assert.equal(captured(output.task).record_receipt,false);
+    assert.match(output.task,/Do not call review_scope, report_finding or review_complete/);
+    assert.match(output.task,/parent independently checks all files/);
+    const reread = await current.invoke('scope',{review_id:scope.review_id});
+    assert.equal(reread.status,'open');
+    assert.deepEqual(reread.reviewed_groups,[]);
+  }
+});
+
+test('unknown modes cannot delegate review groups', async () => {
+  for (const mode of [undefined,null,'','chat','Flagship']) {
+    const current = await fixture();
+    const scope = await current.invoke('scope',{});
+    initialize(current,{mode});
+    const before = current.calls.length;
+    for (const record_receipt of [true,false]) {
+      const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt});
+      assert.equal(result.isError,true);
+      assert.equal(result.error.code,'permission_denied');
+    }
+    assert.equal(current.calls.length,before);
+  }
 });
 
 test('invalid roles groups and child reuse fail closed', async () => {

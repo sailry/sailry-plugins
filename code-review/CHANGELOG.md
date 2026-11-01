@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.15
+
+- Allow review delegation and formal receipts in Flagship mode
+- Preserve evidence-only restrictions for Plan turns and read-only roles
+
 ## 0.1.14
 
 - Preserve captured review progress after a temporary Git read failure

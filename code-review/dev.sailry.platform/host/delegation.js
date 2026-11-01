@@ -14,7 +14,7 @@ function parameters(roles) {
         items:{type:'string',minLength:1}},
       record_receipt:{type:'boolean',description:'Require a formal receipt, or explicitly gather evidence only'},
       role:{type:['string','null'],enum:[...roles.map(role => role.key),null],default:null,
-        description:'Omit for a new child inheriting this Code turn; named roles retain their captured mode and model'},
+        description:'Omit for a new child inheriting the current turn; named roles retain their captured mode and model'},
       title:{type:'string',minLength:1},
       background:{type:'boolean'},
     }};
@@ -27,20 +27,21 @@ export function initialize({tools, roles, mode}) {
   return {tools, parameters:tools.includes('delegate_review')
     ? {delegate_review:parameters(captured)} : {},
     instruction:tools.includes('delegate_review')
-      ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Omit role to inherit this Code turn; read-only roles gather evidence only.${roster ? `\nCaptured roles:\n${roster}` : ''}` : ''};
+      ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Omit role to inherit the current turn; read-only roles gather evidence only.${roster ? `\nCaptured roles:\n${roster}` : ''}` : ''};
 }
 
 function capability(args) {
   const current = readTurnState();
-  if (!current || !['plan','code'].includes(current.mode) || !Array.isArray(current.roles)) {
+  const writable = ['code','flagship'].includes(current?.mode);
+  if (!current || (!writable && current.mode !== 'plan') || !Array.isArray(current.roles)) {
     fail('Review delegation capture is unavailable; start a new turn', 'permission_denied');
   }
   if (typeof args.record_receipt !== 'boolean') fail('Select record_receipt explicitly');
   const role = args.role == null ? null : current.roles.find(role => role.key === args.role);
   if (args.role != null && !role) fail('Select a role from this turn\'s captured roster');
   if (role?.tools === false) fail('The selected role model cannot read frozen patches; choose a tool-capable role');
-  if (args.record_receipt && (current.mode !== 'code' || role?.read_only || !current.recording)) {
-    fail('Formal receipts require an authorized Code turn and a writable role; choose evidence-only explicitly instead', 'permission_denied');
+  if (args.record_receipt && (!writable || role?.read_only || !current.recording)) {
+    fail('Formal receipts require an authorized Code or Flagship turn and a writable role; choose evidence-only explicitly instead', 'permission_denied');
   }
 }
 
