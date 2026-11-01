@@ -10610,11 +10610,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.0-alpha.7",
+            "min_sailry_version": "0.1.0-alpha.9",
             "actions": [
               "git.read",
               "git.write",
@@ -10638,7 +10638,8 @@
             "host": {
               "entry": "dev.sailry.platform/host/main.js",
               "resources": [
-                "dev.sailry.platform/host/main.js"
+                "dev.sailry.platform/host/main.js",
+                "dev.sailry.platform/host/labels.js"
               ],
               "handlers": [
                 "status",
@@ -10647,8 +10648,18 @@
                 "show",
                 "blame",
                 "changes",
-                "change"
-              ]
+                "change",
+                "badge"
+              ],
+              "read_only": [
+                "badge"
+              ],
+              "status": {
+                "read": "badge",
+                "changes": [
+                  "repository"
+                ]
+              }
             },
             "tools": [
               {
@@ -12180,6 +12191,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "053837e13aebaac92f548932f956ee4868dd2912",
+          "min_sailry_version": "0.1.0-alpha.9",
+          "release_notes": {
+            "text": "- Read status counts on the execution Node and share localized change details across controllers\n- Keep clean repository counts visible without duplicate Desktop status scans"
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -12340,7 +12359,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Refresh stable catalogs only when their settings or repository references change."
+        "text": "- Read status counts on the execution Node and share localized change details across controllers\n- Keep clean repository counts visible without duplicate Desktop status scans"
       }
     },
     {
@@ -12521,7 +12540,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12901,7 +12920,8 @@
                 "command",
                 "resume",
                 "pause",
-                "clear"
+                "clear",
+                "badge"
               ],
               "turn": {
                 "initialize": "initialize",
@@ -12915,8 +12935,16 @@
                 }
               ],
               "read_only": [
-                "read"
-              ]
+                "read",
+                "badge"
+              ],
+              "status": {
+                "read": "badge",
+                "changes": [
+                  "package",
+                  "conversation"
+                ]
+              }
             },
             "continuation_marker": {
               "label": "Continue goal",
@@ -12934,7 +12962,7 @@
             },
             "category": "automation",
             "tint": "amber",
-            "min_sailry_version": "0.1.0-alpha.7"
+            "min_sailry_version": "0.1.0-alpha.9"
           }
         }
       },
@@ -12946,6 +12974,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.8",
+          "commit": "053837e13aebaac92f548932f956ee4868dd2912",
+          "min_sailry_version": "0.1.0-alpha.9",
+          "release_notes": {
+            "text": "- Read localized goal status on the execution Node for every controller\n- Show the goal chip only after a submitted goal exists"
+          }
+        },
         {
           "version": "0.1.7",
           "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
@@ -13015,7 +13051,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read bounded run metadata for goal checks and coalesce repeated status refreshes."
+        "text": "- Read localized goal status on the execution Node for every controller\n- Show the goal chip only after a submitted goal exists"
       }
     },
     {
