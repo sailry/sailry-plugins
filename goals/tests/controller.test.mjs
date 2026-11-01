@@ -13,9 +13,8 @@ function element(id,props) {
 async function fixture(options={}) {
   const host={goal:{id:'goal',description:'Requested work',state:'active',revision:'5'},
     hold:false,held:[],failure:null,readFailure:null,...options};
-  const prepared=[],completed=[],forgotten=[],contributions=[],notices=[],jobs=[],conversations=[];
-  const never=()=>new Promise(()=>{});
-  const listeners={change:null,composer:null,conversation:null},ready={},scopes=[];
+  const prepared=[],completed=[],forgotten=[],contributions=[],closed=[],notices=[],jobs=[],conversations=[];
+  const listeners={change:null,composer:null,conversation:null,contribution:null},ready={},scopes=[];
   const next=kind=>{ready[kind]?.();return new Promise(resolve=>{listeners[kind]=resolve;});};
   async function emit(kind,value) {
     assert.ok(listeners[kind]);
@@ -28,8 +27,10 @@ async function fixture(options={}) {
   const modules=new Map(),context=vm.createContext({});
   const sdk={
     nextChange:(_cursor,scope)=>{scopes.push(scope);return next('change');},
-    nextConversation:(cursor,scope)=>{conversations.push({cursor,scope});return next('conversation');},nextContributionEvent:never,
+    nextConversation:(cursor,scope)=>{conversations.push({cursor,scope});return next('conversation');},
+    nextContributionEvent:()=>next('contribution'),
     publishContributions:value=>contributions.push(plain(value)),
+    closeContribution:id=>closed.push(id),
     prepareRequest:request=>{
       if (prepared.length-forgotten.length>=16) throw new Error('Host request capacity exceeded');
       prepared.push(plain(request));return String(prepared.length-1);
@@ -92,7 +93,7 @@ async function fixture(options={}) {
     const resolve=listeners[kind];listeners[kind]=null;resolve(kind==='change' ? {revision:value.cursor,...value} : value);
     await new Promise(setImmediate);
   }
-  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,notices,emit,deliver,scopes,conversations};
+  return {view,host,cx,jobs,perform,prepared,completed,forgotten,contributions,closed,notices,emit,deliver,scopes,conversations};
 }
 
 test('unused conversations do not subscribe',async()=>{
@@ -137,10 +138,15 @@ test('successful controls use supported notifications',async()=>{
   assert.equal(setup.host.goal.state,'paused');
   await setup.perform('resume');
   assert.equal(setup.host.goal.state,'active');
+  assert.deepEqual(setup.closed,[]);
+  setup.view.open=true;
   await setup.perform('clear');
   assert.equal(setup.host.goal,null);
   assert.equal(setup.view.goal,null);
   assert.equal(setup.view.pending,null);
+  assert.equal(setup.view.open,false);
+  assert.deepEqual(setup.closed,['status']);
+  assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
   assert.deepEqual(setup.notices,[
     {id:'goal-action',kind:'info',message:setup.view.text.paused},
     {id:'goal-action',kind:'info',message:setup.view.text.active},
@@ -164,23 +170,30 @@ test('description remains literal prose with fixed controls',async()=>{
   assert.deepEqual(panel.items.map(item=>item.id),['goal-stop','goal-clear']);
 });
 
-test('completed status stays inspectable without activity',async()=>{
+test('forwarded status events refresh the panel',async()=>{
   const setup=await fixture();
-  setup.host.goal={...setup.host.goal,state:'completed'};
-  setup.view.refresh(setup.cx,true);await setup.jobs.at(-1);
-  const status=()=>setup.contributions.at(-1).find(item=>item.id==='status');
-  assert.equal(status().visible,false);
+  setup.host.goal={...setup.host.goal,state:'completed',description:'Completed work'};
+  setup.view.readKey=null;
+  await setup.emit('contribution',{id:'status',kind:'invoke',sequence:1,value:null});
+  assert.equal(setup.view.open,true);
   assert.equal(setup.view.goal.state,'completed');
-  setup.view.open=true;setup.view.publish();
-  assert.equal(status().visible,true);
+  assert.equal(setup.view.goal.description,'Completed work');
   assert.deepEqual(setup.view.render().items.map(item=>item.id),['goal-clear']);
-  setup.view.open=false;
-  setup.view.accept({...setup.view.state,cursor:'2',command:{name:'goal',package:{name:'goals'},arguments:''}});
-  setup.view.publish();
-  assert.equal(status().visible,true);
+  await setup.emit('contribution',{id:'status',kind:'change',sequence:2,value:false});
+  assert.equal(setup.view.open,false);
+  assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
   assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
   await setup.perform('clear');
   assert.equal(setup.host.goal,null);
+});
+
+test('unsubmitted drafts never publish status',async()=>{
+  const setup=await fixture({goal:null});
+  setup.view.accept({...setup.view.state,cursor:'2',command:{name:'goal',package:{name:'goals'},arguments:''}});
+  setup.view.publish();
+  assert.equal(setup.view.draft(),'');
+  assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
+  assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
 });
 
 test('held refresh blocks stale controls until current revision',async()=>{
@@ -249,11 +262,14 @@ test('refresh preserves new task command and draft',async()=>{
 
 test('uncertain control retains exact request for retry',async()=>{
   const setup=await fixture();
+  setup.view.open=true;
   setup.host.failure='outcome_unknown';
   await setup.perform('clear');
   const id=setup.view.pending.id;
   assert.equal(setup.view.enabled(),false);
   assert.equal(setup.host.goal.revision,'5');
+  assert.equal(setup.view.open,true);
+  assert.deepEqual(setup.closed,[]);
   assert.ok(!setup.forgotten.includes(id));
   const count=setup.prepared.length;
   await setup.perform('pause');
@@ -266,6 +282,8 @@ test('uncertain control retains exact request for retry',async()=>{
   assert.equal(setup.forgotten.filter(request=>request===id).length,1);
   assert.equal(setup.view.pending,null);
   assert.equal(setup.host.goal,null);
+  assert.equal(setup.view.open,false);
+  assert.deepEqual(setup.closed,['status']);
 });
 
 test('failed reads release capacity and preserve current goal',async()=>{

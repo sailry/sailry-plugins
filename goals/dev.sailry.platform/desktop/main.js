@@ -1,6 +1,6 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
-import {nextChange,nextConversation,prepareRequest,completeRequest,forgetRequest,faultCode,publishContributions,nextContributionEvent} from 'sailry/sdk';
+import {nextChange,nextConversation,prepareRequest,completeRequest,forgetRequest,faultCode,publishContributions,nextContributionEvent,closeContribution} from 'sailry/sdk';
 import {readComposer,nextComposerChange,toast} from 'sailry/ui';
 import {messages} from './locales.js';
 import {render} from './view.js';
@@ -61,13 +61,8 @@ export default class Goals extends View {
   enabled() {return this.state.connected && !this.state.busy && !this.state.readonly && !this.busy && !this.pending && this.state.mode!=='plan';}
   draft() {return this.state.command?.name==='goal' && this.state.command.package.name===this.scope.package.name ? this.state.command.arguments : null;}
   publish(event) {
-    const label=this.goal ? this.text[this.goal.state] ?? this.text.goal : this.text.goal;
-    const tone=this.goal?.state==='completed' ? 'success' : this.goal?.state==='failed' ? 'danger' : ['paused','blocked'].includes(this.goal?.state) ? 'warning' : 'muted';
     publishContributions([
       {id:'goal',enabled:this.enabled(),...(event?.id==='goal'?{reply_to:event.sequence}:{})},
-      {id:'status',enabled:this.state.connected,visible:!!this.goal && this.goal.state!=='completed' || this.open || this.draft()!==null,value:this.open,label:{label:this.text.goal},
-        segments:[{label:{label:this.text.goal},tone:'muted'},...(this.goal ? [{label:{label},tone}] : [])],
-        ...(event?.id==='status'?{reply_to:event.sequence}:{})},
     ]);
   }
   fail(key) {toast({id:'goal-error',kind:'error',message:this.text[key]});}
@@ -114,7 +109,7 @@ export default class Goals extends View {
         const result=await completeRequest(pending.id);
         if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
         forgetRequest(pending.id);this.pending=null;
-        if (pending.kind==='clear') this.open=false;
+        if (pending.kind==='clear') {this.open=false;closeContribution('status');}
         toast({id:'goal-action',kind:'info',message:this.text[pending.kind==='clear'?'cleared':pending.kind==='pause'?'paused':'active']});
       } catch(error) {
         const code=error.code ?? faultCode(error.message ?? String(error));

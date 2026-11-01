@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.0-alpha.7",
+      "min_sailry_version": "0.1.0-alpha.9",
       "actions": [
         "git.read",
         "git.write",
@@ -29,7 +29,8 @@
       "host": {
         "entry": "dev.sailry.platform/host/main.js",
         "resources": [
-          "dev.sailry.platform/host/main.js"
+          "dev.sailry.platform/host/main.js",
+          "dev.sailry.platform/host/labels.js"
         ],
         "handlers": [
           "status",
@@ -38,8 +39,18 @@
           "show",
           "blame",
           "changes",
-          "change"
-        ]
+          "change",
+          "badge"
+        ],
+        "read_only": [
+          "badge"
+        ],
+        "status": {
+          "read": "badge",
+          "changes": [
+            "repository"
+          ]
+        }
       },
       "tools": [
         {

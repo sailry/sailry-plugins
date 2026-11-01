@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {status,diff,log,show,blame,changes,change} from '../dev.sailry.platform/host/main.js';
+import {host} from './host.mjs';
 import {cases} from './parameters.mjs';
+
+const {status,diff,log,show,blame,changes,change}=await host({context:()=>({}),inspectGit:async()=>{}});
 
 test('history preserves first-page defaults and exact continuation', () => {
   assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null});

@@ -9,19 +9,23 @@ const value={id:'goal-id',description:'Finish the requested work',state:'active'
 test('continuation markers remain localized package declarations',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const marker=manifest.extensions['dev.sailry.platform'].continuation_marker;
-  assert.deepEqual(manifest.extensions['dev.sailry.platform'].host.read_only,['read']);
+  const extension=manifest.extensions['dev.sailry.platform'];
+  assert.deepEqual(extension.host.read_only,['read','badge']);
+  assert.deepEqual(extension.host.status,{read:'badge',changes:['package','conversation']});
+  assert.ok(extension.host.handlers.includes('badge'));
+  assert.equal(extension.min_sailry_version,'0.1.0-alpha.9');
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.7');assert.equal(manifest.extensions['dev.sailry.platform'].api_version,'v1');
+  assert.equal(manifest.version,'0.1.8');assert.equal(extension.api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;
-  const requests=[];
+  const requests=[],values=[];
   const scope={session:'session-id',turn:null};
   const session={revision:'3',config:{mode:'code'}};
   const history={page:{revision:1,runs:[{turn:'last-turn',sequence:1,status:'completed',origin:null}],queue:{revision:'9007199254740993',paused:true,items:[]},next_before:null}};
   const pages=new Map(),reads=[];
   const sdk={context:()=>scope,newId:()=> 'new-goal',getConversationValue:async key=>{
-    assert.equal(key,'goal');return plain(current);
+    assert.equal(key,'goal');values.push(key);return plain(current);
   },setConversationValue:(key,value,revision)=>prepare([{kind:'conversation_write',data:{key,value,expected_revision:revision}}]),
   prepareTransaction:prepare,completeRequest:async id=>{
     const operations=requests[Number(id)];
@@ -60,8 +64,71 @@ async function fixture(entry={key:'goal',revision:'5',present:true,restored:true
     modules.set(path,module);await module.link(load);return module;
   }
   const main=await load('./main.js');await main.evaluate();
-  return {api:main.namespace,requests,history,pages,reads,scope,session,state:()=>state,current:()=>plain(current)};
+  return {api:main.namespace,requests,history,pages,reads,values,scope,session,state:()=>state,current:()=>plain(current)};
 }
+
+test('missing goals and sessions hide status',async()=>{
+  const absent=await fixture({key:'goal',revision:'0',present:false,restored:false,value:null});
+  assert.deepEqual(plain(await absent.api.badge()),[{id:'status',visible:false}]);
+  assert.equal(absent.reads.length,0);
+  const unscoped=await fixture();
+  unscoped.scope.session=null;
+  assert.deepEqual(plain(await unscoped.api.badge()),[{id:'status',visible:false}]);
+  assert.equal(unscoped.values.length,0);
+  assert.equal(unscoped.requests.length,0);
+});
+
+test('active status carries localized labels and details',async()=>{
+  const {api,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  const [state]=plain(await api.badge());
+  assert.equal(state.id,'status');assert.equal(state.visible,true);assert.equal(state.enabled,true);
+  assert.deepEqual(state.label,{label:'Goal',locales:{'zh-CN':'目标'}});
+  assert.deepEqual(state.segments.map(segment=>[segment.label.label,segment.tone]),[['Goal','muted'],['Running','muted']]);
+  assert.equal(state.segments[1].label.locales['zh-CN'],'执行中');
+  assert.deepEqual(state.details,[{label:state.label,value:value.description}]);
+  for (const key of ['value','reply_to','scope','choices']) assert.equal(Object.hasOwn(state,key),false);
+  assert.equal(requests.length,0);
+});
+
+test('interrupted runs derive stopped status without writes',async()=>{
+  const {api,history,requests}=await fixture({key:'goal',revision:'5',present:true,restored:false,value});
+  history.page.runs[0].status='interrupted';
+  const [state]=plain(await api.badge());
+  assert.equal(state.visible,true);
+  assert.deepEqual(state.segments[1],{label:{label:'Stopped',locales:{'zh-CN':'已停止'}},tone:'warning'});
+  assert.equal(requests.length,0);
+});
+
+test('saved goal states retain semantic tones',async()=>{
+  for (const [state,label,tone] of [['paused','Stopped','warning'],['blocked','Blocked','warning'],['failed','Failed','danger']]) {
+    const {api}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,state}});
+    const [badge]=plain(await api.badge());
+    assert.equal(badge.visible,true);
+    assert.equal(badge.segments[1].label.label,label);
+    assert.equal(badge.segments[1].tone,tone);
+  }
+});
+
+test('completed goals hide status',async()=>{
+  const {api,reads}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,state:'completed'}});
+  assert.deepEqual(plain(await api.badge()),[{id:'status',visible:false}]);
+  assert.equal(reads.length,0);
+});
+
+test('status descriptions respect UTF8 boundaries',async()=>{
+  for (const [description,expected] of [
+    ['a'.repeat(4097),'a'.repeat(4096)],
+    ['a'.repeat(4093)+'中文','a'.repeat(4093)+'中'],
+    ['a'.repeat(4092)+'🙂x','a'.repeat(4092)+'🙂'],
+    ['a'.repeat(4095)+'🙂','a'.repeat(4095)],
+  ]) {
+    const {api,current}=await fixture({key:'goal',revision:'5',present:true,restored:false,value:{...value,description}});
+    const [state]=await api.badge();
+    assert.equal(state.details[0].value,expected);
+    assert.ok(Buffer.byteLength(state.details[0].value,'utf8')<=4096);
+    assert.equal(current().value.description,description);
+  }
+});
 
 test('restored active goals remain suspended without a write or continuation',async()=>{
   const {api,requests,state}=await fixture();

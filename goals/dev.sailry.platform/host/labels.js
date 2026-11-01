@@ -1,4 +1,5 @@
-const labels={
+export const labels={
+  goal:{label:'Goal',locales:{'zh-CN':'目标'}},
   active:{label:'Running',locales:{'zh-CN':'执行中'}},
   paused:{label:'Stopped',locales:{'zh-CN':'已停止'}},
   completed:{label:'Completed',locales:{'zh-CN':'已完成'}},

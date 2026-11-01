@@ -104,7 +104,7 @@ test('renderer owns scoped shortcuts including native text input submission',()=
 });
 
 function contributions() {
-  const change=deferred(),event=deferred(),reads=[],branches=[],choices=[],published=[];let changes=0,events=0;
+  const change=deferred(),event=deferred(),reads=[],branches=[],choices=[],published=[],resources=[];let changes=0,events=0;
   const never=()=>new Promise(()=>{});
   const globals={View:class {},Surfaces,DiffState:()=>({}),EditorState:text=>({text}),context:()=>'{"locale":"en"}',
     messages:()=>({}),workspaceMode:()=> 'main',createText:()=> 'message',Repository,Menus,
@@ -115,6 +115,7 @@ function contributions() {
     readScope:()=>({worktree:'captured'}),readLocation:()=>({surface:'project',worktree:'captured',branch:'main',main:true,git:true,git_status:'repository',can_move:true}),
     nextLocationChange:never,nextWindowActivation:never,readResourceTarget:()=>null,canInvokeContribution:async()=>true,
     nextContributionEvent:()=>events++===0 ? event.promise : never(),publishContributions:states=>published.push(states),toast:()=>{},
+    openResource:async(kind,value)=>resources.push({kind,value}),
     sdk:{faultCode:()=> 'unavailable',nextChange:()=>changes++===0 ? change.promise : never(),
       inspectGit:()=>{const pending=deferred();reads.push(pending);return pending.promise;},
       listGitBranches:()=>{const pending=deferred();branches.push(pending);return pending.promise;}}};
@@ -123,29 +124,27 @@ function contributions() {
   const Context=vm.runInNewContext(`${source}\n${contextSource}\nContext`,globals);
   const owner=new Context();owner.watch=()=>{};
   const live={notify:()=>{},sleep:async()=>{},spawn:task=>task(live),focus_handle:()=>({focus(){}})};owner.init({},live);
-  return {owner,change,event,reads,branches,choices,published};
+  return {owner,change,event,reads,branches,choices,published,resources};
 }
 
-function badgeFixture(options={}) {
-  const published=[],reported=[];
+function contextFixture(options={}) {
+  const published=[];
   const location={cursor:'0',surface:'composer',node:'captured-node',worktree:'captured',branch:'main',
-    main:true,git:true,git_status:'repository',connected:true,can_move:true};
+    main:true,git:true,git_status:'repository',connected:true,can_move:true,...options.location};
   const repo={connected:true,status:{kind:'ready',entries:[{path:'notes.txt',diff:{additions:1,deletions:0}}],truncated:false,omitted_paths:0},
     refresh:options.refresh ?? (async()=>true),invalidate(){return this.refresh();}};
   const globals={
     Git:class {
-      init(){this.text={git_detached:'Detached HEAD',tool_partial:'Partial'};this.repo=repo;this.notify=()=>{};}
-      report(key){reported.push(key);}
+      init(){this.text={git_detached:'Detached HEAD'};this.repo=repo;this.notify=()=>{};}
+      async invalidate(){await this.repo.invalidate();}
       refreshWorktrees(){}
     },
     readScope:()=>({worktree:'captured'}),readLocation:()=>location,
     publishContributions:states=>published.push(states),
-    readGitDiff:options.read ?? (async()=>({additions:1,deletions:0,truncated:false})),
-    faultCode:message=>message,
   };
   const Context=vm.runInNewContext(`${contextSource}\nContext`,globals),owner=new Context();
   owner.init({}, {spawn:()=>{}});
-  return {owner,repo,published,reported};
+  return {owner,repo,published};
 }
 
 test('branch picker opens before fresh repository observation',async()=>{
@@ -200,30 +199,29 @@ test('failed observation closes its loading picker',async()=>{
   assert.equal(state.owner.actions.picker,null);assert.equal(state.choices.length,1);state.owner.release();
 });
 
-test('badge keeps known counts through overlapping refreshes',async()=>{
-  const refresh=deferred();
-  const state=badgeFixture({refresh:()=>refresh.promise,read:()=>assert.fail('status already contains line counts')});
-  state.owner.counts={added:7,removed:3,partial:false};state.owner.publish();
-  const first=state.owner.invalidate(),latest=state.owner.invalidate();
-  assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
-    segment=>segment.label.label),['+7','-3']);
-  state.repo.status.entries[0].diff={additions:4,deletions:2};
-  refresh.resolve(true);
-  await Promise.all([first,latest]);
-  assert.deepEqual(Array.from(state.published.at(-1).find(entry=>entry.id==='changes').segments,
-    segment=>segment.label.label),['+4','-2']);
+test('composer controllers leave status reads to Node',async()=>{
+  let reads=0;
+  const state=contextFixture({refresh:async()=>{reads++;return true;}});
+  await Promise.all([state.owner.invalidate(),state.owner.invalidate()]);
+  assert.equal(reads,0);
+  assert.ok(state.published.every(entries=>entries.every(entry=>entry.id!=='changes')));
 });
 
-test('transient status failure keeps known badge counts',async()=>{
-  const state=badgeFixture({refresh:async()=>false});
-  const known={added:5,removed:1,partial:true};state.owner.counts=known;
-  state.owner.publish();
+test('other surfaces retain repository refreshes',async()=>{
+  let reads=0;
+  const state=contextFixture({location:{surface:'project'},refresh:async()=>{reads++;return true;}});
   await state.owner.invalidate();
-  assert.equal(state.owner.counts,known);
-  assert.deepEqual(state.reported,[]);
-  const badge=state.published.at(-1).find(entry=>entry.id==='changes');
-  assert.equal(badge.visible,true);
-  assert.deepEqual(Array.from(badge.segments,segment=>segment.label.label),['+5','-1']);
+  assert.equal(reads,1);
+  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.id),['branch','manage']);
+});
+
+test('forwarded status events open the Git resource',async()=>{
+  const state=contributions();
+  state.event.resolve({id:'changes',handler:'changes',sequence:1,kind:'invoke',value:null});
+  await settle();
+  assert.deepEqual(JSON.parse(JSON.stringify(state.resources)),[{kind:'git',value:{path:null}}]);
+  assert.ok(state.published.every(entries=>entries.every(entry=>entry.id!=='changes')));
+  state.owner.release();
 });
 
 test('retained controllers suspend queries until their view returns',async()=>{
@@ -237,49 +235,18 @@ test('retained controllers suspend queries until their view returns',async()=>{
   state.owner.release();
 });
 
-test('refresh failures preserve only transient badge counts',async()=>{
-  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
-    const state=badgeFixture();state.owner.counts={added:5,removed:1,partial:false};
-    state.owner.publish();
-    state.repo.refresh=async()=>{state.repo.readCode=code;return false;};
-    await state.owner.invalidate();
-    assert.equal(state.owner.counts,null,code);
-    assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,false,code);
-  }
-  const state=badgeFixture(),known={added:5,removed:1,partial:false};state.owner.counts=known;
-  state.owner.publish();
-  state.repo.refresh=async()=>{state.repo.readCode='unavailable';return false;};
-  await state.owner.invalidate();
-  assert.equal(state.owner.counts,known);
-  assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,true);
-});
-
-test('status scope failures clear known badge counts',async()=>{
-  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
-    const state=badgeFixture();
-    state.repo.refresh=async()=>{state.repo.readCode=code;return false;};
-    state.owner.counts={added:5,removed:1,partial:false};
-    await state.owner.invalidate();
-    assert.equal(state.owner.counts,null,code);
-    assert.equal(state.published.at(-1).find(entry=>entry.id==='changes').visible,false,code);
-    assert.deepEqual(state.reported,[]);
-  }
-});
-
-test('scope changes and disconnect clear badge counts',async()=>{
+test('scope changes and disconnect disable repository controls',async()=>{
   for (const moved of [{node:'other-node'},{worktree:'other-worktree'}]) {
-    let reads=0;const state=badgeFixture({refresh:async()=>{reads++;return true;}});
-    state.owner.counts={added:2,removed:1,partial:false};
+    let reads=0;const state=contextFixture({refresh:async()=>{reads++;return true;}});
     state.owner.location={...state.owner.location,...moved};
     await state.owner.invalidate();
     assert.equal(reads,0);
-    assert.equal(state.owner.counts,null);
-    assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
+    state.owner.publish();
+    assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false]);
   }
-  const state=badgeFixture();state.owner.counts={added:2,removed:1,partial:false};
-  state.repo.connected=false;state.owner.refreshWorktrees({});
-  assert.equal(state.owner.counts,null);
-  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false,false]);
+  const state=contextFixture();
+  state.repo.connected=false;state.owner.publish();
+  assert.deepEqual(Array.from(state.published.at(-1),entry=>entry.visible),[false,false]);
   const branch=state.published.at(-1).find(entry=>entry.id==='branch');
   assert.equal(branch.enabled,false);assert.equal(branch.loading,false);
 });
@@ -303,7 +270,7 @@ test('released controllers ignore optional capability discovery results',async()
   state.changes[1].reject(Error('closed'));await settle();
 });
 
-test('composer location exists before eager repository observation starts',async()=>{
+test('composer location initializes without duplicate repository reads',async()=>{
   const contextSource = (await readFile(new URL('../dev.sailry.platform/desktop/context.js', import.meta.url), 'utf8'))
     .replace(/^import[\s\S]*?;\n/gm, '').replace('export default class', 'class');
   let reads = 0;
@@ -325,7 +292,7 @@ test('composer location exists before eager repository observation starts',async
   owner.init({}, {spawn:()=>{},notify:()=>{},focus_handle:()=>({focus(){}})});
   await settle();
   assert.equal(owner.location,location);
-  assert.equal(reads,1);
+  assert.equal(reads,0);
 });
 
 test('unassigned controllers do not read or publish a repository contribution',async()=>{
@@ -351,10 +318,10 @@ test('unassigned controllers do not read or publish a repository contribution',a
   await owner.invalidate();
   await settle();
   assert.equal(reads,0);
-  assert.deepEqual(Array.from(published,state=>state.visible),[false,false,false]);
+  assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);
 });
 
-test('composer controllers skip repository reads until location metadata confirms Git',async()=>{
+test('composer metadata changes never duplicate Node scans',async()=>{
   for (const project of [null,'plain-directory']) {
     let reads=0,published;
     const updates=[deferred(),deferred()]; let cursor=0;
@@ -366,13 +333,13 @@ test('composer controllers skip repository reads until location metadata confirm
     const Context=vm.runInNewContext(`${contextSource}\nContext`,globals),owner=new Context();
     const live={notify:()=>{},spawn:task=>task(live)};
     owner.init({},live);await owner.invalidate();await settle();
-    assert.equal(reads,0);assert.deepEqual(Array.from(published,state=>state.visible),[false,false,false]);
+    assert.equal(reads,0);assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);
     updates[0].resolve({...location,cursor:'1',project:'initialized',git:true,git_status:'repository'});await settle();
-    assert.equal(reads,1,'a newly detected repository starts normal observation');
-    owner.counts={added:1,removed:2};
+    assert.equal(reads,0);
+    assert.deepEqual(Array.from(published,state=>state.visible),[true,true]);
     updates[1].resolve({...location,cursor:'2'});await settle();
-    assert.equal(reads,1,'returning to a non-Git location does not read Git');
-    assert.equal(owner.counts,null);assert.deepEqual(Array.from(published,state=>state.visible),[false,false,false]);
+    assert.equal(reads,0);
+    assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);
   }
 });
 
@@ -409,7 +376,7 @@ test('hidden repository controls omit initial path labels',()=>{
 });
 
 test('unknown inspection hides the branch',()=>{
-  const state=badgeFixture();
+  const state=contextFixture();
   state.owner.text.git_loading='Loading';
   state.owner.location={...state.owner.location,project:'project',git:false,git_status:'unknown'};
   state.owner.publish();
@@ -544,25 +511,4 @@ test('released controllers cannot recreate surfaces after late notifications',()
   assert.equal(state.owner.surfaces.states.size,0);
   state.owner.repo.notify();
   assert.equal(state.owner.surfaces.states.size,0);
-});
-
-
-test('badge reuses status counts without reading file diffs',async()=>{
-  for(const truncated of [false,true]) {
-    const state=badgeFixture({read:()=>assert.fail('badge must not read file diffs')});
-    state.repo.status.entries=[
-      {path:'one.txt',diff:{additions:2,deletions:4}},
-      {path:'two.txt',diff:{additions:3,deletions:1}},
-    ];
-    state.repo.status.truncated=truncated;
-    await state.owner.invalidate();
-    assert.deepEqual(JSON.parse(JSON.stringify(state.owner.counts)),{added:5,removed:5,partial:truncated});
-    state.repo.status.omitted_paths=1;
-    await state.owner.invalidate();
-    assert.equal(state.owner.counts.partial,true);
-    state.repo.status.omitted_paths=0;state.repo.status.truncated=false;
-    state.repo.status.entries[0].diff.truncated=true;
-    await state.owner.invalidate();
-    assert.equal(state.owner.counts.partial,true,'bounded line counts remain partial');
-  }
 });

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.8
+
+- Read localized goal status on the execution Node for every controller
+- Show the goal chip only after a submitted goal exists
+
 ## 0.1.7
 
 - Read bounded run metadata for goal checks and coalesce repeated status refreshes.

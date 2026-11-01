@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "goals",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -381,7 +381,8 @@
           "command",
           "resume",
           "pause",
-          "clear"
+          "clear",
+          "badge"
         ],
         "turn": {
           "initialize": "initialize",
@@ -395,8 +396,16 @@
           }
         ],
         "read_only": [
-          "read"
-        ]
+          "read",
+          "badge"
+        ],
+        "status": {
+          "read": "badge",
+          "changes": [
+            "package",
+            "conversation"
+          ]
+        }
       },
       "continuation_marker": {
         "label": "Continue goal",
@@ -414,7 +423,7 @@
       },
       "category": "automation",
       "tint": "amber",
-      "min_sailry_version": "0.1.0-alpha.7"
+      "min_sailry_version": "0.1.0-alpha.9"
     }
   }
 }

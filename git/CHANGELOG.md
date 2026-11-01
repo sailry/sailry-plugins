@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.23
+
+- Read status counts on the execution Node and share localized change details across controllers
+- Keep clean repository counts visible without duplicate Desktop status scans
+
 ## 0.1.22
 
 - Refresh stable catalogs only when their settings or repository references change.

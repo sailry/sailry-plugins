@@ -1,5 +1,5 @@
 import {context,newId,getConversationValue,setConversationValue,prepareTransaction,completeRequest,forgetRequest,readSession,readConversationRuns,readConversationRun,readTurnState,stageTurnState} from 'sailry/sdk';
-import {present} from './labels.js';
+import {labels,present} from './labels.js';
 
 const key='goal';
 const continuation='Continue working on the active goal. Verify completion before marking it completed. If you cannot make progress, mark it blocked and explain what is needed. Do not expand the authorized scope.';
@@ -63,6 +63,26 @@ async function execute(id) {
 const write=(entry,value)=>({kind:'conversation_write',data:{key,value,expected_revision:entry.revision}});
 const next=(entry,after=null)=>({kind:'continue',data:{session:context().session,after,key,scope:'conversation',expected_revision:entry.revision,message:{text:continuation,references:[],attachments:[]}}});
 export async function read() {return present((await current()).value);}
+function detail(value) {
+  let bytes=0,result='';
+  for (const character of value) {
+    const point=character.codePointAt(0);
+    bytes+=point<=0x7f ? 1 : point<=0x7ff ? 2 : point<=0xffff ? 3 : 4;
+    if (bytes>4096) break;
+    result+=character;
+  }
+  return result;
+}
+export async function badge() {
+  const hidden=[{id:'status',visible:false}];
+  if (!context().session) return hidden;
+  const {value}=await current();
+  if (!value || value.state==='completed') return hidden;
+  const tone=value.state==='failed' ? 'danger' : ['paused','blocked'].includes(value.state) ? 'warning' : 'muted';
+  return [{id:'status',visible:true,enabled:true,label:labels.goal,
+    segments:[{label:labels.goal,tone:'muted'},{label:labels[value.state],tone}],
+    details:[{label:labels.goal,value:detail(value.description)}]}];
+}
 export async function create(args) {
   argumentsOf(args,['description']);
   const entry=await getConversationValue(key);
