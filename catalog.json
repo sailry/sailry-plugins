@@ -15693,7 +15693,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -15721,6 +15721,13 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.12",
+          "commit": "c173e0b939519d0c43bc5709a8df076a3b5f6769",
+          "release_notes": {
+            "text": "- Accept team catalog and local decision actions in package preflight checks"
+          }
+        },
         {
           "version": "0.1.11",
           "commit": "fdb3b847600ff2eec543833e0f4cc94376e4aeb7",
@@ -15809,7 +15816,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Validate initially visible tools and the message read action"
+        "text": "- Accept team catalog and local decision actions in package preflight checks"
       }
     },
     {
@@ -16322,7 +16329,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -16740,6 +16747,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.10",
+          "commit": "c173e0b939519d0c43bc5709a8df076a3b5f6769",
+          "release_notes": {
+            "text": "- Keep scheduling concurrency checks aligned with team execution"
+          }
+        },
+        {
           "version": "0.1.9",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
           "release_notes": {
@@ -16818,7 +16832,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant numeric schema bounds while preserving host validation"
+        "text": "- Keep scheduling concurrency checks aligned with team execution"
       }
     },
     {
