@@ -16938,7 +16938,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -17643,7 +17643,7 @@
             },
             "category": "automation",
             "tint": "amber",
-            "min_sailry_version": "0.1.0-alpha.9"
+            "min_sailry_version": "0.1.0"
           }
         }
       },
@@ -17659,6 +17659,14 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.14",
+          "commit": "330404b084968479aac00072c7affa3f36e21771",
+          "min_sailry_version": "0.1.0",
+          "release_notes": {
+            "text": "- Require Sailry 0.1.0 for team selection and associated task sessions"
+          }
+        },
         {
           "version": "0.1.13",
           "commit": "37f7e4eed3bc50d9ace06d7219f7cd10fd52d8c4",
@@ -17764,10 +17772,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Choose model execution, the default team or a named team for scheduled tasks\n- Inherit captured execution choices in Agent-created tasks and associate each run with its task",
-        "locales": {
-          "zh-CN": "- 定时任务支持选择模型执行、默认团队或指定团队\n- Agent 创建任务时继承已捕获的执行配置，每次运行关联原任务"
-        }
+        "text": "- Require Sailry 0.1.0 for team selection and associated task sessions"
       }
     },
     {
