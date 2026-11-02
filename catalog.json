@@ -16924,7 +16924,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -17088,6 +17088,42 @@
                             }
                           }
                         ]
+                      },
+                      "execution": {
+                        "type": "string",
+                        "enum": [
+                          "model",
+                          "team"
+                        ],
+                        "default": "team"
+                      },
+                      "team": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "required": [
+                          "id"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                          },
+                          "revision": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[1-9][0-9]*$",
+                            "default": null
+                          }
+                        },
+                        "default": null
+                      },
+                      "models": {
+                        "type": "object",
+                        "default": {}
                       }
                     }
                   }
@@ -17108,6 +17144,7 @@
               "sessions.start",
               "projects.read",
               "models.read",
+              "teams.read",
               "conversation.read"
             ],
             "display": {
@@ -17151,7 +17188,7 @@
                   "plugin"
                 ],
                 "presentation": "summary",
-                "description": "List, create, update or delete scheduled Agent tasks in the current project, or unassigned tasks in an unassigned session. These tasks run an Agent, unlike reminder notifications. Create requires name, prompt and timing; enabled defaults to true. Inherit the execution session's project, worktree and model configuration; do not choose defaults or another project. List returns IDs, latest revisions and an after cursor; use the latest revision for update or delete. Update changes only supplied fields and preserves model configuration. once uses at_ms; every uses anchor_ms and interval_ms, a fixed elapsed interval. Those times are UTC milliseconds and new or changed timing must start in the future. weekly uses timezone (explicit IANA name), weekdays (distinct ISO days 1=Monday through 7=Sunday), hour and minute; Node chooses the next future local occurrence. Repeated local times run once at the earlier instant; missing local times are skipped. Ask for the time and timezone if missing. The execution Node must remain running; no email or external delivery is configured by this tool.",
+                "description": "List, create, update or delete scheduled Agent tasks in the current project, or unassigned tasks in an unassigned session. These tasks run an Agent, unlike reminder notifications. Create requires name, prompt and timing; enabled defaults to true. Create inherits the admitted turn's project, worktree, model configuration and execution selection. Optional execution selects model or team; optional team selects a named team by id, or null for the default team. Named teams resolve their current revision at each run. Do not choose another project or change provider/model configuration. List returns IDs, latest revisions and an after cursor; use the latest revision for update or delete. Update changes only supplied fields and preserves model configuration and omitted execution selection. Changing execution or team clears inherited member model overrides. once uses at_ms; every uses anchor_ms and interval_ms, a fixed elapsed interval. Those times are UTC milliseconds and new or changed timing must start in the future. weekly uses timezone (explicit IANA name), weekdays (distinct ISO days 1=Monday through 7=Sunday), hour and minute; Node chooses the next future local occurrence. Repeated local times run once at the earlier instant; missing local times are skipped. Ask for the time and timezone if missing. The execution Node must remain running; no email or external delivery is configured by this tool.",
                 "handler": {
                   "name": "scheduled_tasks",
                   "flow": {
@@ -17309,6 +17346,37 @@
                             }
                           }
                         ]
+                      },
+                      "execution": {
+                        "type": "string",
+                        "enum": [
+                          "model",
+                          "team"
+                        ]
+                      },
+                      "team": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "additionalProperties": false,
+                        "required": [
+                          "id"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                          },
+                          "revision": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^[1-9][0-9]*$",
+                            "default": null
+                          }
+                        }
                       }
                     },
                     "allOf": [
@@ -17374,6 +17442,16 @@
                             {
                               "required": [
                                 "enabled"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "execution"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "team"
                               ]
                             }
                           ]
@@ -17550,7 +17628,8 @@
               }
             },
             "category": "automation",
-            "tint": "amber"
+            "tint": "amber",
+            "min_sailry_version": "0.1.0-alpha.9"
           }
         }
       },
@@ -17562,9 +17641,21 @@
         "sessions.start",
         "projects.read",
         "models.read",
+        "teams.read",
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.13",
+          "commit": "37f7e4eed3bc50d9ace06d7219f7cd10fd52d8c4",
+          "min_sailry_version": "0.1.0-alpha.9",
+          "release_notes": {
+            "text": "- Choose model execution, the default team or a named team for scheduled tasks\n- Inherit captured execution choices in Agent-created tasks and associate each run with its task",
+            "locales": {
+              "zh-CN": "- 定时任务支持选择模型执行、默认团队或指定团队\n- Agent 创建任务时继承已捕获的执行配置，每次运行关联原任务"
+            }
+          }
+        },
         {
           "version": "0.1.12",
           "commit": "11747f9bf0684cc52140e7771566545beb7aba02",
@@ -17659,7 +17750,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant numeric schema bounds while preserving host validation"
+        "text": "- Choose model execution, the default team or a named team for scheduled tasks\n- Inherit captured execution choices in Agent-created tasks and associate each run with its task",
+        "locales": {
+          "zh-CN": "- 定时任务支持选择模型执行、默认团队或指定团队\n- Agent 创建任务时继承已捕获的执行配置，每次运行关联原任务"
+        }
       }
     },
     {
