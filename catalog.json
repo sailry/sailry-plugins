@@ -19560,7 +19560,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -19686,6 +19686,25 @@
         "models.read"
       ],
       "versions": [
+        {
+          "version": "0.1.13",
+          "commit": "29f2eee8aee21cd3725176e5a6792fe5ebb742d9",
+          "min_sailry_version": "0.1.0-alpha.5",
+          "release_notes": {
+            "text": "Clear a key field and save to remove it. Service rows are more compact, with ordering in each row's menu.",
+            "locales": {
+              "zh-CN": "清空密钥并保存即可移除。服务列表更紧凑，排序移至每行菜单。",
+              "zh-TW": "清空金鑰並儲存即可移除。服務清單更精簡，排序移至每列選單。",
+              "ja": "キーを空にして保存すると削除されます。サービス一覧をコンパクトにし、並べ替えは各行のメニューに移動しました。",
+              "ko": "키를 비우고 저장하면 삭제됩니다. 서비스 목록을 간결하게 하고 순서 변경은 각 행의 메뉴로 옮겼습니다.",
+              "fr": "Videz un champ de clé et enregistrez pour la supprimer. Les lignes de services sont plus compactes, avec l'ordre dans le menu de chaque ligne.",
+              "de": "Ein geleertes Schlüsselfeld wird beim Speichern entfernt. Dienstzeilen sind kompakter; die Reihenfolge steht im Menü jeder Zeile.",
+              "es": "Vacía un campo de clave y guarda para eliminarla. Las filas de servicios son más compactas y el orden está en el menú de cada fila.",
+              "pt-BR": "Limpe um campo de chave e salve para removê-la. As linhas de serviços estão mais compactas, com a ordem no menu de cada linha.",
+              "ru": "Очистите поле ключа и сохраните, чтобы удалить его. Строки сервисов стали компактнее, порядок — в меню каждой строки."
+            }
+          }
+        },
         {
           "version": "0.1.12",
           "commit": "61df7a392688206194310defe0162f08ff3488fe",
@@ -19837,17 +19856,17 @@
         }
       ],
       "release_notes": {
-        "text": "Automatic search moves to the next enabled channel after any failure, including model search that does not search.",
+        "text": "Clear a key field and save to remove it. Service rows are more compact, with ordering in each row's menu.",
         "locales": {
-          "zh-CN": "自动搜索在任一渠道失败后都会尝试下一个已启用渠道，包括模型没有执行搜索的情况。",
-          "zh-TW": "自動搜尋在任一管道失敗後都會嘗試下一個已啟用管道，包括模型沒有執行搜尋的情況。",
-          "ja": "自動検索は、モデルが検索を行わなかった場合を含め、失敗したサービスの次の有効なサービスを試します。",
-          "ko": "자동 검색은 모델이 검색을 수행하지 않은 경우를 포함해 실패한 서비스 다음의 활성 서비스를 시도합니다.",
-          "fr": "La recherche automatique passe au service activé suivant après tout échec, y compris lorsqu’un modèle n’effectue pas de recherche.",
-          "de": "Die automatische Suche wechselt nach jedem Fehler zum nächsten aktiven Dienst, auch wenn ein Modell keine Suche ausführt.",
-          "es": "La búsqueda automática pasa al siguiente servicio activo tras cualquier fallo, incluso cuando un modelo no realiza la búsqueda.",
-          "pt-BR": "A pesquisa automática passa para o próximo serviço ativo após qualquer falha, inclusive quando um modelo não realiza a pesquisa.",
-          "ru": "Автоматический поиск переходит к следующей включённой службе после любой ошибки, в том числе если модель не выполнила поиск."
+          "zh-CN": "清空密钥并保存即可移除。服务列表更紧凑，排序移至每行菜单。",
+          "zh-TW": "清空金鑰並儲存即可移除。服務清單更精簡，排序移至每列選單。",
+          "ja": "キーを空にして保存すると削除されます。サービス一覧をコンパクトにし、並べ替えは各行のメニューに移動しました。",
+          "ko": "키를 비우고 저장하면 삭제됩니다. 서비스 목록을 간결하게 하고 순서 변경은 각 행의 메뉴로 옮겼습니다.",
+          "fr": "Videz un champ de clé et enregistrez pour la supprimer. Les lignes de services sont plus compactes, avec l'ordre dans le menu de chaque ligne.",
+          "de": "Ein geleertes Schlüsselfeld wird beim Speichern entfernt. Dienstzeilen sind kompakter; die Reihenfolge steht im Menü jeder Zeile.",
+          "es": "Vacía un campo de clave y guarda para eliminarla. Las filas de servicios son más compactas y el orden está en el menú de cada fila.",
+          "pt-BR": "Limpe um campo de chave e salve para removê-la. As linhas de serviços estão mais compactas, com a ordem no menu de cada linha.",
+          "ru": "Очистите поле ключа и сохраните, чтобы удалить его. Строки сервисов стали компактнее, порядок — в меню каждой строки."
         }
       }
     },
