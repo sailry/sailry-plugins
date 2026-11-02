@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Accept team catalog and local decision actions in package preflight checks
+
 ## 0.1.11
 
 - Validate initially visible tools and the message read action

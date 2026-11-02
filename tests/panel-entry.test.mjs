@@ -28,7 +28,7 @@ for(const name of ['scheduled-tasks','reminders'])test(`${name}: entry reloads d
     history:async()=>({Ok:{items:[{job:{id:`run-${revision}`}}],next_before:null}}),
     states:async()=>({}),
     readProjectCatalog:async()=>({projects:[{id:'project',name:'Project'}],worktrees:[]}),
-    listModels:async()=>({models:[]}),toast:value=>notices.push(value),
+    listModels:async()=>({models:[]}),listTeams:async()=>[],lead:()=>null,toast:value=>notices.push(value),
     prepareRequest:()=>assert.fail('read invalidation must not replay an action'),
   });
   const owner=new Controller(),cx={notify(){},spawn:job=>jobs.push(job)};

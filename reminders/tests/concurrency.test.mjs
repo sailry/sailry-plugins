@@ -27,8 +27,11 @@ for(const name of ['reminders','scheduled-tasks']) {
 
   test(`${name} reads independent schedule metadata concurrently`,async()=>{
     const held=[],file=name==='reminders'?'schedules':'dispatch';
+    const records=name==='scheduled-tasks'
+      ?vm.runInNewContext(`${await source(name,'records')}\n({execution,requireConfig})`)
+      :{requireConfig(){}};
     const changes=vm.runInNewContext(`${await source(name,file)}\nchanges`,{
-      context:()=>({package:{name}}),requireConfig(){},
+      context:()=>({package:{name}}),...records,
       prepareRequest:command=>command.data.action.kind,
       completeRequest:id=>new Promise(resolve=>held.push({id,resolve})),forgetRequest(){},
     });

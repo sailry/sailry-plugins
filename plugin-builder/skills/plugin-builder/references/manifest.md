@@ -126,6 +126,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `conversation.message.read` | The current turn's user text in the `turn.initialize` input |
 | `sessions.start` | Starting new conversations |
 | `models.read`, `models.install`, `models.generate` | The model catalog, managed installation and model requests through the Node |
+| `decisions.run` | Local model decisions |
 | `notifications.publish` | Application notifications |
 | `dispatch.manage` | Scheduled and queued plugin work |
 | `process.read`, `process.control`, `terminals.read`, `terminals.control` | Commands and terminals |
@@ -135,6 +136,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `computer.read`, `computer.control` | Screen capture and desktop control |
 | `media.inspect`, `media.image`, `media.video`, `media.settings.read`, `media.settings.write` | Media understanding and generation |
 | `agents.delegate`, `roles.read`, `roles.write` | Subagents and delegation roles |
+| `teams.read` | The team catalog |
 | `activity.read`, `usage.read` | Activity and usage reports |
 
 A skill-only package needs `"actions": []`.

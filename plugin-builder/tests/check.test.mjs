@@ -124,6 +124,13 @@ test('rejects unknown actions and extension fields', () => {
   assert.match(result.output, /unknown extension field: network/);
 });
 
+test('accepts team catalog and decision actions', () => {
+  for (const action of ['teams.read', 'decisions.run']) {
+    const result = check(fixture({'plugin.json': manifest({actions: [action]})}));
+    assert.equal(result.code, 0, `${action}: ${result.output}`);
+  }
+});
+
 test('accepts declared system permissions', () => {
   const result = check(fixture({'plugin.json': manifest({
     permissions: [{kind: 'microphone', subject: 'sailry'}],

@@ -37,8 +37,8 @@ FIELDS = {
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",
-    "ssh.read", "ssh.control", "ssh.manage", "agents.delegate", "roles.read", "roles.write",
-    "models.read", "models.install", "models.provide", "models.authenticate", "credentials.inspect",
+    "ssh.read", "ssh.control", "ssh.manage", "agents.delegate", "roles.read", "teams.read", "roles.write",
+    "models.read", "decisions.run", "models.install", "models.provide", "models.authenticate", "credentials.inspect",
     "media.inspect", "media.image", "media.video", "media.settings.read",
     "media.settings.write", "computer.read", "computer.control", "browser.read",
     "browser.control", "external_browser.read", "external_browser.control",
