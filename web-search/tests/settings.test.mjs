@@ -18,7 +18,7 @@ async function fixture() {
     {kind:'provider',id:'beta/vendor/model',provider:'Beta',api:'anthropic',default:true},
     {kind:'provider',id:'gamma/unsupported',provider:'Gamma',api:'chat_completions',default:true},
   ]};
-  const fields=new Map(),secrets=new Set(),calls=[],prepared=[],forgotten=[],notices=[];
+  const fields=new Map(),secrets=new Set(),edited=new Set(),calls=[],prepared=[],forgotten=[],notices=[];
   let serial=0,fault=null,hold=false,held=null,modelsFault=false;const requests=new Map();
   function prepare(value){const id='request-'+(++serial);requests.set(id,plain(value));return id;}
   const Type=vm.runInNewContext(source+'\nSettings',{
@@ -38,12 +38,12 @@ async function fixture() {
       return {Ok:{kind:'search_settings',data:plain(saved)}};
     },forgetRequest:id=>forgotten.push(id),faultCode:()=> 'failed',toast:value=>{assert(['info','error'].includes(value.kind));assert.equal(typeof value.message,'string');notices.push(value);},
     createText:value=>{const id='text-'+(++serial);fields.set(id,value);return id;},readText:id=>fields.get(id),releaseText:id=>fields.delete(id),
-    createSecret:()=> 'secret-'+(++serial),describeSecret:id=>({filled:secrets.has(id)}),releaseSecret:id=>secrets.delete(id),
-    nextChange:()=>new Promise(()=>{}),nextControlEvent:()=>new Promise(()=>{}),modal_closed:()=>new Promise(()=>{})
+    createSecret:()=> 'secret-'+(++serial),describeSecret:id=>({filled:secrets.has(id),version:secrets.has(id)||edited.has(id)?1:0}),releaseSecret:id=>secrets.delete(id),
+    nextChange:()=>new Promise(()=>{}),nextControlEvent:()=>new Promise(()=>{}),nextMenuEvent:()=>new Promise(()=>{}),modal_closed:()=>new Promise(()=>{})
   });
   const cx={notify(){},spawn:task=>task(cx)};const view=new Type();view.init({},cx);
   async function settle(){for(let i=0;i<10;i++)await tick();}await settle();
-  return {view,cx,prepared,fields,secrets,calls,forgotten,notices,requests,settle,fault:code=>{fault=code;},external:()=>{saved={...saved,revision:saved.revision+1,fallback:false};},
+  return {view,cx,prepared,fields,secrets,edited,calls,forgotten,notices,requests,settle,fault:code=>{fault=code;},external:()=>{saved={...saved,revision:saved.revision+1,fallback:false};},
     models:value=>{choices=plain(value);},failModels:()=>{modelsFault=true;},
     hold:()=>{hold=true;},release:()=>{assert(held);held();held=null;}};
 }
@@ -55,6 +55,16 @@ test('passes only opaque credential handles',async()=>{
   assert.deepEqual(f.prepared[0].key,{action:'set',secret:editor.key});
   assert.deepEqual(f.prepared[0].basic,{action:'set',username:editor.username,password:editor.password});
   assert.equal(f.view.editor,null);assert.equal(f.secrets.size,0);
+});
+test('untouched secrets keep stored credentials',async()=>{
+  const f=await fixture();f.view.edit('searxng',f.cx);
+  f.fields.set(f.view.editor.endpoint,'https://example.com');f.view.saveEditor(f.cx);await f.settle();
+  assert.deepEqual(f.prepared[0].key,{action:'keep'});assert.deepEqual(f.prepared[0].basic,{action:'keep'});
+});
+test('cleared secrets remove stored credentials',async()=>{
+  const f=await fixture();f.view.edit('searxng',f.cx);const editor=f.view.editor;
+  f.edited.add(editor.key);f.edited.add(editor.password);f.view.saveEditor(f.cx);await f.settle();
+  assert.deepEqual(f.prepared[0].key,{action:'clear'});assert.deepEqual(f.prepared[0].basic,{action:'clear'});
 });
 test('conflicts retain drafts and retry requires reload',async()=>{
   const f=await fixture();f.view.edit('exa',f.cx);const editor=f.view.editor;f.secrets.add(editor.key);f.external();
@@ -156,12 +166,18 @@ test('search response failures do not blame settings',async()=>{
 
 test('moves services and preserves enable choices',async()=>{
   const f=await fixture(),providers=plain(f.view.saved.providers);
-  f.view.control({id:'search-up-model'},f.cx);await f.settle();
+  f.view.menu({menu:'search-order-model',id:'up'},f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
   assert.deepEqual(plain(f.view.saved.order),f.view.available());
   assert.deepEqual(plain(f.view.saved.providers),providers);
-  f.view.control({id:'search-down-model'},f.cx);await f.settle();
+  f.view.menu({menu:'search-order-model',id:'down'},f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
+});
+
+test('ignores unrelated menu choices',async()=>{
+  const f=await fixture(),revision=f.view.saved.revision;
+  f.view.menu({menu:'search-order-missing',id:'up'},f.cx);f.view.menu({menu:'search-order-model',id:'other'},f.cx);
+  await f.settle();assert.equal(f.view.saved.revision,revision);
 });
 
 test('ignores moves beyond either list boundary',async()=>{
@@ -181,4 +197,10 @@ test('reloads authoritative order after a conflict',async()=>{
   const f=await fixture();f.external();f.view.move('model',-1,f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
   assert.equal(f.notices.at(-1).message,messages('en').search_settings_conflict);
+});
+
+test('every locale labels dialog buttons',async()=>{
+  const en=messages('en');
+  for(const locale of ['zh-CN','zh-TW','ja','ko','de','es','fr','pt-BR','ru'])
+    for(const key of ['settings_edit','settings_cancel','settings_save','search_order'])assert.notEqual(messages(locale)[key],en[key],`${locale} ${key}`);
 });

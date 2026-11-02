@@ -5,7 +5,7 @@ import {prepareRequest,completeRequest,forgetRequest,nextChange,faultCode,listMo
 import {createText,readText,releaseText} from 'sailry/forms';
 import {createSecret,releaseSecret,describeSecret} from 'sailry/credentials';
 import {prepareSettings} from 'sailry/search';
-import {nextControlEvent,modal_closed,toast} from 'sailry/ui';
+import {nextControlEvent,nextMenuEvent,modal_closed,toast} from 'sailry/ui';
 import {messages} from './locales.js';
 import {render} from './view.js';
 import * as catalog from './catalog.js';
@@ -22,6 +22,7 @@ export default class Settings extends View {
       this.connected=update.connected;if(update.connected&&!first)this.load(cx);cx.notify();
     }} catch(_) { /* The captured scope ends with the view. */ }});
     cx.spawn(async cx=>{try {while(true)this.control(await nextControlEvent(),cx);} catch(_) {}});
+    cx.spawn(async cx=>{try {while(true)this.menu(await nextMenuEvent(),cx);} catch(_) {}});
     cx.spawn(async cx=>{try {while(true) {
       const id=await modal_closed();if(id===this.editor?.id)this.close(cx);
     }} catch(_) {}});
@@ -95,11 +96,11 @@ export default class Settings extends View {
       this.editor={id:`search-editor-${++this.serial}`,driver,settings:clone(this.saved),model:clone(config.model ?? null)};
       cx.notify();return;
     }
-    this.editor={id:`search-editor-${++this.serial}`,driver,settings:clone(this.saved),removeKey:false,removeBasic:false,
+    this.editor={id:`search-editor-${++this.serial}`,driver,settings:clone(this.saved),
       endpoint:createText(config.endpoint??'',{label:text.search_endpoint}),
-      key:createSecret({label:text.search_api_key,placeholder:text[config.key_configured?'search_secret_keep':'search_api_key']}),
-      username:createSecret({label:text.search_username,placeholder:text[config.basic_configured?'search_secret_keep':'search_username']}),
-      password:createSecret({label:text.search_password,placeholder:text[config.basic_configured?'search_secret_keep':'search_password']})};
+      key:createSecret({label:text.search_api_key,placeholder:text[config.key_configured?'search_configured':'search_api_key']}),
+      username:createSecret({label:text.search_username,placeholder:text[config.basic_configured?'search_configured':'search_username']}),
+      password:createSecret({label:text.search_password,placeholder:text[config.basic_configured?'search_configured':'search_password']})};
     cx.notify();
   }
   saveEditor(cx) {
@@ -119,12 +120,14 @@ export default class Settings extends View {
       return;
     }
     if(editor.driver==='searxng')settings.providers.searxng.endpoint=readText(editor.endpoint).trim()||null;
-    const username=describeSecret(editor.username).filled,password=describeSecret(editor.password).filled;
-    if(!editor.removeBasic&&username!==password){toast({id:'search-operation',message:this.text.search_basic_invalid,kind:'error'});return;}
+    // Secret contents stay native; an edited field left empty removes the stored secret.
+    const key=describeSecret(editor.key),username=describeSecret(editor.username),password=describeSecret(editor.password);
+    if(username.filled!==password.filled){toast({id:'search-operation',message:this.text.search_basic_invalid,kind:'error'});return;}
     try {
       const id=prepareSettings({settings,driver:editor.driver,
-        key:editor.removeKey?{action:'clear'}:describeSecret(editor.key).filled?{action:'set',secret:editor.key}:{action:'keep'},
-        basic:editor.removeBasic?{action:'clear'}:username?{action:'set',username:editor.username,password:editor.password}:{action:'keep'}});
+        key:key.filled?{action:'set',secret:editor.key}:key.version>0?{action:'clear'}:{action:'keep'},
+        basic:username.filled?{action:'set',username:editor.username,password:editor.password}
+          :username.version>0||password.version>0?{action:'clear'}:{action:'keep'}});
       this.request={id,writing:true,editor};this.retry(cx);
     } catch(_){toast({id:'search-operation',message:this.text.search_settings_invalid,kind:'error'});}
   }
@@ -156,11 +159,13 @@ export default class Settings extends View {
       this.save(settings,cx);
     }
     for(const driver of this.available()) {
-      if(event.id===`search-up-${driver}`)this.move(driver,-1,cx);
-      if(event.id===`search-down-${driver}`)this.move(driver,1,cx);
       if(event.id===`search-edit-${driver}`)this.edit(driver,cx);
       if(event.id===`search-test-${driver}`)this.test(driver,cx);
     }
+  }
+  menu(event,cx) {
+    const driver=this.available().find(driver=>event.menu===`search-order-${driver}`);
+    if(driver&&(event.id==='up'||event.id==='down'))this.move(driver,event.id==='up'?-1:1,cx);
   }
   render(){return render(this);}
 }

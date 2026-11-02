@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+Videz un champ de clé et enregistrez pour la supprimer. Les lignes de services sont plus compactes, avec l'ordre dans le menu de chaque ligne.
+
 ## 0.1.12
 
 La recherche automatique passe au service activé suivant après tout échec, y compris lorsqu’un modèle n’effectue pas de recherche.

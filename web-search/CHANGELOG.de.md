@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+Ein geleertes Schlüsselfeld wird beim Speichern entfernt. Dienstzeilen sind kompakter; die Reihenfolge steht im Menü jeder Zeile.
+
 ## 0.1.12
 
 Die automatische Suche wechselt nach jedem Fehler zum nächsten aktiven Dienst, auch wenn ein Modell keine Suche ausführt.

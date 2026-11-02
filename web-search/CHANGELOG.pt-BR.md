@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+Limpe um campo de chave e salve para removê-la. As linhas de serviços estão mais compactas, com a ordem no menu de cada linha.
+
 ## 0.1.12
 
 A pesquisa automática passa para o próximo serviço ativo após qualquer falha, inclusive quando um modelo não realiza a pesquisa.

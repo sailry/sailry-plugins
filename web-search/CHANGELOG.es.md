@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+Vacía un campo de clave y guarda para eliminarla. Las filas de servicios son más compactas y el orden está en el menú de cada fila.
+
 ## 0.1.12
 
 La búsqueda automática pasa al siguiente servicio activo tras cualquier fallo, incluso cuando un modelo no realiza la búsqueda.

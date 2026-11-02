@@ -3,7 +3,7 @@ import {Button,Switch,Field,Form} from 'gpui-component';
 import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
 import {SecretField} from 'sailry/credentials';
-import {SettingsGroup,SelectField,IconButton,Modal} from 'sailry/ui';
+import {SettingsGroup,SelectField,IconButton,Menu,Modal} from 'sailry/ui';
 import * as catalog from './catalog.js';
 
 function button(id,label,action,disabled=false) {
@@ -32,17 +32,9 @@ function editor(view) {
   } else {
     if(owner.driver==='searxng')form.child(new Field().label(text.search_endpoint)
       .child(div().id('search-editor-endpoint').child(TextField.new(owner.endpoint,{readonly:locked}))));
-    form.child(new Field().label(text.search_api_key).child(div().id('search-editor-key').child(SecretField.new(owner.key,{disabled:locked}))))
-      .child(new Field().label(text.search_remove_key).child(toggle('search-editor-clear-key',owner.removeKey,locked,(value,cx)=>{
-        owner.removeKey=value;cx.notify();
-      })));
-    if(owner.driver==='searxng') {
-      for(const key of ['username','password'])form.child(new Field().label(text[`search_${key}`])
-        .child(div().id(`search-editor-${key}`).child(SecretField.new(owner[key],{disabled:locked}))));
-      form.child(new Field().label(text.search_remove_basic).child(toggle('search-editor-clear-basic',owner.removeBasic,locked,(value,cx)=>{
-        owner.removeBasic=value;cx.notify();
-      })));
-    }
+    form.child(new Field().label(text.search_api_key).child(div().id('search-editor-key').child(SecretField.new(owner.key,{disabled:locked}))));
+    if(owner.driver==='searxng')for(const key of ['username','password'])form.child(new Field().label(text[`search_${key}`])
+      .child(div().id(`search-editor-${key}`).child(SecretField.new(owner[key],{disabled:locked}))));
   }
   return modal.child(div().id('search-editor').child(form))
     .child(div().h_flex().justify_end().gap_2()
@@ -54,20 +46,23 @@ function editor(view) {
 export function render(view) {
   const text=view.text,settings=view.saved??{providers:{}},locked=view.busy(),drivers=view.available();
   const selected=settings.driver?.kind==='driver'?settings.driver.driver:settings.driver?.kind??'none';
+  const muted=theme().colors.muted_foreground;
   const providers=drivers.map((driver,index)=>{
     const config=settings.providers[driver]??{},capability=settings.capabilities?.[driver];
-    const status=!config.enabled?'search_disabled':catalog.needsKey(capability)&&!config.key_configured
-      ?'search_key_required':driver==='searxng'&&!config.endpoint?'search_endpoint_required'
-      :driver==='model'&&!catalog.contains(view.models,config.model)?'search_model_required':'search_configured';
-    return div().id(`search-driver-${driver}`).h_flex().w_full().py_3().items_center().gap_4()
-      .child(div().flex_1().min_w_0().v_flex().gap_1().child(text[`search_driver_${driver}`])
-        .child(div().text_sm().text_color(theme().colors.muted_foreground).child(text[status]))
-        .children(capability?.quota?[div().text_sm().text_color(theme().colors.muted_foreground).child(text[`search_quota_${capability.quota}`])]:[]))
+    // The switch already shows whether a service is enabled; describe only what it lacks and its quota.
+    const missing=catalog.needsKey(capability)&&!config.key_configured?'search_key_required'
+      :driver==='searxng'&&!config.endpoint?'search_endpoint_required'
+      :driver==='model'&&!catalog.contains(view.models,config.model)?'search_model_required':null;
+    const detail=[missing,capability?.quota?`search_quota_${capability.quota}`:null].filter(Boolean).map(key=>text[key]).join(' · ');
+    return div().id(`search-driver-${driver}`).h_flex().w_full().py_2().items_center().gap_2()
+      .child(div().flex_1().min_w_0().v_flex().child(text[`search_driver_${driver}`])
+        .children(detail?[div().text_sm().text_color(muted).child(detail)]:[]))
       .child(toggle(`search-enabled-${driver}`,config.enabled,locked,(value,cx)=>view.enabled(driver,value,cx)))
-      .child(IconButton.new(`search-up-${driver}`,{icon:'arrow-up',label:text.search_move_up,disabled:locked||index===0}))
-      .child(IconButton.new(`search-down-${driver}`,{icon:'arrow-down',label:text.search_move_down,disabled:locked||index===drivers.length-1}))
       .child(IconButton.new(`search-edit-${driver}`,{icon:'settings-2',label:text.settings_edit,disabled:locked}))
-      .child(IconButton.new(`search-test-${driver}`,{icon:'play',label:text.search_test,disabled:locked}));
+      .child(IconButton.new(`search-test-${driver}`,{icon:'play',label:text.search_test,disabled:locked}))
+      .child(Menu.new(`search-order-${driver}`,{label:text.search_order,icon:'ellipsis',disabled:locked||drivers.length<2,items:[
+        {id:'up',label:text.search_move_up,enabled:index>0},
+        {id:'down',label:text.search_move_down,enabled:index<drivers.length-1}]}));
   });
   return div().id('search-settings').v_flex().gap_6()
     .children(!view.saved&&!view.loading?[button('search-reload',text.search_reload,(_,cx)=>view.load(cx))]:[])

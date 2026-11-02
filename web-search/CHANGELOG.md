@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+Clear a key field and save to remove it. Service rows are more compact, with ordering in each row's menu.
+
 ## 0.1.12
 
 Automatic search moves to the next enabled channel after any failure, including model search that does not search.
