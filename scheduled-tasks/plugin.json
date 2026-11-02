@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scheduled-tasks",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Run tasks on a schedule",
   "extensions": {
     "dev.sailry.platform": {
@@ -706,7 +706,7 @@
       },
       "category": "automation",
       "tint": "amber",
-      "min_sailry_version": "0.1.0-alpha.9"
+      "min_sailry_version": "0.1.0"
     }
   }
 }

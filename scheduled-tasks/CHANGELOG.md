@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Require Sailry 0.1.0 for team selection and associated task sessions
+
 ## 0.1.13
 
 - Choose model execution, the default team or a named team for scheduled tasks
