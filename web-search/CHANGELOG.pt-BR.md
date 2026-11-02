@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Mover para cima e para baixo ficam visíveis em cada linha de serviço; configurações e teste estão no menu Mais.
+
 ## 0.1.13
 
 Limpe um campo de chave e salve para removê-la. As linhas de serviços estão mais compactas, com a ordem no menu de cada linha.

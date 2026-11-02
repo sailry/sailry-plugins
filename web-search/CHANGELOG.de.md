@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Nach oben und unten bleiben in jeder Dienstzeile sichtbar; Einstellungen und Test stehen im Menü „Mehr“.
+
 ## 0.1.13
 
 Ein geleertes Schlüsselfeld wird beim Speichern entfernt. Dienstzeilen sind kompakter; die Reihenfolge steht im Menü jeder Zeile.

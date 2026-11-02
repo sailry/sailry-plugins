@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Move up and down stay visible on each service row; settings and test are in the More menu.
+
 ## 0.1.13
 
 Clear a key field and save to remove it. Service rows are more compact, with ordering in each row's menu.

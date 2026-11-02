@@ -159,13 +159,14 @@ export default class Settings extends View {
       this.save(settings,cx);
     }
     for(const driver of this.available()) {
-      if(event.id===`search-edit-${driver}`)this.edit(driver,cx);
-      if(event.id===`search-test-${driver}`)this.test(driver,cx);
+      if(event.id===`search-up-${driver}`)this.move(driver,-1,cx);
+      if(event.id===`search-down-${driver}`)this.move(driver,1,cx);
     }
   }
   menu(event,cx) {
-    const driver=this.available().find(driver=>event.menu===`search-order-${driver}`);
-    if(driver&&(event.id==='up'||event.id==='down'))this.move(driver,event.id==='up'?-1:1,cx);
+    const driver=this.available().find(driver=>event.menu===`search-more-${driver}`);
+    if(driver&&event.id==='edit')this.edit(driver,cx);
+    if(driver&&event.id==='test')this.test(driver,cx);
   }
   render(){return render(this);}
 }

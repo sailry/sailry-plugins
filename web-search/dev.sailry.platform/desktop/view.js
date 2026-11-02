@@ -58,11 +58,10 @@ export function render(view) {
       .child(div().flex_1().min_w_0().v_flex().child(text[`search_driver_${driver}`])
         .children(detail?[div().text_sm().text_color(muted).child(detail)]:[]))
       .child(toggle(`search-enabled-${driver}`,config.enabled,locked,(value,cx)=>view.enabled(driver,value,cx)))
-      .child(IconButton.new(`search-edit-${driver}`,{icon:'settings-2',label:text.settings_edit,disabled:locked}))
-      .child(IconButton.new(`search-test-${driver}`,{icon:'play',label:text.search_test,disabled:locked}))
-      .child(Menu.new(`search-order-${driver}`,{label:text.search_order,icon:'ellipsis',disabled:locked||drivers.length<2,items:[
-        {id:'up',label:text.search_move_up,enabled:index>0},
-        {id:'down',label:text.search_move_down,enabled:index<drivers.length-1}]}));
+      .child(IconButton.new(`search-up-${driver}`,{icon:'arrow-up',label:text.search_move_up,disabled:locked||index===0}))
+      .child(IconButton.new(`search-down-${driver}`,{icon:'arrow-down',label:text.search_move_down,disabled:locked||index===drivers.length-1}))
+      .child(Menu.new(`search-more-${driver}`,{label:text.search_more,icon:'ellipsis',disabled:locked,items:[
+        {id:'edit',label:text.settings_edit,icon:'settings-2'},{id:'test',label:text.search_test,icon:'play'}]}));
   });
   return div().id('search-settings').v_flex().gap_6()
     .children(!view.saved&&!view.loading?[button('search-reload',text.search_reload,(_,cx)=>view.load(cx))]:[])

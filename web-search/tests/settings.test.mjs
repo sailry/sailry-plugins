@@ -166,18 +166,21 @@ test('search response failures do not blame settings',async()=>{
 
 test('moves services and preserves enable choices',async()=>{
   const f=await fixture(),providers=plain(f.view.saved.providers);
-  f.view.menu({menu:'search-order-model',id:'up'},f.cx);await f.settle();
+  f.view.control({id:'search-up-model'},f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
   assert.deepEqual(plain(f.view.saved.order),f.view.available());
   assert.deepEqual(plain(f.view.saved.providers),providers);
-  f.view.menu({menu:'search-order-model',id:'down'},f.cx);await f.settle();
+  f.view.control({id:'search-down-model'},f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
 });
 
-test('ignores unrelated menu choices',async()=>{
+test('more menu edits and tests services',async()=>{
   const f=await fixture(),revision=f.view.saved.revision;
-  f.view.menu({menu:'search-order-missing',id:'up'},f.cx);f.view.menu({menu:'search-order-model',id:'other'},f.cx);
-  await f.settle();assert.equal(f.view.saved.revision,revision);
+  f.view.menu({menu:'search-more-missing',id:'edit'},f.cx);f.view.menu({menu:'search-more-exa',id:'other'},f.cx);
+  assert.equal(f.view.editor,null);
+  f.view.menu({menu:'search-more-exa',id:'test'},f.cx);await f.settle();
+  assert.equal(f.notices.at(-1).message,messages('en').search_test_passed);assert.equal(f.view.saved.revision,revision);
+  f.view.menu({menu:'search-more-exa',id:'edit'},f.cx);assert.equal(f.view.editor.driver,'exa');
 });
 
 test('ignores moves beyond either list boundary',async()=>{
@@ -202,5 +205,5 @@ test('reloads authoritative order after a conflict',async()=>{
 test('every locale labels dialog buttons',async()=>{
   const en=messages('en');
   for(const locale of ['zh-CN','zh-TW','ja','ko','de','es','fr','pt-BR','ru'])
-    for(const key of ['settings_edit','settings_cancel','settings_save','search_order'])assert.notEqual(messages(locale)[key],en[key],`${locale} ${key}`);
+    for(const key of ['settings_edit','settings_cancel','settings_save','search_more'])assert.notEqual(messages(locale)[key],en[key],`${locale} ${key}`);
 });

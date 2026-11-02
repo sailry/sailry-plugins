@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Subir y bajar siguen visibles en cada fila de servicio; la configuración y la prueba están en el menú Más.
+
 ## 0.1.13
 
 Vacía un campo de clave y guarda para eliminarla. Las filas de servicios son más compactas y el orden está en el menú de cada fila.

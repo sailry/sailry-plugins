@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+Monter et descendre restent visibles sur chaque ligne de service ; les réglages et le test sont dans le menu Plus.
+
 ## 0.1.13
 
 Videz un champ de clé et enregistrez pour la supprimer. Les lignes de services sont plus compactes, avec l'ordre dans le menu de chaque ligne.
