@@ -7,7 +7,7 @@ async function fixture(packageName,outcome,validation=null) {
   const source=(await readFile(new URL(`../../${packageName}/dev.sailry.platform/desktop/main.js`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
   const notices=[],requests=[],forgotten=[],tasks=[],name=packageName==='reminders'?'Reminders':'ScheduledTasks';
-  const Controller=vm.runInNewContext(`${source}\n${name}`,{View:class{},toast:value=>notices.push(value),
+  const Controller=vm.runInNewContext(`${source}\n${name}`,{View:class{},lead:()=>null,toast:value=>notices.push(value),
     prepareRequest:value=>{requests.push(value);return 'original-request';},completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),
     value:editor=>{if(validation)throw new Error(validation);return editor.draft;}});
   const owner=new Controller(),draft={title:'Retained reminder',name:'Retained task'},editing={draft},items=[{id:'saved'}];

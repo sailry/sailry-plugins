@@ -23,7 +23,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     }});
     if(id)nodes.set(id,proxy);return proxy;
   }
-  const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey,setTiming})`,{
+  const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey,setTiming,lead,leadEffort})`,{
     div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
     ...Object.fromEntries(["TextField","DateTimeField","SelectField","ModelPopup","SegmentedTabs","Toggle"]
       .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}])),
@@ -32,9 +32,10 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     releaseDateTime:value=>released.push(value),
   });
   const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,value:api.value,
+    editor:api.editor,lead:api.lead,
     resolveSessionModel:resolve,prepareRequest:command=>{requests.push(plain(command));return "original-request";},
     completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),toast:value=>notices.push(value)});
-  const view=new Controller();Object.assign(view,{text:messages("en"),items:[],busy:false,pending:null,loading:false,modelsError:false,
+  const view=new Controller();Object.assign(view,{text:messages("en"),items:[],busy:false,pending:null,loading:false,modelsError:false,teamsError:false,teams:[{id:"reviewers",name:"Reviewers",revision:"7"}],
     catalog:{projects:[{id:"project",name:"Project"},{id:"other",name:"Other"}],worktrees:[{id:"tree",project:"project",path:"Branch"},{id:"foreign",project:"other",path:"Other"}]},
     models:[{id:"provider/explicit",kind:"provider",model:"explicit",efforts:["low","high"]}],editing:api.editor(null,messages("en")),
     close(){},refresh(){}});
@@ -74,8 +75,132 @@ test("weekly drafts preserve timezone days and time on rename",()=>{
     assert.equal(props.checked,day<=5);assert.equal(props.variant,"button");assert.equal(props.label,view.text[`weekday${day}`]);
   }
   setup.texts.set(view.editing.name,"Renamed");
-  assert.deepEqual(plain(api.value(view.editing)),{...item,name:"Renamed"});
+  assert.deepEqual(plain(api.value(view.editing)),{...item,name:"Renamed",execution:"team",team:null,models:{}});
   assert.deepEqual(item.timing,timing);assert.notEqual(view.editing.weekdays,timing.data.weekdays);
+});
+
+test("new drafts default to model execution and old drafts retain teams",()=>{
+  const setup=fixture(),{view,api}=setup;
+  assert.equal(view.editing.draft.execution,"model");assert.equal(view.editing.draft.team,null);
+  assert.deepEqual(plain(view.editing.draft.models),{});
+  const old={id:"saved",revision:"2",name:"Review",prompt:"Read",config:{...config},
+    timing:{kind:"once",data:{at_ms:Date.now()+3_600_000}}};
+  view.editing=api.editor(old,view.text);
+  assert.equal(view.editing.draft.execution,"team");assert.equal(view.editing.draft.team,null);
+  assert.deepEqual(plain(view.editing.draft.models),{});
+  assert.equal(old.execution,undefined);
+});
+
+test("execution changes retain configuration and clear member overrides",()=>{
+  const setup=fixture(),{view,cx}=setup, models={member:{provider:"provider",model:"member",effort:"high"}};
+  Object.assign(view.editing.draft,{config,execution:"team",team:{id:"reviewers",revision:"7"},models});
+  view.control({id:"task-team",value:"reviewers"},cx);
+  assert.equal(view.editing.draft.models,models);
+  view.control({id:"task-team",value:"unknown"},cx);
+  assert.equal(view.editing.draft.models,models);
+  view.control({id:"task-execution",value:"other"},cx);
+  assert.equal(view.editing.draft.execution,"team");
+  view.control({id:"task-team",value:"default"},cx);
+  assert.equal(view.editing.draft.team,null);assert.deepEqual(plain(view.editing.draft.models),{});
+  view.control({id:"task-team",value:"reviewers"},cx);
+  assert.deepEqual(plain(view.editing.draft.team),{id:"reviewers",revision:null});
+  view.control({id:"task-execution",value:"model"},cx);
+  assert.equal(view.editing.draft.execution,"model");assert.equal(view.editing.draft.team,null);
+  assert.deepEqual(plain(view.editing.draft.models),{});assert.equal(view.editing.draft.config,config);
+  view.control({id:"task-team",value:"reviewers"},cx);
+  assert.equal(view.editing.draft.team,null);
+  view.control({id:"task-execution",value:"team"},cx);
+  assert.equal(view.editing.draft.execution,"team");assert.equal(view.editing.draft.team,null);
+  view.pending="original";view.control({id:"task-team",value:"reviewers"},cx);
+  view.control({id:"task-execution",value:"model"},cx);
+  assert.equal(view.editing.draft.execution,"team");assert.equal(view.editing.draft.team,null);
+});
+
+test("fixed leads resolve without a prior manual model selection",async()=>{
+  const calls=[],fixed={provider:"lead-provider",model:"lead",effort:"low"};
+  const setup=fixture(async(model,effort,base)=>{
+    calls.push({model,effort,base});return {...config,...base,provider:fixed.provider,model:fixed.model,effort};
+  });
+  const {view,cx}=setup;
+  view.teams[0].model=fixed;
+  view.control({id:"task-execution",value:"team"},cx);
+  view.control({id:"task-team",value:"reviewers"},cx);
+  assert.equal(view.editing.draft.config,null);assert.equal(view.editing.modelLoading,true);
+  assert.equal(setup.api.lead(view),fixed);
+  view.control({id:"task-model",value:{model:"provider/explicit",effort:"high"}},cx);
+  view.control({id:"task-strength",value:"high"},cx);
+  view.save(cx);assert.equal(setup.requests.length,0);assert.equal(setup.jobs.length,1);
+  await setup.settle();
+  assert.deepEqual(calls,[{model:"lead-provider/lead",effort:"low",base:null}]);
+  assert.equal(view.editing.model,"lead-provider/lead");assert.equal(view.editing.draft.config.effort,"low");
+  assert.deepEqual(plain(view.editing.draft.team),{id:"reviewers",revision:null});
+  setup.texts.set(view.editing.name,"Review");setup.texts.set(view.editing.prompt,"Read");
+  assert.equal(setup.api.value(view.editing).config.model,"lead");
+});
+
+test("fixed lead defaults come from model resolution and preserve policies",async()=>{
+  const calls=[],base={...config,effort:"low",options:{feature:{choice:true}}};
+  const setup=fixture(async(model,effort,config)=>{
+    calls.push({model,effort,config});return {...base,...config,effort:effort ?? "high"};
+  });
+  const {view,cx}=setup;
+  Object.assign(view.editing.draft,{config:base,project:"project",worktree:"tree"});
+  view.editing.model="provider/explicit";
+  view.teams[0].model={provider:"provider",model:"explicit",effort:null};
+  view.control({id:"task-execution",value:"team"},cx);
+  view.control({id:"task-team",value:"reviewers"},cx);
+  await setup.settle();
+  assert.equal(calls.length,2);assert.equal(calls[0].config,null);assert.equal(calls[0].effort,null);
+  assert.equal(calls[1].config,base);assert.equal(calls[1].effort,"high");
+  assert.equal(view.editing.draft.config.effort,"high");
+  assert.equal(setup.api.leadEffort(view.editing,view.teams[0].model),"high");
+  assert.equal(view.editing.draft.config.mode,"plan");assert.equal(view.editing.draft.config.permission,"full");
+  assert.deepEqual(view.editing.draft.config.options,base.options);
+  assert.equal(view.editing.draft.project,"project");assert.equal(view.editing.draft.worktree,"tree");
+  assert.equal(base.effort,"low");
+  view.syncLead(cx);assert.equal(setup.jobs.length,0);
+  view.teams[0].model=null;view.syncLead(cx);
+  view.control({id:"task-strength",value:"low"},cx);await setup.settle();
+  assert.equal(view.editing.draft.config.effort,"low");
+});
+
+test("team changes discard stale lead replies without replacing drafts",async()=>{
+  const replies=[],setup=fixture((model,effort,base)=>new Promise(resolve=>replies.push({model,effort,base,resolve})));
+  const {view,cx}=setup;
+  view.teams[0].model={provider:"provider",model:"first",effort:"low"};
+  view.teams.push({id:"other-team",name:"Other",model:{provider:"provider",model:"second",effort:"high"}});
+  view.editing.draft.config=config;view.editing.model="provider/explicit";
+  const draft=view.editing.draft;
+  view.control({id:"task-execution",value:"team"},cx);
+  view.control({id:"task-team",value:"reviewers"},cx);const first=setup.jobs.shift()(cx);
+  view.control({id:"task-team",value:"other-team"},cx);const second=setup.jobs.shift()(cx);
+  replies[0].resolve({...config,model:"first",effort:"low"});await first;
+  assert.equal(view.editing.draft.config,config);
+  replies[1].resolve({...config,model:"second",effort:"high"});await second;
+  assert.equal(view.editing.draft.config.model,"second");
+  view.teams[1].model={provider:"provider",model:"updated",effort:"low"};view.syncLead(cx);
+  const updated=setup.jobs.shift()(cx),retained=view.editing.draft.config;
+  view.teams=[];view.syncLead(cx);
+  replies[2].resolve({...config,model:"updated",effort:"low"});await updated;
+  assert.equal(view.editing.draft,draft);assert.equal(draft.config,retained);
+  assert.equal(draft.team.id,"other-team");assert.equal(setup.api.lead(view),null);
+  assert.equal(view.editing.modelLoading,false);assert.equal(setup.notices.length,0);
+});
+
+test("failed lead previews retain configuration and retry on refresh",async()=>{
+  let failed=true;
+  const setup=fixture(async()=>{if(failed)throw new Error("Unavailable");return {...config,model:"lead"};});
+  const {view,cx}=setup;
+  view.editing.draft.config=config;view.editing.model="provider/explicit";
+  view.teams[0].model={provider:"provider",model:"lead",effort:"high"};
+  view.control({id:"task-execution",value:"team"},cx);
+  view.control({id:"task-team",value:"reviewers"},cx);await setup.settle();
+  assert.equal(view.editing.draft.config,config);assert.equal(view.editing.leadError,true);
+  assert.equal(setup.notices.at(-1).message,"Could not select model");
+  failed=false;view.syncLead(cx);await setup.settle();
+  assert.equal(view.editing.draft.config.model,"lead");assert.equal(view.editing.leadError,false);
+  view.control({id:"task-execution",value:"model"},cx);
+  assert.equal(view.editing.leadError,false);assert.equal(setup.api.lead(view),null);
 });
 test("timing switches retain drafts and require an explicit timezone",()=>{
   const setup=fixture(),{view,api}=setup;

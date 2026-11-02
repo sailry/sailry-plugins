@@ -5,11 +5,12 @@ import {TextField, createText, readText, releaseText,
   DateTimeField, createDateTime, readDateTime, releaseDateTime} from "sailry/forms";
 
 export function editor(item, text) {
-  const draft = item ? {...item} : {revision:"0",name:"",prompt:"",queue:"default",project:null,worktree:null,
-    config:null,enabled:true,timing:{kind:"once",data:{at_ms:Date.now() + 300000}}};
+  const draft = item ? {...item,execution:item.execution ?? "team",team:item.team ?? null,models:item.models ?? {}}
+    : {revision:"0",name:"",prompt:"",queue:"default",project:null,worktree:null,
+      config:null,execution:"model",team:null,models:{},enabled:true,timing:{kind:"once",data:{at_ms:Date.now() + 300000}}};
   const data = draft.timing.data;
   const editing = {draft,kind:draft.timing.kind,model:draft.config ? `${draft.config.provider}/${draft.config.model}` : null,
-    modelLoading:false,modelVersion:0,
+    modelLoading:false,modelVersion:0,leadKey:null,leadError:false,
     name:createText(draft.name,{label:text.name,placeholder:text.namePlaceholder}),
     prompt:createText(draft.prompt,{label:text.prompt,placeholder:text.promptPlaceholder,multiline:true}),
     start:data.at_ms ?? data.anchor_ms ?? Date.now() + 300000,
@@ -96,18 +97,38 @@ function worktrees(view, disabled) {
     selected:editing.draft.worktree ?? "main",items,disabled});
 }
 export function effortKey(value) { return typeof value === "string" ? value : String(value.budget); }
+export function lead(view) {
+  const draft = view.editing?.draft;
+  return draft?.execution === "team" && draft.team
+    ? view.teams.find(team => team.id === draft.team.id)?.model ?? null : null;
+}
+function leadEffort(editing, fixed) {
+  return fixed.effort ?? (editing.model === `${fixed.provider}/${fixed.model}` && !editing.modelLoading && !editing.leadError
+    ? editing.draft.config?.effort ?? "default" : "default");
+}
 function strength(view, disabled) {
   const {text,editing} = view;
-  const model = view.models.find(model => model.id === editing.model);
+  const fixed = lead(view), selected = fixed ? `${fixed.provider}/${fixed.model}` : editing.model;
+  const model = view.models.find(model => model.id === selected);
   const choices = (model?.efforts ?? []).filter(effort => effort !== "default");
+  const effort = fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort;
+  if (fixed && !choices.some(choice => effortKey(choice) === effortKey(effort))) choices.push(effort);
   return SelectField.new("task-strength",{label:text.strength,
     placeholder:model && !choices.length ? text.noStrength : text.strengthPlaceholder,
-    selected:editing.draft.config ? effortKey(editing.draft.config.effort) : null,
+    selected:effort === undefined ? null : effortKey(effort),
     items:choices.map(effort => ({id:effortKey(effort),label:effortKey(effort)})),
-    disabled:disabled || !choices.length});
+    disabled:disabled || !!fixed || !choices.length});
+}
+function teams(view, disabled) {
+  const {text,editing} = view;
+  const items = [{id:"default",label:text.defaultTeam},...view.teams.map(({id,name}) => ({id,label:name}))];
+  const selected = editing.draft.team?.id ?? "default";
+  if (!items.some(item => item.id === selected)) items.push({id:selected,label:text.unavailable});
+  return SelectField.new("task-team",{label:text.team,placeholder:text.teamPlaceholder,selected,items,disabled});
 }
 export function render(view) {
   const {text,editing} = view, disabled = view.busy || !!view.pending;
+  const fixed = lead(view);
   return [div().id("task-editor").w_full()
     .child(new VForm().size('large').gap_y(8).w_full().gap_3()
       .child(new Field().label(text.name).child(TextField.new(editing.name,{disabled})))
@@ -124,14 +145,20 @@ export function render(view) {
       .children(editing.kind === "every" ? [new Field().label(text.interval).child(TextField.new(editing.interval,{disabled}))] : [])
       .child(new Field().label(text.project).child(projects(view,disabled)))
       .children(editing.draft.project ? [new Field().label(text.worktree).child(worktrees(view,disabled))] : [])
+      .child(new Field().label(text.execution).child(SegmentedTabs.new("task-execution",{
+        selected:editing.draft.execution,items:[{id:"model",label:text.model},{id:"team",label:text.team}],disabled,fill:true})))
+      .children(editing.draft.execution === "team" ? [new Field().label(text.team).child(teams(view,disabled))
+        .children(view.teamsError ? [new Button("task-teams-retry").label(text.retry).disabled(view.loading)
+          .on_click((_,cx) => view.refresh(cx))] : [])] : [])
       .child(new Field().label(text.model).child(ModelPopup.new("task-model",{label:text.model,
-        placeholder:editing.draft.config?.model ?? text.modelPlaceholder,catalog:{models:view.models},
-        selected:editing.model,effort:editing.draft.config?.effort ?? "default",disabled}))
-        .children(view.modelsError ? [new Button("task-models-retry").label(text.retry).disabled(view.loading)
+        placeholder:fixed?.model ?? editing.draft.config?.model ?? text.modelPlaceholder,catalog:{models:view.models},
+        selected:fixed ? `${fixed.provider}/${fixed.model}` : editing.model,
+        effort:fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort ?? "default",disabled:disabled || !!fixed}))
+        .children(view.modelsError || editing.leadError ? [new Button("task-models-retry").label(text.retry).disabled(view.loading)
           .on_click((_,cx) => view.refresh(cx))] : []))
       .child(new Field().label(text.strength).child(strength(view,disabled)))),
     div().h_flex().flex_shrink(0).justify_end().gap_2()
       .child(new Button("task-cancel").label(text.cancel).disabled(view.busy).on_click((_,cx) => view.close(cx)))
       .child(new Button("task-save").primary().label(view.pending ? text.retry : text.save)
-        .disabled(view.busy).on_click((_,cx) => view.save(cx)))];
+        .disabled(view.busy || (!!fixed && (editing.modelLoading || editing.leadError))).on_click((_,cx) => view.save(cx)))];
 }

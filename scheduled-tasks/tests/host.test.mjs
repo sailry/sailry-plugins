@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import vm from "node:vm";
+import {id,plain} from "./store.mjs";
 
 async function fixture() {
   const records=(await readFile(new URL("../dev.sailry.platform/host/records.js",import.meta.url),"utf8"))
@@ -13,14 +14,21 @@ async function fixture() {
   const main=(await readFile(new URL("../dev.sailry.platform/host/management.js",import.meta.url),"utf8"))
     .replace(/^import .*;\n/gm,"").replace(/^export \{.*;\n/gm,"").replace(/^export /gm,"");
   const requests=[],transactions=[],values=new Map(),pages=new Map(),config={provider:"provider",model:"selected",effort:"high",mode:"code",permission:"ask"};
-  const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001"}),
-    getValue:async key=>values.get(key)??{revision:"0",present:false,value:null},listKeys:async()=>({keys:[],after:null}),
+  const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null};
+  const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001"}),
+    getValue:async key=>{reads.push(key);return values.get(key)??{revision:"0",present:false,value:null};},listKeys:async()=>({keys:[],after:null}),
     readProjectCatalog:async()=>({projects:[],worktrees:[]}),
     prepareRequest:command=>{requests.push(command);return String(requests.length-1);},
     prepareTransaction:operations=>{transactions.push(operations);return "transaction";},
     completeRequest:async id=>{
       const command=requests[Number(id)];
-      if(command?.kind==="resolve_plugin_model")return {Ok:{kind:"session_config",data:{...config}}};
+      if(id==="transaction"&&transactions.at(-1)?.at(-1)?.data.kind==="enqueue") {
+        if(control.failure)return {Err:control.failure};
+        return {Ok:{data:[{kind:"dispatch",data:{kind:"handler",data:{}}},
+          {kind:"dispatch",data:{kind:"job",data:{id:"new-job",handler:transactions.at(-1).at(-1).data.data.handler}}}]}};
+      }
+      if(command?.kind==="resolve_plugin_model")return control.resolve?.(command.data) ?? {Ok:{kind:"session_config",data:{...config}}};
+      if(command?.data?.action.kind==="list_handlers"){reads.push("handlers");return {Ok:{data:{data:handlers}}};}
       if(command?.data?.action.kind==="list_jobs") return {Ok:{data:{data:pages.get(command.data.action.data.before)??{jobs:[],next_before:null}}}};
       if(command?.data?.action.kind==="read_result") return {Ok:{data:{data:{kind:"completed",data:{Ok:{kind:"queued_turn",data:{session:`session-${command.data.action.data.id}`,id:"turn"}}}}}}};
       if(command?.kind==="dispatch")return {Ok:{data:{data:[]}}};
@@ -30,7 +38,7 @@ async function fixture() {
   const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,run,states,history})`,runtime);
   const input={id:"00000000-0000-0000-0000-000000000002",revision:"0",name:"Review",prompt:"Read the project",
     queue:"default",enabled:false,project:null,worktree:null,config:null,timing:{kind:"once",data:{at_ms:Date.now()+300000}}};
-  return {api,input,config,values,pages,requests,transactions};
+  return {api,input,config,teams,handlers,reads,control,values,pages,requests,transactions};
 }
 test("current host entry points reject missing models before dispatch or storage mutation",async()=>{
   const setup=await fixture(),{api,input}=setup;
@@ -39,7 +47,8 @@ test("current host entry points reject missing models before dispatch or storage
   const entry={revision:"4",present:true,value:input};setup.values.set(`task/${input.id}`,entry);
   assert.equal((await api.run({id:input.id})).Err.code,"not_configured");
   assert.equal(setup.values.get(`task/${input.id}`),entry);
-  assert.equal(setup.requests.length,0);assert.equal(setup.transactions.length,0);
+  assert.deepEqual(setup.requests.map(command=>command.data.action.kind),["list_handlers"]);
+  assert.equal(setup.transactions.length,0);
 });
 
 test("management lists tasks without a queue settings lookup",async()=>{
@@ -88,4 +97,102 @@ test("new handlers capture Node-validated configuration without exporting or cho
   assert.deepEqual(JSON.parse(JSON.stringify(handler.data.data.callback.command.data.config)),setup.config);
   assert.equal(handler.data.data.callback.command.kind,"start_session");
   assert.equal(handler.data.data.callback.command.data.project,null);
+});
+
+test("saved execution and task association share the session callback",async()=>{
+  for(const selection of [{execution:"model",team:null,models:{}},
+    {execution:"team",team:{id:id(20),revision:"7"},models:{[id(30)]:{provider:"provider",model:"lead",effort:"high"}}}]) {
+    const setup=await fixture();Object.assign(setup.input,{config:setup.config,...selection});
+    const saved=await setup.api.save(setup.input);
+    assert.equal(saved.Ok.execution,selection.execution);
+    const expected=selection.team===null?null:{id:selection.team.id,revision:null};
+    assert.deepEqual(plain(saved.Ok.team),expected);assert.deepEqual(plain(saved.Ok.models),selection.models);
+    const handler=setup.transactions[0].find(operation=>operation.data.kind==="save_handler").data.data;
+    const start=handler.callback.command.data;
+    assert.equal(handler.callback.completion,"turn");assert.equal(start.execution,selection.execution);
+    assert.deepEqual(plain(start.team),expected);assert.deepEqual(plain(start.models),selection.models);
+    assert.deepEqual(plain(start.association),{namespace:"scheduled-tasks",kind:"task",id:setup.input.id});
+    assert.equal(start.project,null);assert.equal(start.worktree,null);
+  }
+});
+
+test("old task records retain default team execution",async()=>{
+  const setup=await fixture();setup.input.config=setup.config;
+  const task=setup.api.draft(setup.input);
+  assert.equal(task.execution,"team");assert.equal(task.team,null);assert.deepEqual(plain(task.models),{});
+  const callback=(await setup.api.changes(task)).find(operation=>operation.data.kind==="save_handler").data.data.callback;
+  assert.equal(callback.command.data.execution,"team");assert.equal(callback.command.data.team,null);
+});
+
+test("missing teams fail before preparing a transaction",async()=>{
+  const setup=await fixture();Object.assign(setup.input,{config:setup.config,execution:"team",team:{id:id(21)}});
+  assert.equal((await setup.api.save(setup.input)).Err.code,"not_found");
+  assert.equal(setup.transactions.length,0);assert.equal(setup.values.size,0);
+  assert.ok(setup.requests.every(request=>request.kind==="resolve_plugin_model"));
+});
+
+test("fixed teams resolve current lead defaults before validating stale fallback",async()=>{
+  for(const action of ["save","run"]) {
+    const setup=await fixture();
+    const base={...setup.config,provider:"disabled-provider",model:"stale",effort:"low",options:{feature:{choice:true}}};
+    setup.teams[0].model={provider:"lead-provider",model:"lead",effort:null};
+    setup.control.resolve=data=>{
+      assert.equal(data.model,"lead-provider/lead");
+      return {Ok:{kind:"session_config",data:{...base,...data.config,provider:"lead-provider",model:"lead",effort:data.effort ?? "high"}}};
+    };
+    Object.assign(setup.input,{config:base,execution:"team",team:{id:id(20),revision:null}});
+    if(action==="run") {
+      setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
+      setup.handlers.push({name:setup.input.id,revision:1});
+    }
+    const result=await setup.api[action](action==="save"?setup.input:{id:setup.input.id});
+    assert.ok(result.Ok,JSON.stringify(result));
+    const reads=setup.requests.filter(command=>command.kind==="resolve_plugin_model");
+    assert.equal(reads.length,2);assert.equal(reads[0].data.config,null);assert.equal(reads[0].data.effort,null);
+    assert.deepEqual(plain(reads[1].data.config),base);assert.equal(reads[1].data.effort,"high");
+    const handler=setup.transactions[0].find(operation=>operation.data.kind==="save_handler").data.data;
+    const selected=handler.callback.command.data.config;
+    assert.equal(selected.provider,"lead-provider");assert.equal(selected.effort,"high");
+    assert.deepEqual(plain(selected.options),base.options);assert.equal(base.provider,"disabled-provider");
+  }
+});
+
+test("invalid execution fields fail before reading host resources",async()=>{
+  for(const selection of [{execution:"unknown"},{execution:null},{models:[]},{models:null},
+    {team:{id:"invalid"}},{team:{id:id(20),revision:7}},{team:{id:id(20),revision:"0"}},
+    {execution:"model",team:{id:id(20)}},{execution:"model",models:{[id(30)]:{}}}]) {
+    const setup=await fixture();Object.assign(setup.input,{config:setup.config,...selection});
+    assert.equal((await setup.api.save(setup.input)).Err.code,"invalid_request");
+    assert.equal(setup.requests.length,0);assert.equal(setup.transactions.length,0);
+  }
+});
+
+test("manual runs refresh handlers and enqueue atomically without changing schedules",async()=>{
+  const setup=await fixture(),item={...setup.input,config:setup.config};
+  const entry={revision:"4",present:true,value:item};setup.values.set(`task/${item.id}`,entry);
+  setup.handlers.push({name:item.id,revision:7});
+  const reply=await setup.api.run({id:item.id});
+  assert.deepEqual(plain(reply),{Ok:{id:"new-job",handler:item.id}});
+  assert.deepEqual(setup.reads,["handlers",`task/${item.id}`]);
+  assert.deepEqual(setup.requests.map(command=>command.kind),["dispatch","resolve_plugin_model"]);
+  assert.equal(setup.transactions.length,1);
+  const operations=plain(setup.transactions[0]);
+  assert.deepEqual(operations.map(operation=>operation.data.kind),["save_handler","enqueue"]);
+  const registration=operations[0].data.data;
+  assert.equal(registration.revision,"7");assert.equal(registration.callback.completion,"turn");
+  assert.equal(registration.callback.command.data.execution,"team");
+  assert.deepEqual(registration.callback.command.data.association,{namespace:"scheduled-tasks",kind:"task",id:item.id});
+  assert.equal(setup.values.get(`task/${item.id}`),entry);
+  assert.equal(item.execution,undefined);assert.equal(item.config,setup.config);
+});
+
+test("handler conflicts and uncertain runs do not enqueue a separate retry",async()=>{
+  for(const code of ["revision_conflict","outcome_unknown"]) {
+    const setup=await fixture(),item={...setup.input,config:setup.config};
+    setup.values.set(`task/${item.id}`,{revision:"4",present:true,value:item});
+    setup.handlers.push({name:item.id,revision:7});setup.control.failure={code,message:"Injected transaction failure"};
+    assert.equal((await setup.api.run({id:item.id})).Err.code,code);
+    assert.equal(setup.transactions.length,1);
+    assert.ok(setup.requests.every(command=>command.data?.action?.kind!=="enqueue"));
+  }
 });

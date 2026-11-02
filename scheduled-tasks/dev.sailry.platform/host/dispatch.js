@@ -1,14 +1,23 @@
-import {context, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
-import {fault, requireConfig} from "./records.js";
+import {context, listTeams, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
+import {execution, fault, requireConfig} from "./records.js";
 
-export async function configuration(config) {
-  requireConfig(config);
-  const id = prepareRequest({kind:"resolve_plugin_model",data:{model:`${config.provider}/${config.model}`,
-    effort:config.effort,config}});
+async function resolve(model, effort, config) {
+  const id = prepareRequest({kind:"resolve_plugin_model",data:{model,effort,config}});
   const result = await completeRequest(id);
   forgetRequest(id);
   if (result.Err) throw fault(result.Err.code, result.Err.message);
   return result.Ok.data;
+}
+export async function configuration(config, team = null) {
+  requireConfig(config);
+  const selected = team ? (await listTeams()).find(item => item.id === team.id) : null;
+  if (team && !selected) throw fault("not_found", "Task team is unavailable");
+  const fixed = selected?.model;
+  if (!fixed) return resolve(`${config.provider}/${config.model}`,config.effort,config);
+  const model = `${fixed.provider}/${fixed.model}`;
+  // Resolve the model's default at its owner, even when the base uses that model.
+  const effort = fixed.effort ?? (await resolve(model,null,null)).effort;
+  return resolve(model,effort,config);
 }
 
 export async function query(kind, data) {
@@ -23,6 +32,14 @@ export function exact(value) {
   if (!Number.isSafeInteger(value) || value < 0) throw fault("invalid_request", "Invalid dispatch revision");
   return String(value);
 }
+export function registration(task, revision) {
+  return operation("save_handler",{name:task.id,revision,enabled:true,
+    source:{package:context().package.name,topic:task.id},queue:task.queue,
+    callback:{scope:{worktree:null,session:null},completion:"turn",bindings:{},
+      command:{kind:"start_session",data:{project:task.project,worktree:task.worktree,config:task.config,
+        ...execution(task),association:{namespace:context().package.name,kind:"task",id:task.id},
+        title:task.name,message:{text:task.prompt,attachments:[],references:[]}}}}});
+}
 export async function changes(task) {
   requireConfig(task.config);
   const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
@@ -31,11 +48,7 @@ export async function changes(task) {
   return [
     operation("save_schedule",{id:task.id,revision:schedule ? exact(schedule.revision) : "0",
       enabled:task.enabled,topic:task.id,payload:{name:task.name},timing:task.timing,next_ms:null}),
-    operation("save_handler",{name:task.id,revision:handler ? exact(handler.revision) : "0",enabled:true,
-      source:{package:context().package.name,topic:task.id},queue:task.queue,
-      callback:{scope:{worktree:null,session:null},completion:"turn",bindings:{},
-        command:{kind:"start_session",data:{project:task.project,worktree:task.worktree,config:task.config,
-          title:task.name,message:{text:task.prompt,attachments:[],references:[]}}}}}),
+    registration(task,handler ? exact(handler.revision) : "0"),
   ];
 }
 export async function removal(id) {

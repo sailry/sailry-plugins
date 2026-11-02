@@ -1,10 +1,10 @@
 import {View} from "gpui-kit";
 import {context} from "sailry";
-import {prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog, listModels, resolveSessionModel} from "sailry/sdk";
+import {prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog, listModels, listTeams, resolveSessionModel} from "sailry/sdk";
 import {modal_closed,nextControlEvent,openSession,showWorkspaceDetails,toast,writeClipboard} from "sailry/ui";
 import {list, history, states} from "../host/management.js";
 import {messages} from "./locales.js";
-import {editor, release, value, effortKey, setTiming} from "./editor.js";
+import {editor, release, value, effortKey, setTiming, lead} from "./editor.js";
 import {render} from "./view.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
@@ -16,6 +16,7 @@ export default class ScheduledTasks extends View {
     this.panel = null; this.historyTask = null; this.historyLoaded = false;
     this.catalog = {projects:[],worktrees:[]}; this.loading = false; this.loaded = false; this.dirty = false;
     this.models = []; this.modelsError = false;
+    this.teams = []; this.teamsError = false;
     this.busy = false; this.pending = null; this.error = null;
     this.editing = null; this.deleting = null; this.dialogId = 0;
     cx.spawn(async cx => {
@@ -43,7 +44,7 @@ export default class ScheduledTasks extends View {
         this.dirty = false;
         // Records belong to the task open in the details panel only.
         const task = this.panel?.task ?? null,pages=this.pages;
-        const [items,records,status,catalog,models] = await Promise.all([
+        const [items,records,status,catalog,models,teams] = await Promise.all([
           (async()=>{const items=[];let after=null;do {
             const page=unwrap(await list({after}));items.push(...page.items);after=page.after;
           }while(after!==null);return items;})(),
@@ -53,6 +54,7 @@ export default class ScheduledTasks extends View {
           }return {runs,before};})(),
           states(),readProjectCatalog(),
           listModels().then(catalog=>catalog.models.filter(model=>model.kind==='provider')).catch(()=>null),
+          listTeams().catch(()=>null),
         ]);
         this.catalog = catalog;
         this.items = items.map(item => ({...item,status:status[item.id]?.status ?? null,started_ms:status[item.id]?.started_ms ?? null}));
@@ -64,6 +66,8 @@ export default class ScheduledTasks extends View {
         if (this.error === "loadFailed") this.error = null;
         this.modelsError = models === null;
         if(models===null)this.report("modelsFailed");else this.models=models;
+        this.teamsError = teams === null;
+        if(teams===null)this.report("teamsFailed");else { this.teams=teams; this.syncLead(cx); }
         cx.notify();
       } while (this.dirty); }
       catch (_) { this.report("loadFailed"); }
@@ -104,8 +108,22 @@ export default class ScheduledTasks extends View {
         .find(tree => tree.id === event.value && tree.project === editing.draft.project)?.id;
       if (worktree === undefined || !editing.draft.project) return;
       editing.draft.worktree = worktree;
-    } else if (event.id === "task-model") return this.selectModel(event.value?.model,event.value?.effort,cx);
+    } else if (event.id === "task-model") {
+      if (!lead(this)) return this.selectModel(event.value?.model,event.value?.effort,cx);
+    }
+    else if (event.id === "task-execution") {
+      if (!["model","team"].includes(event.value) || event.value === editing.draft.execution) return;
+      editing.draft.execution = event.value; editing.draft.team = null; editing.draft.models = {};
+      this.syncLead(cx);
+    } else if (event.id === "task-team") {
+      if (editing.draft.execution !== "team") return;
+      const team = event.value === "default" ? null : this.teams.find(team => team.id === event.value);
+      if (team === undefined || (team?.id ?? null) === (editing.draft.team?.id ?? null)) return;
+      editing.draft.team = team === null ? null : {id:team.id,revision:null}; editing.draft.models = {};
+      this.syncLead(cx);
+    }
     else if (event.id === "task-strength") {
+      if (lead(this)) return;
       const model = this.models.find(model => model.id === editing.model);
       const effort = model?.efforts.find(effort => effortKey(effort) === event.value);
       if (effort === undefined) return;
@@ -150,26 +168,43 @@ export default class ScheduledTasks extends View {
   }
   selectModel(model,effort,cx) {
     const editing = this.editing;
-    if (!editing || this.busy || this.pending || !this.models.some(choice => choice.id === model)) return;
+    if (!editing || this.busy || this.pending) return;
+    const fixed = lead(this);
+    if (fixed ? model !== `${fixed.provider}/${fixed.model}` || effortKey(effort ?? "default") !== effortKey(fixed.effort ?? "default")
+      : !this.models.some(choice => choice.id === model)) return;
     const version = ++editing.modelVersion;
-    editing.modelLoading = true; cx.notify();
+    editing.modelLoading = true; editing.leadError = false; cx.notify();
     cx.spawn(async cx => {
       try {
-        const config = await resolveSessionModel(model,effort,editing.draft.config);
+        const defaults = fixed && fixed.effort == null ? await resolveSessionModel(model,null,null) : null;
+        if (this.editing !== editing || editing.modelVersion !== version) return;
+        const config = defaults && !editing.draft.config ? defaults
+          : await resolveSessionModel(model,defaults?.effort ?? effort,editing.draft.config);
         if (this.editing !== editing || editing.modelVersion !== version) return;
         editing.draft.config = config; editing.model = `${config.provider}/${config.model}`;
       } catch (_) {
         if (this.editing !== editing || editing.modelVersion !== version) return;
+        if (fixed) { editing.leadKey = null; editing.leadError = true; }
         this.report("modelFailed");
       } finally {
         if (this.editing === editing && editing.modelVersion === version) { editing.modelLoading = false; cx.notify(); }
       }
     });
   }
+  syncLead(cx) {
+    const editing = this.editing;
+    if (!editing || this.busy || this.pending) return;
+    const fixed = lead(this);
+    const key = fixed ? JSON.stringify([editing.draft.team.id,fixed.provider,fixed.model,fixed.effort ?? "default"]) : null;
+    if (key === (editing.leadKey ?? null) && (!editing.leadError || fixed)) return;
+    editing.leadKey = key; editing.leadError = false;
+    editing.modelVersion++; editing.modelLoading = false;
+    if (fixed) this.selectModel(`${fixed.provider}/${fixed.model}`,fixed.effort ?? null,cx);
+  }
   report(key) { this.error=key;toast({id:'scheduled-tasks-error',message:this.text[key],kind:'error'}); }
   edit(item, cx) {
     if (this.busy || this.pending) return;
-    this.close(cx); this.editing = editor(item, this.text); this.dialogId++; cx.notify();
+    this.close(cx); this.editing = editor(item, this.text); this.dialogId++; this.syncLead(cx); cx.notify();
   }
   close(cx) {
     if (this.busy) return;
@@ -179,6 +214,7 @@ export default class ScheduledTasks extends View {
   }
   save(cx) {
     if (this.pending) return this.perform(null, null, cx);
+    if (lead(this) && (this.editing.modelLoading || this.editing.leadError)) return;
     try {
       const editing = this.editing, input = value(editing);
       editing.modelVersion++; editing.modelLoading = false;

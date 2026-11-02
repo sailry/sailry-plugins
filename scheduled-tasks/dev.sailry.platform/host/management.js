@@ -1,6 +1,6 @@
-import {context, getValue, readProjectCatalog, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
-import {key, commit, result, fault} from "./records.js";
-import {query, configuration} from "./dispatch.js";
+import {context, readProjectCatalog, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
+import {key, read, commit, result, fault} from "./records.js";
+import {query, configuration, registration, operation, exact} from "./dispatch.js";
 import {listing, saveOperations, removeOperations} from "./mutations.js";
 
 export async function projects() { return result(() => readProjectCatalog()); }
@@ -39,10 +39,21 @@ export async function remove(input) {
 }
 export async function run(input) {
   return result(async () => {
-    const old = await getValue(key(input.id));
+    key(input.id);
+    // Task edits change their handler in the same transaction. Read its revision
+    // first so a concurrent edit either supplies current task data or fails CAS.
+    const handler = (await query("list_handlers")).find(handler => handler.name === input.id);
+    const old = await read(input.id);
     if (!old.present) throw fault("not_found", "Task is unavailable");
-    await configuration(old.value.config);
-    return query("enqueue",{handler:input.id,payload:{name:old.value.name}});
+    old.value.config = await configuration(old.value.config,old.value.team);
+    if (!handler) throw fault("not_found", "Task handler is unavailable");
+    const outputs = await commit([registration(old.value,exact(handler.revision)),
+      operation("enqueue",{handler:input.id,payload:{name:old.value.name}})]);
+    const output = outputs[1];
+    if (output?.kind !== "dispatch" || output.data?.kind !== "job") {
+      throw fault("outcome_unknown", "Task run outcome is unavailable");
+    }
+    return output.data.data;
   });
 }
 export async function cancel(input) { return result(() => query("cancel_job",{id:input.id})); }

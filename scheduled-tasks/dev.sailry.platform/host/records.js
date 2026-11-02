@@ -13,6 +13,25 @@ export function revision(value) {
   }
   return value;
 }
+export function execution(input, strict = false) {
+  const mode = input.execution === undefined ? "team" : input.execution;
+  const team = input.team ?? null, models = input.models === undefined ? {} : input.models;
+  if (!["model", "team"].includes(mode) || !models || typeof models !== "object" || Array.isArray(models)) {
+    throw fault("invalid_request", "Invalid task execution");
+  }
+  if (team !== null && (!team || typeof team !== "object" || Array.isArray(team)
+      || typeof team.id !== "string" || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(team.id)
+      || (strict && Object.keys(team).some(key => !["id", "revision"].includes(key)))
+      || (team.revision !== undefined && team.revision !== null
+        && (typeof team.revision !== "string" || !/^[1-9][0-9]*$/.test(team.revision))))) {
+    throw fault("invalid_request", "Invalid task team");
+  }
+  if (mode === "model" && (team !== null || Object.keys(models).length)) {
+    throw fault("invalid_request", "Model execution cannot select a team or member models");
+  }
+  // A recurring task chooses an identity; each admitted run freezes its current revision.
+  return {execution:mode, team:team === null ? null : {id:team.id, revision:null}, models};
+}
 function bytes(text) {
   let length = 0;
   for (const char of text) {
@@ -68,7 +87,7 @@ export function draft(input) {
   }
   const schedule = timing(input.timing);
   return {id, name:input.name.trim(), prompt:input.prompt, project, worktree,
-    config:input.config, timing:schedule, enabled:input.enabled, queue:input.queue};
+    config:input.config, ...execution(input), timing:schedule, enabled:input.enabled, queue:input.queue};
 }
 export function requireConfig(config) {
   if (!config) throw fault("not_configured", "Task requires an explicit model");

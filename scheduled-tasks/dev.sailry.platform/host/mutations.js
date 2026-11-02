@@ -13,7 +13,7 @@ export async function saveOperations(input, project) {
   const item = draft(input), old = await checked({...input,id:item.id});
   owned(item, project);
   if (old.present) owned(old.value, project);
-  item.config = await configuration(item.config);
+  item.config = await configuration(item.config,item.team);
   // Management has a Node-wide catalog; tools retain their admitted resource scope.
   // The Node validates resources again when admitting the callback's session.
   if (item.project && project === undefined) {

@@ -53,12 +53,12 @@ function fixture() {
     editor:() => [element("editor"), element("footer")],
   };
   const {render} = vm.runInNewContext(`${source}\n({render})`, globals);
-  const Controller = vm.runInNewContext(`${controller}\nScheduledTasks`, {View:class {},
+  const Controller = vm.runInNewContext(`${controller}\nScheduledTasks`, {View:class {}, lead:() => null,
     openSession:session => calls.push(["open", session]), showWorkspaceDetails:() => calls.push(["show"]),
     writeClipboard:text => calls.push(["copy", text]), toast:notice => calls.push(["toast", notice.message])});
   const view = Object.assign(Object.create(Controller.prototype), {text:messages("en"), items:[], history:[], pages:1, more:false,
     loading:false, loaded:true, busy:false, pending:null, error:null, editing:null, deleting:null, dialogId:0, projectFilter:"all",
-    panel:null, historyTask:null, historyLoaded:false, catalog:{projects:[{id:"project", name:"Project"}, {id:"other", name:"Other"}], worktrees:[]},
+    panel:null, historyTask:null, historyLoaded:false, teams:[], catalog:{projects:[{id:"project", name:"Project"}, {id:"other", name:"Other"}], worktrees:[]},
     refresh:() => calls.push(["refresh"]), edit:item => calls.push(["edit", item]),
     perform:(handler, input) => calls.push([handler, input]), close:() => calls.push(["close"])});
   return {view, nodes, calls, cx, render() {
@@ -364,12 +364,12 @@ test("consecutive failures count only the newest failed runs", () => {
 test("a data refresh loads only the open task's records", async () => {
   const requests = [];
   const ScheduledTasks = vm.runInNewContext(`${controller}\nScheduledTasks`, {
-    View:class {}, context:() => JSON.stringify({locale:"en"}), messages,
+    View:class {}, lead:() => null, context:() => JSON.stringify({locale:"en"}), messages,
     list:async() => ({Ok:{items:[{id:"fresh"}], after:null}}),
     history:async input => { requests.push(input); return {Ok:{items:[{job:{id:"run", handler:"fresh"}}], next_before:null}}; },
     states:async() => ({fresh:{status:"running", started_ms:5}}),
     readProjectCatalog:async() => ({projects:[], worktrees:[]}),
-    listModels:async() => ({models:[]}), showWorkspaceDetails() {},
+    listModels:async() => ({models:[]}), listTeams:async() => [], showWorkspaceDetails() {},
   });
   const view = new ScheduledTasks(), jobs = [], cx = {notify() {}, spawn:job => jobs.push(job)};
   view.init(null, cx); jobs.length = 0;
@@ -385,10 +385,11 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.12");
+  assert.equal(manifest.version, "0.1.13");
+  assert.equal(extension.min_sailry_version, "0.1.0-alpha.9");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
-  assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "conversation.read"]);
+  assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "teams.read", "conversation.read"]);
   for (const name of ["project", "worktree", "config", "model"]) assert.equal(name in extension.tools[0].handler.parameters.properties, false);
   for (const key of ["tasks", "runs", "more"]) assert.equal(messages("en")[key], undefined);
   assert.equal(messages("zh-CN").records, "记录");

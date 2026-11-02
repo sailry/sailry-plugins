@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 
+const editor=(await readFile(new URL('../dev.sailry.platform/desktop/editor.js',import.meta.url),'utf8'))
+  .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
+const {lead,effortKey}=vm.runInNewContext(`${editor}\n({lead,effortKey})`);
+
 async function fixture(packageName,overrides={}) {
   const source=(await readFile(new URL(`../../${packageName}/dev.sailry.platform/desktop/main.js`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
@@ -15,11 +19,11 @@ async function fixture(packageName,overrides={}) {
   };
   const name=packageName==='reminders'?'Reminders':'ScheduledTasks';
   const Controller=vm.runInNewContext(`${source}\n${name}`,{
-    View:class{},context:()=>JSON.stringify({locale:'en'}),messages:()=>new Proxy({},{get:(_,key)=>key}),
+    View:class{},lead,effortKey,context:()=>JSON.stringify({locale:'en'}),messages:()=>new Proxy({},{get:(_,key)=>key}),
     list:async()=>({Ok:await read()}),page:read,
     history:async()=>({Ok:{items:[],next_before:null}}),states:async()=>({}),
     readProjectCatalog:async()=>({projects:[{id:'project',name:'Project'}],worktrees:[]}),
-    listModels:async()=>({models:[]}),toast:notice=>notices.push(notice),
+    listModels:async()=>({models:[]}),listTeams:async()=>[],toast:notice=>notices.push(notice),
     ...overrides,
   });
   const view=new Controller(),cx={notify(){},spawn:job=>jobs.push(job)};
@@ -29,6 +33,7 @@ async function fixture(packageName,overrides={}) {
     succeed(items){batch={items,after:null};failure=null;},
     fail(){failure=true;},
     async read(){view.refresh(cx);return jobs.shift()(cx);},
+    async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));},
   };
 }
 
@@ -38,11 +43,11 @@ for(const packageName of ['scheduled-tasks','reminders']) {
     const hold=(kind,value)=>()=>{calls.push(kind);return new Promise(resolve=>held.push(()=>resolve(value)));};
     const overrides={page:hold('records',{items:[{id:'saved'}],after:null}),list:hold('records',{Ok:{items:[{id:'saved'}],after:null}}),
       history:hold('history',{Ok:{items:[],next_before:null}}),states:hold('states',{}),
-      readProjectCatalog:hold('projects',{projects:[],worktrees:[]}),listModels:hold('models',{models:[]})};
+      readProjectCatalog:hold('projects',{projects:[],worktrees:[]}),listModels:hold('models',{models:[]}),listTeams:hold('teams',[])};
     const setup=await fixture(packageName,overrides);
     setup.view.panel=packageName==='reminders'?{reminder:'saved'}:{task:'saved'};
     const loading=setup.read();
-    assert.deepEqual(calls,packageName==='reminders'?['records','history','projects']:['records','history','states','projects','models']);
+    assert.deepEqual(calls,packageName==='reminders'?['records','history','projects']:['records','history','states','projects','models','teams']);
     assert.equal(setup.view.loaded,false);assert.equal(setup.view.loading,true);
     held.forEach(resolve=>resolve());await loading;
     assert.equal(setup.view.loaded,true);assert.equal(setup.view.items[0].id,'saved');
@@ -83,3 +88,40 @@ for(const packageName of ['scheduled-tasks','reminders']) {
     assert.equal(setup.view.error,'loadFailed');assert.equal(setup.notices.length,1);
   });
 }
+
+test('team catalog failures retain choices and task drafts',async()=>{
+  let available=true;
+  const teams=[{id:'reviewers',name:'Reviewers',revision:'7'}];
+  const setup=await fixture('scheduled-tasks',{listTeams:async()=>{
+    if(!available)throw new Error('Injected team failure');
+    return teams;
+  }});
+  setup.succeed([{id:'saved'}]);await setup.read();
+  const draft={execution:'team',team:{id:'reviewers',revision:null}};
+  setup.view.editing={draft};available=false;await setup.read();
+  assert.equal(setup.view.loaded,true);assert.equal(setup.view.items.length,1);
+  assert.equal(setup.view.teams,teams);assert.equal(setup.view.teamsError,true);
+  assert.equal(setup.view.editing.draft,draft);assert.equal(setup.notices.at(-1).message,'teamsFailed');
+  available=true;await setup.read();
+  assert.equal(setup.view.teamsError,false);assert.equal(setup.view.teams,teams);
+  assert.equal(setup.view.editing.draft,draft);
+});
+
+test('refreshed fixed leads resolve while missing teams retain drafts',async()=>{
+  let teams=[{id:'reviewers',model:{provider:'provider',model:'first',effort:'low'}}];
+  const calls=[],setup=await fixture('scheduled-tasks',{listTeams:async()=>teams,
+    resolveSessionModel:async(model,effort,base)=>{
+      calls.push({model,effort,base});return {...base,provider:'provider',model:model.split('/')[1],effort};
+    }});
+  const config={provider:'provider',model:'fallback',effort:'high',options:{feature:{choice:true}}};
+  const draft={execution:'team',team:{id:'reviewers',revision:null},config};
+  setup.view.editing={draft,model:'provider/fallback',modelVersion:0,modelLoading:false,leadKey:null,leadError:false};
+  await setup.read();await setup.settle();
+  assert.equal(draft.config.model,'first');assert.equal(calls.length,1);assert.equal(calls[0].base,config);
+  teams=[{id:'reviewers',model:{provider:'provider',model:'second',effort:'high'}}];
+  await setup.read();await setup.settle();
+  assert.equal(draft.config.model,'second');assert.equal(calls.length,2);
+  const retained=draft.config;teams=[];await setup.read();await setup.settle();
+  assert.equal(draft.config,retained);assert.equal(draft.team.id,'reviewers');assert.equal(calls.length,2);
+  assert.equal(setup.view.editing.draft,draft);assert.deepEqual(draft.config.options,config.options);
+});

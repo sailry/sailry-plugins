@@ -1,16 +1,17 @@
 import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {read, fault, timing} from "./records.js";
+import {read, fault, timing, execution} from "./records.js";
 import {listing, saveOperations, removeOperations, transactionResult} from "./mutations.js";
 
-export function initialize({project, tools, config}) {
+export function initialize({project, tools, config, execution:mode, team, models}) {
   if (!config || config.assistant || config.resource) return {instruction:"",tools:[]};
-  stageTurnState({project,worktree:project === null ? null : context().worktree,config});
+  stageTurnState({project,worktree:project === null ? null : context().worktree,config,
+    ...execution({execution:mode,team,models})});
   const now = Date.now();
   return {instruction:`Current UTC: ${new Date(now).toISOString()} (${now} ms). Ask for the schedule and timezone if missing. Once/every use UTC milliseconds; every is a fixed elapsed interval. Weekly uses an explicit IANA timezone, ISO weekdays (Monday=1 through Sunday=7), hour and minute. It runs once at the earlier instant of a repeated local time and skips a missing local time.`,tools};
 }
 function argumentsFor(value) {
-  const fields = {list:["after"],create:["name","prompt","timing","enabled"],
-    update:["id","revision","name","prompt","timing","enabled"],delete:["id","revision"]};
+  const fields = {list:["after"],create:["name","prompt","timing","enabled","execution","team"],
+    update:["id","revision","name","prompt","timing","enabled","execution","team"],delete:["id","revision"]};
   if (!value || typeof value !== "object" || Array.isArray(value) || !Object.hasOwn(fields,value.action)
       || Object.keys(value).some(key => key !== "action" && !fields[value.action].includes(key))) {
     throw fault("invalid_request", "Invalid scheduled task action or arguments");
@@ -21,7 +22,7 @@ function argumentsFor(value) {
   if (["update","delete"].includes(value.action) && (typeof value.id !== "string" || typeof value.revision !== "string")) {
     throw fault("invalid_request", "Task ID and revision are required");
   }
-  if (value.action === "update" && !["name","prompt","timing","enabled"].some(key => Object.hasOwn(value,key))) {
+  if (value.action === "update" && !["name","prompt","timing","enabled","execution","team"].some(key => Object.hasOwn(value,key))) {
     throw fault("invalid_request", "Task update requires a change");
   }
   if (Object.hasOwn(value,"timing")) {
@@ -33,6 +34,14 @@ function argumentsFor(value) {
     return {...value,timing:schedule};
   }
   return value;
+}
+function select(input, previous) {
+  if (!Object.hasOwn(input,"execution") && !Object.hasOwn(input,"team")) return previous;
+  const mode = Object.hasOwn(input,"execution") ? input.execution : Object.hasOwn(input,"team") ? "team" : previous.execution;
+  const team = Object.hasOwn(input,"team") ? input.team : mode === "model" ? null : previous.team;
+  const next = execution({execution:mode,team}, true);
+  const unchanged = previous.execution === next.execution && previous.team?.id === next.team?.id;
+  return {...previous,...next,models:unchanged ? previous.models : {}};
 }
 export async function scheduled_tasks({arguments:input, step, state, outcome}) {
   try {
@@ -47,13 +56,13 @@ export async function scheduled_tasks({arguments:input, step, state, outcome}) {
     let pending;
     if (args.action === "create") {
       pending=await saveOperations({id:callId(),revision:"0",name:args.name,prompt:args.prompt,timing:args.timing,
-        enabled:args.enabled === undefined ? true : args.enabled,queue:"default",...scope},scope.project);
+        enabled:args.enabled === undefined ? true : args.enabled,queue:"default",...select(args,scope)},scope.project);
     } else if (args.action === "update") {
       const old=await read(args.id);
       if (!old.present) throw fault("not_found", "Task is unavailable");
       if (old.value.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
       const changes=Object.fromEntries(["name","prompt","timing","enabled"].filter(key => Object.hasOwn(args,key)).map(key => [key,args[key]]));
-      pending=await saveOperations({...old.value,...changes,revision:args.revision},scope.project);
+      pending=await saveOperations({...select(args,old.value),...changes,revision:args.revision},scope.project);
     } else pending=await removeOperations(args,scope.project);
     return {call:{operation:"storage.transaction",arguments:{operations:pending.operations}},
       state:{id:pending.item.id,removed:args.action === "delete"}};

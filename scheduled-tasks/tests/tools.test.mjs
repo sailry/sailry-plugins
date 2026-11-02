@@ -6,7 +6,7 @@ import {runtimeTest,validateSchema} from "../../scripts/test-host.mjs";
 
 test("initialization captures the execution scope and explicit session config",async()=>{
   const setup=await fixture(), initialized=await setup.initialize();
-  assert.deepEqual(setup.turn(),{project:id(1),worktree:id(2),config:setup.config});
+  assert.deepEqual(setup.turn(),{project:id(1),worktree:id(2),config:setup.config,...setup.execution});
   assert.match(initialized.instruction,/Current UTC: .* ms/);
   setup.session.config={...setup.config,model:"another"};
   assert.equal(setup.turn().config.model,"chosen");
@@ -26,11 +26,79 @@ test("creation uses one admitted storage and dispatch transaction",async()=>{
   assert.equal(reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.queue,"default");
   assert.ok(setup.requests.every(request=>request.data?.action?.kind!=="list_queues"));
   assert.deepEqual(plain(callback.command.data.config),setup.config);
+  assert.equal(callback.command.data.execution,"team");assert.equal(callback.command.data.team,null);
+  assert.deepEqual(plain(callback.command.data.association),{namespace:"scheduled-tasks",kind:"task",id:id(10)});
   const {result}=await setup.commit(reply);
   assert.equal(result.id,id(10));assert.equal(result.revision,"1");assert.equal(result.enabled,true);
   const listed=await setup.plan({action:"list"});
   assert.equal(listed.result.items.length,1);assert.deepEqual(plain(listed.result.items[0].timing),timing);
   assert.equal("queues" in listed.result,false);
+});
+
+test("creation inherits captured execution and recurring team identity",async()=>{
+  const setup=await fixture(), team={id:id(20),revision:"7"}, models={[id(30)]:{provider:id(3),model:"lead",effort:"high"}};
+  setup.execution={execution:"team",team,models};await setup.initialize();
+  setup.execution={execution:"model",team:null,models:{}};
+  setup.teams[0].revision="8";
+  const reply=await setup.plan({action:"create",name:"Team review",prompt:"Review",
+    timing:{kind:"every",data:{anchor_ms:Date.now()+3_600_000,interval_ms:86_400_000}}});
+  const callback=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
+  assert.equal(callback.command.data.execution,"team");
+  assert.deepEqual(plain(callback.command.data.team),{id:id(20),revision:null});
+  assert.deepEqual(plain(callback.command.data.models),models);
+  const saved=(await setup.commit(reply)).result;
+  assert.deepEqual(plain(saved.team),{id:id(20),revision:null});
+  assert.deepEqual(plain(saved.models),models);
+  assert.equal(saved.execution,"team");
+  setup.nextCall(id(12));await setup.initialize();
+  const model=await setup.plan({action:"create",name:"Model review",prompt:"Review",timing:saved.timing});
+  const created=(await setup.commit(model)).result;
+  assert.equal(created.execution,"model");assert.equal(created.team,null);assert.deepEqual(plain(created.models),{});
+});
+
+test("explicit execution choices clear only incompatible member overrides",async()=>{
+  const setup=await fixture(), item={...setup.task(11),execution:"team",team:{id:id(20),revision:null},
+    models:{[id(30)]:{provider:id(3),model:"lead",effort:"high"}}};setup.seed(item);
+  for(const change of [{name:"Renamed"},{execution:"team"},{team:{id:id(20)}}]) {
+    const reply=await setup.plan({action:"update",id:item.id,revision:"1",...change});
+    assert.deepEqual(plain(reply.call.arguments.operations[0].data.value.models),item.models);
+    assert.deepEqual(plain(reply.call.arguments.operations[0].data.value.team),item.team);
+  }
+  const model=await setup.plan({action:"update",id:item.id,revision:"1",execution:"model"});
+  const saved=(await setup.commit(model)).result;
+  assert.equal(saved.execution,"model");assert.equal(saved.team,null);assert.deepEqual(plain(saved.models),{});
+  const named=await setup.plan({action:"update",id:item.id,revision:"2",team:{id:id(20)}});
+  const selected=(await setup.commit(named)).result;
+  assert.equal(selected.execution,"team");assert.deepEqual(plain(selected.team),{id:id(20),revision:null});
+  assert.deepEqual(plain(selected.models),{});
+  const defaults=await setup.plan({action:"update",id:item.id,revision:"3",team:null});
+  const reset=(await setup.commit(defaults)).result;
+  assert.equal(reset.execution,"team");assert.equal(reset.team,null);assert.deepEqual(plain(reset.models),{});
+});
+
+test("creation can explicitly replace inherited team execution",async()=>{
+  const setup=await fixture();setup.execution={execution:"team",team:{id:id(20),revision:"7"},
+    models:{[id(30)]:{provider:id(3),model:"lead",effort:"high"}}};await setup.initialize();
+  const reply=await setup.plan({action:"create",name:"Single model",prompt:"Review",execution:"model",
+    timing:{kind:"once",data:{at_ms:Date.now()+3_600_000}}});
+  const saved=(await setup.commit(reply)).result;
+  assert.equal(saved.execution,"model");assert.equal(saved.team,null);assert.deepEqual(plain(saved.models),{});
+  assert.deepEqual(plain(saved.config),setup.config);
+});
+
+test("stored team metadata permits reads and task updates",async()=>{
+  const setup=await fixture(), item={...setup.task(11),execution:"team",
+    team:{id:id(20),revision:null,annotation:{label:"Saved metadata"}},models:{}};
+  setup.seed(item);
+  const listed=(await setup.plan({action:"list"})).result.items;
+  assert.deepEqual(plain(listed[0].team),item.team);
+  const reply=await setup.plan({action:"update",id:item.id,revision:"1",name:"Renamed"});
+  assert.equal(reply.result,undefined);
+  const operation=reply.call.arguments.operations[0];
+  assert.equal(operation.data.value.name,"Renamed");
+  assert.deepEqual(plain(operation.data.value.team),{id:id(20),revision:null});
+  const callback=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
+  assert.deepEqual(plain(callback.command.data.team),{id:id(20),revision:null});
 });
 
 test("captured display uses shared summary and localized action-target approval templates",async()=>{
@@ -94,6 +162,9 @@ test("strict arguments and stale revisions fail before a mutation is prepared",a
   const create={action:"create",name:"Review",prompt:"Read",timing:{kind:"once",data:{at_ms:Date.now()+3_600_000}}};
   for(const args of [
     {...create,project:id(4)},{...create,config:setup.config},{...create,model:"another"},{...create,enabled:null},
+    {...create,execution:"unknown"},{...create,execution:null},{...create,team:"default"},
+    {...create,team:{id:"invalid"}},{...create,team:{id:id(20),extra:true}},
+    {...create,execution:"model",team:{id:id(20)}},
     {...create,timing:{kind:"once",data:{at_ms:Date.now()-1}}},
     {...create,timing:{kind:"once",data:{at_ms:Date.now()+3_600_000,timezone:"UTC"}}},
     {...create,timing:{kind:"every",data:{anchor_ms:Date.now()+3_600_000,interval_ms:0}}},
@@ -177,4 +248,29 @@ runtimeTest("interval schemas retain integer types without duplicating handler b
   assert.deepEqual(validateSchema(extension.tools[0].handler.parameters,rows),expected);
   const schema=extension.storage.collections[0].schema.properties.timing;
   assert.deepEqual(validateSchema(schema,rows.map(row=>row.timing)),expected);
+});
+
+test("stored team schemas stay open while tool selectors stay strict",async()=>{
+  const manifest=JSON.parse(await readFile(new URL("../plugin.json",import.meta.url),"utf8"));
+  const extension=manifest.extensions["dev.sailry.platform"];
+  const stored=extension.storage.collections[0].schema.properties.team;
+  assert.notEqual(stored.additionalProperties,false);
+  assert.notEqual(stored.unevaluatedProperties,false);
+  assert.equal(extension.tools[0].handler.parameters.properties.team.additionalProperties,false);
+});
+
+runtimeTest("execution schemas preserve optional selectors and old records",async()=>{
+  const manifest=JSON.parse(await readFile(new URL("../plugin.json",import.meta.url),"utf8"));
+  const extension=manifest.extensions["dev.sailry.platform"], setup=await fixture();
+  const schema=extension.tools[0].handler.parameters;
+  const update={action:"update",id:id(11),revision:"1"};
+  const rows=[{...update,execution:"model"},{...update,execution:"team"},{...update,team:{id:id(20)}},
+    {...update,team:null},{...update,execution:"unknown"},{...update,execution:null},{...update,team:{id:"bad"}},
+    {...update,team:{id:id(20),extra:true}}];
+  assert.deepEqual(validateSchema(schema,rows),[true,true,true,true,false,false,false,false]);
+  const stored=extension.storage.collections[0].schema;
+  assert.deepEqual(validateSchema(stored,[setup.task(11),{...setup.task(12),execution:"model",team:null,models:{}},
+    {...setup.task(13),execution:"team",team:{id:id(20),revision:null},models:{}},
+    {...setup.task(14),execution:"invalid"},
+    {...setup.task(15),execution:"team",team:{id:id(20),annotation:{label:"Saved metadata"}}}]),[true,true,true,false,true]);
 });

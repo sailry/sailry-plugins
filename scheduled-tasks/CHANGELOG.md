@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.13
+
+- Choose model execution, the default team or a named team for scheduled tasks
+- Inherit captured execution choices in Agent-created tasks and associate each run with its task
+
 ## 0.1.12
 
 - Remove redundant numeric schema bounds while preserving host validation

@@ -10,7 +10,8 @@ export async function fixture(project=id(1)) {
   const values=new Map(), schedules=new Map(), handlers=new Map(), requests=[], transactions=[];
   const config={assistant:null,resource:null,provider:id(3),model:"chosen",effort:"high",mode:"code",permission:"ask",credential:null};
   let turn=null, call=id(10);
-  const setup={config,session:{config},values,schedules,handlers,requests,transactions,
+  const setup={config,session:{config},execution:{execution:"team",team:null,models:{}},teams:[{id:id(20),name:"Reviewers",revision:"7"}],
+    values,schedules,handlers,requests,transactions,
     project,worktree:id(2),nextCall(value){call=value;},turn(){return turn;}};
   const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,worktree:setup.worktree}),
     callId:()=>call,readSession:async()=>plain(setup.session),readTurnState:()=>turn,stageTurnState:value=>{turn=plain(value);},
@@ -19,6 +20,7 @@ export async function fixture(project=id(1)) {
       const keys=[...values.keys()].filter(key=>key.startsWith(prefix)&&(!after||key>after)).sort();
       return {keys:keys.slice(0,limit),after:keys.length>limit?keys[limit-1]:null};
     },
+    listTeams:async()=>plain(setup.teams),
     readProjectCatalog:async()=>({projects:[{id:id(1)},{id:id(4)}],worktrees:[{id:id(2),project:id(1)}]}),
     prepareRequest:command=>{requests.push(plain(command));return requests.length-1;},
     prepareTransaction:operations=>{transactions.push(plain(operations));return "management";},
@@ -32,7 +34,7 @@ export async function fixture(project=id(1)) {
     },forgetRequest(){},
   };
   setup.api=vm.runInNewContext(`${sources.join("\n")}\n({initialize,scheduled_tasks,saveOperations,removeOperations,transactionResult})`,runtime);
-  setup.initialize=(config=setup.config)=>setup.api.initialize({project:setup.project,tools:["scheduled_tasks"],config:plain(config)});
+  setup.initialize=(config=setup.config)=>setup.api.initialize({project:setup.project,tools:["scheduled_tasks"],config:plain(config),...plain(setup.execution)});
   setup.plan=args=>setup.api.scheduled_tasks({arguments:args,step:0});
   setup.finish=(reply,outcome)=>setup.api.scheduled_tasks({step:1,state:reply.state,outcome});
   setup.commit=async reply=>{

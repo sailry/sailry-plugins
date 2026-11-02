@@ -114,6 +114,8 @@ function facts(view, item, runs, now) {
     const effort = effortLabel(item.config.effort);
     rows.push(fact("task-fact-model", text.model, `${item.config.model}${effort ? ` ${effort}` : ""}`, "", null));
   }
+  rows.push(fact("task-fact-execution", text.execution, (item.execution ?? "team") === "model" ? text.model
+    : item.team ? view.teams.find(team => team.id === item.team.id)?.name ?? text.unavailable : text.defaultTeam, "", null));
   rows.push(fact("task-fact-status", text.status, item.enabled ? text.enabled : text.paused, "",
     item.enabled ? colors.success : colors.muted_foreground));
   return div().id("task-facts").v_flex().gap_0p5().pt_3().border_t_1().border_color(colors.border).children(rows);
