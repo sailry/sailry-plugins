@@ -7854,7 +7854,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8158,7 +8158,7 @@
               {
                 "name": "read_file",
                 "presentation": "summary",
-                "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page, so read_tool_output with the returned output reference retrieves its complete captured text. Results retain one-based line numbers and the full file revision. Preserve exact text for edit_file; one page is not the whole file.",
+                "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page, so read_tool_output with the returned output reference retrieves its complete captured text. Results retain one-based line numbers and the full file revision. Read a small or medium file whole in one call; page large files with next_offset instead of small windows. A repeated read of unchanged lines returns a short note. Preserve exact text for edit_file; one page is not the whole file.",
                 "handler": {
                   "name": "read",
                   "operation": "files.read",
@@ -8416,7 +8416,7 @@
               {
                 "name": "edit_file",
                 "presentation": "details",
-                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for up to 128 replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. Each fragment is limited to 128 KiB and files to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit.",
+                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for up to 128 replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. Each fragment is limited to 128 KiB and files to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit.",
                 "handler": {
                   "name": "edit",
                   "operation": "files.edit",
@@ -9626,6 +9626,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "1c78d3dc7d8295970eadea0ba760b2ec11a410c3",
+          "min_sailry_version": "0.1.0-alpha.6",
+          "release_notes": {
+            "text": "- Guide the model to read whole files and trust edit results instead of re-reading",
+            "locales": {
+              "zh-CN": "- 引导模型一次读取完整文件，并直接使用编辑结果而非重新读取",
+              "zh-TW": "- 引導模型一次讀取完整檔案，並直接使用編輯結果而非重新讀取",
+              "ja": "- ファイル全体を一度に読み、再読み込みせずに編集結果を使うようモデルを案内",
+              "ko": "- 파일 전체를 한 번에 읽고 다시 읽지 않고 편집 결과를 사용하도록 모델 안내",
+              "fr": "- Inviter le modèle à lire les fichiers en entier et à utiliser le résultat des modifications sans relire",
+              "de": "- Modell anleiten, Dateien vollständig zu lesen und Bearbeitungsergebnisse ohne erneutes Lesen zu nutzen",
+              "es": "- Indicar al modelo que lea archivos completos y use el resultado de la edición sin volver a leer",
+              "pt-BR": "- Orientar o modelo a ler arquivos inteiros e usar o resultado da edição sem reler",
+              "ru": "- Модель читает файлы целиком и использует результат правки без повторного чтения"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "e26d172af7a4660baba88cba8b2e5f2b3471698e",
           "min_sailry_version": "0.1.0-alpha.6",
@@ -9782,9 +9801,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Default file searches to 100 results and describe bounded model previews",
+        "text": "- Guide the model to read whole files and trust edit results instead of re-reading",
         "locales": {
-          "zh-CN": "- 文件搜索默认返回 100 条结果，并说明模型预览的长度限制"
+          "zh-CN": "- 引导模型一次读取完整文件，并直接使用编辑结果而非重新读取",
+          "zh-TW": "- 引導模型一次讀取完整檔案，並直接使用編輯結果而非重新讀取",
+          "ja": "- ファイル全体を一度に読み、再読み込みせずに編集結果を使うようモデルを案内",
+          "ko": "- 파일 전체를 한 번에 읽고 다시 읽지 않고 편집 결과를 사용하도록 모델 안내",
+          "fr": "- Inviter le modèle à lire les fichiers en entier et à utiliser le résultat des modifications sans relire",
+          "de": "- Modell anleiten, Dateien vollständig zu lesen und Bearbeitungsergebnisse ohne erneutes Lesen zu nutzen",
+          "es": "- Indicar al modelo que lea archivos completos y use el resultado de la edición sin volver a leer",
+          "pt-BR": "- Orientar o modelo a ler arquivos inteiros e usar o resultado da edição sem reler",
+          "ru": "- Модель читает файлы целиком и использует результат правки без повторного чтения"
         }
       }
     },
