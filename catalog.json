@@ -13186,7 +13186,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -13669,127 +13669,6 @@
                     "notices": [
                       {
                         "message": {
-                          "label": "Created",
-                          "locales": {
-                            "en": "Created",
-                            "zh-CN": "已创建",
-                            "zh-TW": "已建立",
-                            "ja": "作成済み",
-                            "ko": "생성됨",
-                            "fr": "Créée",
-                            "de": "Erstellt",
-                            "es": "Creada",
-                            "pt-BR": "Criada",
-                            "ru": "Создано"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/action"
-                              },
-                              "equals": "created"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Updated",
-                          "locales": {
-                            "en": "Updated",
-                            "zh-CN": "已更新",
-                            "zh-TW": "已更新",
-                            "ja": "更新済み",
-                            "ko": "업데이트됨",
-                            "fr": "Mise à jour",
-                            "de": "Aktualisiert",
-                            "es": "Actualizada",
-                            "pt-BR": "Atualizada",
-                            "ru": "Обновлено"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/action"
-                              },
-                              "equals": "updated"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Global",
-                          "locales": {
-                            "en": "Global",
-                            "zh-CN": "全局",
-                            "zh-TW": "全域",
-                            "ja": "グローバル",
-                            "ko": "전역",
-                            "fr": "Globale",
-                            "de": "Global",
-                            "es": "Global",
-                            "pt-BR": "Global",
-                            "ru": "Глобальная"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/title"
-                              },
-                              "equals": null,
-                              "negate": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Project",
-                          "locales": {
-                            "en": "Project",
-                            "zh-CN": "项目",
-                            "zh-TW": "專案",
-                            "ja": "プロジェクト",
-                            "ko": "프로젝트",
-                            "fr": "Projet",
-                            "de": "Projekt",
-                            "es": "Proyecto",
-                            "pt-BR": "Projeto",
-                            "ru": "Проект"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
                           "label": "Partial content",
                           "locales": {
                             "en": "Partial content",
@@ -14037,99 +13916,6 @@
                       "separator": "\n\n"
                     },
                     "notices": [
-                      {
-                        "message": {
-                          "label": "Deleted",
-                          "locales": {
-                            "en": "Deleted",
-                            "zh-CN": "已删除",
-                            "zh-TW": "已刪除",
-                            "ja": "削除済み",
-                            "ko": "삭제됨",
-                            "fr": "Supprimée",
-                            "de": "Gelöscht",
-                            "es": "Eliminada",
-                            "pt-BR": "Excluída",
-                            "ru": "Удалено"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/action"
-                              },
-                              "equals": "deleted"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Global",
-                          "locales": {
-                            "en": "Global",
-                            "zh-CN": "全局",
-                            "zh-TW": "全域",
-                            "ja": "グローバル",
-                            "ko": "전역",
-                            "fr": "Globale",
-                            "de": "Global",
-                            "es": "Global",
-                            "pt-BR": "Global",
-                            "ru": "Глобальная"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/title"
-                              },
-                              "equals": null,
-                              "negate": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Project",
-                          "locales": {
-                            "en": "Project",
-                            "zh-CN": "项目",
-                            "zh-TW": "專案",
-                            "ja": "プロジェクト",
-                            "ko": "프로젝트",
-                            "fr": "Projet",
-                            "de": "Projekt",
-                            "es": "Proyecto",
-                            "pt-BR": "Projeto",
-                            "ru": "Проект"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      },
                       {
                         "message": {
                           "label": "Partial content",
@@ -14411,99 +14197,6 @@
                     "notices": [
                       {
                         "message": {
-                          "label": "Merged",
-                          "locales": {
-                            "en": "Merged",
-                            "zh-CN": "已合并",
-                            "zh-TW": "已合併",
-                            "ja": "統合済み",
-                            "ko": "병합됨",
-                            "fr": "Fusionnée",
-                            "de": "Zusammengeführt",
-                            "es": "Combinada",
-                            "pt-BR": "Mesclada",
-                            "ru": "Объединено"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/action"
-                              },
-                              "equals": "merged"
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Global",
-                          "locales": {
-                            "en": "Global",
-                            "zh-CN": "全局",
-                            "zh-TW": "全域",
-                            "ja": "グローバル",
-                            "ko": "전역",
-                            "fr": "Globale",
-                            "de": "Global",
-                            "es": "Global",
-                            "pt-BR": "Global",
-                            "ru": "Глобальная"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/title"
-                              },
-                              "equals": null,
-                              "negate": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Project",
-                          "locales": {
-                            "en": "Project",
-                            "zh-CN": "项目",
-                            "zh-TW": "專案",
-                            "ja": "プロジェクト",
-                            "ko": "프로젝트",
-                            "fr": "Projet",
-                            "de": "Projekt",
-                            "es": "Proyecto",
-                            "pt-BR": "Projeto",
-                            "ru": "Проект"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/project"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
                           "label": "Partial content",
                           "locales": {
                             "en": "Partial content",
@@ -14681,6 +14374,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "48f0bbd6817be087d7c3440cf1209dd106512f28",
+          "min_sailry_version": "0.1.0-alpha.7",
+          "release_notes": {
+            "text": "- Remove redundant action and scope labels from expanded memory results",
+            "locales": {
+              "zh-CN": "- 移除记忆工具展开结果中重复的操作和范围标签",
+              "zh-TW": "- 移除記憶工具展開結果中重複的操作與範圍標籤",
+              "ja": "- メモリツールの展開結果から重複する操作と範囲のラベルを削除",
+              "ko": "- 메모리 도구의 펼친 결과에서 중복 작업 및 범위 라벨 제거",
+              "fr": "- Supprimer les libellés d’action et de portée redondants dans les résultats de mémoire développés",
+              "de": "- Redundante Aktions- und Bereichsbezeichnungen aus aufgeklappten Speicherergebnissen entfernen",
+              "es": "- Eliminar las etiquetas redundantes de acción y alcance en los resultados de memoria expandidos",
+              "pt-BR": "- Remover rótulos redundantes de ação e escopo dos resultados de memória expandidos",
+              "ru": "- Убрать повторяющиеся метки действий и области из развёрнутых результатов памяти"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "3940d786163bfabe8613088f5d4d11c0fba5bb6e",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -14815,7 +14527,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Shorten the delete confirmation to the memory title with a destructive button"
+        "text": "- Remove redundant action and scope labels from expanded memory results",
+        "locales": {
+          "zh-CN": "- 移除记忆工具展开结果中重复的操作和范围标签",
+          "zh-TW": "- 移除記憶工具展開結果中重複的操作與範圍標籤",
+          "ja": "- メモリツールの展開結果から重複する操作と範囲のラベルを削除",
+          "ko": "- 메모리 도구의 펼친 결과에서 중복 작업 및 범위 라벨 제거",
+          "fr": "- Supprimer les libellés d’action et de portée redondants dans les résultats de mémoire développés",
+          "de": "- Redundante Aktions- und Bereichsbezeichnungen aus aufgeklappten Speicherergebnissen entfernen",
+          "es": "- Eliminar las etiquetas redundantes de acción y alcance en los resultados de memoria expandidos",
+          "pt-BR": "- Remover rótulos redundantes de ação e escopo dos resultados de memória expandidos",
+          "ru": "- Убрать повторяющиеся метки действий и области из развёрнутых результатов памяти"
+        }
       }
     },
     {
