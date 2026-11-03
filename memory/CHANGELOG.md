@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Remove redundant action and scope labels from expanded memory results
+
 ## 0.1.18
 
 - Shorten the delete confirmation to the memory title with a destructive button
