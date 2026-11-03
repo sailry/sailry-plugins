@@ -1,7 +1,7 @@
 /** Shared adapter cases; no filesystem or search service is executed here. */
 export function cases() {
   const search = {query:'needle',regex:false,case_sensitive:false,globs:['**/*.rs'],path:'src',
-    mode:'content',context:0,type:null,limit:200,offset:0,multiline:false};
+    mode:'content',context:0,type:null,limit:100,offset:0,multiline:false};
   const rows = [0,2,3,4,5,6,8].map(context => ({
     tool:'search_files',handler:'search',input:{...search,context},valid:true,expected:{...search,context},
   }));

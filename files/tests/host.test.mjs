@@ -99,11 +99,11 @@ test('search defaults keep original expressions and globs without interpreting t
   assert.equal(schema.properties.globs.maxItems,undefined);
   assert.equal(schema.properties.globs.items.maxLength,undefined);
   assert.deepEqual(plain(host.search({query:' needle\n'})),{
-    query:' needle\n',regex:false,case_sensitive:false,globs:[],path:'',mode:'files',context:0,type:null,limit:200,offset:0,multiline:false,
+    query:' needle\n',regex:false,case_sensitive:false,globs:[],path:'',mode:'files',context:0,type:null,limit:100,offset:0,multiline:false,
   });
   const globs = ['**/*.rs','资料/*.txt','**/*.rs'];
   const args = {query:'^a.*[中]$',regex:true,case_sensitive:true,globs};
-  assert.deepEqual(plain(host.search(args)),{path:'',mode:'files',context:0,type:null,limit:200,offset:0,multiline:false,...args});
+  assert.deepEqual(plain(host.search(args)),{path:'',mode:'files',context:0,type:null,limit:100,offset:0,multiline:false,...args});
   assert.equal(host.search(args).globs,globs);
   assert.deepEqual(args,{query:'^a.*[中]$',regex:true,case_sensitive:true,globs});
 });

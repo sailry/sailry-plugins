@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -1107,7 +1107,7 @@
         {
           "name": "search_files",
           "presentation": "summary",
-          "description": "Search UTF-8 files within path (default worktree root) using embedded ripgrep, respecting .gitignore without following symlinks. mode defaults to files; choose content for matching/context rows or count for matching line counts. Content rows use matched=true for matches and false for neighbors; context adds surrounding lines. type uses ripgrep language names, and multiline matches across newlines. limit defaults to 200, with at most 200 rows including context. Model output has about a 32 KiB total budget; read_tool_output with its output reference reads the original captured result. Use next_offset for complete-scan pages; it cannot recover a shortened line. Incomplete scans have no continuation: narrow path before retrying. Scans stop after 20 seconds and skip files above 64 MiB; diagnostics report these bounds, and lines over 16 KiB are marked truncated. No shell approval is needed.",
+          "description": "Search UTF-8 files within path (default worktree root) using embedded ripgrep, respecting .gitignore without following symlinks. mode defaults to files; choose content for matching/context rows or count for matching line counts. Content rows use matched=true for matches and false for neighbors; context adds surrounding lines. type uses ripgrep language names, and multiline matches across newlines. limit defaults to 100, with at most 200 rows including context. Model output has about a 32 KiB total budget and 500-character line previews; read_tool_output with its output reference reads the original captured result. Use next_offset for complete-scan pages; it cannot recover a shortened line. Incomplete scans have no continuation: narrow path before retrying. Scans stop after 20 seconds and skip files above 64 MiB; diagnostics report these bounds, and lines over 16 KiB are marked truncated. No shell approval is needed.",
           "handler": {
             "name": "search",
             "operation": "files.search",
@@ -1142,7 +1142,7 @@
                 "limit": {
                   "type": "integer",
                   "minimum": 1,
-                  "default": 200,
+                  "default": 100,
                   "description": "Requested rows; each response has an independent output budget and may return a continuation"
                 },
                 "offset": {

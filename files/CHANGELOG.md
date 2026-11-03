@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Default file searches to 100 results and describe bounded model previews
+
 ## 0.1.20
 
 - Add Markdown formatting, block type, insert, link and soft wrap controls to the editor toolbar

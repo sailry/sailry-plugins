@@ -104,7 +104,7 @@ export function search(args) {
     return invalid('Expected search arguments with supported fields');
   }
   const {query,regex = false,case_sensitive = false,globs = [],path = '',mode = 'files',context = 0,
-    type = null,limit = 200,offset = 0,multiline = false} = args;
+    type = null,limit = 100,offset = 0,multiline = false} = args;
   if (typeof query !== 'string' || !query) return invalid('query must be a nonempty string');
   if (!Number.isSafeInteger(context) || context < 0) return invalid('context must be a non-negative safe integer');
   if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
