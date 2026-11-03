@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Guide the model to read whole files and trust edit results instead of re-reading
+
 ## 0.1.21
 
 - Default file searches to 100 results and describe bounded model previews
