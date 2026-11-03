@@ -2,7 +2,7 @@ import {compact,price,integer,duration,ratio} from './format.js';
 
 /** Cache hit rates below this percentage are highlighted. */
 export const LOW_CACHE = 50;
-/** First text later than this many microseconds is highlighted. */
+/** Time to first token later than this many microseconds is highlighted. */
 export const SLOW_FIRST_TOKEN = 10000000n;
 /** Responses taking at least this many microseconds are highlighted. */
 export const SLOW_RESPONSE = 15000000n;

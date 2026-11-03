@@ -7,7 +7,7 @@ const text=messages('en');
 const indicator=state=>metrics(state,text).find(entry=>entry.id==='context');
 const parts=value=>CATEGORIES.map(([kind])=>({kind,items:'1',tokens:value,method:'estimate'}));
 const attempt=(values={})=>({index:'1',transport:'http',complete_context:true,categories:parts('10'),usage:null,
-  headers_us:null,first_text_us:null,elapsed_us:null,reasoning_reported:false,cache_reported:false,...values});
+  headers_us:null,first_token_us:null,elapsed_us:null,reasoning_reported:false,cache_reported:false,...values});
 const request=(id,values={})=>({id,turn:id,turn_index:'1',model:'previous',context_limit:'1000',attempts:[attempt()],...values});
 
 test('partial categories keep their observed share',()=>{
@@ -104,7 +104,7 @@ test('all context steps aggregate without retargeting session summaries',()=>{
     generation:{responses:'2',output_tokens:'100',elapsed_us:'20000000'},observations:{
       phases:{active_us:'20',waiting_us:'5',output_us:'5',tools_us:'10',other_us:'0'},
       composition:CATEGORIES.map(([kind])=>({kind,items:'30',tokens:'100',method:'estimate'})),
-      latency:{response_us:'100',first_text_us:'200',waiting_us:'100',elapsed_us:'400'},
+      latency:{response_us:'100',first_token_us:'200',waiting_us:'100',elapsed_us:'400'},
       recent:[step('first',1,10,{input:'100',output:'5'}),step('second',2,20)],
     }}};
   const before=structuredClone(state),all=overview(state);
@@ -205,7 +205,7 @@ test('partial payloads never become a complete window estimate',()=>{
 });
 test('latest failed attempt does not borrow successful timing',()=>{
   const values=overview({statistics:{observations:{recent:[request('call',{attempts:[
-    attempt({headers_us:'100',first_text_us:'200',elapsed_us:'500',status:200}),
+    attempt({headers_us:'100',first_token_us:'200',elapsed_us:'500',status:200}),
     attempt({outcome:'failed',status:503}),
   ]})]}}});
   assert.equal(values.connection.headers,null);
@@ -236,17 +236,17 @@ test('missing cache attribution remains unknown rather than zero',()=>{
   assert.equal(value.composition.at(-1).tokens,null);
 });
 test('session average replaces short request windows',()=>{
-  const latest=attempt({index:'2',headers_us:'6100000',first_text_us:'6888200',elapsed_us:'6891237',
+  const latest=attempt({index:'2',headers_us:'6100000',first_token_us:'6888200',elapsed_us:'6891237',
     usage:{input:'24200',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:true});
   const state={has_messages:true,statistics:{responses:'1',
     generation:{responses:'1',output_tokens:'14',elapsed_us:'8200000'},observations:{
-      latency:{response_us:'6100000',first_text_us:'6888200',waiting_us:'788200',elapsed_us:'4100000'},
+      latency:{response_us:'6100000',first_token_us:'6888200',waiting_us:'788200',elapsed_us:'4100000'},
       output_tokens:'13',output_us:'3037',output_samples:'1',recent:[request('last',{attempts:[
         attempt({transport:'web_socket',elapsed_us:'1308763',outcome:'failed'}),latest,
       ]})],
     }}};
   const before=structuredClone(state);
-  assert.equal((13*1000000/(Number(latest.elapsed_us)-Number(latest.first_text_us))).toFixed(1),'4280.5');
+  assert.equal((13*1000000/(Number(latest.elapsed_us)-Number(latest.first_token_us))).toFixed(1),'4280.5');
   const value=overview(state);
   assert.equal(metrics(state,text).find(entry=>entry.id==='composer_speed').value,'1.7/s');
   assert.equal(value.connection.speed,'1.7');
@@ -262,12 +262,12 @@ test('multiple requests retain full output and session timing',()=>{
   const state={has_messages:true,statistics:{responses:'3',
     usage:{input:'300',output:'56',reasoning:'4',cached_input:'0'},
     generation:{responses:'3',output_tokens:'56',elapsed_us:'20000000'},observations:{
-      latency:{response_us:'150000',first_text_us:'300000',waiting_us:'100000',elapsed_us:'6666666'},recent:[
-      request('first',{attempts:[attempt({elapsed_us:'10000000',first_text_us:'9000000',
+      latency:{response_us:'150000',first_token_us:'300000',waiting_us:'100000',elapsed_us:'6666666'},recent:[
+      request('first',{attempts:[attempt({elapsed_us:'10000000',first_token_us:'9000000',
         usage:{input:'100',output:'20',reasoning:'1',cached_input:'0'}})]}),
-      request('second',{turn_index:'2',attempts:[attempt({elapsed_us:'3108763',first_text_us:'3000000',
+      request('second',{turn_index:'2',attempts:[attempt({elapsed_us:'3108763',first_token_us:'3000000',
         usage:{input:'100',output:'22',reasoning:'2',cached_input:'0'}})]}),
-      request('third',{turn_index:'3',attempts:[attempt({elapsed_us:'6891237',first_text_us:'6888200',
+      request('third',{turn_index:'3',attempts:[attempt({elapsed_us:'6891237',first_token_us:'6888200',
         usage:{input:'100',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:false})]}),
     ]}}};
   const value=overview(state,'first');
@@ -284,7 +284,7 @@ test('multiple requests retain full output and session timing',()=>{
 
 test('session averages preserve historical and unknown timing',()=>{
   const observations={output_tokens:'13',output_us:'3037',output_samples:'1',recent:[request('old',{
-    attempts:[attempt({elapsed_us:'6891237',first_text_us:'6888200',
+    attempts:[attempt({elapsed_us:'6891237',first_token_us:'6888200',
       usage:{input:'100',output:'14',reasoning:'1',cached_input:'0'},reasoning_reported:true})],
   })]};
   for(const generation of [null,undefined,{output_tokens:'14'},{output_tokens:'14',elapsed_us:'0'}]) {
@@ -305,8 +305,8 @@ test('session averages preserve historical and unknown timing',()=>{
 
 test('connection means never borrow latest handshake timing',()=>{
   const latest={attempt:attempt({transport:'web_socket',headers_us:'20',response_us:'80',
-    first_text_us:'140',elapsed_us:'300'})};
-  const state={statistics:{observations:{latency:{response_us:'80',first_text_us:'140',waiting_us:'60',elapsed_us:'300'}}}};
+    first_token_us:'140',elapsed_us:'300'})};
+  const state={statistics:{observations:{latency:{response_us:'80',first_token_us:'140',waiting_us:'60',elapsed_us:'300'}}}};
   let value=connection(state,latest);
   assert.equal(value.headers,20n);
   assert.equal(value.response,80n);
@@ -322,11 +322,11 @@ test('connection means never borrow latest handshake timing',()=>{
 
 test('connection means retain independently paired waiting samples',()=>{
   const attempts=[
-    attempt({transport:'web_socket',response_us:'10',first_text_us:'100',elapsed_us:'120',outcome:'failed'}),
-    attempt({transport:'web_socket',response_us:'200',first_text_us:'350',elapsed_us:'400'}),
+    attempt({transport:'web_socket',response_us:'10',first_token_us:'100',elapsed_us:'120',outcome:'failed'}),
+    attempt({transport:'web_socket',response_us:'200',first_token_us:'350',elapsed_us:'400'}),
   ];
   const state={statistics:{first_token_us:'9000',observations:{
-    latency:{response_us:'200',first_text_us:'350',waiting_us:'7',elapsed_us:'100'},recent:[request('retry',{attempts})]}}};
+    latency:{response_us:'200',first_token_us:'350',waiting_us:'7',elapsed_us:'100'},recent:[request('retry',{attempts})]}}};
   assert.equal(overview(state).connection.response,200n);
   assert.equal(overview(state).connection.first,350n);
   assert.equal(overview(state).connection.waiting,7n);
@@ -337,7 +337,7 @@ test('connection means retain independently paired waiting samples',()=>{
   assert.equal(overview(state).connection.response,200n);
   state.statistics.observations.latency.waiting_us=null;
   assert.equal(overview(state).connection.waiting,null);
-  state.statistics.observations.latency={response_us:'0',first_text_us:'0',waiting_us:'0',elapsed_us:'0'};
+  state.statistics.observations.latency={response_us:'0',first_token_us:'0',waiting_us:'0',elapsed_us:'0'};
   assert.equal(overview(state).connection.response,0n);
   assert.equal(overview(state).connection.waiting,0n);
 });
@@ -353,7 +353,7 @@ test('latency colors preserve unknown and stage boundaries',()=>{
   assert.equal(latency('10000000','waiting'),'success');
   assert.equal(latency('10000001','waiting'),'warning');
   assert.equal(latency('15000000','waiting'),'destructive');
-  const value=connection({}, {attempt:attempt({response_us:'-1',first_text_us:'invalid',elapsed_us:'10'})});
+  const value=connection({}, {attempt:attempt({response_us:'-1',first_token_us:'invalid',elapsed_us:'10'})});
   assert.equal(value.response,null);
   assert.equal(value.first,null);
   assert.equal(value.waiting,null);

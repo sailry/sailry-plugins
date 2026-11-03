@@ -220,7 +220,7 @@ test('request tables fill the session column and split cache hits',async()=>{
   const content=requests({state,text:messages('en'),inventory},{...data([request]),node}),table=nodes.get('usage-requests');
   assert.equal(content.items[1].selector,'usage-table');assert.equal(nodes.get('usage-table').calls.h[0],72);
   assert.equal(table.kind,'DataTable');assert.equal(table.props.row_height,40);assert.equal(table.props.header_height,32);
-  assert.deepEqual(plain(table.props.columns),['Time','Session','Model','Input','Cached','Output','First token','Duration','Cost']);
+  assert.deepEqual(plain(table.props.columns),['Time','Session','Model','Input','Cached','Output','TTFT','Duration','Cost']);
   assert.deepEqual(plain(table.props.alignments),['start','start','start','end','end','end','end','end','end']);
   assert.equal(table.props.widths.length,9);assert.equal(table.props.fill,1);
   assert(table.props.widths.slice(5).every(width=>width>=72));

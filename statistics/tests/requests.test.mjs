@@ -26,7 +26,7 @@ test('cache rates floor and cap cached input',()=>{
   assert.equal(hits(null),null);
 });
 
-test('slow thresholds are strict for first text and inclusive for duration',()=>{
+test('slow thresholds are strict for first token and inclusive for duration',()=>{
   assert(!lateStart('10000000'));assert(lateStart('10000001'));assert(!lateStart(null));
   assert(!longResponse('14999999'));assert(longResponse('15000000'));assert(!longResponse(null));
 });

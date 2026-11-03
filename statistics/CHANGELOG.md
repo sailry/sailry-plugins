@@ -1,3 +1,7 @@
+## 0.1.26
+
+- Show time to first token (TTFT) measured at the first streamed reasoning, text or tool call
+
 ## 0.1.25
 
 - Show tooltips on context step bars, markers and notes, including the step's model

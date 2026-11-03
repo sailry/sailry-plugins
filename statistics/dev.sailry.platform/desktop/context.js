@@ -157,7 +157,7 @@ export function timing(observations,generation=null) {
 export function connection(state,latest) {
   const attempt=latest?.attempt,latency=state.statistics?.observations?.latency;
   return {headers:measured(attempt?.headers_us),response:measured(latency?.response_us),
-    first:measured(latency?.first_text_us),elapsed:measured(latency?.elapsed_us),waiting:measured(latency?.waiting_us),
+    first:measured(latency?.first_token_us),elapsed:measured(latency?.elapsed_us),waiting:measured(latency?.waiting_us),
     speed:speed(state.statistics?.generation),
     transport:attempt?.transport??null,status:attempt?.status??null,reused:attempt?.reused??null,
     outcome:attempt?.outcome??null,route:state.connection?.route??null,rtt:state.connection?.rtt_ms??null,

@@ -20,7 +20,7 @@ test('context pairs each observation with its captured limit',()=>{
   assert.equal(measured().percent,50);
   assert.deepEqual(before.statistics,{context_tokens:'100',context_limit:200});
 });
-test('speed details use latest own first text latency',()=>{
+test('speed details use latest own time to first token',()=>{
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
     for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
