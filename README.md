@@ -58,6 +58,10 @@ points to an existing commit. Unrelated repository or catalog-only commits do no
 change package history. Missing historical translations are omitted.
 When historical source reset package versions, the current version lineage ends
 at that reset; retired higher versions are not offered as current releases.
+`catalog-withdrawn.json` lists historical versions omitted from new catalogs
+when their compatibility metadata is wrong. Withdrawals leave immutable
+package commits and installed captures intact; the next compatible historical
+version remains available to older applications.
 
 ## Working with the application submodule
 

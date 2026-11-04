@@ -18696,11 +18696,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.26",
+        "version": "0.1.27",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.2",
+            "min_sailry_version": "0.1.3",
             "actions": [
               "usage.read",
               "conversation.read"
@@ -18866,13 +18866,13 @@
       ],
       "versions": [
         {
-          "version": "0.1.26",
-          "commit": "a67ce57382a0528109acd506c702bae394cafafa",
-          "min_sailry_version": "0.1.2",
+          "version": "0.1.27",
+          "commit": "fdf40e5b41016d696b4e27848f62f65761b0ceb4",
+          "min_sailry_version": "0.1.3",
           "release_notes": {
-            "text": "- Show time to first token (TTFT) measured at the first streamed reasoning, text or tool call",
+            "text": "- Require Sailry 0.1.3 for first-token timing data",
             "locales": {
-              "zh-CN": "- 首 Token 延迟（TTFT）改为按首个流式推理、文本或工具调用计算"
+              "zh-CN": "- 首 Token 延迟数据需要 Sailry 0.1.3"
             }
           }
         },
@@ -19139,9 +19139,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show time to first token (TTFT) measured at the first streamed reasoning, text or tool call",
+        "text": "- Require Sailry 0.1.3 for first-token timing data",
         "locales": {
-          "zh-CN": "- 首 Token 延迟（TTFT）改为按首个流式推理、文本或工具调用计算"
+          "zh-CN": "- 首 Token 延迟数据需要 Sailry 0.1.3"
         }
       }
     },

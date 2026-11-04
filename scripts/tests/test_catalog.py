@@ -294,6 +294,27 @@ class History(unittest.TestCase):
                              [("0.1.1", latest), ("0.1.0", reset)])
             self.assertEqual(records[1]["release_notes"], {"text": "- Current lineage"})
 
+    def test_withdraws_incompatible_historical_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            compatible = release(root, "0.1.25", "0.1.2")
+            withdrawn = release(root, "0.1.26", "0.1.2")
+            latest = release(root, "0.1.27", "0.1.3")
+            (root / "catalog-withdrawn.json").write_text('{"sample":["0.1.26"]}')
+            commit(root, "Withdraw incompatible release")
+            records = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertEqual([(record["version"], record["commit"]) for record in records],
+                             [("0.1.27", latest), ("0.1.25", compatible)])
+            self.assertEqual([record["min_sailry_version"] for record in records],
+                             ["0.1.3", "0.1.2"])
+            self.assertNotIn(withdrawn, [record["commit"] for record in records])
+            for invalid in ('{"sample":["0.1.27"]}', '{"sample":["0.1.26","0.1.26"]}',
+                            '{"sample":["0.1.24"]}', '{"other":["0.1.26"]}'):
+                (root / "catalog-withdrawn.json").write_text(invalid)
+                with self.assertRaisesRegex(ValueError, "Invalid catalog withdrawal"):
+                    catalog.catalog(root)
+
     def test_rejects_incomplete_checkouts(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "source"
