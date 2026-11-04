@@ -1,3 +1,7 @@
+## 0.1.27
+
+- Require Sailry 0.1.3 for first-token timing data
+
 ## 0.1.26
 
 - Show time to first token (TTFT) measured at the first streamed reasoning, text or tool call
