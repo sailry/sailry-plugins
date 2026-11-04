@@ -1,3 +1,7 @@
+## 0.1.28
+
+- Label time to first token as TTFT
+
 ## 0.1.27
 
 - Require Sailry 0.1.3 for first-token timing data

@@ -172,7 +172,7 @@ const locales = {
     "usage_column_model": "模型",
     "usage_column_provider": "供应商",
     "usage_column_project": "项目",
-    "usage_column_first_token": "首 Token 延迟",
+    "usage_column_first_token": "TTFT",
     "usage_column_input": "输入",
     "usage_column_output": "输出",
     "usage_column_cached": "缓存",
@@ -194,7 +194,7 @@ const locales = {
     "composer_turns": "轮次",
     "composer_cost": "估算费用",
     "composer_speed": "会话均速",
-    "composer_first_token": "首 Token 延迟",
+    "composer_first_token": "TTFT",
     "composer_cache": "缓存率",
     "composer_cache_hit": "命中率",
     "composer_cost_input": "输入",
@@ -231,7 +231,7 @@ const locales = {
   "de": {
     "composer_speed": "Sitzungsdurchschnitt",
     "composer_context_estimate": "Geschätzter Kontext %{used} / %{limit}",
-    "composer_first_token": "Zeit bis zum ersten Token",
+    "composer_first_token": "TTFT",
     "context_title": "Kontext",
     "context_occupancy": "Nutzung / Kapazität",
     "context_basis": "Grundlage",
@@ -250,7 +250,7 @@ const locales = {
   "es": {
     "composer_speed": "Promedio de sesión",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
-    "composer_first_token": "Tiempo hasta el primer token",
+    "composer_first_token": "TTFT",
     "context_title": "Contexto",
     "context_occupancy": "Uso / capacidad",
     "context_basis": "Base",
@@ -269,7 +269,7 @@ const locales = {
   "fr": {
     "composer_speed": "Moyenne de la session",
     "composer_context_estimate": "Contexte estimé %{used} / %{limit}",
-    "composer_first_token": "Délai du premier token",
+    "composer_first_token": "TTFT",
     "context_title": "Contexte",
     "context_occupancy": "Utilisation / capacité",
     "context_basis": "Base",
@@ -288,7 +288,7 @@ const locales = {
   "ja": {
     "composer_speed": "セッション平均速度",
     "composer_context_estimate": "推定コンテキスト %{used} / %{limit}",
-    "composer_first_token": "最初のトークンまでの時間",
+    "composer_first_token": "TTFT",
     "context_title": "コンテキスト",
     "context_occupancy": "使用量 / 容量",
     "context_basis": "基準",
@@ -307,7 +307,7 @@ const locales = {
   "ko": {
     "composer_speed": "세션 평균 속도",
     "composer_context_estimate": "예상 컨텍스트 %{used} / %{limit}",
-    "composer_first_token": "첫 토큰 지연",
+    "composer_first_token": "TTFT",
     "context_title": "컨텍스트",
     "context_occupancy": "사용량 / 용량",
     "context_basis": "기준",
@@ -326,7 +326,7 @@ const locales = {
   "pt-BR": {
     "composer_speed": "Média da sessão",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
-    "composer_first_token": "Tempo até o primeiro token",
+    "composer_first_token": "TTFT",
     "context_title": "Contexto",
     "context_occupancy": "Uso / capacidade",
     "context_basis": "Base",
@@ -345,7 +345,7 @@ const locales = {
   "ru": {
     "composer_speed": "Средняя скорость сеанса",
     "composer_context_estimate": "Оценка контекста %{used} / %{limit}",
-    "composer_first_token": "Время до первого токена",
+    "composer_first_token": "TTFT",
     "context_title": "Контекст",
     "context_occupancy": "Использование / ёмкость",
     "context_basis": "Основа",
@@ -364,7 +364,7 @@ const locales = {
   "zh-TW": {
     "composer_speed": "工作階段平均速度",
     "composer_context_estimate": "估算上下文 %{used} / %{limit}",
-    "composer_first_token": "首 Token 延遲",
+    "composer_first_token": "TTFT",
     "context_title": "上下文",
     "context_occupancy": "佔用 / 容量",
     "context_basis": "口徑",

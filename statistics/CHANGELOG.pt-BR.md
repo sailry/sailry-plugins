@@ -1,3 +1,7 @@
+## 0.1.28
+
+- O tempo até o primeiro token aparece como TTFT
+
 ## 0.1.20
 
 - Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma
