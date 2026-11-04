@@ -1738,7 +1738,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1938,6 +1938,13 @@
       ],
       "versions": [
         {
+          "version": "0.1.12",
+          "commit": "122c88692a1307897aba335ba08aa89dd25a3479",
+          "release_notes": {
+            "text": "- Keep code context results when a matched file changed after indexing."
+          }
+        },
+        {
           "version": "0.1.11",
           "commit": "0755989f3ff309c32788a48019fc87ff20f76b84",
           "release_notes": {
@@ -2036,7 +2043,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Describe when to use code search, context and outline instead of text search.\n- Return compact symbols with 1-based lines from code context."
+        "text": "- Keep code context results when a matched file changed after indexing."
       }
     },
     {
