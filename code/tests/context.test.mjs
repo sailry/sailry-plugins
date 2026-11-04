@@ -108,21 +108,28 @@ test('bounds metadata before requesting source',() => {
   assert.ok(Buffer.byteLength(JSON.stringify(completed.result)) <= 512);
 });
 
-test('returns revision conflicts without stale expansion',() => {
+test('skips a changed file without stale expansion',() => {
   const pending = search([symbol()]);
   const outcome = {isError:true,error:{code:'revision_conflict',message:'File changed'}};
-  assert.deepEqual(context({step:2,state:pending.state,outcome}),{result:outcome});
+  const completed = context({step:2,state:pending.state,outcome});
+  assert.equal(completed.result.isError,undefined);
+  assert.equal(completed.result.partial,true);
+  assert.deepEqual(completed.result.snippets,[]);
+  assert.equal(completed.result.symbols.length,1);
 });
 
-test('stops remaining reads after a later conflict',() => {
+test('continues revision-checked reads after a later conflict',() => {
   const first = search([symbol('first.rs'),symbol('changed.rs'),symbol('remaining.rs')]);
   const second = context({step:2,state:first.state,outcome:reply(first)});
   assert.equal(second.call.arguments.path,'changed.rs');
   assert.equal(second.state.data.snippets.length,1);
   const outcome = {isError:true,error:{code:'revision_conflict',message:'File changed'}};
-  const completed = context({step:3,state:second.state,outcome});
-  assert.deepEqual(completed,{result:outcome});
-  assert.equal(completed.call,undefined);
+  const third = context({step:3,state:second.state,outcome});
+  assert.equal(third.call.arguments.path,'remaining.rs');
+  assert.equal(third.state.data.partial,true);
+  const completed = context({step:4,state:third.state,outcome:reply(third)});
+  assert.deepEqual(completed.result.snippets.map(snippet => snippet.path),['first.rs','remaining.rs']);
+  assert.equal(completed.result.partial,true);
 });
 
 test('rejects a mismatched successful source revision',() => {

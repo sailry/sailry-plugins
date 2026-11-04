@@ -161,14 +161,17 @@ export function context({arguments:input={},step,state,outcome}) {
       const limits = options(input);
       return {call:{operation:'code.search',arguments:limits.query},state:{...limits,next:0}};
     }
-    if (outcome?.isError) return {result:outcome};
+    if (outcome?.isError && step === 1) return {result:outcome};
     if (step === 1) {
       const data = metadata(outcome?.data,state.query.limit,state.budget);
       state = {...state,data,ranges:ranges(data,state.snippets)};
       data.symbols = data.symbols.map(compact);
     } else {
       if (!state?.ranges || state.next !== step-2) return invalid('Invalid code context continuation');
-      append(state,outcome?.data);
+      // A file edited after indexing fails its revision-checked read; keep the
+      // symbols and other snippets and mark the result partial.
+      if (outcome?.isError) state.data.partial = true;
+      else append(state,outcome?.data);
       state.next++;
     }
     if (state.next >= state.ranges.length || size(state.data)+128 >= state.budget) {

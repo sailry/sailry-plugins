@@ -1,3 +1,7 @@
+## 0.1.12
+
+- Keep code context results when a matched file changed after indexing.
+
 ## 0.1.11
 
 - Describe when to use code search, context and outline instead of text search.
