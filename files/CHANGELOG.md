@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Keep the Preview and Source switch inset at its full width in narrow toolbars
+
 ## 0.1.22
 
 - Guide the model to read whole files and trust edit results instead of re-reading

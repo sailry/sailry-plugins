@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Conserver la largeur et la marge intérieure du sélecteur Aperçu et Source dans les barres d'outils étroites
+
 ## 0.1.22
 
 - Inviter le modèle à lire les fichiers en entier et à utiliser le résultat des modifications sans relire
