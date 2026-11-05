@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Ask agents to set follow_up when they wait for a background command
+
 ## 0.1.15
 
 - Make conversation follow-up for background commands opt in
