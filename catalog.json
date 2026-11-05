@@ -7861,7 +7861,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -9633,6 +9633,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "b8b9d97c021fb4d98fc9ba888382c484df3d6cb1",
+          "min_sailry_version": "0.1.0-alpha.6",
+          "release_notes": {
+            "text": "- Keep the Preview and Source switch inset at its full width in narrow toolbars",
+            "locales": {
+              "zh-CN": "- 窄工具栏中的预览与源码切换保持完整宽度和内边距",
+              "zh-TW": "- 窄工具列中的預覽與原始碼切換保持完整寬度和內距",
+              "ja": "- 狭いツールバーでもプレビューとソースの切り替えを本来の幅と余白で表示",
+              "ko": "- 좁은 도구 모음에서도 미리 보기와 소스 전환이 원래 너비와 여백을 유지",
+              "fr": "- Conserver la largeur et la marge intérieure du sélecteur Aperçu et Source dans les barres d'outils étroites",
+              "de": "- Den Umschalter für Vorschau und Quelltext in schmalen Werkzeugleisten in voller Breite mit Innenabstand anzeigen",
+              "es": "- Mantener el selector de vista previa y código con su ancho y margen interior en barras estrechas",
+              "pt-BR": "- Manter a largura e o espaçamento interno do seletor de visualização e código-fonte em barras estreitas",
+              "ru": "- Переключатель просмотра и исходного кода сохраняет полную ширину и отступы на узкой панели инструментов"
+            }
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "1c78d3dc7d8295970eadea0ba760b2ec11a410c3",
           "min_sailry_version": "0.1.0-alpha.6",
@@ -9808,17 +9827,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Guide the model to read whole files and trust edit results instead of re-reading",
+        "text": "- Keep the Preview and Source switch inset at its full width in narrow toolbars",
         "locales": {
-          "zh-CN": "- 引导模型一次读取完整文件，并直接使用编辑结果而非重新读取",
-          "zh-TW": "- 引導模型一次讀取完整檔案，並直接使用編輯結果而非重新讀取",
-          "ja": "- ファイル全体を一度に読み、再読み込みせずに編集結果を使うようモデルを案内",
-          "ko": "- 파일 전체를 한 번에 읽고 다시 읽지 않고 편집 결과를 사용하도록 모델 안내",
-          "fr": "- Inviter le modèle à lire les fichiers en entier et à utiliser le résultat des modifications sans relire",
-          "de": "- Modell anleiten, Dateien vollständig zu lesen und Bearbeitungsergebnisse ohne erneutes Lesen zu nutzen",
-          "es": "- Indicar al modelo que lea archivos completos y use el resultado de la edición sin volver a leer",
-          "pt-BR": "- Orientar o modelo a ler arquivos inteiros e usar o resultado da edição sem reler",
-          "ru": "- Модель читает файлы целиком и использует результат правки без повторного чтения"
+          "zh-CN": "- 窄工具栏中的预览与源码切换保持完整宽度和内边距",
+          "zh-TW": "- 窄工具列中的預覽與原始碼切換保持完整寬度和內距",
+          "ja": "- 狭いツールバーでもプレビューとソースの切り替えを本来の幅と余白で表示",
+          "ko": "- 좁은 도구 모음에서도 미리 보기와 소스 전환이 원래 너비와 여백을 유지",
+          "fr": "- Conserver la largeur et la marge intérieure du sélecteur Aperçu et Source dans les barres d'outils étroites",
+          "de": "- Den Umschalter für Vorschau und Quelltext in schmalen Werkzeugleisten in voller Breite mit Innenabstand anzeigen",
+          "es": "- Mantener el selector de vista previa y código con su ancho y margen interior en barras estrechas",
+          "pt-BR": "- Manter a largura e o espaçamento interno do seletor de visualização e código-fonte em barras estreitas",
+          "ru": "- Переключатель просмотра и исходного кода сохраняет полную ширину и отступы на узкой панели инструментов"
         }
       }
     },

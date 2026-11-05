@@ -24,7 +24,8 @@ function separator(colors) {
 }
 
 // Approximate pixel widths for collapsing; scripts cannot measure each control.
-const BUTTON = 32, SEPARATOR = 10, BLOCK = 132, SWITCH = 68, PADDING = 24;
+// SWITCH is Kit's icon-only segmented bar (two 30px segments, 2px gap, 4px padding) plus the row gap.
+const BUTTON = 32, SEPARATOR = 10, BLOCK = 132, SWITCH = 74, PADDING = 24;
 export const toolbarMenus = new Set(['file-block-menu','file-insert-menu','file-more-menu']);
 
 function blockLabel(text, block) {
@@ -133,9 +134,11 @@ export function toolbar(view, document, colors) {
       .child(div().flex_1())
       .children(render(visible.slice(trailing)).slice(visible.length > trailing ? 1 : 0))
       .children(hidden.length ? [overflow(view,hidden)] : [])
-      .children(mode ? [separator(colors),SegmentedTabs.new('file-editor-mode',{selected:document.mode,items:[
-        {id:'document',label:document.notebook ? text.content_preview : text.content_document,icon:'eye'},
-        {id:'source',label:text.content_source,icon:'code-xml'}]})] : []));
+      // Kit's tab bar scrolls when squeezed, which clips its padding; keep the switch at its own width.
+      .children(mode ? [separator(colors),div().h_flex().flex_shrink(0).child(SegmentedTabs.new('file-editor-mode',{
+        selected:document.mode,items:[
+          {id:'document',label:document.notebook ? text.content_preview : text.content_document,icon:'eye'},
+          {id:'source',label:text.content_source,icon:'code-xml'}]}))] : []));
 }
 
 function footer(view, document, colors) {
