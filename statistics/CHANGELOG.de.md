@@ -1,3 +1,7 @@
+## 0.1.28
+
+- Zeit bis zum ersten Token wird als TTFT angezeigt
+
 ## 0.1.20
 
 - Durchschnittliche Sitzungsverbindungen anzeigen und Kontextdetails aller oder einzelner Schritte umschalten

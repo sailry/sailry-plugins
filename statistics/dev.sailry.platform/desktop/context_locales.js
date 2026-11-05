@@ -137,7 +137,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "费用",
     "context_cache_hit": "缓存命中",
-    "context_first_response": "首 Token 延迟",
+    "context_first_response": "TTFT",
     "context_output_speed": "会话均速",
     "context_request_time": "请求耗时"
   },
@@ -208,7 +208,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "費用",
     "context_cache_hit": "快取命中",
-    "context_first_response": "首 Token 延遲",
+    "context_first_response": "TTFT",
     "context_output_speed": "工作階段平均速度",
     "context_request_time": "請求耗時"
   },
@@ -279,7 +279,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "Kosten",
     "context_cache_hit": "Cache-Treffer",
-    "context_first_response": "Zeit bis zum ersten Token",
+    "context_first_response": "TTFT",
     "context_output_speed": "Sitzungsdurchschnitt",
     "context_request_time": "Anfragedauer"
   },
@@ -350,7 +350,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "Coste",
     "context_cache_hit": "Aciertos de caché",
-    "context_first_response": "Tiempo hasta el primer token",
+    "context_first_response": "TTFT",
     "context_output_speed": "Promedio de sesión",
     "context_request_time": "Tiempo de solicitud"
   },
@@ -421,7 +421,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "Coût",
     "context_cache_hit": "Succès du cache",
-    "context_first_response": "Délai du premier token",
+    "context_first_response": "TTFT",
     "context_output_speed": "Moyenne de la session",
     "context_request_time": "Durée de requête"
   },
@@ -492,7 +492,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "費用",
     "context_cache_hit": "キャッシュ命中",
-    "context_first_response": "最初のトークンまでの時間",
+    "context_first_response": "TTFT",
     "context_output_speed": "セッション平均速度",
     "context_request_time": "リクエスト時間"
   },
@@ -563,7 +563,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "비용",
     "context_cache_hit": "캐시 적중",
-    "context_first_response": "첫 토큰 지연",
+    "context_first_response": "TTFT",
     "context_output_speed": "세션 평균 속도",
     "context_request_time": "요청 시간"
   },
@@ -634,7 +634,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "Custo",
     "context_cache_hit": "Acertos de cache",
-    "context_first_response": "Tempo até o primeiro token",
+    "context_first_response": "TTFT",
     "context_output_speed": "Média da sessão",
     "context_request_time": "Tempo da solicitação"
   },
@@ -705,7 +705,7 @@ export const contextLocales = {
     "context_minutes": "%{minutes}m %{seconds}s",
     "context_cost": "Стоимость",
     "context_cache_hit": "Попадания в кэш",
-    "context_first_response": "Время до первого токена",
+    "context_first_response": "TTFT",
     "context_output_speed": "Средняя скорость сеанса",
     "context_request_time": "Время запроса"
   }

@@ -18715,7 +18715,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.27",
+        "version": "0.1.28",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -18884,6 +18884,25 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.28",
+          "commit": "4c5341eebb6b55e4cbedea288a580df83ec19741",
+          "min_sailry_version": "0.1.3",
+          "release_notes": {
+            "text": "- Label time to first token as TTFT",
+            "locales": {
+              "zh-CN": "- 首 Token 延迟统一显示为 TTFT",
+              "zh-TW": "- 首 Token 延遲統一顯示為 TTFT",
+              "ja": "- 最初のトークンまでの時間を TTFT と表示",
+              "ko": "- 첫 토큰 지연을 TTFT로 표시",
+              "fr": "- Le délai du premier token s’affiche comme TTFT",
+              "de": "- Zeit bis zum ersten Token wird als TTFT angezeigt",
+              "es": "- El tiempo hasta el primer token se muestra como TTFT",
+              "pt-BR": "- O tempo até o primeiro token aparece como TTFT",
+              "ru": "- Время до первого токена отображается как TTFT"
+            }
+          }
+        },
         {
           "version": "0.1.27",
           "commit": "fdf40e5b41016d696b4e27848f62f65761b0ceb4",
@@ -19158,9 +19177,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Require Sailry 0.1.3 for first-token timing data",
+        "text": "- Label time to first token as TTFT",
         "locales": {
-          "zh-CN": "- 首 Token 延迟数据需要 Sailry 0.1.3"
+          "zh-CN": "- 首 Token 延迟统一显示为 TTFT",
+          "zh-TW": "- 首 Token 延遲統一顯示為 TTFT",
+          "ja": "- 最初のトークンまでの時間を TTFT と表示",
+          "ko": "- 첫 토큰 지연을 TTFT로 표시",
+          "fr": "- Le délai du premier token s’affiche comme TTFT",
+          "de": "- Zeit bis zum ersten Token wird als TTFT angezeigt",
+          "es": "- El tiempo hasta el primer token se muestra como TTFT",
+          "pt-BR": "- O tempo até o primeiro token aparece como TTFT",
+          "ru": "- Время до первого токена отображается как TTFT"
         }
       }
     },

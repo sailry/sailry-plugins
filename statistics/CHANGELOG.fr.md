@@ -1,3 +1,7 @@
+## 0.1.28
+
+- Le délai du premier token s’affiche comme TTFT
+
 ## 0.1.20
 
 - Afficher les moyennes de connexion de session et basculer entre tous les détails de contexte et une étape
