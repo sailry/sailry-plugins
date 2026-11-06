@@ -116,6 +116,7 @@ export class Actions {
   async submit() {
     const dialog = this.dialog, repo = this.view.repo;
     if (!dialog || dialog.busy) return;
+    if (dialog.operation === 'initialize') { this.close(); await repo.initialize(); return; }
     let draft, name = dialog.input ? readText(dialog.input) : null, extra = dialog.extra ? readText(dialog.extra) : null;
     if (dialog.input && !name.length) { dialog.error = 'git_branch_name_required'; this.view.report(dialog.error); this.view.notify(); return; }
     if (dialog.form === 'branch') draft = dialog.commit ? {kind:'create',name,commit:dialog.commit}

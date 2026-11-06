@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- List Git repositories inside a plain directory and confirm before initializing around them
+
 ## 0.1.23
 
 - Read status counts on the execution Node and share localized change details across controllers

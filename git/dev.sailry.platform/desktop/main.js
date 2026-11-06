@@ -126,7 +126,11 @@ export default class Git extends View {
   amend(cx) { this.repo.toggleAmend(); setText(this.message,this.repo.message); cx.notify(); }
   control(id,cx,value) {
     if (id === 'git-refresh') this.run(() => this.repo.refresh(true),cx);
-    else if (id === 'git-initialize') this.run(() => this.repo.initialize(),cx);
+    else if (id === 'git-initialize') {
+      const repositories = views.nested(this.repo.status);
+      if (repositories.length) this.actions.confirm({kind:'confirm',title:'git_initialize',target:repositories.join('\n'),operation:'initialize'});
+      else this.run(() => this.repo.initialize(),cx);
+    }
     else if (id === 'git-branch-menu' && this.repo.branches) this.actions.choose('git_checkout',this.menus.checkout());
     else if (id === 'git-expand-commit') this.repo.commitOpen = !this.repo.commitOpen;
     else if (id === 'git-views' && ['changes','history'].includes(value) && this.repo.view !== value) {

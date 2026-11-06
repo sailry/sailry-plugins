@@ -343,6 +343,38 @@ test('uninitialized sidebars expose the existing initialization action', () => {
   assert.equal(descendants(empty(view,true)).some(node=>node.kind==='button'),false);
 });
 
+test('plain directories list child repositories and demote initialization', () => {
+  const {empty} = vm.runInNewContext(`${source}\n({empty})`,{
+    div:() => element('div'),theme:() => ({colors:{border:'#ddd',muted_foreground:'#999'}}),
+    EmptyState:{new:(id,props) => element('empty',{id,...props})},
+    IconButton:{new:(id,props) => element('button',{id,...props})},
+    Button:class {constructor(id) {return element('button',{id});}},
+    Icon:class {constructor(path) {return element('icon',{path});}},
+  });
+  const calls=[],cx={};
+  const view = {text:{git_directory_title:'Not initialized',git_initialize:'Initialize Git',
+    git_repository:'Contains 1 Git repository',git_repositories:'Contains %{count} Git repositories'},
+    repo:{status:{kind:'directory',repositories:['api','web']},canInitialize:()=>true},control:(...args)=>calls.push(args)};
+  const sidebar=empty(view,true),main=empty(view);
+  assert.equal(sidebar.props.id,'git_repositories-sidebar');
+  assert.equal(sidebar.props.label,'Contains 2 Git repositories');
+  assert.deepEqual(descendants(sidebar).flatMap(node=>node.items).filter(item=>typeof item==='string'),['api','web']);
+  assert.ok(descendants(sidebar).filter(node=>node.kind==='icon').every(node=>node.props.path==='icons/folder.svg'));
+  const action=descendants(sidebar).find(node=>node.kind==='button');
+  assert.equal(action.props.id,'git-initialize-sidebar');
+  assert.deepEqual(action.style.ghost,[]);
+  assert.equal(action.style.primary,undefined);
+  action.style.on_click[0](null,cx);
+  assert.deepEqual(calls,[['git-initialize',cx]]);
+  const secondary=descendants(main).find(node=>node.kind==='button');
+  assert.equal(secondary.props.id,'git-initialize');
+  assert.equal(secondary.props.variant,undefined);
+  view.repo.status={kind:'directory',repositories:['api']};
+  assert.equal(empty(view,true).props.label,'Contains 1 Git repository');
+  view.repo.status={kind:'directory'};
+  assert.equal(empty(view,true).props.id,'git_directory_title-sidebar');
+});
+
 test('main tabs use the Shell; embedded tabs remain local', () => {
   const {header} = vm.runInNewContext(`${source}\n({header})`,{
     div:() => element('div'),Header:{new:(id,props) => element('metadata',{id,...props})},

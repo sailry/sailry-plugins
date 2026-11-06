@@ -123,6 +123,16 @@ test('branch submissions retain the selected starting commit',async()=>{
   assert.deepEqual(state.prepared,[{kind:'create',name:'topic',commit:'selected-commit'}]);
 });
 
+test('confirmed initialization uses the repository owner instead of a dialog draft',async()=>{
+  const state=fixture(),initialized=[];
+  state.owner.view.repo.initialize=async()=>{initialized.push(true);return true;};
+  state.owner.confirm({kind:'confirm',title:'git_initialize',target:'api\nweb',operation:'initialize'});
+  await state.owner.submit();
+  assert.deepEqual(initialized,[true]);
+  assert.equal(state.owner.dialog,null);
+  assert.deepEqual(state.prepared,[]);
+});
+
 test('closing failed forms releases capacity for later operations',async()=>{
   const state=fixture(Array.from({length:17},()=>({Err:{code:'conflict'}})));
   for(let index=0;index<17;index++) {

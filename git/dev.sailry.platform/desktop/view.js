@@ -11,19 +11,40 @@ const fileName = path => path.split('/').at(-1);
 const parent = path => path.includes('/') ? path.slice(0,path.lastIndexOf('/')) : '';
 const click = (view,value) => (_,cx) => view.run(() => view.actions.invoke(value),cx);
 
+export const nested = status => status?.kind === 'directory' ? status.repositories ?? [] : [];
+
 export function empty(view,changes = false) {
   const repo = view.repo, colors = theme().colors;
   if (!repo.status) return div().id('git_loading').flex_1().min_h_0();
-  let title = !repo.status ? null : repo.status.kind === 'directory' ? 'git_directory_title'
+  const repositories = nested(repo.status);
+  let title = !repo.status ? null : repo.status.kind === 'directory' ? repositories.length ? 'git_repositories' : 'git_directory_title'
     : repo.status.kind === 'unborn' ? 'git_unborn_title' : changes ? 'git_no_changes' : 'git_diff_empty';
   if (changes && repo.status && repo.status.kind !== 'directory') return div().flex_1().min_h_0().px_4().py_6().text_sm().text_color(colors.muted_foreground).child(view.text.git_no_changes);
   if (!title) return div().flex_1().min_h_0();
-  const empty = EmptyState.new(changes ? `${title}-sidebar` : title,{...(changes ? {variant:'list',fill_height:true} : {}),icon:'network',label:view.text[title]});
+  const label = repositories.length === 1 ? view.text.git_repository : repositories.length
+    ? view.text.git_repositories.replace('%{count}',String(repositories.length)) : view.text[title];
+  const empty = EmptyState.new(changes ? `${title}-sidebar` : title,{...(changes ? {variant:'list',fill_height:true} : {}),icon:'network',label});
+  if (repositories.length) {
+    const action = changes
+      ? new Button('git-initialize-sidebar').ghost().size('small').label(view.text.git_initialize).disabled(!repo.canInitialize())
+        .loading(repo.pending?.kind === 'initialize' && !!repo.pending.busy).on_click((_,cx) => view.control('git-initialize',cx))
+      : IconButton.new('git-initialize',{icon:'plus',label:view.text.git_initialize,show_label:true,disabled:!repo.canInitialize()});
+    return empty.child(div().w_full().max_w_96().v_flex().items_center().gap_3().child(list(repositories,colors)).child(action));
+  }
   if (changes && repo.status.kind === 'directory') return empty.child(new Button('git-initialize-sidebar').primary().size('small')
     .label(view.text.git_initialize).disabled(!repo.canInitialize()).loading(repo.pending?.kind === 'initialize' && !!repo.pending.busy)
     .on_click((_,cx) => view.control('git-initialize',cx)));
   return !changes && repo.status?.kind === 'directory' ? empty.child(div().w_full().max_w_96()
     .child(IconButton.new('git-initialize',{icon:'plus',label:view.text.git_initialize,show_label:true,full_width:true,variant:'primary',size:'medium',disabled:!repo.canInitialize()}))) : empty;
+}
+function list(repositories,colors) {
+  return div().id('git-repositories').w_full().v_flex().border_1().border_color(colors.border).rounded_md()
+    .children(repositories.map((name,index) => {
+      const row = div().id(`git-repository-${name}`).h_flex().items_center().gap_2().px_3().py_2().min_w_0()
+        .child(new Icon('icons/folder.svg').size('small').color(colors.muted_foreground))
+        .child(div().flex_1().min_w_0().truncate().text_sm().child(name));
+      return index ? row.border_t_1().border_color(colors.border) : row;
+    }));
 }
 
 export function header(view) {
@@ -203,7 +224,8 @@ export function details(view) {
 export function dialogs(view) {
   const {dialog,picker} = view.actions, text = view.text, colors = theme().colors;
   const form = dialog?.form, branch = ['branch','rename'].includes(form), prefix = form === 'rename' ? 'git-rename' : 'git-create';
-  const confirmation = dialog?.action === 'undo_commit' ? 'git_undo_confirm' : dialog?.action?.push ? 'git_force_push_confirm'
+  const confirmation = dialog?.operation === 'initialize' ? 'git_initialize_nested_confirm'
+    : dialog?.action === 'undo_commit' ? 'git_undo_confirm' : dialog?.action?.push ? 'git_force_push_confirm'
     : dialog?.action?.discard ? 'git_discard_confirm' : dialog?.action?.discard_all ? 'git_discard_all_confirm'
     : dialog?.action?.remove_remote ? 'git_remove_remote_confirm' : dialog?.operation === 'merge' ? 'git_merge_branch_confirm' : 'git_delete_confirm';
   return div().children([Picker.new(`git-picker-${picker?.id ?? 0}`, {open:!!picker,title:picker?.title ?? '',loading:!!picker?.loading,items:picker?.items ?? [],empty:text.git_no_matches}),
