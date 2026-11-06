@@ -6,7 +6,7 @@ import * as host from '../dev.sailry.platform/host/main.js';
 const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 // Approval groups from the original agent adapter differ from lost-response classification.
-const read = new Set('tabs read navigate scroll back forward refresh open focus frame wait'.split(' '));
+const read = new Set('tabs read navigate scroll back forward refresh open focus frame wait screenshot'.split(' '));
 
 test('research prefers bound search and anonymous fetch tools', () => {
   assert.match(extension.instructions, /Prefer available search, GitHub reads and web_fetch/);
@@ -34,7 +34,31 @@ test('all eighteen tools retain approval groups and captured action dispatch', (
     assert.deepEqual(host[action](args),{action,arguments:prepared});
     assert.deepEqual(args,original);
   }
-  assert.equal(extension.tools.find(tool => tool.name === 'browser_screenshot').handler.operation,'browser.control');
+  assert.equal(extension.tools.find(tool => tool.name === 'browser_screenshot').handler.operation,'browser.read');
+});
+
+test('captures show elements to the model and save only on request', () => {
+  const tool = extension.tools.find(tool => tool.name === 'browser_screenshot');
+  const {properties, required} = tool.handler.parameters;
+  assert.deepEqual(required,['tab']);
+  assert.deepEqual(Object.keys(properties).sort(),['format','save','scale','tab','target']);
+  assert.deepEqual(properties.target.oneOf.map(option => option.properties.kind.const),['selector','element','rect']);
+  assert.deepEqual(properties.scale.enum,['css','device']);
+  assert.deepEqual(properties.format.enum,['jpeg','png']);
+  assert.equal(properties.save.default,false);
+  assert.equal(tool.keep_images,5);
+  assert.match(tool.description,/save=true only when a project file is needed/);
+  assert.match(tool.description,/images lists references/);
+  assert.equal(tool.display.input.summary.result_path,'/response/path');
+  assert.equal(tool.display.output.paths.value.path,'/response/path');
+  assert.match(extension.instructions,/After a visual change, capture the changed element/);
+  assert.match(extension.instructions,/Markdown image syntax using a returned images reference/);
+  const args = {tab:2,target:{kind:'selector',selector:'#save'},scale:'device',format:'png',save:true};
+  const original = structuredClone(args);
+  assert.deepEqual(host.screenshot(args),{action:'screenshot',arguments:args});
+  assert.deepEqual(args,original);
+  const captured = {response:{tab:2,images:['sailry-image:call_1/0'],bounds:{x:1,y:2,width:30,height:20}}};
+  assert.equal(host.result({output:{kind:'browser',data:captured.response}}),captured.response);
 });
 
 test('background navigation is explicit and preserves caller arguments', () => {
