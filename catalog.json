@@ -9876,7 +9876,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.23",
+        "version": "0.1.24",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11457,6 +11457,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.24",
+          "commit": "f5be50b5f33bc8f53bba6d7bc1dc1cec8c5d9379",
+          "min_sailry_version": "0.1.0-alpha.9",
+          "release_notes": {
+            "text": "- List Git repositories inside a plain directory and confirm before initializing around them",
+            "locales": {
+              "zh-CN": "- 普通目录中显示其中的 Git 仓库，在外层初始化前先确认"
+            }
+          }
+        },
+        {
           "version": "0.1.23",
           "commit": "053837e13aebaac92f548932f956ee4868dd2912",
           "min_sailry_version": "0.1.0-alpha.9",
@@ -11625,7 +11636,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Read status counts on the execution Node and share localized change details across controllers\n- Keep clean repository counts visible without duplicate Desktop status scans"
+        "text": "- List Git repositories inside a plain directory and confirm before initializing around them",
+        "locales": {
+          "zh-CN": "- 普通目录中显示其中的 Git 仓库，在外层初始化前先确认"
+        }
       }
     },
     {
