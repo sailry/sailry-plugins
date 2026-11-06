@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Allow a small preview visual without a request when it clearly helps
+- Guide previews to use transparent backgrounds, centered content and host theme variables
+
 ## 0.1.9
 
 - Keep the normal page visible while its initial data loads
