@@ -7891,7 +7891,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8453,7 +8453,7 @@
               {
                 "name": "edit_file",
                 "presentation": "details",
-                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_changes for related changes across several files.",
+                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_patch for related changes across several files.",
                 "handler": {
                   "name": "edit",
                   "operation": "files.edit",
@@ -8637,193 +8637,40 @@
                 ]
               },
               {
-                "name": "apply_changes",
+                "name": "apply_patch",
                 "presentation": "details",
-                "description": "Apply related changes to up to 16 files in the session worktree with one approval. Each entry creates, writes, edits, moves or deletes one file, and each path, including move destinations, may appear once. Every entry is validated before anything is written; if any entry fails, nothing is written and each failing entry reports its reason. Valid entries are then written in order with the same revision checks as the single-file tools. A failure stops the remaining entries without rolling back earlier ones, and each file reports applied, failed, unknown or not_attempted. create makes missing parents and never replaces an entry; write replaces a whole file up to 128 KiB; edit matches each old_text against the original file as in edit_file; move needs an existing destination parent and an absent destination; delete moves a file to Trash. Pass full revisions from read_file. Prefer this over several single-file calls when one change spans multiple files; use edit_file or write_file for one file. Inspect an unknown file before retrying.",
+                "description": "Apply a patch that adds, updates, moves or deletes related files with one approval. Use it for changes across several files or to add, move or delete files; use edit_file or write_file for a single file. input is the whole patch, for example:\n*** Begin Patch\n*** Add File: src/new.rs\n+pub fn new() {}\n*** Update File: src/lib.rs\n@@ fn main() {\n     setup();\n-    run();\n+    run_all();\n*** Delete File: src/old.rs\n*** End Patch\nPrefix every line of an added file with +. In an update, a leading space marks context, - a removed line and + an added line; an optional @@ line names an earlier line to search after, *** Move to: renames the file and *** End of File anchors a hunk at the end. Context and removed lines must match the current file exactly, including whitespace, and identify one place. Read every file you update, move or delete in this session first; a file you wrote here counts, and a file changed since then needs another read. Up to 16 files are validated before anything is written, and any failure rejects the whole patch with a reason per file. Files are then written in order; a later failure stops without rolling back earlier files, and each file reports applied, failed, unknown or not_attempted. Inspect an unknown file before retrying.",
                 "handler": {
                   "name": "apply",
                   "operation": "files.apply",
                   "parameters": {
                     "type": "object",
                     "properties": {
-                      "changes": {
-                        "type": "array",
-                        "minItems": 1,
-                        "maxItems": 16,
-                        "description": "Ordered file changes; each path and move destination appears once",
-                        "items": {
-                          "oneOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "const": "create"
-                                },
-                                "path": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "text": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "path",
-                                "text"
-                              ],
-                              "additionalProperties": false
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "const": "write"
-                                },
-                                "path": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "text": {
-                                  "type": "string"
-                                },
-                                "expected_revision": {
-                                  "type": "string",
-                                  "pattern": "^[0-9a-fA-F]{64}$",
-                                  "description": "Full file revision from read_file"
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "path",
-                                "text",
-                                "expected_revision"
-                              ],
-                              "additionalProperties": false
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "const": "edit"
-                                },
-                                "path": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "expected_revision": {
-                                  "type": "string",
-                                  "pattern": "^[0-9a-fA-F]{64}$",
-                                  "description": "Full file revision from read_file"
-                                },
-                                "edits": {
-                                  "type": "array",
-                                  "minItems": 1,
-                                  "items": {
-                                    "type": "object",
-                                    "properties": {
-                                      "old_text": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "new_text": {
-                                        "type": "string"
-                                      },
-                                      "replace_all": {
-                                        "type": "boolean",
-                                        "default": false
-                                      }
-                                    },
-                                    "required": [
-                                      "old_text",
-                                      "new_text"
-                                    ],
-                                    "additionalProperties": false
-                                  }
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "path",
-                                "expected_revision",
-                                "edits"
-                              ],
-                              "additionalProperties": false
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "const": "move"
-                                },
-                                "path": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "destination": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "expected_revision": {
-                                  "type": "string",
-                                  "pattern": "^[0-9a-fA-F]{64}$",
-                                  "description": "Full file revision from read_file"
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "path",
-                                "destination",
-                                "expected_revision"
-                              ],
-                              "additionalProperties": false
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "const": "delete"
-                                },
-                                "path": {
-                                  "type": "string",
-                                  "description": "Relative to the session worktree, with forward slashes"
-                                },
-                                "expected_revision": {
-                                  "type": "string",
-                                  "pattern": "^[0-9a-fA-F]{64}$",
-                                  "description": "Full file revision from read_file"
-                                }
-                              },
-                              "required": [
-                                "kind",
-                                "path",
-                                "expected_revision"
-                              ],
-                              "additionalProperties": false
-                            }
-                          ]
-                        }
+                      "input": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The whole patch from *** Begin Patch to *** End Patch, with paths relative to the session worktree"
                       }
                     },
                     "required": [
-                      "changes"
+                      "input"
                     ],
                     "additionalProperties": false
                   }
                 },
                 "display": {
-                  "label": "Apply changes",
+                  "label": "Apply patch",
                   "locales": {
-                    "zh-CN": "应用更改",
-                    "zh-TW": "套用變更",
-                    "ja": "変更を適用",
-                    "ko": "변경 사항 적용",
-                    "fr": "Appliquer les modifications",
-                    "de": "Änderungen anwenden",
-                    "es": "Aplicar cambios",
-                    "pt-BR": "Aplicar alterações",
-                    "ru": "Применить изменения",
-                    "en": "Apply changes"
+                    "zh-CN": "应用补丁",
+                    "zh-TW": "套用修補程式",
+                    "ja": "パッチを適用",
+                    "ko": "패치 적용",
+                    "fr": "Appliquer le correctif",
+                    "de": "Patch anwenden",
+                    "es": "Aplicar parche",
+                    "pt-BR": "Aplicar patch",
+                    "ru": "Применить патч",
+                    "en": "Apply patch"
                   },
                   "icon": {
                     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M20 7h-3a2 2 0 0 1-2-2V2\" /><path d=\"M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z\" /><path d=\"M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8\" /></svg>"
@@ -10002,6 +9849,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.25",
+          "commit": "00cad40b0c8c16e3d70bed6b2652e4bd6ca27bd6",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Replace apply_changes with apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first",
+            "locales": {
+              "zh-CN": "- 以 apply_patch 取代 apply_changes：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取",
+              "zh-TW": "- 以 apply_patch 取代 apply_changes：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取",
+              "ja": "- apply_changes を apply_patch に置き換え：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります",
+              "ko": "- apply_changes를 apply_patch로 대체: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다",
+              "fr": "- apply_patch remplace apply_changes : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus",
+              "de": "- apply_patch ersetzt apply_changes: Ein Patch ändert mehrere Dateien mit einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden",
+              "es": "- apply_patch reemplaza a apply_changes: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes",
+              "pt-BR": "- apply_patch substitui apply_changes: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes",
+              "ru": "- apply_patch заменяет apply_changes: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать"
+            }
+          }
+        },
+        {
           "version": "0.1.24",
           "commit": "1af95100c85f6ed90673c2cee9f1ce0f57e8c440",
           "min_sailry_version": "0.1.5",
@@ -10215,17 +10081,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Add apply_changes to validate related changes to several files together and apply them with one approval\n- Describe the actual edit_file size limits",
+        "text": "- Replace apply_changes with apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first",
         "locales": {
-          "zh-CN": "- 新增 apply_changes：一并校验多个文件的相关更改，并在一次审批后应用\n- 更正 edit_file 的大小限制说明",
-          "zh-TW": "- 新增 apply_changes：一併驗證多個檔案的相關變更，並在一次核准後套用\n- 更正 edit_file 的大小限制說明",
-          "ja": "- apply_changes を追加：複数ファイルの関連する変更をまとめて検証し、1 回の承認で適用\n- edit_file のサイズ上限の説明を実際の制限に修正",
-          "ko": "- apply_changes 추가: 여러 파일의 관련 변경을 함께 검증하고 한 번의 승인으로 적용\n- edit_file 크기 제한 설명을 실제 제한으로 수정",
-          "fr": "- Ajout de apply_changes pour valider ensemble des modifications liées de plusieurs fichiers et les appliquer avec une seule approbation\n- Description des limites de taille réelles de edit_file",
-          "de": "- apply_changes prüft zusammenhängende Änderungen an mehreren Dateien gemeinsam und wendet sie mit einer Genehmigung an\n- Tatsächliche Größengrenzen von edit_file beschreiben",
-          "es": "- Se añade apply_changes para validar juntos cambios relacionados de varios archivos y aplicarlos con una sola aprobación\n- Se describen los límites de tamaño reales de edit_file",
-          "pt-BR": "- Adiciona apply_changes para validar juntas alterações relacionadas de vários arquivos e aplicá-las com uma única aprovação\n- Descreve os limites de tamanho reais de edit_file",
-          "ru": "- Добавлен apply_changes: связанные изменения нескольких файлов проверяются вместе и применяются после одного подтверждения\n- Описание edit_file указывает фактические ограничения размера"
+          "zh-CN": "- 以 apply_patch 取代 apply_changes：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取",
+          "zh-TW": "- 以 apply_patch 取代 apply_changes：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取",
+          "ja": "- apply_changes を apply_patch に置き換え：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります",
+          "ko": "- apply_changes를 apply_patch로 대체: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다",
+          "fr": "- apply_patch remplace apply_changes : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus",
+          "de": "- apply_patch ersetzt apply_changes: Ein Patch ändert mehrere Dateien mit einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden",
+          "es": "- apply_patch reemplaza a apply_changes: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes",
+          "pt-BR": "- apply_patch substitui apply_changes: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes",
+          "ru": "- apply_patch заменяет apply_changes: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать"
         }
       }
     },
