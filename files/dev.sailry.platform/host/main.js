@@ -77,38 +77,12 @@ function edits(value, label) {
   return error;
 }
 
-// The Node validates paths, revisions and file contents before approval.
-const changes = new Map([
-  ['create',['path','text']],
-  ['write',['path','text','expected_revision']],
-  ['edit',['path','expected_revision','edits']],
-  ['move',['path','destination','expected_revision']],
-  ['delete',['path','expected_revision']],
-]);
-
+// The Node parses the patch, reads its files and validates every change before approval.
 export function apply(args) {
-  if (!object(args,['changes'])) return invalid('Expected a changes array');
-  if (!Array.isArray(args.changes) || args.changes.length < 1 || args.changes.length > 16) {
-    return invalid('changes must contain 1 to 16 entries');
+  if (!object(args,['input']) || typeof args.input !== 'string' || !args.input) {
+    return invalid('input must be the whole patch text');
   }
-  let error;
-  args.changes.some((change,index) => {
-    const field = `changes[${index}]`;
-    const keys = changes.get(change?.kind);
-    if (!keys) error = `${field}.kind must be create, write, edit, move or delete`;
-    else if (!object(change,['kind',...keys]) || keys.some(key => change[key] === undefined)) {
-      error = `${field} must contain exactly ${['kind',...keys].join(', ')}`;
-    } else if (typeof change.path !== 'string') error = `${field}.path must be a string`;
-    else if (change.text !== undefined && typeof change.text !== 'string') error = `${field}.text must be a string`;
-    else if (change.destination !== undefined && typeof change.destination !== 'string') {
-      error = `${field}.destination must be a string`;
-    } else if (change.expected_revision !== undefined && !current(change.expected_revision)) {
-      error = `${field}.expected_revision must be the 64-character revision from read_file`;
-    } else if (change.kind === 'edit') error = edits(change.edits,`${field}.edits`);
-    return error !== undefined;
-  });
-  if (error) return invalid(error);
-  return {changes:args.changes};
+  return {input:args.input};
 }
 
 export function remove(args) {

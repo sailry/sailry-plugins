@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- apply_patch substitui apply_changes: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes
+
 ## 0.1.24
 
 - Adiciona apply_changes para validar juntas alterações relacionadas de vários arquivos e aplicá-las com uma única aprovação

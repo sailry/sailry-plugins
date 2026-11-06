@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Replace apply_changes with apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first
+
 ## 0.1.24
 
 - Add apply_changes to validate related changes to several files together and apply them with one approval

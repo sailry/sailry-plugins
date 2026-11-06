@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- apply_patch remplace apply_changes : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus
+
 ## 0.1.24
 
 - Ajout de apply_changes pour valider ensemble des modifications liées de plusieurs fichiers et les appliquer avec une seule approbation
