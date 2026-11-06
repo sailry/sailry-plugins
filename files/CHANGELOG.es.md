@@ -2,11 +2,7 @@
 
 ## 0.1.25
 
-- apply_patch reemplaza a apply_changes: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes
-
-## 0.1.24
-
-- Se añade apply_changes para validar juntos cambios relacionados de varios archivos y aplicarlos con una sola aprobación
+- Se añade apply_patch: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes
 - Se describen los límites de tamaño reales de edit_file
 
 ## 0.1.23

@@ -317,7 +317,7 @@ test('patches pass through unchanged for Node parsing', () => {
   assert.equal(Object.keys(declaration.display.locales).length,10);
   assert.deepEqual(declaration.display.output.paths,{value:{source:'result',path:'/data/files'},item:'/path'});
   for (const pattern of [/\*\*\* Begin Patch\n/,/\*\*\* End Patch\n/,/\*\*\* Move to:/,/\*\*\* End of File/,
-    /match the current file exactly/,/Read every file you update, move or delete in this session first/,
+    /match the current file exactly/,/Read every file you update, move or delete first/,/right after that line/,/counting a moved and edited file twice/,
     /validated before anything is written/,/without rolling back earlier files/,/Inspect an unknown file/]) {
     assert.match(declaration.description,pattern);
   }

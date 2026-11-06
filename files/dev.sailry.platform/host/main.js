@@ -48,7 +48,16 @@ export function edit(args) {
   if (args.edits !== undefined) {
     if (args.old_text !== undefined || args.new_text !== undefined) return invalid('Use either edits or old_text and new_text');
     if (args.replace_all !== undefined && args.replace_all !== false) return invalid('Set replace_all on each edits entry');
-    const error = edits(args.edits,'edits');
+    if (!Array.isArray(args.edits) || args.edits.length < 1) return invalid('edits must be a nonempty array');
+    let error;
+    args.edits.some((change,index) => {
+      const field = `edits[${index}]`;
+      if (!object(change,['old_text','new_text','replace_all'])) error = `${field} must contain supported edit fields`;
+      else if (typeof change.old_text !== 'string' || !change.old_text) error = `${field}.old_text must be a nonempty string`;
+      else if (typeof change.new_text !== 'string') error = `${field}.new_text must be a string`;
+      else if (change.replace_all !== undefined && typeof change.replace_all !== 'boolean') error = `${field}.replace_all must be a boolean`;
+      return error !== undefined;
+    });
     if (error) return invalid(error);
     return {path:args.path,edits:args.edits,expected_revision:args.expected_revision};
   }
@@ -61,20 +70,6 @@ export function edit(args) {
 
 function current(value) {
   return typeof value === 'string' && /^[0-9a-fA-F]{64}$/.test(value);
-}
-
-function edits(value, label) {
-  if (!Array.isArray(value) || value.length < 1) return `${label} must be a nonempty array`;
-  let error;
-  value.some((change,index) => {
-    const field = `${label}[${index}]`;
-    if (!object(change,['old_text','new_text','replace_all'])) error = `${field} must contain supported edit fields`;
-    else if (typeof change.old_text !== 'string' || !change.old_text) error = `${field}.old_text must be a nonempty string`;
-    else if (typeof change.new_text !== 'string') error = `${field}.new_text must be a string`;
-    else if (change.replace_all !== undefined && typeof change.replace_all !== 'boolean') error = `${field}.replace_all must be a boolean`;
-    return error !== undefined;
-  });
-  return error;
 }
 
 // The Node parses the patch, reads its files and validates every change before approval.
