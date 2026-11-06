@@ -64,8 +64,11 @@ export function renderReview(view, cx) {
       .child(BrowserAnnotationImage.new('browser-annotation-image',{token:current.token})))
     .child(div().id('browser-annotation-selector').w_full().min_w_0().text_sm().truncate()
       .font_family(cx.theme().typography.mono).text_color(colors.muted_foreground)
-      .tooltip([current.title,current.element.url].filter(Boolean).join('\n'))
+      .tooltip([current.title || current.element.title,current.element.url].filter(Boolean).join('\n'))
       .child(current.element.selector))
+    .children(current.element.component ? [div().id('browser-annotation-component').w_full().min_w_0()
+      .text_sm().truncate().child([current.element.component.name,current.element.component.source]
+        .filter(Boolean).join(' · '))] : [])
     .children(current.element.text.trim() && current.element.text.trim() !== current.title.trim() ? [
       div().id('browser-annotation-text').max_h(100).overflow_y_scroll().child(current.element.text)
     ] : [])
