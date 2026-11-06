@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.0-alpha.6",
+      "min_sailry_version": "0.1.5",
       "actions": [
         "files.read",
         "files.write",
@@ -563,7 +563,7 @@
         {
           "name": "edit_file",
           "presentation": "details",
-          "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for up to 128 replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. Each fragment is limited to 128 KiB and files to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit.",
+          "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_changes for related changes across several files.",
           "handler": {
             "name": "edit",
             "operation": "files.edit",
@@ -740,6 +740,344 @@
                 }
               }
             ]
+          },
+          "contexts": [
+            "plugin",
+            "workspace"
+          ]
+        },
+        {
+          "name": "apply_changes",
+          "presentation": "details",
+          "description": "Apply related changes to up to 16 files in the session worktree with one approval. Each entry creates, writes, edits, moves or deletes one file, and each path, including move destinations, may appear once. Every entry is validated before anything is written; if any entry fails, nothing is written and each failing entry reports its reason. Valid entries are then written in order with the same revision checks as the single-file tools. A failure stops the remaining entries without rolling back earlier ones, and each file reports applied, failed, unknown or not_attempted. create makes missing parents and never replaces an entry; write replaces a whole file up to 128 KiB; edit matches each old_text against the original file as in edit_file; move needs an existing destination parent and an absent destination; delete moves a file to Trash. Pass full revisions from read_file. Prefer this over several single-file calls when one change spans multiple files; use edit_file or write_file for one file. Inspect an unknown file before retrying.",
+          "handler": {
+            "name": "apply",
+            "operation": "files.apply",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "changes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 16,
+                  "description": "Ordered file changes; each path and move destination appears once",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "create"
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "path",
+                          "text"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "write"
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "text": {
+                            "type": "string"
+                          },
+                          "expected_revision": {
+                            "type": "string",
+                            "pattern": "^[0-9a-fA-F]{64}$",
+                            "description": "Full file revision from read_file"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "path",
+                          "text",
+                          "expected_revision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "edit"
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "expected_revision": {
+                            "type": "string",
+                            "pattern": "^[0-9a-fA-F]{64}$",
+                            "description": "Full file revision from read_file"
+                          },
+                          "edits": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "old_text": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "new_text": {
+                                  "type": "string"
+                                },
+                                "replace_all": {
+                                  "type": "boolean",
+                                  "default": false
+                                }
+                              },
+                              "required": [
+                                "old_text",
+                                "new_text"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "path",
+                          "expected_revision",
+                          "edits"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "move"
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "destination": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "expected_revision": {
+                            "type": "string",
+                            "pattern": "^[0-9a-fA-F]{64}$",
+                            "description": "Full file revision from read_file"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "path",
+                          "destination",
+                          "expected_revision"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "const": "delete"
+                          },
+                          "path": {
+                            "type": "string",
+                            "description": "Relative to the session worktree, with forward slashes"
+                          },
+                          "expected_revision": {
+                            "type": "string",
+                            "pattern": "^[0-9a-fA-F]{64}$",
+                            "description": "Full file revision from read_file"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "path",
+                          "expected_revision"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "changes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "display": {
+            "label": "Apply changes",
+            "locales": {
+              "zh-CN": "应用更改",
+              "zh-TW": "套用變更",
+              "ja": "変更を適用",
+              "ko": "변경 사항 적용",
+              "fr": "Appliquer les modifications",
+              "de": "Änderungen anwenden",
+              "es": "Aplicar cambios",
+              "pt-BR": "Aplicar alterações",
+              "ru": "Применить изменения",
+              "en": "Apply changes"
+            },
+            "icon": {
+              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><path d=\"M20 7h-3a2 2 0 0 1-2-2V2\" /><path d=\"M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z\" /><path d=\"M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8\" /></svg>"
+            },
+            "output": {
+              "preview": {
+                "parts": [
+                  {
+                    "rows": {
+                      "value": {
+                        "source": "result",
+                        "path": "/data/files"
+                      },
+                      "text": {
+                        "parts": [
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/path"
+                            }
+                          },
+                          {
+                            "text": " → ",
+                            "when": {
+                              "any": [
+                                {
+                                  "value": {
+                                    "source": "item",
+                                    "path": "/destination"
+                                  },
+                                  "equals": null,
+                                  "negate": true
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "value": {
+                              "source": "item",
+                              "path": "/destination"
+                            }
+                          }
+                        ]
+                      },
+                      "separator": "\n"
+                    }
+                  }
+                ]
+              },
+              "notices": [
+                {
+                  "message": {
+                    "label": "No changes were applied",
+                    "locales": {
+                      "zh-CN": "未应用任何更改",
+                      "zh-TW": "未套用任何變更",
+                      "ja": "変更は適用されていません",
+                      "ko": "적용된 변경 사항이 없습니다",
+                      "fr": "Aucune modification n'a été appliquée",
+                      "de": "Es wurden keine Änderungen angewendet",
+                      "es": "No se aplicó ningún cambio",
+                      "pt-BR": "Nenhuma alteração foi aplicada",
+                      "ru": "Изменения не применены",
+                      "en": "No changes were applied"
+                    }
+                  },
+                  "when": {
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/status"
+                        },
+                        "equals": "rejected"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Some changes were not applied",
+                    "locales": {
+                      "zh-CN": "部分更改未应用",
+                      "zh-TW": "部分變更未套用",
+                      "ja": "一部の変更は適用されていません",
+                      "ko": "일부 변경 사항이 적용되지 않았습니다",
+                      "fr": "Certaines modifications n'ont pas été appliquées",
+                      "de": "Einige Änderungen wurden nicht angewendet",
+                      "es": "Algunos cambios no se aplicaron",
+                      "pt-BR": "Algumas alterações não foram aplicadas",
+                      "ru": "Некоторые изменения не применены",
+                      "en": "Some changes were not applied"
+                    }
+                  },
+                  "when": {
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/status"
+                        },
+                        "equals": "partial"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "message": {
+                    "label": "Some results are unconfirmed; inspect before retrying",
+                    "locales": {
+                      "zh-CN": "部分结果未确认，请检查后再重试",
+                      "zh-TW": "部分結果未確認，請檢查後再重試",
+                      "ja": "一部の結果が未確認です。再試行の前に確認してください",
+                      "ko": "일부 결과가 확인되지 않았습니다. 다시 시도하기 전에 확인하세요",
+                      "fr": "Certains résultats ne sont pas confirmés ; vérifiez avant de réessayer",
+                      "de": "Einige Ergebnisse sind unbestätigt; vor einem erneuten Versuch prüfen",
+                      "es": "Algunos resultados no están confirmados; revísalos antes de reintentar",
+                      "pt-BR": "Alguns resultados não foram confirmados; verifique antes de tentar novamente",
+                      "ru": "Некоторые результаты не подтверждены; проверьте перед повтором",
+                      "en": "Some results are unconfirmed; inspect before retrying"
+                    }
+                  },
+                  "when": {
+                    "any": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/files"
+                        },
+                        "item": "/status",
+                        "equals": "unknown"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "paths": {
+                "value": {
+                  "source": "result",
+                  "path": "/data/files"
+                },
+                "item": "/path"
+              }
+            }
           },
           "contexts": [
             "plugin",
@@ -1698,6 +2036,7 @@
           "read",
           "write",
           "edit",
+          "apply",
           "remove",
           "move",
           "mkdir",

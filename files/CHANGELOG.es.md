@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.24
+
+- Se añade apply_changes para validar juntos cambios relacionados de varios archivos y aplicarlos con una sola aprobación
+- Se describen los límites de tamaño reales de edit_file
+
 ## 0.1.23
 
 - Mantener el selector de vista previa y código con su ancho y margen interior en barras estrechas

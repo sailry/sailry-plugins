@@ -48,16 +48,7 @@ export function edit(args) {
   if (args.edits !== undefined) {
     if (args.old_text !== undefined || args.new_text !== undefined) return invalid('Use either edits or old_text and new_text');
     if (args.replace_all !== undefined && args.replace_all !== false) return invalid('Set replace_all on each edits entry');
-    if (!Array.isArray(args.edits) || args.edits.length < 1) return invalid('edits must be a nonempty array');
-    let error;
-    args.edits.some((change,index) => {
-      const field = `edits[${index}]`;
-      if (!object(change,['old_text','new_text','replace_all'])) error = `${field} must contain supported edit fields`;
-      else if (typeof change.old_text !== 'string' || !change.old_text) error = `${field}.old_text must be a nonempty string`;
-      else if (typeof change.new_text !== 'string') error = `${field}.new_text must be a string`;
-      else if (change.replace_all !== undefined && typeof change.replace_all !== 'boolean') error = `${field}.replace_all must be a boolean`;
-      return error !== undefined;
-    });
+    const error = edits(args.edits,'edits');
     if (error) return invalid(error);
     return {path:args.path,edits:args.edits,expected_revision:args.expected_revision};
   }
@@ -70,6 +61,54 @@ export function edit(args) {
 
 function current(value) {
   return typeof value === 'string' && /^[0-9a-fA-F]{64}$/.test(value);
+}
+
+function edits(value, label) {
+  if (!Array.isArray(value) || value.length < 1) return `${label} must be a nonempty array`;
+  let error;
+  value.some((change,index) => {
+    const field = `${label}[${index}]`;
+    if (!object(change,['old_text','new_text','replace_all'])) error = `${field} must contain supported edit fields`;
+    else if (typeof change.old_text !== 'string' || !change.old_text) error = `${field}.old_text must be a nonempty string`;
+    else if (typeof change.new_text !== 'string') error = `${field}.new_text must be a string`;
+    else if (change.replace_all !== undefined && typeof change.replace_all !== 'boolean') error = `${field}.replace_all must be a boolean`;
+    return error !== undefined;
+  });
+  return error;
+}
+
+// The Node validates paths, revisions and file contents before approval.
+const changes = new Map([
+  ['create',['path','text']],
+  ['write',['path','text','expected_revision']],
+  ['edit',['path','expected_revision','edits']],
+  ['move',['path','destination','expected_revision']],
+  ['delete',['path','expected_revision']],
+]);
+
+export function apply(args) {
+  if (!object(args,['changes'])) return invalid('Expected a changes array');
+  if (!Array.isArray(args.changes) || args.changes.length < 1 || args.changes.length > 16) {
+    return invalid('changes must contain 1 to 16 entries');
+  }
+  let error;
+  args.changes.some((change,index) => {
+    const field = `changes[${index}]`;
+    const keys = changes.get(change?.kind);
+    if (!keys) error = `${field}.kind must be create, write, edit, move or delete`;
+    else if (!object(change,['kind',...keys]) || keys.some(key => change[key] === undefined)) {
+      error = `${field} must contain exactly ${['kind',...keys].join(', ')}`;
+    } else if (typeof change.path !== 'string') error = `${field}.path must be a string`;
+    else if (change.text !== undefined && typeof change.text !== 'string') error = `${field}.text must be a string`;
+    else if (change.destination !== undefined && typeof change.destination !== 'string') {
+      error = `${field}.destination must be a string`;
+    } else if (change.expected_revision !== undefined && !current(change.expected_revision)) {
+      error = `${field}.expected_revision must be the 64-character revision from read_file`;
+    } else if (change.kind === 'edit') error = edits(change.edits,`${field}.edits`);
+    return error !== undefined;
+  });
+  if (error) return invalid(error);
+  return {changes:args.changes};
 }
 
 export function remove(args) {

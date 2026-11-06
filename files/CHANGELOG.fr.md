@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.24
+
+- Ajout de apply_changes pour valider ensemble des modifications liées de plusieurs fichiers et les appliquer avec une seule approbation
+- Description des limites de taille réelles de edit_file
+
 ## 0.1.23
 
 - Conserver la largeur et la marge intérieure du sélecteur Aperçu et Source dans les barres d'outils étroites

@@ -8,7 +8,7 @@ const root = new URL('../',import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
 const extension = manifest.extensions['dev.sailry.platform'];
 const source = (await readFile(new URL('dev.sailry.platform/host/main.js',root),'utf8')).replace(/^export \{[^\n]+\} from [^\n]+;\n/gm,'').replace(/^export /gm,'');
-const host = vm.runInNewContext(`${source}\n({list,read,write,edit,remove,move,mkdir,find,search,office,notebook_read,notebook_edit})`);
+const host = vm.runInNewContext(`${source}\n({list,read,write,edit,apply,remove,move,mkdir,find,search,office,notebook_read,notebook_edit})`);
 const plain = value => JSON.parse(JSON.stringify(value));
 const tool = name => extension.tools.find(tool => tool.name === name);
 
@@ -18,6 +18,7 @@ test('tool declarations preserve operations and unformatted native outputs', () 
     ['read_file','read','files.read','summary'],
     ['write_file','write','files.write','details'],
     ['edit_file','edit','files.edit','details'],
+    ['apply_changes','apply','files.apply','details'],
     ['delete_file','remove','files.delete','summary'],
     ['move_file','move','files.move','summary'],
     ['create_directory','mkdir','files.mkdir','summary'],
@@ -124,6 +125,7 @@ test('invalid argument shapes fail before requesting an operation', () => {
   const examples = {
     list:{path:'.'},read:{path:'file.txt'},write:{path:'file.txt',text:'x',expected_revision:null},
     edit:{path:'file.txt',old_text:'x',new_text:'y',expected_revision:'a'.repeat(64)},
+    apply:{changes:[{kind:'create',path:'file.txt',text:'x'}]},
     remove:{path:'file.txt',expected_revision:'a'.repeat(64)},
     move:{path:'file.txt',destination:'new.txt',expected_revision:'a'.repeat(64)},
     mkdir:{path:'folder'},
@@ -292,6 +294,61 @@ test('file mutations retain revisions and explicit destinations', () => {
   assert.deepEqual(tool('move_file').handler.parameters.required,['path','destination','expected_revision']);
 });
 
+
+test('change sets keep ordered entries and reject unsupported shapes', () => {
+  const revision = 'a'.repeat(64);
+  const changes = Object.freeze([
+    Object.freeze({kind:'create',path:'src/新.rs',text:'fn main() {}\n'}),
+    Object.freeze({kind:'write',path:'README.md',text:'',expected_revision:revision}),
+    Object.freeze({kind:'edit',path:'src/lib.rs',expected_revision:revision,
+      edits:[{old_text:'a\r\n',new_text:'b\r\n',replace_all:true}]}),
+    Object.freeze({kind:'move',path:'old.rs',destination:'renamed.rs',expected_revision:revision}),
+    Object.freeze({kind:'delete',path:'dead.rs',expected_revision:revision}),
+  ]);
+  const args = Object.freeze({changes});
+  assert.deepEqual(plain(host.apply(args)),args);
+  assert.equal(host.apply(args).changes,changes);
+  const kinds = 'create, write, edit, move or delete';
+  for (const [input,message] of [
+    [null,'Expected a changes array'],
+    [{changes,worktree:'foreign'},'Expected a changes array'],
+    [{},'changes must contain 1 to 16 entries'],
+    [{changes:[]},'changes must contain 1 to 16 entries'],
+    [{changes:Array(17).fill(changes[0])},'changes must contain 1 to 16 entries'],
+    [{changes:[{kind:'rename',path:'a',destination:'b'}]},`changes[0].kind must be ${kinds}`],
+    [{changes:[{kind:'constructor',path:'a'}]},`changes[0].kind must be ${kinds}`],
+    [{changes:[null]},`changes[0].kind must be ${kinds}`],
+    [{changes:[changes[0],{kind:'create',path:'a'}]},'changes[1] must contain exactly kind, path, text'],
+    [{changes:[{kind:'create',path:'a',text:'x',expected_revision:revision}]},'changes[0] must contain exactly kind, path, text'],
+    [{changes:[{kind:'write',path:'a',text:'x',expected_revision:null}]},
+      'changes[0].expected_revision must be the 64-character revision from read_file'],
+    [{changes:[{kind:'move',path:'a',destination:4,expected_revision:revision}]},'changes[0].destination must be a string'],
+    [{changes:[{kind:'delete',path:4,expected_revision:revision}]},'changes[0].path must be a string'],
+    [{changes:[{kind:'edit',path:'a',expected_revision:revision,edits:[]}]},'changes[0].edits must be a nonempty array'],
+    [{changes:[{kind:'edit',path:'a',expected_revision:revision,edits:[{old_text:'',new_text:'x'}]}]},
+      'changes[0].edits[0].old_text must be a nonempty string'],
+  ]) {
+    assert.deepEqual(plain(host.apply(input)),{isError:true,error:{code:'invalid_request',message}},JSON.stringify(input));
+  }
+  const declaration = tool('apply_changes');
+  const schema = declaration.handler.parameters;
+  assert.deepEqual(schema.required,['changes']);
+  assert.equal(schema.properties.changes.maxItems,16);
+  assert.deepEqual(schema.properties.changes.items.oneOf.map(entry => entry.properties.kind.const),
+    ['create','write','edit','move','delete']);
+  for (const entry of schema.properties.changes.items.oneOf) {
+    assert.equal(entry.additionalProperties,false);
+    assert.equal(entry.required[0],'kind');
+  }
+  assert.equal(declaration.display.approval,undefined,'the Node lists each validated file in its approval');
+  assert.equal(Object.keys(declaration.display.locales).length,10);
+  assert.deepEqual(declaration.display.output.paths,{value:{source:'result',path:'/data/files'},item:'/path'});
+  assert.match(declaration.description,/validated before anything is written/);
+  assert.match(declaration.description,/without rolling back earlier ones/);
+  assert.match(declaration.description,/Prefer this over several single-file calls/);
+  assert.match(tool('edit_file').description,/Use apply_changes/);
+  assert.doesNotMatch(tool('edit_file').description,/128/);
+});
 
 test('scoped search modes and discovery pages preserve arguments', () => {
   const args = {query:'first.*second',regex:true,case_sensitive:true,globs:['src/**'],path:'src',

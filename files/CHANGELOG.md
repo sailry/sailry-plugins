@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.24
+
+- Add apply_changes to validate related changes to several files together and apply them with one approval
+- Describe the actual edit_file size limits
+
 ## 0.1.23
 
 - Keep the Preview and Source switch inset at its full width in narrow toolbars
