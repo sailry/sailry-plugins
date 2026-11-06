@@ -8639,7 +8639,7 @@
               {
                 "name": "apply_patch",
                 "presentation": "details",
-                "description": "Apply a patch that adds, updates, moves or deletes related files with one approval. Use it for changes across several files or to add, move or delete files; use edit_file or write_file for a single file. input is the whole patch, for example:\n*** Begin Patch\n*** Add File: src/new.rs\n+pub fn new() {}\n*** Update File: src/lib.rs\n@@ fn main() {\n     setup();\n-    run();\n+    run_all();\n*** Delete File: src/old.rs\n*** End Patch\nPrefix every line of an added file with +. In an update, a leading space marks context, - a removed line and + an added line; an optional @@ line names an earlier line to search after, *** Move to: renames the file and *** End of File anchors a hunk at the end. Context and removed lines must match the current file exactly, including whitespace, and identify one place. Read every file you update, move or delete in this session first; a file you wrote here counts, and a file changed since then needs another read. Up to 16 files are validated before anything is written, and any failure rejects the whole patch with a reason per file. Files are then written in order; a later failure stops without rolling back earlier files, and each file reports applied, failed, unknown or not_attempted. Inspect an unknown file before retrying.",
+                "description": "Apply a patch that adds, updates, moves or deletes related files with one approval. Use it for changes across several files or to add, move or delete files; use edit_file or write_file for a single file. input is the whole patch, for example:\n*** Begin Patch\n*** Add File: src/new.rs\n+pub fn new() {}\n*** Update File: src/lib.rs\n@@ fn main() {\n     setup();\n-    run();\n+    run_all();\n*** Delete File: src/old.rs\n*** End Patch\nPrefix every line of an added file with +. In an update, a leading space marks context, - a removed line and + an added line. An optional @@ line names a line to search after; added lines with no context or removed lines go right after that line, or at the end of the file under a bare @@. *** Move to: renames the file and creates missing folders, and *** End of File anchors a hunk at the end. Context, removed and @@ lines must match the current file exactly, including whitespace, and identify one place. Read every file you update, move or delete first; a file you wrote counts, and a file changed since then needs another read. Up to 16 files are validated before anything is written, counting a moved and edited file twice, and any failure rejects the whole patch with a reason per file. Files are then written in order; a later failure stops without rolling back earlier files, and each file reports applied, failed, unknown or not_attempted. Inspect an unknown file before retrying.",
                 "handler": {
                   "name": "apply",
                   "operation": "files.apply",
@@ -9850,39 +9850,20 @@
       "versions": [
         {
           "version": "0.1.25",
-          "commit": "00cad40b0c8c16e3d70bed6b2652e4bd6ca27bd6",
+          "commit": "caacd3a1f3b4676a227563a547a9cb7f96bfb400",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- Replace apply_changes with apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first",
+            "text": "- Add apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first\n- Describe the actual edit_file size limits",
             "locales": {
-              "zh-CN": "- 以 apply_patch 取代 apply_changes：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取",
-              "zh-TW": "- 以 apply_patch 取代 apply_changes：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取",
-              "ja": "- apply_changes を apply_patch に置き換え：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります",
-              "ko": "- apply_changes를 apply_patch로 대체: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다",
-              "fr": "- apply_patch remplace apply_changes : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus",
-              "de": "- apply_patch ersetzt apply_changes: Ein Patch ändert mehrere Dateien mit einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden",
-              "es": "- apply_patch reemplaza a apply_changes: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes",
-              "pt-BR": "- apply_patch substitui apply_changes: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes",
-              "ru": "- apply_patch заменяет apply_changes: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать"
-            }
-          }
-        },
-        {
-          "version": "0.1.24",
-          "commit": "1af95100c85f6ed90673c2cee9f1ce0f57e8c440",
-          "min_sailry_version": "0.1.5",
-          "release_notes": {
-            "text": "- Add apply_changes to validate related changes to several files together and apply them with one approval\n- Describe the actual edit_file size limits",
-            "locales": {
-              "zh-CN": "- 新增 apply_changes：一并校验多个文件的相关更改，并在一次审批后应用\n- 更正 edit_file 的大小限制说明",
-              "zh-TW": "- 新增 apply_changes：一併驗證多個檔案的相關變更，並在一次核准後套用\n- 更正 edit_file 的大小限制說明",
-              "ja": "- apply_changes を追加：複数ファイルの関連する変更をまとめて検証し、1 回の承認で適用\n- edit_file のサイズ上限の説明を実際の制限に修正",
-              "ko": "- apply_changes 추가: 여러 파일의 관련 변경을 함께 검증하고 한 번의 승인으로 적용\n- edit_file 크기 제한 설명을 실제 제한으로 수정",
-              "fr": "- Ajout de apply_changes pour valider ensemble des modifications liées de plusieurs fichiers et les appliquer avec une seule approbation\n- Description des limites de taille réelles de edit_file",
-              "de": "- apply_changes prüft zusammenhängende Änderungen an mehreren Dateien gemeinsam und wendet sie mit einer Genehmigung an\n- Tatsächliche Größengrenzen von edit_file beschreiben",
-              "es": "- Se añade apply_changes para validar juntos cambios relacionados de varios archivos y aplicarlos con una sola aprobación\n- Se describen los límites de tamaño reales de edit_file",
-              "pt-BR": "- Adiciona apply_changes para validar juntas alterações relacionadas de vários arquivos e aplicá-las com uma única aprovação\n- Descreve os limites de tamanho reais de edit_file",
-              "ru": "- Добавлен apply_changes: связанные изменения нескольких файлов проверяются вместе и применяются после одного подтверждения\n- Описание edit_file указывает фактические ограничения размера"
+              "zh-CN": "- 新增 apply_patch：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取\n- 更正 edit_file 的大小限制说明",
+              "zh-TW": "- 新增 apply_patch：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取\n- 更正 edit_file 的大小限制說明",
+              "ja": "- apply_patch を追加：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります\n- edit_file のサイズ上限の説明を実際の制限に修正",
+              "ko": "- apply_patch 추가: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다\n- edit_file 크기 제한 설명을 실제 제한으로 수정",
+              "fr": "- Ajout de apply_patch : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus\n- Description des limites de taille réelles de edit_file",
+              "de": "- apply_patch ändert mit einem Patch mehrere Dateien nach einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden\n- Tatsächliche Größengrenzen von edit_file beschreiben",
+              "es": "- Se añade apply_patch: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes\n- Se describen los límites de tamaño reales de edit_file",
+              "pt-BR": "- Adiciona apply_patch: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes\n- Descreve os limites de tamanho reais de edit_file",
+              "ru": "- Добавлен apply_patch: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать\n- Описание edit_file указывает фактические ограничения размера"
             }
           }
         },
@@ -10081,17 +10062,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Replace apply_changes with apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first",
+        "text": "- Add apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first\n- Describe the actual edit_file size limits",
         "locales": {
-          "zh-CN": "- 以 apply_patch 取代 apply_changes：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取",
-          "zh-TW": "- 以 apply_patch 取代 apply_changes：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取",
-          "ja": "- apply_changes を apply_patch に置き換え：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります",
-          "ko": "- apply_changes를 apply_patch로 대체: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다",
-          "fr": "- apply_patch remplace apply_changes : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus",
-          "de": "- apply_patch ersetzt apply_changes: Ein Patch ändert mehrere Dateien mit einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden",
-          "es": "- apply_patch reemplaza a apply_changes: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes",
-          "pt-BR": "- apply_patch substitui apply_changes: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes",
-          "ru": "- apply_patch заменяет apply_changes: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать"
+          "zh-CN": "- 新增 apply_patch：一个补丁可在一次审批后修改多个文件；上下文须完全匹配，修改的文件须先读取\n- 更正 edit_file 的大小限制说明",
+          "zh-TW": "- 新增 apply_patch：一個修補程式可在一次核准後修改多個檔案；內容須完全相符，變更的檔案須先讀取\n- 更正 edit_file 的大小限制說明",
+          "ja": "- apply_patch を追加：1 つのパッチで複数のファイルを 1 回の承認で変更。コンテキストは完全一致が必要で、変更するファイルは先に読み取る必要があります\n- edit_file のサイズ上限の説明を実際の制限に修正",
+          "ko": "- apply_patch 추가: 하나의 패치로 여러 파일을 한 번의 승인으로 변경하며, 컨텍스트는 정확히 일치해야 하고 변경할 파일은 먼저 읽어야 합니다\n- edit_file 크기 제한 설명을 실제 제한으로 수정",
+          "fr": "- Ajout de apply_patch : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus\n- Description des limites de taille réelles de edit_file",
+          "de": "- apply_patch ändert mit einem Patch mehrere Dateien nach einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden\n- Tatsächliche Größengrenzen von edit_file beschreiben",
+          "es": "- Se añade apply_patch: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes\n- Se describen los límites de tamaño reales de edit_file",
+          "pt-BR": "- Adiciona apply_patch: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes\n- Descreve os limites de tamanho reais de edit_file",
+          "ru": "- Добавлен apply_patch: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать\n- Описание edit_file указывает фактические ограничения размера"
         }
       }
     },
