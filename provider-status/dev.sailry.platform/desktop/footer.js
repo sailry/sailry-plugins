@@ -35,8 +35,8 @@ export default class Footer extends View {
 
   accept(state,cx) {
     const key = identity(state);
-    if (key !== this.key || state.cursor !== this.state.cursor) {
-      this.snapshot = null;this.refreshAt = 0;
+    if (key !== this.key) {
+      this.snapshot = null;this.refreshAt = 0;this.pending = null;
     }
     this.state = state;this.key = key;
     this.publish();this.wake();
@@ -49,17 +49,17 @@ export default class Footer extends View {
 
   refresh(cx) {
     if (!this.visible || !this.state.connected) return;
-    if ((this.pending?.key === this.key && this.pending.cursor === this.state.cursor) || !this.key || Date.now() < this.refreshAt) return;
-    const key = this.key,cursor = this.state.cursor,provider = this.state.provider;
-    const pending = {key,cursor};this.pending = pending;
+    if (this.pending?.key === this.key || !this.key || Date.now() < this.refreshAt) return;
+    const key = this.key,provider = this.state.provider;
+    const pending = {key};this.pending = pending;
     cx.spawn(async cx => {
       try {
         const response = await requestProviderHttp(provider.id,provider.revision,'usage',{});
-        if (this.key !== key || this.state.cursor !== cursor) return;
+        if (this.key !== key || this.pending !== pending) return;
         this.snapshot = adapters[provider.authentication].decode(response);
         this.refreshAt = Date.now() + 180000;
       } catch (_) {
-        if (this.key !== key || this.state.cursor !== cursor) return;
+        if (this.key !== key || this.pending !== pending) return;
         this.snapshot = null;this.refreshAt = Date.now() + 60000;
       } finally {
         if(this.pending===pending)this.pending = null;this.publish();cx.notify();

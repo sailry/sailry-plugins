@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "provider-status",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Account usage for configured OAuth model channels",
   "license": "Apache-2.0",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.0-alpha.4",
       "scope": "host",
       "actions": [
         "http.request"

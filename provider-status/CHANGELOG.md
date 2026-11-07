@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.8
+
+- Refresh account usage on visible activity and completed work instead of periodic timers
+- Preserve account results and in-flight reads across unchanged model contexts
+
 ## 0.1.7
 
 - Pause account refresh timers while their views are hidden and reuse unexpired results on reveal

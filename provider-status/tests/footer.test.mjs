@@ -18,7 +18,7 @@ const deferred = () => {
   return {promise,resolve,reject};
 };
 
-async function fixture(initial=state(),providers=null) {
+async function fixture(initial=state(),providers=null,worktree=null) {
   const requests=[],published=[],watches=[],sleeps=[],toasts=[],failures=[],visibility=[];
   let clock=1000;
   class Clock extends Date {static now() {return clock;}}
@@ -31,9 +31,10 @@ async function fixture(initial=state(),providers=null) {
     modules.set(name,module);
   }
   synthetic('gpui-kit',{View:class {},div:()=>({})});
-  synthetic('sailry',{context:()=>JSON.stringify({locale:'en',surface:providers ? 'provider' : 'composer'})});
+  const scopes=[];
+  synthetic('sailry',{context:()=>JSON.stringify({locale:'en',surface:providers ? 'provider' : 'composer',worktree})});
   synthetic('sailry/sdk',{
-    nextChange:cursor=>{if(!cursor)return Promise.resolve({cursor:'1',visible:true,connected:true});const next=deferred();visibility.push(next);return next.promise;},
+    nextChange:(cursor,scope)=>{scopes.push(scope);if(!cursor)return Promise.resolve({cursor:'1',visible:true,connected:true});const next=deferred();visibility.push(next);return next.promise;},
     publishContributions:values=>published.push(plain(values)),
     requestProviderHttp:(...args)=>{const request={args:plain(args),...deferred()};requests.push(request);return request.promise;},
     faultCode:message=>{try{return JSON.parse(message).code;}catch{return 'failed';}},
@@ -62,7 +63,7 @@ async function fixture(initial=state(),providers=null) {
   const cx={notify(){},sleep:ms=>{const next={ms,...deferred()};sleeps.push(next);return next.promise;},
     spawn:callback=>{const promise=callback(cx);promise.catch(error=>failures.push(error));return promise;}};
   const view=new module.namespace.default();view.init({},cx);await settle();
-  return {view,cx,requests,published,watches,sleeps,toasts,failures,
+  return {view,cx,requests,published,watches,sleeps,toasts,failures,scopes,
     latest:()=>published.at(-1)[0],advance:ms=>{clock+=ms;},
     async visible(value) {visibility.shift().resolve({cursor:String(clock),visible:value,connected:true});await settle();},
     async update(value) {watches.shift().resolve(plain(value));await settle();},
@@ -74,16 +75,16 @@ test('shares one refresh owner across native adapters',async()=>{
   assert.deepEqual(setup.requests[0].args,['channel','9007199254740993','usage',{}]);
   assert.equal(setup.latest().value,null);
   assert.equal(setup.latest().visible,false);
-  setup.sleeps.shift().resolve();await settle();
+  await setup.visible(true);
   assert.equal(setup.requests.length,1);
   setup.requests[0].resolve(response(20));await settle();
   assert.equal(setup.latest().value,'80%');
   assert.equal(setup.latest().details[0].progress,80);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   assert.equal(setup.requests.length,1);
-  setup.advance(120000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(120000);await setup.visible(true);
   assert.equal(setup.requests.length,2);
-  assert.equal(setup.sleeps.length,1);
+  assert.equal(setup.sleeps.length,0);
   assert.deepEqual(setup.toasts,[]);
   assert.deepEqual(setup.failures,[]);
 });
@@ -104,11 +105,10 @@ test('discards late replies after provider or session changes',async()=>{
     used_percent:30,limit_window_seconds:18000,reset_at:null}}})});await settle();
   assert.equal(setup.latest().value,'70%');
   await setup.update({...changed,cursor:'3'});
-  assert.equal(setup.latest().value,null);
-  assert.equal(setup.latest().visible,false);
-  assert.equal(setup.requests.length,3);
+  assert.equal(setup.latest().value,'70%');
+  assert.equal(setup.latest().visible,true);
+  assert.equal(setup.requests.length,2);
   await setup.update({cursor:'4',connected:false,provider:null});
-  setup.requests[2].resolve(response(88));await settle();
   assert.equal(setup.latest().visible,false);
   assert.deepEqual(setup.latest().details,[]);
   assert.deepEqual(setup.toasts,[]);
@@ -120,6 +120,17 @@ test('new context completes before a stale request',async()=>{
   setup.requests[1].resolve(response(20));await settle();assert.equal(setup.latest().value,'80%');
   setup.requests[0].resolve(response(99));await settle();assert.equal(setup.latest().value,'80%');
   assert.equal(setup.requests.length,2);assert.deepEqual(setup.failures,[]);
+});
+
+test('reconnects without accepting an earlier context reply',async()=>{
+  const setup=await fixture();
+  await setup.update({cursor:'2',connected:false,provider:null});
+  await setup.update(state('3'));
+  assert.equal(setup.requests.length,2);
+  setup.requests[0].resolve(response(99));await settle();
+  assert.equal(setup.latest().visible,false);
+  setup.requests[1].resolve(response(20));await settle();
+  assert.equal(setup.latest().value,'80%');
 });
 
 test('clears values on revision changes and unsupported selections',async()=>{
@@ -154,7 +165,7 @@ test('hides unavailable percentages after successful reads',async()=>{
   assert.deepEqual(setup.latest().details,[]);
 });
 
-test('silently retries after the shared interval',async()=>{
+test('retries on visible events after cooldown',async()=>{
   const setup=await fixture();
   setup.requests[0].reject(new Error(JSON.stringify({code:'permission_denied',message:'Private SDK diagnostic'})));
   await settle();
@@ -162,10 +173,10 @@ test('silently retries after the shared interval',async()=>{
   assert.equal(setup.latest().visible,false);
   assert.equal(setup.latest().value,null);
   setup.view.refresh(setup.cx);assert.equal(setup.requests.length,1);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   setup.requests[1].reject(new Error(JSON.stringify({code:'permission_denied'})));await settle();
   assert.deepEqual(setup.toasts,[]);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   setup.requests[2].resolve(response());await settle();
   assert.equal(setup.latest().value,'88%');
   assert.deepEqual(setup.toasts,[]);
@@ -175,17 +186,17 @@ test('silently retries after the shared interval',async()=>{
 test('hides failed latest usage and restores successful measurements',async()=>{
   const setup=await fixture();setup.requests[0].resolve(response(42));await settle();
   assert.equal(setup.latest().visible,true);
-  setup.advance(180000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(180000);await setup.visible(true);
   setup.requests[1].resolve({status:429,body:'{"error":{"message":"Fixture usage rate limited"}}'});
   await settle();
   assert.equal(setup.latest().visible,false);
   assert.equal(setup.latest().value,null);
   assert.deepEqual(setup.latest().details,[]);
   setup.view.refresh(setup.cx);assert.equal(setup.requests.length,2);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   setup.requests[2].reject(new Error('Private SDK diagnostic'));await settle();
   assert.equal(setup.latest().visible,false);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   setup.requests[3].resolve(response(8));await settle();
   assert.equal(setup.latest().visible,true);
   assert.equal(setup.latest().value,'92%');
@@ -233,7 +244,7 @@ test('batches provider metrics in one page lifetime',async()=>{
     {label:{label:'5h'},value:'70%',progress:70},
     {label:{label:'Account credits'},value:'12.5'},
   ]);
-  assert.equal(setup.watches.length,1);assert.equal(setup.sleeps.length,1);
+  assert.equal(setup.watches.length,1);assert.equal(setup.sleeps.length,0);
   await setup.update(batch([first,second],'2'));
   assert.equal(setup.requests.length,2);
   assert.equal(current(setup,'first').value,'85%');
@@ -276,7 +287,7 @@ test('hides failed rows without losing other accounts',async()=>{
   setup.requests[1].reject(new Error('Fixture read failed'));await settle();
   assert.equal(current(setup,'ready').value,'100%');
   assert.equal(current(setup,'missing').visible,false);
-  setup.advance(60000);setup.sleeps.shift().resolve();await settle();
+  setup.advance(60000);await setup.visible(true);
   setup.requests[2].reject(new Error('Fixture read failed'));await settle();
   assert.equal(current(setup,'missing').visible,false);
   assert.equal(current(setup,'ready').value,'100%');
@@ -303,16 +314,29 @@ test('pauses hidden refreshes and preserves fresh results',async()=>{
   const setup=await fixture();
   setup.requests[0].resolve(response());await settle();
   await setup.visible(false);
-  setup.sleeps.shift().resolve();await settle();
   assert.equal(setup.sleeps.length,0);
   assert.equal(setup.requests.length,1);
   await setup.visible(true);
   assert.equal(setup.requests.length,1);
   await setup.visible(false);
   setup.advance(180000);
-  setup.sleeps.shift().resolve();await settle();
   const count=setup.requests.length;
   await setup.visible(true);
   assert.equal(setup.requests.length,count+1);
   assert.deepEqual(setup.failures,[]);
+});
+
+test('refreshes settled worktrees without polling',async()=>{
+  const setup=await fixture(state(),null,'worktree');
+  assert.ok(setup.scopes.every(scope=>scope==='settled'));
+  setup.requests[0].resolve(response());await settle();
+  setup.advance(180000);
+  assert.equal(setup.requests.length,1);
+  assert.equal(setup.sleeps.length,0);
+  await setup.visible(true);
+  assert.equal(setup.requests.length,2);
+  await setup.update(state('2'));
+  assert.equal(setup.requests.length,2);
+  setup.requests[1].resolve(response(20));await settle();
+  assert.equal(setup.latest().value,'80%');
 });
