@@ -8,6 +8,7 @@ const MAX_LINES = 80;
 const GRAPH_ITEMS = 8;
 const IMPACT_FILES = 5;
 const IMPACT_SYMBOLS = 3;
+const REASON_CHARS = 160;
 /** Steps before the first source read: search, then graph. */
 const READS = 2;
 
@@ -93,19 +94,26 @@ function ranges(data, limit) {
   });
 }
 
-/** The first symbol's graph neighborhood: one revision-free, name-matched read. */
+/** The first symbol's graph neighborhood: one revision-free, name-matched, optional read. */
 function neighbors(symbol) {
   return {call:{operation:'code.graph',arguments:{view:'context',name:symbol.name,paths:[symbol.path],
-    line:symbol.range.start_line,limit:GRAPH_ITEMS}}};
+    line:symbol.range.start_line,limit:GRAPH_ITEMS}},optional:true};
 }
 
+/** Graph data is supplementary: a failed graph keeps the symbols and snippets. */
 function relate(state, outcome) {
-  const data = state.data;
-  if (outcome?.isError) {
-    data.partial = true;
+  let page;
+  try {
+    if (outcome?.isError) throw new Error(outcome.error?.message || 'Code graph failed');
+    page = graphPage(outcome,'context');
+  } catch (error) {
+    const reason = Array.from(String(error.message || 'Code graph failed'));
+    state.data.partial = true;
+    state.data.graph_unavailable = reason.length > REASON_CHARS
+      ? `${reason.slice(0,REASON_CHARS-1).join('')}…` : reason.join('');
     return;
   }
-  const page = graphPage(outcome,'context');
+  const data = state.data;
   const callers = page.callers.slice(0,GRAPH_ITEMS);
   // Calls without an indexed definition belong to dependencies or the runtime.
   const callees = page.callees.filter(reference => reference.confidence).slice(0,GRAPH_ITEMS);

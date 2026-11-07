@@ -32,6 +32,7 @@ test('requests the first symbol graph before reading source',() => {
   const pending = search([symbol('src/main.rs',4,9),symbol('src/other.rs',1,2)]);
   assert.deepEqual(pending.call,{operation:'code.graph',arguments:{view:'context',name:'entry',paths:['src/main.rs'],
     line:4,limit:8}});
+  assert.equal(pending.optional,true);
   assert.equal(pending.state.next,0);
 });
 
@@ -95,12 +96,29 @@ test('adds bounded callers callees and impact',() => {
   assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 16384);
 });
 
-test('keeps source reads after a failed graph',() => {
+test('degrades to symbols and snippets when the graph fails',() => {
+  const failures = [
+    {isError:true,error:{code:'busy',message:'Code query capacity is exhausted'}},
+    {isError:true,error:{code:'outcome_unknown',message:'x'.repeat(400)}},
+    {kind:'code_graph',data:graph({view:'map'})},
+    {kind:'code_graph'},
+  ];
+  for (const outcome of failures) {
+    const pending = search([symbol()]);
+    const reading = context({step:2,state:pending.state,outcome});
+    assert.equal(reading.call.operation,'files.read_lines');
+    const completed = context({step:3,state:reading.state,outcome:reply(reading)});
+    const result = completed.result;
+    assert.equal(result.isError,undefined);
+    assert.equal(result.symbols.length,1);
+    assert.equal(result.snippets.length,1);
+    assert.equal(result.partial,true);
+    assert.ok(result.graph_unavailable.length > 0 && Array.from(result.graph_unavailable).length <= 160);
+    for (const key of ['callers','callees','impact']) assert.equal(result[key],undefined);
+  }
   const pending = search([symbol()]);
-  const reading = context({step:2,state:pending.state,outcome:{isError:true,error:{code:'busy',message:'Busy'}}});
-  assert.equal(reading.call.operation,'files.read_lines');
-  assert.equal(reading.state.data.partial,true);
-  assert.equal(reading.state.data.callers,undefined);
+  const reading = context({step:2,state:pending.state,outcome:failures[0]});
+  assert.equal(reading.state.data.graph_unavailable,'Code query capacity is exhausted');
 });
 
 test('reports pagination before the requested range ends',() => {
@@ -227,6 +245,4 @@ test('rejects invalid limits and continuations',() => {
     assert.equal(context({arguments:input,step:0}).result.isError,true);
   }
   assert.equal(context({step:8}).result.isError,true);
-  const pending = search([symbol()]);
-  assert.equal(context({step:2,state:pending.state,outcome:{kind:'code_graph',data:graph({view:'map'})}}).result.isError,true);
 });

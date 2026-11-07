@@ -23,6 +23,7 @@ runtimeTest('production script preserves versioned source ranges',async () => {
   assert.deepEqual(output.result.Ok.call,{operation:'code.graph',arguments:{
     view:'context',name:'render',paths:['src/vue.vue'],line:1,limit:8,
   }});
+  assert.equal(output.result.Ok.optional,true);
   assert.deepEqual(output.result.Ok.state.ranges,[{path:'src/vue.vue',file_revision:'a'.repeat(64),
     start:0,end:5,limit:5,truncated:false}]);
   assert.equal(output.result.Ok.state.data.index_revision,3);
