@@ -39,6 +39,8 @@ test('requests the first symbol graph before reading source',() => {
 test('merges overlapping ranges before expansion',() => {
   const pending = related([symbol('main.rs',2,4),symbol('main.rs',3,6),symbol('main.rs',2,4)]);
   assert.deepEqual(pending.call,{operation:'files.read_lines',arguments:{path:'main.rs',offset:0,limit:9,expected_revision:revision}});
+  // A failed revision-checked read reaches the handler, which keeps the other snippets.
+  assert.equal(pending.optional,true);
   const completed = context({step:3,state:pending.state,outcome:reply(pending,'line\r\n',9)});
   assert.equal(completed.result.symbols.length,3);
   assert.equal(completed.result.snippets.length,1);

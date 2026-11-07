@@ -138,7 +138,7 @@ function relate(state, outcome) {
 function read(state) {
   const range = state.ranges[state.next];
   return {call:{operation:'files.read_lines',arguments:{path:range.path,offset:range.start,
-    limit:range.limit,expected_revision:range.file_revision}},state};
+    limit:range.limit,expected_revision:range.file_revision}},optional:true,state};
 }
 
 function append(state, lines) {
