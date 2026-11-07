@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.5
+
+- Operate desktop apps through the packaged agent-desktop, including on Linux with AT-SPI
+- Act on snapshot refs headlessly with a curated set of desktop tools, and request missing macOS permissions with system prompts
+
 ## 0.1.4
 
 - Keep app snapshots and action results inspectable while app lists and element searches stay concise

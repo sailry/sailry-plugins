@@ -19,7 +19,7 @@ export async function request({kind}) {
   const grant = before.grants.find(grant => grant.kind === kind);
   if (!grant) throw new Error('Unknown permission');
   if (!before.can_request || grant.authorized === true) return before;
-  // OCU opens one onboarding flow for both grants and returns their current state.
+  // One request prompts for every missing grant and returns both current grants.
   const value = await requestComputerPermission(kind === 'screen_recording' ? 'screen_capture' : 'accessibility');
   return value === null ? before : status(value);
 }

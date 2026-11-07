@@ -6,12 +6,13 @@ plugins/builtin/computer/desktop/view.rs
 plugins/builtin/computer/desktop/messages.rs
 locales/en.yml and locales/zh-CN.yml
 
-Execution uses Open Computer Use from ifuryst/open-computer-use at
-8fdda42639c94fa2ce22ea2d9d706b5919a83b42 (MIT), built and packaged by Sailry.
-The application packaging notices retain its license and upstream Cua Driver
-and yabai notices. Sailry's macOS helper patches scope window and cursor
-cleanup to the owning connection and apply the Sailry helper identity.
+Execution uses agent-desktop from vercel-labs/agent-desktop v1.2.0 at
+2b0a7334fc111730454b726e6800aa41cdafc093 (Apache-2.0). Sailry packages the
+unmodified official release executables; the application packaging notices
+retain its license and provenance. The package instructions adapt the
+agent-desktop skill guidance bundled with that release.
 
-This package declares the MCP service, instructions, tool display metadata and
-permission settings. Native helper selection, protected execution resources,
-ordinary approvals, cancellation and media projection stay in the Node.
+This package declares the MCP service, its tool selection, instructions, tool
+display metadata and permission settings. Native helper selection, protected
+execution resources, ordinary approvals, cancellation and media projection stay
+in the Node.
