@@ -1863,7 +1863,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2227,6 +2227,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.14",
+          "commit": "80e99bdee7b2b8eb921fc0fb6b774dd4c7aa93b6",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Resume code impact and map pages at the first file omitted by the output budget."
+          }
+        },
+        {
           "version": "0.1.13",
           "commit": "407aa9eee4826275969f2a19c81cace396a10ebd",
           "min_sailry_version": "0.1.5",
@@ -2340,7 +2348,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Add callers, callees and impacted files to code context.\n- Add code impact for symbols, file lines and changed files, and a ranked code map.\n- Report how each reference was matched and when it is ambiguous.\n- Keep code context symbols and snippets when the graph is unavailable."
+        "text": "- Resume code impact and map pages at the first file omitted by the output budget."
       }
     },
     {
