@@ -8534,7 +8534,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.26",
+        "version": "0.1.27",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8839,7 +8839,7 @@
                 "name": "read_file",
                 "presentation": "summary",
                 "keep_images": 5,
-                "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page, so read_tool_output with the returned output reference retrieves its complete captured text. Results retain one-based line numbers and the full file revision. Read a small or medium file whole in one call; page large files with next_offset instead of small windows. A repeated read of unchanged lines returns a short note. Preserve exact text for edit_file; one page is not the whole file. A .png, .jpg, .jpeg, .gif, .webp or .bmp path returns the image itself, up to 5 MiB and downscaled to a 1568-pixel long side, with its revision, format, dimensions and size; offset and limit do not apply, and images lists the reference for showing it in a reply. Models without image input receive only these facts; use inspect_image with the path to ask about the image.",
+                "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page. read_tool_output with the returned output reference retrieves captured text, but cannot recover a source line clipped at the native 128 KiB page limit and marked truncated. Results retain one-based line numbers and the full file revision, including when a line is clipped. Read a small or medium file whole in one call; page large files with next_offset instead of small windows. A repeated read of unchanged lines returns a short note. Preserve exact text for edit_file; one page is not the whole file. A .png, .jpg, .jpeg, .gif, .webp or .bmp path returns the image itself, up to 5 MiB and downscaled to a 1568-pixel long side, with its revision, format, dimensions and size; offset and limit do not apply, and images lists the reference for showing it in a reply. Models without image input receive only these facts; use inspect_image with the path to ask about the image.",
                 "handler": {
                   "name": "read",
                   "operation": "files.read",
@@ -9107,7 +9107,7 @@
               {
                 "name": "edit_file",
                 "presentation": "details",
-                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. Overlapping matches, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_patch for related changes across several files.",
+                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. replace_all replaces non-overlapping occurrences from left to right. Overlaps between edits, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_patch for related changes across several files.",
                 "handler": {
                   "name": "edit",
                   "operation": "files.edit",
@@ -9836,7 +9836,7 @@
               {
                 "name": "search_files",
                 "presentation": "summary",
-                "description": "Search UTF-8 files within path (default worktree root) using embedded ripgrep, respecting .gitignore without following symlinks. mode defaults to files; choose content for matching/context rows or count for matching line counts. Content rows use matched=true for matches and false for neighbors; context adds surrounding lines. type uses ripgrep language names, and multiline matches across newlines. limit defaults to 100, with at most 200 rows including context. Model output has about a 32 KiB total budget and 500-character line previews; read_tool_output with its output reference reads the original captured result. Use next_offset for complete-scan pages; it cannot recover a shortened line. Incomplete scans have no continuation: narrow path before retrying. Scans stop after 20 seconds and skip files above 64 MiB; diagnostics report these bounds, and lines over 16 KiB are marked truncated. No shell approval is needed.",
+                "description": "Search UTF-8 files within path (default worktree root) using embedded ripgrep, respecting .gitignore, .ignore and Git excludes without following symlinks. An explicit ignored path is searched. Globs without / match basenames at any depth; other globs are relative to path. Prefix a glob with ! to exclude it; later globs take precedence. Binary and non-UTF-8 files are skipped and counted. mode defaults to files; choose content for matching/context rows or count for matching line counts. Content rows use matched=true for matches and false for neighbors; context adds surrounding lines. type uses ripgrep language names, and multiline matches across newlines. limit defaults to 100, with at most 200 rows including context. Model output has about a 32 KiB total budget and 500-character line previews; read_tool_output with its output reference reads the original captured result. Use next_offset for complete-scan pages; it cannot recover a shortened line. Incomplete scans have no continuation: narrow path before retrying. Scans stop after 20 seconds and skip files above 64 MiB; diagnostics report these bounds, and lines over 16 KiB are marked truncated. No shell approval is needed.",
                 "handler": {
                   "name": "search",
                   "operation": "files.search",
@@ -10503,6 +10503,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.27",
+          "commit": "be6715a0a2caf3023a28ec2e733f24671c260e82",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Explain basename globs, ordered exclusions, explicit ignored paths and skipped encodings\n- Distinguish captured output from source lines clipped at the native page limit\n- Describe non-overlapping replace_all matches and conflicts between edits"
+          }
+        },
+        {
           "version": "0.1.26",
           "commit": "2f868986c1d589f23533a8415defbc7ba918449a",
           "min_sailry_version": "0.1.5",
@@ -10724,7 +10732,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read PNG, JPEG, GIF, WebP and BMP files with read_file so models with image input can see them; other models receive the format, dimensions and size\n- Keep only the most recent read images in model requests"
+        "text": "- Explain basename globs, ordered exclusions, explicit ignored paths and skipped encodings\n- Distinguish captured output from source lines clipped at the native page limit\n- Describe non-overlapping replace_all matches and conflicts between edits"
       }
     },
     {
