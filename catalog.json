@@ -378,7 +378,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "browser",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -1425,6 +1425,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.8",
+          "commit": "134e4b9f993600bb4c6dbf5c2a5f0d2857890d86",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Route new-tab shortcuts through the browser controller and focus the address field"
+          }
+        },
+        {
           "version": "0.1.7",
           "commit": "2ba09c8f87a43fa0ee3e5c1d1e8ad798b8297414",
           "min_sailry_version": "0.1.5",
@@ -1482,7 +1490,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Show captures to the model and in replies\n- Capture a selector, element or viewport area at CSS or device scale\n- Save captures to the project only on request, with approval\n- Add picked elements to the conversation as chips; Option or Alt opens the note review\n- Show the picked element's component and source in the note review"
+        "text": "- Route new-tab shortcuts through the browser controller and focus the address field"
       }
     },
     {
@@ -3194,10 +3202,10 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
-            "min_sailry_version": "0.1.0-alpha.7",
+            "min_sailry_version": "0.1.5",
             "api_version": "v1",
             "actions": [
               "process.read",
@@ -3209,7 +3217,7 @@
               {
                 "name": "run_command",
                 "presentation": "content",
-                "description": "Run a command on the Node. Provide description to explain its purpose. Invoke the tool directly; its approval card obtains consent when needed. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Background completion is recorded. Set follow_up=true whenever you wait for the result or tell the user you are monitoring it; without it the conversation does not continue when the command finishes. Do not poll with sleep or repeated read_command calls. Read output with read_command, send input with write_command, and stop it with stop_command. Set pty=true with background=true when the command needs a terminal (prompts, REPLs or debuggers); PTY output combines stdout and stderr. Ordinary background commands also accept stdin. A successful write acknowledges queued input; read output to confirm the application accepted it. Keep the shell command in the foreground. Foreground commands stop on exit, cancellation or timeout.",
+                "description": "Run a command on the Node. Provide description to explain its purpose. Invoke the tool directly; its approval card obtains consent when needed. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Background completion is recorded. Set follow_up=true whenever you wait for the result or tell the user you are monitoring it; without it the conversation does not continue when the command finishes. Use read_command with wait_ms to wait for output without sleep. Read output with read_command, send input with write_command, and stop it with stop_command. Set pty=true with background=true when the command needs a terminal (prompts, REPLs or debuggers); PTY output combines stdout and stderr. Ordinary background commands also accept stdin. A successful write acknowledges queued input; read output to confirm the application accepted it. Don't append &; use background=true. Foreground commands stop on exit, cancellation or timeout.",
                 "handler": {
                   "name": "run",
                   "operation": "process.run",
@@ -3370,7 +3378,7 @@
                   },
                   "icon": "reicon:it/terminal-square"
                 },
-                "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
+                "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. With id, set wait_ms up to 30000 for an event-driven wait: return on new output, command exit or deadline. Add until to wait for that text in either output preview instead of any new output; command exit or deadline still returns. Omitted or zero wait_ms reads immediately. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
                 "handler": {
                   "name": "read",
                   "operation": "process.read",
@@ -3419,6 +3427,16 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 32768
+                      },
+                      "wait_ms": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 30000,
+                        "description": "Wait up to this many milliseconds for output or exit. Omit or use 0 for an immediate read. Waiting requires id."
+                      },
+                      "until": {
+                        "type": "string",
+                        "description": "With id and a positive wait_ms, wait for this substring in either output preview, command exit or deadline."
                       }
                     },
                     "required": []
@@ -3633,6 +3651,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "134e4b9f993600bb4c6dbf5c2a5f0d2857890d86",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Wait for command output, matching text or exit with read_command, up to 30 seconds\n- Clarify background execution and require Sailry 0.1.5 for command waits\n- Keep terminal splits associated with the requested terminal creation"
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "f821366f2c4011145323790f572ff29c805a1fa0",
           "min_sailry_version": "0.1.0-alpha.7",
@@ -3768,18 +3794,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Ask agents to set follow_up when they wait for a background command",
-        "locales": {
-          "zh-CN": "- 等待后台命令结果时，要求智能体设置 follow_up",
-          "zh-TW": "- 等待背景命令結果時，要求智慧體設定 follow_up",
-          "ja": "- バックグラウンドコマンドの結果を待つときは follow_up を設定するよう指示",
-          "ko": "- 백그라운드 명령 결과를 기다릴 때 follow_up을 설정하도록 안내",
-          "fr": "- Les agents activent follow_up lorsqu’ils attendent une commande en arrière-plan",
-          "de": "- Agenten setzen follow_up, wenn sie auf einen Hintergrundbefehl warten",
-          "es": "- Los agentes activan follow_up cuando esperan un comando en segundo plano",
-          "pt-BR": "- Os agentes ativam follow_up ao aguardar um comando em segundo plano",
-          "ru": "- Агенты включают follow_up, когда ждут результата фоновой команды"
-        }
+        "text": "- Wait for command output, matching text or exit with read_command, up to 30 seconds\n- Clarify background execution and require Sailry 0.1.5 for command waits\n- Keep terminal splits associated with the requested terminal creation"
       }
     },
     {
@@ -10740,11 +10755,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.0-alpha.9",
+            "min_sailry_version": "0.1.5",
             "actions": [
               "git.read",
               "git.write",
@@ -11461,7 +11476,7 @@
               {
                 "name": "git_log",
                 "presentation": "summary",
-                "description": "Read a page of Git commit history. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor returned by this tool. Never construct a cursor from a short commit hash, HEAD or a branch name. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
+                "description": "Read a page of Git commit history, optionally starting at revision and filtering a literal worktree-relative path. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor and keep the same path filter. Cursors contain the frozen traversal head and last commit ID; never construct them from a short hash, HEAD, branch name or numeric offset. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
                 "contexts": [
                   "workspace"
                 ],
@@ -11486,17 +11501,31 @@
                             "type": "string",
                             "pattern": "^[0-9a-fA-F]{40}$"
                           },
-                          "offset": {
-                            "type": "integer",
-                            "minimum": 0
+                          "after": {
+                            "type": "string",
+                            "pattern": "^[0-9a-fA-F]{40}$"
                           }
                         },
                         "required": [
                           "head",
-                          "offset"
+                          "after"
                         ],
                         "additionalProperties": false,
                         "description": "Omit or use null for the first page; otherwise pass the exact returned cursor"
+                      },
+                      "revision": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Starting revision for the first page; omit for HEAD. Continuations keep the cursor's frozen head"
+                      },
+                      "path": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Literal worktree-relative file or directory; keep the same filter when continuing. Changes are compared with each commit's first parent"
                       },
                       "worktree": {
                         "type": [
@@ -12321,6 +12350,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.25",
+          "commit": "134e4b9f993600bb4c6dbf5c2a5f0d2857890d86",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Page history with exact commit cursors and preserve the original head when returning to earlier pages\n- Filter history by starting revision and literal path\n- Require Sailry 0.1.5 for the updated history contract"
+          }
+        },
+        {
           "version": "0.1.24",
           "commit": "f5be50b5f33bc8f53bba6d7bc1dc1cec8c5d9379",
           "min_sailry_version": "0.1.0-alpha.9",
@@ -12500,10 +12537,7 @@
         }
       ],
       "release_notes": {
-        "text": "- List Git repositories inside a plain directory and confirm before initializing around them",
-        "locales": {
-          "zh-CN": "- 普通目录中显示其中的 Git 仓库，在外层初始化前先确认"
-        }
+        "text": "- Page history with exact commit cursors and preserve the original head when returning to earlier pages\n- Filter history by starting revision and literal path\n- Require Sailry 0.1.5 for the updated history contract"
       }
     },
     {
