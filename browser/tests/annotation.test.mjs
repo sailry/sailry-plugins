@@ -9,8 +9,9 @@ const source = (await readFile(new URL('../dev.sailry.platform/desktop/annotatio
   .replace(/^import[\s\S]*?from '[^']+';\n/gm,'').replace(/export (class|function) /g,'$1 ');
 const page = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import[\s\S]*?from '[^']+';\n/gm,'').replace(/export function /g,'function ');
-const element = {url:'https://example.com',selector:'#heading',text:'Heading',
-  bounds:[10,20,100,40],viewport:[1280,800],truncated:false};
+const element = {url:'https://example.com',title:'Example',selector:'#heading',path:'html > body > h1#heading',
+  tag:'h1',id:'heading',classes:[],attributes:{},name:'',text:'Heading',html:'<h1 id="heading">Heading</h1>',
+  styles:{},component:null,bounds:[10,20,100,40],viewport:[1280,800],truncated:false};
 const capture = token => ({token,element});
 
 function fixture(submit = async () => {}) {
@@ -145,6 +146,16 @@ test('review uses a Kit form with private preview and aligned actions', () => {
   assert.equal(busy.props.disabled,true); assert.equal(busy.props.loading,true);
   f.accept(null);
   assert.equal(f.renderReview(f.view,f.cx).items.length,0);
+});
+
+test('review names development components', () => {
+  const f = fixture(); f.accept('component');
+  const component = () => flatten(f.renderReview(f.view,f.cx)).find(node=>node?.props?.id === 'browser-annotation-component');
+  assert.equal(component(), undefined);
+  f.view.review.current.element = {...element,component:{framework:'react',name:'Heading',source:'src/App.tsx:12',stack:['Heading']}};
+  assert.deepEqual(component().items, ['Heading · src/App.tsx:12']);
+  f.view.review.current.element = {...element,component:{framework:'vue',name:'Card',source:null,stack:['Card']}};
+  assert.deepEqual(component().items, ['Card']);
 });
 
 test('review captures page titles and omits duplicate text', () => {
