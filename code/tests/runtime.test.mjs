@@ -20,17 +20,28 @@ runtimeTest('production script preserves versioned source ranges',async () => {
         file_revision:'a'.repeat(64),range:{start_byte:16,end_byte:32,start_line:1,start_column:3,end_line:2,end_column:4}}]}},
   });
   const output = execute(fixture);
-  assert.deepEqual(output.result.Ok.call,{operation:'files.read_lines',arguments:{
-    path:'src/vue.vue',offset:0,limit:5,expected_revision:'a'.repeat(64),
+  assert.deepEqual(output.result.Ok.call,{operation:'code.graph',arguments:{
+    view:'context',name:'render',paths:['src/vue.vue'],line:1,limit:8,
   }});
+  assert.deepEqual(output.result.Ok.state.ranges,[{path:'src/vue.vue',file_revision:'a'.repeat(64),
+    start:0,end:5,limit:5,truncated:false}]);
   assert.equal(output.result.Ok.state.data.index_revision,3);
+  assert.deepEqual(output.calls,[]);
+});
+
+runtimeTest('production script shapes a bounded impact query',async () => {
+  const fixture = await packageInput(directory,'impact',{arguments:{path:'src/main.rs',line:12},step:0});
+  const output = execute(fixture);
+  assert.deepEqual(output.result.Ok.call,{operation:'code.graph',arguments:{
+    view:'impact',depth:3,limit:20,offset:0,paths:['src/main.rs'],line:11,
+  }});
   assert.deepEqual(output.calls,[]);
 });
 
 async function sourcePage(count,nextOffset) {
   const revision = 'a'.repeat(64);
   return packageInput(directory,'context',{
-    step:2,state:{query:{limit:20},snippets:5,budget:16384,next:0,
+    step:3,state:{query:{limit:20},snippets:5,budget:16384,next:0,
       data:{symbols:[],snippets:[],index_revision:3,partial:false,truncated:false,visited:1,skipped:0,issues:[]},
       ranges:[{path:'src/main.rs',file_revision:revision,start:8,end:14,limit:6,truncated:false}]},
     outcome:{kind:'file_lines',data:{path:'src/main.rs',revision,offset:8,size:200000,next_offset:nextOffset,
