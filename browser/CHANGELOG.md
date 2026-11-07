@@ -1,5 +1,13 @@
 # Changes
 
+## 0.1.7
+
+- Show captures to the model and in replies
+- Capture a selector, element or viewport area at CSS or device scale
+- Save captures to the project only on request, with approval
+- Add picked elements to the conversation as chips; Option or Alt opens the note review
+- Show the picked element's component and source in the note review
+
 ## 0.1.6
 
 - Shorten browser tool descriptions while retaining tab, background and authorization guidance
