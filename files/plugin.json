@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -305,7 +305,8 @@
         {
           "name": "read_file",
           "presentation": "summary",
-          "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page, so read_tool_output with the returned output reference retrieves its complete captured text. Results retain one-based line numbers and the full file revision. Read a small or medium file whole in one call; page large files with next_offset instead of small windows. A repeated read of unchanged lines returns a short note. Preserve exact text for edit_file; one page is not the whole file.",
+          "keep_images": 5,
+          "description": "Read UTF-8 lines in the session worktree. offset is zero-based; limit defaults to 2000 and each response has at most 2000 lines. Model text has about a 32 KiB page budget and a 2 KiB line budget. Use next_offset for omitted lines; a shortened long line is not a new page, so read_tool_output with the returned output reference retrieves its complete captured text. Results retain one-based line numbers and the full file revision. Read a small or medium file whole in one call; page large files with next_offset instead of small windows. A repeated read of unchanged lines returns a short note. Preserve exact text for edit_file; one page is not the whole file. A .png, .jpg, .jpeg, .gif, .webp or .bmp path returns the image itself, up to 5 MiB and downscaled to a 1568-pixel long side, with its revision, format, dimensions and size; offset and limit do not apply, and images lists the reference for showing it in a reply. Models without image input receive only these facts; use inspect_image with the path to ask about the image.",
           "handler": {
             "name": "read",
             "operation": "files.read",
@@ -414,6 +415,16 @@
                           "path": "/data/offset"
                         },
                         "equals": 0,
+                        "negate": true
+                      }
+                    ],
+                    "all": [
+                      {
+                        "value": {
+                          "source": "result",
+                          "path": "/data/lines"
+                        },
+                        "equals": null,
                         "negate": true
                       }
                     ]
@@ -1944,7 +1955,7 @@
           "application/x-ipynb+json"
         ]
       },
-      "instructions": "Use find_files and search_files for file discovery and content search rather than shell commands.",
+      "instructions": "Use find_files and search_files for file discovery and content search rather than shell commands. Read a worktree image with read_file when you need to see it, such as a screenshot, diagram or design; read_office extracts document text and reads conversation attachments.",
       "category": "development",
       "tint": "blue"
     }

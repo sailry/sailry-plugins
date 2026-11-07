@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.26
+
+- Read PNG, JPEG, GIF, WebP and BMP files with read_file so models with image input can see them; other models receive the format, dimensions and size
+- Keep only the most recent read images in model requests
+
 ## 0.1.25
 
 - Add apply_patch, which applies one patch to several files with a single approval; context must match exactly and changed files must be read first

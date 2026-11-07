@@ -208,10 +208,26 @@ test('line pages retain offsets and exact edit fragments', () => {
   assert.match(tool('read_file').description,/32 KiB page budget and a 2 KiB line budget/);
   assert.match(tool('read_file').description,/shortened long line is not a new page/);
   assert.match(tool('read_file').description,/read_tool_output with the returned output reference/);
-  assert.deepEqual(tool('read_file').display.output.notices[0].when.any,[
-    {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
-    {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
-  ]);
+  assert.deepEqual(tool('read_file').display.output.notices[0].when,{
+    any:[
+      {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
+      {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
+    ],
+    all:[{value:{source:'result',path:'/data/lines'},equals:null,negate:true}],
+  });
+});
+
+test('image reads keep recent images and describe non-vision facts', () => {
+  const declaration = tool('read_file');
+  assert.equal(declaration.keep_images,5);
+  assert.equal(extension.min_sailry_version,'0.1.5');
+  for (const pattern of [/\.png, \.jpg, \.jpeg, \.gif, \.webp or \.bmp/,/5 MiB/,/1568-pixel long side/,
+    /format, dimensions and size/,/images lists the reference/,/inspect_image with the path/]) {
+    assert.match(declaration.description,pattern);
+  }
+  assert.match(extension.instructions,/worktree image with read_file/);
+  assert.match(tool('read_office').description,/attachment/);
+  assert.equal(tool('read_office').keep_images,undefined);
 });
 
 test('batch edits preserve atomic arguments and enforce exclusive forms', () => {
