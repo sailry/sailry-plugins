@@ -16798,12 +16798,13 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.7",
+        "version": "0.1.8",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
+            "min_sailry_version": "0.1.0-alpha.4",
             "scope": "host",
             "actions": [
               "http.request"
@@ -16951,6 +16952,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.8",
+          "commit": "b386076d531f7c6d62edc78f47afaf0b5c33b753",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Refresh account usage on visible activity and completed work instead of periodic timers\n- Preserve account results and in-flight reads across unchanged model contexts"
+          }
+        },
+        {
           "version": "0.1.7",
           "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
           "release_notes": {
@@ -17008,7 +17017,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Pause account refresh timers while their views are hidden and reuse unexpired results on reveal"
+        "text": "- Refresh account usage on visible activity and completed work instead of periodic timers\n- Preserve account results and in-flight reads across unchanged model contexts"
       }
     },
     {
