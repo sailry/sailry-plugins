@@ -28,10 +28,11 @@ export function omitted(data) {
 }
 
 /** Drops trailing list items until the result fits its budget. */
-export function fit(data, key, budget) {
+export function fit(data, key, budget, offset) {
   while (size(data) > budget && data[key].length) {
     data[key].pop();
     omitted(data);
+    if (offset !== undefined) data.next_offset = offset + data[key].length;
   }
   if (size(data) > budget) throw new Error('Code result metadata exceeds the output budget');
   return data;

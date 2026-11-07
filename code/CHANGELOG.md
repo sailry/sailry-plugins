@@ -1,3 +1,7 @@
+## 0.1.14
+
+- Resume code impact and map pages at the first file omitted by the output budget.
+
 ## 0.1.13
 
 - Add callers, callees and impacted files to code context.

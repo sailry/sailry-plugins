@@ -51,11 +51,26 @@ test('reports impact with one-based lines and confidence',() => {
 test('bounds impact output by bytes',() => {
   const impacted = Array.from({length:50},(_,index) => ({path:`src/${'module_'.repeat(8)}${index}.rs`,depth:1,
     confidence:'directory',ambiguous:false,truncated:false,symbols:[affected(`caller_${index}`,index,1,'directory')]}));
-  const result = answer(impact,{name:'open',max_bytes:1024},page('impact',{impact:impacted,total:50})).result;
+  const result = answer(impact,{name:'open',max_bytes:1024,offset:7},
+    page('impact',{impact:impacted,total:70,next_offset:57})).result;
   assert.ok(result.files.length > 0 && result.files.length < 50);
   assert.equal(result.truncated,true);
   assert.equal(result.partial,true);
+  assert.equal(result.next_offset,7+result.files.length);
   assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 1024);
+});
+
+test('resumes map output at the first omitted file',() => {
+  const entries = Array.from({length:10},(_,index) => ({path:`src/${index}.rs`,score:100-index,symbols:[
+    {name:`method_${index}`,kind:'function',start_line:0,end_line:10,signature:'parameter: String, '.repeat(20),references:4},
+  ]}));
+  const result = answer(map,{max_bytes:1024,offset:12},page('map',{map:entries,total:22})).result;
+  assert.ok(result.files.length > 0 && result.files.length < entries.length);
+  assert.equal(result.next_offset,12+result.files.length);
+  assert.equal(result.truncated,true);
+  assert.equal(result.partial,true);
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 1024);
+  assert.deepEqual(result.files.map(file => file.path),entries.slice(0,result.files.length).map(file => file.path));
 });
 
 test('ranks map entries with signatures',() => {

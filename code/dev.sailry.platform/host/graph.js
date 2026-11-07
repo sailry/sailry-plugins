@@ -120,7 +120,8 @@ export function impact({arguments:input={},step,state,outcome}) {
   try {
     if (step === 0) {
       const query = impactQuery(input);
-      return {call:{operation:'code.graph',arguments:query},state:{budget:bound(input.max_bytes,MAX_BYTES,MAX_BYTES,1024)}};
+      return {call:{operation:'code.graph',arguments:query},state:{budget:bound(input.max_bytes,MAX_BYTES,MAX_BYTES,1024),
+        offset:query.offset}};
     }
     if (step !== 1 || !Number.isSafeInteger(state?.budget)) return invalid('Invalid code impact continuation');
     if (outcome?.isError) return {result:outcome};
@@ -128,7 +129,7 @@ export function impact({arguments:input={},step,state,outcome}) {
     const result = {targets:data.targets.slice(0,MAX_TARGETS).map(definition),files:data.impact.map(file => impacted(file)),
       ...status(data)};
     if (data.targets.length > MAX_TARGETS) omitted(result);
-    return {result:fit(result,'files',state.budget)};
+    return {result:fit(result,'files',state.budget,state.offset)};
   } catch (error) {
     return invalid(error.message);
   }
@@ -142,14 +143,15 @@ export function map({arguments:input={},step,state,outcome}) {
       const query = paging(input,{view:'map'});
       const focus = paths(input.paths);
       if (focus.length) query.paths = focus;
-      return {call:{operation:'code.graph',arguments:query},state:{budget:bound(input.max_bytes,MAX_BYTES,MAX_BYTES,1024)}};
+      return {call:{operation:'code.graph',arguments:query},state:{budget:bound(input.max_bytes,MAX_BYTES,MAX_BYTES,1024),
+        offset:query.offset}};
     }
     if (step !== 1 || !Number.isSafeInteger(state?.budget)) return invalid('Invalid code map continuation');
     if (outcome?.isError) return {result:outcome};
     const data = graphPage(outcome,'map');
     const result = {files:data.map.map(entry => ({path:entry.path,score:entry.score,symbols:entry.symbols.map(ranked)})),
       ...status(data)};
-    return {result:fit(result,'files',state.budget)};
+    return {result:fit(result,'files',state.budget,state.offset)};
   } catch (error) {
     return invalid(error.message);
   }
