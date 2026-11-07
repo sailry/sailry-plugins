@@ -3,6 +3,7 @@
 - Add callers, callees and impacted files to code context.
 - Add code impact for symbols, file lines and changed files, and a ranked code map.
 - Report how each reference was matched and when it is ambiguous.
+- Keep code context symbols and snippets when the graph is unavailable.
 
 ## 0.1.12
 
