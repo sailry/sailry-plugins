@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.27
+
+- Explain basename globs, ordered exclusions, explicit ignored paths and skipped encodings
+- Distinguish captured output from source lines clipped at the native page limit
+- Describe non-overlapping replace_all matches and conflicts between edits
+
 ## 0.1.26
 
 - Read PNG, JPEG, GIF, WebP and BMP files with read_file so models with image input can see them; other models receive the format, dimensions and size
