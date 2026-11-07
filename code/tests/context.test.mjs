@@ -7,10 +7,19 @@ const symbol = (path='src/main.rs',start=0,end=1) => ({path,language:'rust',name
   range:{start_byte:start*10,end_byte:end*10,start_line:start,start_column:0,end_line:end,end_column:1},
   signature:'fn entry()',file_revision:revision,depth:0});
 const page = symbols => ({symbols,index_revision:7,partial:false,truncated:false,visited:1,skipped:0,issues:[]});
+const definition = (path,name,line) => ({path,name,kind:'function',start_line:line,end_line:line+2});
+const graph = overrides => ({view:'context',index_revision:7,targets:[],callers:[],callees:[],impact:[],map:[],
+  total:0,next_offset:null,partial:false,truncated:false,visited:1,skipped:0,issues:[],...overrides});
 function search(symbols,input={}) {
   const start = context({arguments:input,step:0});
   assert.equal(start.call.operation,'code.search');
   return context({step:1,state:start.state,outcome:{kind:'code_search',data:page(symbols)}});
+}
+/** Answers the graph step and returns the first source read. */
+function related(symbols,input={},overrides={}) {
+  const pending = search(symbols,input);
+  assert.equal(pending.call.operation,'code.graph');
+  return context({step:2,state:pending.state,outcome:{kind:'code_graph',data:graph(overrides)}});
 }
 function reply(pending,text='fn entry() {}\n',count=1) {
   const query = pending.call.arguments;
@@ -19,10 +28,17 @@ function reply(pending,text='fn entry() {}\n',count=1) {
     lines:Array.from({length:count},(_,index) => ({number:query.offset+index+1,text}))}};
 }
 
+test('requests the first symbol graph before reading source',() => {
+  const pending = search([symbol('src/main.rs',4,9),symbol('src/other.rs',1,2)]);
+  assert.deepEqual(pending.call,{operation:'code.graph',arguments:{view:'context',name:'entry',paths:['src/main.rs'],
+    line:4,limit:8}});
+  assert.equal(pending.state.next,0);
+});
+
 test('merges overlapping ranges before expansion',() => {
-  const pending = search([symbol('main.rs',2,4),symbol('main.rs',3,6),symbol('main.rs',2,4)]);
+  const pending = related([symbol('main.rs',2,4),symbol('main.rs',3,6),symbol('main.rs',2,4)]);
   assert.deepEqual(pending.call,{operation:'files.read_lines',arguments:{path:'main.rs',offset:0,limit:9,expected_revision:revision}});
-  const completed = context({step:2,state:pending.state,outcome:reply(pending,'line\r\n',9)});
+  const completed = context({step:3,state:pending.state,outcome:reply(pending,'line\r\n',9)});
   assert.equal(completed.result.symbols.length,3);
   assert.equal(completed.result.snippets.length,1);
   assert.equal(completed.result.snippets[0].start_line,1);
@@ -34,20 +50,64 @@ test('merges overlapping ranges before expansion',() => {
 });
 
 test('returns compact one-based symbols',() => {
-  const pending = search([symbol('main.rs',2,4),{...symbol('main.rs',6,8),signature:null,
+  const pending = related([symbol('main.rs',2,4),{...symbol('main.rs',6,8),signature:null,
     range:{start_byte:60,end_byte:80,start_line:6,start_column:0,end_line:8,end_column:0}}]);
-  const completed = context({step:2,state:pending.state,outcome:reply(pending,'line\n',9)});
+  const completed = context({step:3,state:pending.state,outcome:reply(pending,'line\n',9)});
   assert.deepEqual(completed.result.symbols,[
     {path:'main.rs',language:'rust',name:'entry',kind:'function',depth:0,start_line:3,end_line:5,signature:'fn entry()'},
     {path:'main.rs',language:'rust',name:'entry',kind:'function',depth:0,start_line:7,end_line:8},
   ]);
 });
 
+test('adds bounded callers callees and impact',() => {
+  const caller = index => ({path:`src/caller${index}.rs`,name:'entry',kind:'call',line:index,column:4,count:index === 0 ? 2 : 1,
+    scope:definition(`src/caller${index}.rs`,`run${index}`,0),targets:[definition('src/main.rs','entry',0)],candidates:1,
+    confidence:'imported',ambiguous:false});
+  const impacted = index => ({path:`src/user${index}.rs`,depth:1,confidence:'directory',ambiguous:index === 1,truncated:false,
+    symbols:[1,2,3,4].map(line => ({name:`use${line}`,kind:'function',start_line:line,end_line:line+1,depth:1,
+      confidence:line === 4 ? 'workspace' : 'directory',ambiguous:false}))});
+  const pending = related([symbol()],{},{
+    callers:Array.from({length:10},(_,index) => caller(index)),
+    callees:[
+      {path:'src/main.rs',name:'helper',kind:'call',line:0,column:2,count:1,scope:null,
+        targets:[definition('src/util.rs','helper',4)],candidates:1,confidence:'directory',ambiguous:false},
+      {path:'src/main.rs',name:'open',kind:'call',line:1,column:2,count:3,scope:null,
+        targets:[definition('a.rs','open',0),definition('b.rs','open',0)],candidates:2,confidence:'workspace',ambiguous:true},
+      {path:'src/main.rs',name:'println',kind:'call',line:2,column:2,count:1,scope:null,targets:[],candidates:0,
+        confidence:null,ambiguous:false},
+    ],
+    impact:Array.from({length:6},(_,index) => impacted(index)),total:6,
+  });
+  const result = context({step:3,state:pending.state,outcome:reply(pending)}).result;
+  assert.equal(result.callers.length,8);
+  assert.deepEqual(result.callers[0],{path:'src/caller0.rs',line:1,kind:'call',scope:'run0',count:2,confidence:'imported'});
+  assert.deepEqual(result.callees,[
+    {name:'helper',line:1,kind:'call',confidence:'directory',definition:{path:'src/util.rs',line:5}},
+    {name:'open',line:2,kind:'call',count:3,confidence:'workspace',ambiguous:true,candidates:2},
+  ]);
+  assert.equal(result.impact.total,6);
+  assert.equal(result.impact.files.length,5);
+  assert.deepEqual(result.impact.files[1].symbols.map(item => item.name),['use1','use2','use3']);
+  assert.equal(result.impact.files[1].ambiguous,true);
+  assert.equal(result.impact.files[0].truncated,true);
+  assert.equal(result.truncated,true);
+  assert.equal(result.snippets.length,1);
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 16384);
+});
+
+test('keeps source reads after a failed graph',() => {
+  const pending = search([symbol()]);
+  const reading = context({step:2,state:pending.state,outcome:{isError:true,error:{code:'busy',message:'Busy'}}});
+  assert.equal(reading.call.operation,'files.read_lines');
+  assert.equal(reading.state.data.partial,true);
+  assert.equal(reading.state.data.callers,undefined);
+});
+
 test('reports pagination before the requested range ends',() => {
-  const pending = search([symbol('main.rs',10,11)]);
+  const pending = related([symbol('main.rs',10,11)]);
   const outcome = reply(pending,'first line\n');
   outcome.data.next_offset = pending.call.arguments.offset+1;
-  const completed = context({step:2,state:pending.state,outcome});
+  const completed = context({step:3,state:pending.state,outcome});
   assert.equal(completed.call,undefined);
   assert.equal(completed.result.partial,true);
   assert.equal(completed.result.truncated,true);
@@ -58,11 +118,11 @@ test('reports pagination before the requested range ends',() => {
 });
 
 test('keeps complete ranges with later file pages',() => {
-  const pending = search([symbol('main.rs',10,11)]);
+  const pending = related([symbol('main.rs',10,11)]);
   const query = pending.call.arguments;
   const outcome = reply(pending,'line\n',query.limit);
   outcome.data.next_offset = query.offset+query.limit;
-  const completed = context({step:2,state:pending.state,outcome});
+  const completed = context({step:3,state:pending.state,outcome});
   assert.equal(completed.call,undefined);
   assert.equal(completed.result.partial,false);
   assert.equal(completed.result.truncated,false);
@@ -72,14 +132,15 @@ test('keeps complete ranges with later file pages',() => {
 });
 
 test('caps symbols snippets and operation count',() => {
-  let pending = search(Array.from({length:30},(_,index) => symbol(`file${index}.rs`)));
-  let step = 2, reads = 0;
+  let pending = related(Array.from({length:30},(_,index) => symbol(`file${index}.rs`)));
+  let step = 3, reads = 0;
   while (pending.call) {
     assert.equal(pending.call.operation,'files.read_lines');
     reads++;
     pending = context({step:step++,state:pending.state,outcome:reply(pending)});
   }
   assert.equal(reads,5);
+  assert.equal(step,8);
   assert.equal(pending.result.symbols.length,20);
   assert.equal(pending.result.snippets.length,5);
   assert.equal(pending.result.partial,true);
@@ -88,8 +149,8 @@ test('caps symbols snippets and operation count',() => {
 });
 
 test('bounds escaped multibyte output by bytes',() => {
-  const pending = search([symbol()],{max_bytes:1024});
-  const result = context({step:2,state:pending.state,outcome:reply(pending,'中文🙂"\\\t'.repeat(1000))}).result;
+  const pending = related([symbol()],{max_bytes:1024});
+  const result = context({step:3,state:pending.state,outcome:reply(pending,'中文🙂"\\\t'.repeat(1000))}).result;
   assert.equal(result.partial,true);
   assert.equal(result.truncated,true);
   assert.ok(result.snippets[0].text.length > 0);
@@ -109,9 +170,9 @@ test('bounds metadata before requesting source',() => {
 });
 
 test('skips a changed file without stale expansion',() => {
-  const pending = search([symbol()]);
+  const pending = related([symbol()]);
   const outcome = {isError:true,error:{code:'revision_conflict',message:'File changed'}};
-  const completed = context({step:2,state:pending.state,outcome});
+  const completed = context({step:3,state:pending.state,outcome});
   assert.equal(completed.result.isError,undefined);
   assert.equal(completed.result.partial,true);
   assert.deepEqual(completed.result.snippets,[]);
@@ -119,32 +180,32 @@ test('skips a changed file without stale expansion',() => {
 });
 
 test('continues revision-checked reads after a later conflict',() => {
-  const first = search([symbol('first.rs'),symbol('changed.rs'),symbol('remaining.rs')]);
-  const second = context({step:2,state:first.state,outcome:reply(first)});
+  const first = related([symbol('first.rs'),symbol('changed.rs'),symbol('remaining.rs')]);
+  const second = context({step:3,state:first.state,outcome:reply(first)});
   assert.equal(second.call.arguments.path,'changed.rs');
   assert.equal(second.state.data.snippets.length,1);
   const outcome = {isError:true,error:{code:'revision_conflict',message:'File changed'}};
-  const third = context({step:3,state:second.state,outcome});
+  const third = context({step:4,state:second.state,outcome});
   assert.equal(third.call.arguments.path,'remaining.rs');
   assert.equal(third.state.data.partial,true);
-  const completed = context({step:4,state:third.state,outcome:reply(third)});
+  const completed = context({step:5,state:third.state,outcome:reply(third)});
   assert.deepEqual(completed.result.snippets.map(snippet => snippet.path),['first.rs','remaining.rs']);
   assert.equal(completed.result.partial,true);
 });
 
 test('rejects a mismatched successful source revision',() => {
-  const pending = search([symbol()]);
+  const pending = related([symbol()]);
   const outcome = reply(pending);
   outcome.data.revision = 'b'.repeat(64);
-  const completed = context({step:2,state:pending.state,outcome});
+  const completed = context({step:3,state:pending.state,outcome});
   assert.equal(completed.result.isError,true);
   assert.deepEqual(completed.result.error,{code:'invalid_request',message:'Invalid revision-checked source result'});
 });
 
 test('clips long declarations and reports incomplete context',() => {
-  const pending = search([symbol('large.rs',1,1000)]);
+  const pending = related([symbol('large.rs',1,1000)]);
   assert.equal(pending.call.arguments.limit,80);
-  const result = context({step:2,state:pending.state,outcome:reply(pending,'line\n',80)}).result;
+  const result = context({step:3,state:pending.state,outcome:reply(pending,'line\n',80)}).result;
   assert.equal(result.partial,true);
   assert.equal(result.truncated,true);
   assert.equal(result.snippets[0].truncated,true);
@@ -165,5 +226,7 @@ test('rejects invalid limits and continuations',() => {
   for (const input of [{limit:21},{max_snippets:6},{max_bytes:16385},{max_bytes:100},{query:3}]) {
     assert.equal(context({arguments:input,step:0}).result.isError,true);
   }
-  assert.equal(context({step:7}).result.isError,true);
+  assert.equal(context({step:8}).result.isError,true);
+  const pending = search([symbol()]);
+  assert.equal(context({step:2,state:pending.state,outcome:{kind:'code_graph',data:graph({view:'map'})}}).result.isError,true);
 });

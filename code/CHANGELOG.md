@@ -1,3 +1,9 @@
+## 0.1.13
+
+- Add callers, callees and impacted files to code context.
+- Add code impact for symbols, file lines and changed files, and a ranked code map.
+- Report how each reference was matched and when it is ambiguous.
+
 ## 0.1.12
 
 - Keep code context results when a matched file changed after indexing.

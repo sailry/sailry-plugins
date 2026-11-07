@@ -1,30 +1,15 @@
+import {bound, invalid, omitted, size} from './limits.js';
+import {callee, caller, graphPage, impacted} from './graph.js';
+
 const MAX_SYMBOLS = 20;
 const MAX_SNIPPETS = 5;
 const MAX_BYTES = 16 * 1024;
 const MAX_LINES = 80;
-
-function invalid(message) {
-  return {result:{isError:true,error:{code:'invalid_request',message}}};
-}
-
-function bytes(text) {
-  let count = 0;
-  for (const character of text) {
-    const point = character.codePointAt(0);
-    count += point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
-  }
-  return count;
-}
-
-function size(value) { return bytes(JSON.stringify(value)); }
-
-function bound(value, fallback, maximum, minimum=1) {
-  if (value === undefined) return fallback;
-  if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
-    throw new Error('Invalid code context limit');
-  }
-  return value;
-}
+const GRAPH_ITEMS = 8;
+const IMPACT_FILES = 5;
+const IMPACT_SYMBOLS = 3;
+/** Steps before the first source read: search, then graph. */
+const READS = 2;
 
 function options(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Invalid code context query');
@@ -46,11 +31,6 @@ function valid(symbol) {
     && ['start_byte','end_byte','start_line','start_column','end_line','end_column']
       .every(key => Number.isSafeInteger(range[key]) && range[key] >= 0)
     && range.end_byte >= range.start_byte && range.end_line >= range.start_line;
-}
-
-function omitted(data) {
-  data.partial = true;
-  data.truncated = true;
 }
 
 function metadata(page, limit, budget) {
@@ -113,6 +93,40 @@ function ranges(data, limit) {
   });
 }
 
+/** The first symbol's graph neighborhood: one revision-free, name-matched read. */
+function neighbors(symbol) {
+  return {call:{operation:'code.graph',arguments:{view:'context',name:symbol.name,paths:[symbol.path],
+    line:symbol.range.start_line,limit:GRAPH_ITEMS}}};
+}
+
+function relate(state, outcome) {
+  const data = state.data;
+  if (outcome?.isError) {
+    data.partial = true;
+    return;
+  }
+  const page = graphPage(outcome,'context');
+  const callers = page.callers.slice(0,GRAPH_ITEMS);
+  // Calls without an indexed definition belong to dependencies or the runtime.
+  const callees = page.callees.filter(reference => reference.confidence).slice(0,GRAPH_ITEMS);
+  const files = page.impact.slice(0,IMPACT_FILES);
+  data.callers = callers.map(caller);
+  data.callees = callees.map(callee);
+  data.impact = {total:page.total,files:files.map(file => impacted(file,IMPACT_SYMBOLS))};
+  if (page.partial === true) data.partial = true;
+  if (page.truncated === true || page.callers.length > callers.length || page.total > files.length) data.truncated = true;
+  for (const key of ['callers','callees']) {
+    while (size(data)+128 > state.budget && data[key].length) {
+      data[key].pop();
+      omitted(data);
+    }
+  }
+  while (size(data)+128 > state.budget && data.impact.files.length) {
+    data.impact.files.pop();
+    omitted(data);
+  }
+}
+
 function read(state) {
   const range = state.ranges[state.next];
   return {call:{operation:'files.read_lines',arguments:{path:range.path,offset:range.start,
@@ -153,10 +167,10 @@ function append(state, lines) {
   else snippet.end_line = snippet.start_line+snippet.text.split('\n').length-1-(snippet.text.endsWith('\n') ? 1 : 0);
 }
 
-/** One symbol search followed by at most five version-checked source reads. */
+/** One symbol search, the first symbol's graph, then at most five version-checked source reads. */
 export function context({arguments:input={},step,state,outcome}) {
   try {
-    if (!Number.isInteger(step) || step < 0 || step > MAX_SNIPPETS+1) return invalid('Invalid code context continuation');
+    if (!Number.isInteger(step) || step < 0 || step > MAX_SNIPPETS+READS) return invalid('Invalid code context continuation');
     if (step === 0) {
       const limits = options(input);
       return {call:{operation:'code.search',arguments:limits.query},state:{...limits,next:0}};
@@ -165,9 +179,14 @@ export function context({arguments:input={},step,state,outcome}) {
     if (step === 1) {
       const data = metadata(outcome?.data,state.query.limit,state.budget);
       state = {...state,data,ranges:ranges(data,state.snippets)};
+      const first = data.symbols[0];
       data.symbols = data.symbols.map(compact);
+      if (first) return {...neighbors(first),state};
+    } else if (step === READS) {
+      if (!state?.ranges || state.next !== 0) return invalid('Invalid code context continuation');
+      relate(state,outcome);
     } else {
-      if (!state?.ranges || state.next !== step-2) return invalid('Invalid code context continuation');
+      if (!state?.ranges || state.next !== step-READS-1) return invalid('Invalid code context continuation');
       // A file edited after indexing fails its revision-checked read; keep the
       // symbols and other snippets and mark the result partial.
       if (outcome?.isError) state.data.partial = true;
