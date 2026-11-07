@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Autoriser un petit visuel d'aperçu sans demande lorsqu'il aide clairement
+- Les aperçus utilisent un fond transparent, un contenu centré et les variables de thème de l'hôte
+
 ## 0.1.9
 
 - Conserver la page normale pendant le chargement des données initiales

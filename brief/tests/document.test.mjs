@@ -10,7 +10,7 @@ test('keeps HTML general with optional questions',() => {
   const extension = manifest.extensions['dev.sailry.platform'];
   const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
   assert.equal(manifest.name,'brief');
-  assert.equal(manifest.version,'0.1.9');
+  assert.equal(manifest.version,'0.1.10');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.display.label,'HTML');
   assert(Object.values(extension.display.locales).every(label => label === 'HTML'));
@@ -26,11 +26,30 @@ test('keeps HTML general with optional questions',() => {
     assert.match(declaration,/wait for the user's choice/);
     assert.match(declaration,/Do not repeat the offer for that plan/);
     assert.match(declaration,/Do not offer HTML for pure questions or simple changes/);
-    assert.match(declaration,/never generate it automatically without acceptance/);
+    assert.match(declaration,/never generate a document or plan HTML version automatically without acceptance/);
+    assert.match(declaration,/Without a request, you may create one small `?kind=preview`? visual/);
+    assert.match(declaration,/clearly helps the current answer more than text/);
   }
   assert.deepEqual(extension.tools.slice(0,3).map(tool => tool.name),[
     'write_brief','read_brief','list_briefs',
   ]);
+});
+
+test('previews follow the host theme and card layout',() => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8').replace(/\s+/g,' ');
+  assert.match(extension.instructions,/keep the body background transparent, center the main element, use the host's --sailry-\* theme variables with fallbacks/);
+  assert.match(skill,/Leave the `html` and `body` backgrounds transparent/);
+  assert.match(skill,/color: var\(--sailry-foreground, CanvasText\)/);
+  for (const name of ['background','foreground','muted','muted-foreground','primary','primary-foreground',
+    'secondary','secondary-foreground','accent','border','success','warning','danger','chart-1','chart-5',
+    'font-family','mono-font-family','font-size','radius']) {
+    assert(skill.includes(`--sailry-${name}`),`Missing theme variable: ${name}`);
+  }
+  assert.match(skill,/Create at most one per answer/);
+  const declaration = extension.tools.find(tool => tool.name === 'write_brief');
+  assert.match(declaration.description,/one small preview visual that clearly helps the current answer/);
 });
 
 test('requested file paths are distinct from session artifact delivery',() => {

@@ -1,6 +1,6 @@
 ---
 name: brief
-description: Create session-owned HTML documents, reports, diagrams, demos and interactive previews requested or accepted by the user. HTML does not authorize executing a plan.
+description: Create session-owned HTML documents, reports, diagrams, demos and interactive previews requested or accepted by the user, and small preview visuals that clearly help an answer. HTML does not authorize executing a plan.
 metadata:
   display-name: "HTML documents"
   display-name.en: "HTML documents"
@@ -38,9 +38,9 @@ For complex development, design or refactor plans, present the full ordinary pla
 in the conversation first, then end with exactly one concise offer to create an
 HTML version and wait for the user's choice. Do not repeat the offer for that
 plan. Do not offer HTML for pure questions or simple changes, and never generate
-it automatically without acceptance. An explicit HTML or HTML-preview request
-authorizes generation directly. Choose content and interactions for the user's
-actual request, not a prescribed plan or form. Use `write_brief`
+a document or plan HTML version automatically without acceptance. An explicit
+HTML or HTML-preview request authorizes generation directly. Choose content and
+interactions for the user's actual request, not a prescribed plan or form. Use `write_brief`
 in the main session; delegated agents can contribute analysis to their parent,
 but cannot create or revise a brief. Plan mode permits this session-owned
 document, without permitting project writes or execution.
@@ -57,6 +57,17 @@ Before revising, call `read_brief` without a revision to inspect the current HTM
 then preserve its `kind` and pass its exact `id` and latest `revision` as `expected_revision`. A conflict
 requires another read; do not overwrite or retry with a guessed revision. Preserve
 the user's previous decisions and content unless the requested change replaces them.
+
+## Proactive visuals
+
+Without a request, you may create one small `kind=preview` visual when it
+clearly helps the current answer more than text: a chart of the user's data, a
+diagram of a flow or architecture, a UI mockup, or a short interactive
+explainer. Keep the written answer complete without it and mention the visual
+in one short sentence. Skip it for simple facts, routine changes, or when the
+user prefers text. Use data from the conversation or a cited source; do not
+fabricate measurements. Create at most one per answer. Documents, reports and
+HTML versions of plans still need an explicit request or acceptance.
 
 ## Interactive previews
 
@@ -75,6 +86,22 @@ assets, bounded data images and local JavaScript only. No dependency installatio
 or permission change is part of generating a preview. A form is optional; local
 demo controls do not send conversation messages or approve execution. Use
 `ask_user` separately for actual user decisions or missing information.
+
+Conversation cards may show a still image of a preview, and the side panel runs
+it live. Leave the `html` and `body` backgrounds transparent so the host surface
+shows through, and center the main element, for example with
+`body{margin:0;min-height:100vh;display:grid;place-items:center}`. Keep visuals
+modest: about 320 to 720 px wide and under 360 px tall suits a card; taller
+pages are shown from the top. The host sets `color-scheme` to light or dark and
+supplies these CSS variables: `--sailry-background`, `--sailry-foreground`,
+`--sailry-muted`, `--sailry-muted-foreground`, `--sailry-primary`,
+`--sailry-primary-foreground`, `--sailry-secondary`,
+`--sailry-secondary-foreground`, `--sailry-accent`, `--sailry-border`,
+`--sailry-success`, `--sailry-warning`, `--sailry-danger`, `--sailry-chart-1`
+through `--sailry-chart-5`, `--sailry-font-family`, `--sailry-mono-font-family`,
+`--sailry-font-size` and `--sailry-radius`. Always give a fallback, such as
+`color: var(--sailry-foreground, CanvasText)`, because a host or export may omit
+a variable.
 
 For a copy button, copy selected text synchronously inside the user's click
 handler with the browser's `document.execCommand('copy')` fallback. Do not read

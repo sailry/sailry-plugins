@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Kleine Vorschaugrafiken auch ohne Anfrage erstellen, wenn sie klar helfen
+- Vorschauen nutzen transparente Hintergründe, zentrierte Inhalte und Theme-Variablen des Hosts
+
 ## 0.1.9
 
 - Die normale Seite während des ersten Datenladens beibehalten
