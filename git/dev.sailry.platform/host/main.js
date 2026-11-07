@@ -50,13 +50,14 @@ export function diff(args) {
 }
 
 export function log(args) {
-  if (!object(args,['worktree','limit','cursor']) || !target(args.worktree)) return invalid();
+  if (!object(args,['worktree','limit','cursor','revision','path']) || !target(args.worktree) ||
+      !target(args.revision) || !target(args.path)) return invalid();
   const {limit = 20,cursor = null} = args;
   if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
-  if (cursor !== null && (!object(cursor,['head','offset']) ||
+  if (cursor !== null && (!object(cursor,['head','after']) ||
       typeof cursor.head !== 'string' || !/^[0-9a-fA-F]{40}$/.test(cursor.head) ||
-      !Number.isSafeInteger(cursor.offset) || cursor.offset < 0)) return invalid();
-  return {worktree:args.worktree ?? null,limit,cursor};
+      typeof cursor.after !== 'string' || !/^[0-9a-fA-F]{40}$/.test(cursor.after))) return invalid();
+  return {worktree:args.worktree ?? null,limit,cursor,revision:args.revision ?? null,path:args.path ?? null};
 }
 
 function page(args) {

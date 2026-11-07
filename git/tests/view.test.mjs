@@ -62,7 +62,7 @@ test('unconfirmed changes and history reserve rows without false empty',()=>{
 });
 
 test('history refreshes preserve known commits and metadata',()=>{
-  const view={text:{},repo:{historyLoading:true,pending:null,selected:null,history:{offset:0,next:{head:'immutable',offset:100},
+  const view={text:{},repo:{historyLoading:true,pending:null,selected:null,history:{offset:0,next:{head:'immutable',after:'last'},
     entries:[{id:'commit',message:'Retained commit',author:'Author',time_ms:0,references:[],truncated:false}]}}};
   for(const failed of [false,true]) {
     view.repo.failed=failed;

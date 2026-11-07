@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.25
+
+- Page history with exact commit cursors and preserve the original head when returning to earlier pages
+- Filter history by starting revision and literal path
+- Require Sailry 0.1.5 for the updated history contract
+
 ## 0.1.24
 
 - List Git repositories inside a plain directory and confirm before initializing around them

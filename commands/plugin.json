@@ -1,10 +1,10 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "extensions": {
     "dev.sailry.platform": {
-      "min_sailry_version": "0.1.0-alpha.7",
+      "min_sailry_version": "0.1.5",
       "api_version": "v1",
       "actions": [
         "process.read",
@@ -16,7 +16,7 @@
         {
           "name": "run_command",
           "presentation": "content",
-          "description": "Run a command on the Node. Provide description to explain its purpose. Invoke the tool directly; its approval card obtains consent when needed. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Background completion is recorded. Set follow_up=true whenever you wait for the result or tell the user you are monitoring it; without it the conversation does not continue when the command finishes. Do not poll with sleep or repeated read_command calls. Read output with read_command, send input with write_command, and stop it with stop_command. Set pty=true with background=true when the command needs a terminal (prompts, REPLs or debuggers); PTY output combines stdout and stderr. Ordinary background commands also accept stdin. A successful write acknowledges queued input; read output to confirm the application accepted it. Keep the shell command in the foreground. Foreground commands stop on exit, cancellation or timeout.",
+          "description": "Run a command on the Node. Provide description to explain its purpose. Invoke the tool directly; its approval card obtains consent when needed. The working directory defaults to the admitted worktree. Use bundled skill paths only when they are accessible in the workspace, or request unrestricted access. Output reports truncation. Timeout defaults to 120000 ms. Set background=true for a process that should survive the turn; it returns an ID and has no timeout. Background completion is recorded. Set follow_up=true whenever you wait for the result or tell the user you are monitoring it; without it the conversation does not continue when the command finishes. Use read_command with wait_ms to wait for output without sleep. Read output with read_command, send input with write_command, and stop it with stop_command. Set pty=true with background=true when the command needs a terminal (prompts, REPLs or debuggers); PTY output combines stdout and stderr. Ordinary background commands also accept stdin. A successful write acknowledges queued input; read output to confirm the application accepted it. Don't append &; use background=true. Foreground commands stop on exit, cancellation or timeout.",
           "handler": {
             "name": "run",
             "operation": "process.run",
@@ -177,7 +177,7 @@
             },
             "icon": "reicon:it/terminal-square"
           },
-          "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
+          "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. With id, set wait_ms up to 30000 for an event-driven wait: return on new output, command exit or deadline. Add until to wait for that text in either output preview instead of any new output; command exit or deadline still returns. Omitted or zero wait_ms reads immediately. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
           "handler": {
             "name": "read",
             "operation": "process.read",
@@ -215,6 +215,16 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 32768
+                },
+                "wait_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 30000,
+                  "description": "Wait up to this many milliseconds for output or exit. Omit or use 0 for an immediate read. Waiting requires id."
+                },
+                "until": {
+                  "type": "string",
+                  "description": "With id and a positive wait_ms, wait for this substring in either output preview, command exit or deadline."
                 }
               },
               "required": []

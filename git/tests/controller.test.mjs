@@ -349,20 +349,55 @@ test('latest read intent opens a tab only when its result is accepted',async()=>
 });
 
 test('history replaces native pages using the original immutable head',async()=>{
-  const reads=[];const {owner}=fixture({readGitLog:async(limit,cursor)=>{reads.push({limit,cursor});return {head:'immutable',offset:cursor?.offset??0,entries:[{id:String(cursor?.offset??0)}],next:cursor?null:{head:'immutable',offset:100}};}});
-  await owner.loadHistory();await owner.historyPage(2);assert.deepEqual(reads,[{limit:100,cursor:null},{limit:100,cursor:{head:'immutable',offset:100}}]);
-  assert.deepEqual(owner.history.entries,[{id:'100'}]);await owner.historyPage(1);assert.equal(reads[2].cursor.head,'immutable');
+  const reads=[],head='a'.repeat(40),second={head,after:'b'.repeat(40)},third={head,after:'c'.repeat(40)};
+  let liveHead=head;
+  const {owner}=fixture({readGitLog:async(limit,cursor,options)=>{
+    reads.push({limit,cursor,options});
+    const offset=cursor === second ? 100 : cursor === third ? 200 : 0;
+    return {head:cursor?.head ?? options.revision ?? liveHead,offset,
+      entries:[{id:String(offset)}],next:offset === 0 ? second : offset === 100 ? third : null};
+  }});
+  await owner.loadHistory();liveHead='d'.repeat(40);
+  for(const page of [2,3,1,2,3]) await owner.historyPage(page);
+  assert.deepEqual(reads,[
+    {limit:100,cursor:null,options:{revision:null}},
+    ...[second,third,null,second,third].map(cursor=>({limit:100,cursor,options:{revision:head}})),
+  ]);
+  assert.deepEqual(owner.history.entries,[{id:'200'}]);
+  await owner.historyPage(4);assert.equal(reads.length,6);
+  await owner.loadHistory();assert.equal(owner.history.head,liveHead);
+  await owner.historyPage(3);assert.equal(reads.length,7);
 });
 
 test('history paging accepts a newer choice while retaining the committed page',async()=>{
-  const replies=[];const {owner}=fixture({readGitLog:async(_limit,cursor)=>new Promise(resolve=>replies.push({cursor,resolve}))});
-  owner.history={head:'immutable',offset:0,entries:[{id:'current'}],next:{head:'immutable',offset:100}};
+  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40)},replies=[];
+  const {owner}=fixture({readGitLog:async()=>({head,offset:0,entries:[{id:'current'}],next:cursor})});
+  await owner.loadHistory();
+  owner.api.readGitLog=async(_limit,cursor)=>new Promise(resolve=>replies.push({cursor,resolve}));
   const next=owner.historyPage(2);
   assert.deepEqual(owner.history.entries,[{id:'current'}]);
   const current=owner.historyPage(1);
-  replies[1].resolve({head:'immutable',offset:0,entries:[{id:'latest'}],next:{head:'immutable',offset:100}});await current;
-  replies[0].resolve({head:'immutable',offset:100,entries:[{id:'stale'}],next:null});await next;
+  replies[1].resolve({head,offset:0,entries:[{id:'latest'}],next:cursor});await current;
+  replies[0].resolve({head,offset:100,entries:[{id:'stale'}],next:{head,after:'c'.repeat(40)}});await next;
   assert.deepEqual(owner.history.entries,[{id:'latest'}]);assert.equal(owner.historyLoading,false);
+  await owner.historyPage(3);assert.equal(replies.length,2);
+});
+
+test('history failures retain the accepted page and retry cursor',async()=>{
+  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40)},calls=[];
+  const {owner,reported}=fixture({readGitLog:async()=>({head,offset:0,entries:[{id:'current'}],next:cursor})});
+  await owner.loadHistory();
+  owner.api.readGitLog=async(_limit,selected)=>{
+    calls.push(selected);
+    if(calls.length === 1)throw Error('unavailable');
+    return {head,offset:100,entries:[{id:'continued'}],next:null};
+  };
+  await owner.historyPage(2);
+  assert.deepEqual(owner.history.entries,[{id:'current'}]);
+  assert.deepEqual(reported,['git_read_failed']);
+  await owner.historyPage(2);
+  assert.deepEqual(calls,[cursor,cursor]);
+  assert.deepEqual(owner.history.entries,[{id:'continued'}]);
 });
 
 test('branch creation does not acquire unrelated checkout revisions',async()=>{

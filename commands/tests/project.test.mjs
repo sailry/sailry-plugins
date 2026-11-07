@@ -6,19 +6,20 @@ import {choices, selection} from '../dev.sailry.platform/desktop/access.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 async function fixture() {
-  const context=vm.createContext({}), prepared=[], completed=[], forgotten=[], states=[];
-  const host={result:{Err:{code:'outcome_unknown'}}};
+  const context=vm.createContext({}), prepared=[], completed=[], forgotten=[], states=[], panes=[];
+  const host={result:{Err:{code:'outcome_unknown'}},items:[],open:false};
   const exports={
     'gpui-kit':{View:class {},div:()=>null},
     sailry:{context:()=>JSON.stringify({locale:'en'})},
     'sailry/sdk':{
-      listTerminals:async()=>[],listTerminalTools:async()=>[],
+      listTerminals:async()=>host.items,listTerminalTools:async()=>[],
       prepareTerminal:(tool,access)=>{const id=`request-${prepared.length}`;prepared.push({id,tool,access});return id;},
       completeRequest:async id=>{completed.push(id);return host.result;},
       forgetRequest:id=>forgotten.push(id),publishContributions:state=>states.push(state),
       nextContributionEvent(){},nextChange(){},
     },
-    'sailry/ui':{openPane:()=>false,publishResourceTitles(){},toast(){},dismissToast(){},nextToastEvent(){}},
+    'sailry/ui':{openPane:entry=>{panes.push(JSON.parse(JSON.stringify(entry)));return host.open;},
+      publishResourceTitles(){},toast(){},dismissToast(){},nextToastEvent(){}},
     './locales.js':{messages},'./labels.js':{title:()=>null,directory:()=>null},
     './access.js':{selection,choices},
   };
@@ -33,7 +34,7 @@ async function fixture() {
   const tasks=[],cx={notify(){},spawn(callback){tasks.push(Promise.resolve().then(()=>callback(cx)));}};
   let cursor=0;
   const settle=async()=>{while(cursor<tasks.length)await tasks[cursor++];};
-  return {view,cx,settle,host,prepared,completed,forgotten,states};
+  return {view,cx,settle,host,prepared,completed,forgotten,states,panes};
 }
 
 test('controls preserve explicit workspace access across uncertain receipts',async()=>{
@@ -46,7 +47,7 @@ test('controls preserve explicit workspace access across uncertain receipts',asy
   assert.equal(workspace.enabled,true);
   setup.view.start('claude:workspace',null,setup.cx);await setup.settle();
   assert.deepEqual(setup.prepared,[{id:'request-0',tool:'claude',access:'workspace'}]);
-  assert.equal(setup.view.pending,'request-0');
+  assert.equal(setup.view.pending.id,'request-0');
   assert.equal(setup.view.error,'unknown');
   assert.deepEqual(setup.forgotten,[]);
   const choices=setup.states.at(-1).find(state=>state.id==='terminal-cli').choices;
@@ -63,4 +64,27 @@ test('ordinary project creation defaults to full access',async()=>{
   const setup=await fixture();setup.host.result={Ok:{kind:'terminal',data:{id:'full'}}};
   setup.view.start(null,null,setup.cx);await setup.settle();
   assert.deepEqual(setup.prepared,[{id:'request-0',tool:null,access:'unrestricted'}]);
+});
+
+test('creation retries retain their original pane interaction',async()=>{
+  const setup=await fixture();
+  setup.view.start(null,{id:'terminal-new',sequence:3},setup.cx);await setup.settle();
+  assert.equal(setup.view.pending.id,'request-0');
+  assert.equal(setup.view.pending.interaction,3);
+  setup.host.result={Ok:{kind:'terminal',data:{id:'first'}}};
+  setup.host.items=[{id:'first',status:{kind:'running'}}];
+  setup.view.start(null,{id:'terminal-cli',sequence:4},setup.cx);await setup.settle();
+  assert.equal(setup.prepared.length,1);
+  assert.equal(setup.panes.at(-1).resource.id,'first');
+  assert.equal(setup.panes.at(-1).interaction,3);
+  setup.host.result={Ok:{kind:'terminal',data:{id:'second'}}};
+  setup.host.items.push({id:'second',status:{kind:'running'}});
+  setup.host.open=true;
+  setup.view.start(null,{id:'terminal-new',sequence:5},setup.cx);await setup.settle();
+  assert.equal(setup.prepared.length,2);
+  assert.equal(setup.panes.at(-1).resource.id,'second');
+  assert.equal(setup.panes.at(-1).interaction,5);
+  assert.equal(setup.view.reveal,null);
+  assert.ok(setup.panes.every(entry=>entry.resource.id==='first'
+    ? entry.interaction===3 : entry.interaction===5));
 });

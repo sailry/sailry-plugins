@@ -25,7 +25,7 @@ export function run(args) {
 }
 
 export function read(args) {
-  if (!object(args, ['id', 'output', 'stream', 'offset', 'limit']) ||
+  if (!object(args, ['id', 'output', 'stream', 'offset', 'limit', 'wait_ms', 'until']) ||
       (args.id != null && typeof args.id !== 'string') ||
       (args.id != null && args.output != null) ||
       (args.output != null && (!object(args.output, ['call', 'revision']) ||
@@ -34,9 +34,13 @@ export function read(args) {
       (args.stream != null && !['stdout', 'stderr'].includes(args.stream)) ||
       (args.offset != null && (!Number.isSafeInteger(args.offset) || args.offset < 0)) ||
       (args.limit != null && (!Number.isSafeInteger(args.limit) || args.limit < 1 || args.limit > 32768)) ||
+      (args.wait_ms !== undefined && (!Number.isSafeInteger(args.wait_ms) || args.wait_ms < 0 || args.wait_ms > 30000)) ||
+      (args.until !== undefined && typeof args.until !== 'string') ||
       (args.id == null && args.output == null &&
         ['stream', 'offset', 'limit'].some(key => args[key] != null)))
     return invalid('Invalid output reference or page');
+  if (args.id == null && ((args.wait_ms ?? 0) > 0 || args.until !== undefined))
+    return invalid('Waiting requires a command id');
   return args;
 }
 

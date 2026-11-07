@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Route new-tab shortcuts through the browser controller and focus the address field
+
 ## 0.1.7
 
 - Show captures to the model and in replies

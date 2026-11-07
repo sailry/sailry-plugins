@@ -86,12 +86,14 @@ export default class Project extends View {
     dismissToast(notification);
     cx.spawn(async cx => {
       try {
-        if (!this.pending) this.pending = prepareTerminal(chosen.tool, chosen.access);
-        const result = await completeRequest(this.pending);
+        if (!this.pending) this.pending = {
+          id:prepareTerminal(chosen.tool, chosen.access),interaction:event?.sequence ?? null
+        };
+        const result = await completeRequest(this.pending.id);
         if (result.Err?.code === 'outcome_unknown') { this.error = 'unknown'; return; }
         if (result.Err) this.error = result.Err.code === 'not_configured' ? 'unavailable' : 'launchFailed';
-        else this.reveal = result.Ok.data.id;
-        forgetRequest(this.pending); this.pending = null;
+        else this.reveal = {id:result.Ok.data.id,interaction:this.pending.interaction};
+        forgetRequest(this.pending.id); this.pending = null;
       } catch (_) { this.error = this.pending ? 'unknown' : 'launchFailed'; }
       finally {
         this.busy = false;
@@ -111,14 +113,16 @@ export default class Project extends View {
     cx.spawn(async () => {
       try { do {
         this.dirty = false;
-        const id = this.reveal;
+        const reveal = this.reveal;
         const items = (await listTerminals()).filter(item => item.status.kind !== 'closed');
         const titles = items.map((item, index) => ({resource:{kind:'terminal', id:item.id},
           title:title(item.title) ?? this.text.tools[item.tool] ?? directory(item.directory)
             ?? `${this.text.terminal} ${index + 1}`}));
         publishResourceTitles(titles);
-        const entry = titles.find(entry => entry.resource.id === id);
-        if (entry && this.reveal === id && openPane(entry)) this.reveal = null;
+        const entry = titles.find(entry => entry.resource.id === reveal?.id);
+        if (entry && this.reveal === reveal && openPane({
+          ...entry,...(reveal.interaction === null ? {} : {interaction:reveal.interaction})
+        })) this.reveal = null;
       } while (this.dirty); }
       catch (_) { /* A later Node snapshot retries foreground navigation, never process creation. */ }
       finally { this.refreshing = false; }

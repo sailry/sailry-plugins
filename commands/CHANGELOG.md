@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.17
+
+- Wait for command output, matching text or exit with read_command, up to 30 seconds
+- Clarify background execution and require Sailry 0.1.5 for command waits
+- Keep terminal splits associated with the requested terminal creation
+
 ## 0.1.16
 
 - Ask agents to set follow_up when they wait for a background command

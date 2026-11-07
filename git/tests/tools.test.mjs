@@ -7,14 +7,32 @@ import {cases} from './parameters.mjs';
 const {status,diff,log,show,blame,changes,change}=await host({context:()=>({}),inspectGit:async()=>{}});
 
 test('history preserves first-page defaults and exact continuation', () => {
-  assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null});
-  assert.deepEqual(log({limit:5,cursor:null}),{worktree:null,limit:5,cursor:null});
-  const cursor = {head:'a'.repeat(40),offset:5};
+  assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null,revision:null,path:null});
+  assert.deepEqual(log({limit:5,cursor:null}),{worktree:null,limit:5,cursor:null,revision:null,path:null});
+  const cursor = {head:'a'.repeat(40),after:'b'.repeat(40)};
   assert.deepEqual(log({cursor,worktree:'captured-project-tree'}),
-    {worktree:'captured-project-tree',limit:20,cursor});
-  for (const cursor of ['HEAD',{head:'abcdef',offset:5},{head:'a'.repeat(40),offset:-1}]) {
+    {worktree:'captured-project-tree',limit:20,cursor,revision:null,path:null});
+  assert.equal(log({cursor}).cursor,cursor);
+  assert.deepEqual(log({revision:'feature',path:'src/资料.rs',cursor}),
+    {worktree:null,limit:20,cursor,revision:'feature',path:'src/资料.rs'});
+  for (const cursor of ['HEAD',{head:'abcdef',after:'b'.repeat(40)},
+    {head:'a'.repeat(40),offset:5},{head:'a'.repeat(40),after:'short'},
+    {head:'a'.repeat(40),after:'b'.repeat(40),offset:5}]) {
     assert.equal(log({cursor}).isError,true);
   }
+});
+
+test('history schema declares filtered commit continuations', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const extension = manifest.extensions['dev.sailry.platform'];
+  const tool = extension.tools.find(tool => tool.name === 'git_log');
+  const properties = tool.handler.parameters.properties;
+  assert.deepEqual(properties.cursor.required,['head','after']);
+  assert.equal(properties.cursor.properties.offset,undefined);
+  assert.deepEqual(properties.revision.type,['string','null']);
+  assert.deepEqual(properties.path.type,['string','null']);
+  assert.match(tool.description,/keep the same path filter/);
+  assert.equal(extension.min_sailry_version,'0.1.5');
 });
 
 test('status and diff preserve explicit registered target and scope', () => {
@@ -31,7 +49,8 @@ test('status and diff preserve explicit registered target and scope', () => {
 test('arguments cannot inject project or execution commands', () => {
   assert.equal(status({project:'other'}).isError,true);
   assert.equal(diff({path:'file',command:'checkout'}).isError,true);
-  for (const args of [{limit:0},{limit:1.5},{limit:null},{worktree:7}]) {
+  for (const args of [{limit:0},{limit:1.5},{limit:null},{worktree:7},
+    {revision:8},{path:[]},{revision:'main',command:'checkout'}]) {
     assert.equal(log(args).isError,true);
   }
 });

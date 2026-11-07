@@ -16,7 +16,7 @@ async function controller(file, bindings) {
   const notices=[];
   const type = vm.runInNewContext(`${annotation}\n${source}\n${name}`,{
     View:class {},context:() => '{"locale":"en"}',messages,errorKey,imported,destination,
-    nextBrowserChange:pending,nextNavigationTabEvent:pending,nextTextEvent:pending,
+    nextBrowserChange:pending,nextBrowserShortcut:pending,nextNavigationTabEvent:pending,nextTextEvent:pending,
     nextControlEvent:pending,modal_closed:pending,releaseText() {},toast:value=>notices.push(value),...bindings
   });
   const work = [];
@@ -59,6 +59,27 @@ test('page updates preserve drafts; selecting another tab replaces them', async 
   view.accept(snapshot(7,'https://example.com/older','9'),true,cx);
   assert.equal(address,'https://example.com/ten');
   assert.equal(view.state.cursor,'10');
+});
+
+test('native new-tab shortcuts use the address focus owner',async()=>{
+  let deliver,focused;
+  const focus=new Promise(resolve=>{focused=resolve;});
+  const requests=[];
+  let address='https://example.com/';
+  const snapshot=(cursor,id,url)=>({cursor,selected:id,tabs:[{id,url}],history:[false,false]});
+  const {view}=await controller('main',{
+    readBrowser:()=>snapshot('1',1,address),
+    nextBrowserShortcut:()=>new Promise(resolve=>{deliver=resolve;}),
+    createText:()=> 'address',readText:()=>address,
+    setText:(_id,value)=>{address=value;},isTextFocused:()=>false,
+    focusText:id=>focused(id),
+    browserAction:async action=>{requests.push(action);return snapshot('2',2,'');}
+  });
+  deliver({kind:'add'});
+  assert.equal(await focus,'address');
+  assert.deepEqual(requests.map(request=>JSON.parse(JSON.stringify(request))),[{kind:'add'}]);
+  assert.equal(view.selected().id,2);
+  assert.equal(address,'');
 });
 
 test('capture updates preserve drafts and deduplicate failures', async () => {

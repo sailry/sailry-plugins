@@ -70,8 +70,8 @@ test('transient failures preserve the host error',async()=>{
 test('manifest declares Node status ownership',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.24');
-  assert.equal(extension.min_sailry_version,'0.1.0-alpha.9');
+  assert.equal(manifest.version,'0.1.25');
+  assert.equal(extension.min_sailry_version,'0.1.5');
   assert.deepEqual(extension.host.read_only,['badge']);
   assert.deepEqual(extension.host.status,{read:'badge',changes:['repository']});
   assert.ok(extension.host.handlers.includes('badge'));

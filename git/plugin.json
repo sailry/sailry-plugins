@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.0-alpha.9",
+      "min_sailry_version": "0.1.5",
       "actions": [
         "git.read",
         "git.write",
@@ -722,7 +722,7 @@
         {
           "name": "git_log",
           "presentation": "summary",
-          "description": "Read a page of Git commit history. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor returned by this tool. Never construct a cursor from a short commit hash, HEAD or a branch name. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
+          "description": "Read a page of Git commit history, optionally starting at revision and filtering a literal worktree-relative path. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor and keep the same path filter. Cursors contain the frozen traversal head and last commit ID; never construct them from a short hash, HEAD, branch name or numeric offset. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
           "contexts": [
             "workspace"
           ],
@@ -747,17 +747,31 @@
                       "type": "string",
                       "pattern": "^[0-9a-fA-F]{40}$"
                     },
-                    "offset": {
-                      "type": "integer",
-                      "minimum": 0
+                    "after": {
+                      "type": "string",
+                      "pattern": "^[0-9a-fA-F]{40}$"
                     }
                   },
                   "required": [
                     "head",
-                    "offset"
+                    "after"
                   ],
                   "additionalProperties": false,
                   "description": "Omit or use null for the first page; otherwise pass the exact returned cursor"
+                },
+                "revision": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Starting revision for the first page; omit for HEAD. Continuations keep the cursor's frozen head"
+                },
+                "path": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Literal worktree-relative file or directory; keep the same filter when continuing. Changes are compared with each commit's first parent"
                 },
                 "worktree": {
                   "type": [

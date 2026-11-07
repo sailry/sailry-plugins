@@ -21,6 +21,7 @@ export class Repository {
     this.error = null; this.readCode = null; this.pending = null; this.followUp = null;
     this.message = ''; this.amend = false; this.amendDraft = null; this.options = defaults(); this.commitOpen = false;
     this.view = 'changes'; this.history = null; this.historyLoading = false;
+    this.historyCursors = new Map();
     this.tabs = []; this.selected = null; this.documents = new Map();
     this.read = 0; this.historyRead = 0; this.documentRead = 0; this.closed = false;
     this.refreshing = null;
@@ -228,13 +229,18 @@ export class Repository {
     }
   }
 
-  async loadHistory(cursor = null, quiet = false) {
+  async loadHistory(cursor = null, quiet = false, revision = null) {
     if (this.closed || !this.connected || !this.visible || this.pending?.busy) return;
     const sequence = ++this.historyRead;
     this.historyLoading = true; this.notify();
     try {
-      const page = await this.api.readGitLog(100,cursor);
+      const page = await this.api.readGitLog(100,cursor,{revision});
       if (this.closed || sequence !== this.historyRead) return;
+      if (cursor === null && revision === null) this.historyCursors.clear();
+      const current = Math.floor((page.offset ?? 0) / 100) + 1;
+      this.historyCursors.set(current,cursor);
+      if (page.next) this.historyCursors.set(current + 1,page.next);
+      else this.historyCursors.delete(current + 1);
       this.history = page;
     } catch (_) { if (sequence === this.historyRead && !this.closed && this.visible && (!quiet || !this.history)) { this.error = 'git_read_failed'; this.report(this.error); } }
     finally { if (sequence === this.historyRead) this.historyLoading = false; this.notify(); }
@@ -242,9 +248,8 @@ export class Repository {
 
   historyPage(page) {
     if (!this.history?.head || !Number.isInteger(page) || page < 1 || this.pending) return;
-    const current = Math.floor(this.history.offset / 100) + 1;
-    if (page > current + Number(this.history.next !== null)) return;
-    return this.loadHistory({head:this.history.head,offset:(page - 1) * 100});
+    if (!this.historyCursors.has(page)) return;
+    return this.loadHistory(this.historyCursors.get(page),false,this.history.head);
   }
 
   async open(request, select = true, quiet = false) {

@@ -1,6 +1,6 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
-import {readBrowser, nextBrowserChange, browserAction, nextNavigationTabEvent,
+import {readBrowser, nextBrowserChange, nextBrowserShortcut, browserAction, nextNavigationTabEvent,
   nextControlEvent, openSettings, toast, modal_closed} from 'sailry/ui';
 import {createText, readText, setText, focusText, isTextFocused, nextTextEvent} from 'sailry/forms';
 import {messages, errorKey} from './locales.js';
@@ -24,6 +24,12 @@ export default class Browser extends View {
         const state = await nextBrowserChange(cursor); cursor = state.cursor;
         this.accept(state, false, cx);
       } } catch (_) { /* Releasing the captured resource ends observation. */ }
+    });
+    cx.spawn(async cx => {
+      try { while (true) {
+        const event = await nextBrowserShortcut();
+        this.perform(event.kind, {}, cx);
+      } } catch (_) {}
     });
     cx.spawn(async cx => {
       try { while (true) {

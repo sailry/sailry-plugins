@@ -42,10 +42,57 @@ test('pages retained streams and canonical tool results', () => {
   ]) assert.equal(read(args).isError,true);
 });
 
+test('waits for output with optional text and paging', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
+  const declaration = manifest.extensions['dev.sailry.platform'].tools
+    .find(tool => tool.name === 'read_command');
+  const fields = declaration.handler.parameters.properties;
+  assert.equal(fields.wait_ms.type, 'integer');
+  assert.equal(fields.wait_ms.minimum, 0);
+  assert.equal(fields.wait_ms.maximum, 30000);
+  assert.equal(fields.until.type, 'string');
+  assert.match(declaration.description, /event-driven wait/);
+  assert.match(declaration.description, /either output preview/);
+  assert.match(declaration.description, /command exit or deadline still returns/);
+  assert.match(declaration.description, /Omitted or zero wait_ms reads immediately/);
+  const id = '11111111-1111-4111-8111-111111111111';
+  for (const args of [
+    {id,wait_ms:0}, {id,wait_ms:1}, {id,wait_ms:30000},
+    {id,until:'ready'}, {id,wait_ms:30000,until:'ready'}, {id,wait_ms:1,until:''},
+    {id,stream:'stdout',offset:32768,limit:4096,wait_ms:30000,until:'ready'},
+    {id,stream:'stderr',offset:0,limit:1,wait_ms:100},
+  ]) assert.deepEqual(read(args),args);
+});
+
+test('rejects invalid wait bounds and text', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  for (const wait_ms of [-1, 30001, 0.5, '100', null, true, [], {}])
+    assert.equal(read({id,wait_ms}).error.code, 'invalid_request');
+  for (const until of [null, true, 1, [], {}])
+    assert.equal(read({id,until}).error.code, 'invalid_request');
+});
+
+test('waiting requires an ID while immediate reads preserve references', () => {
+  const output = {call:'call-1', revision:'f'.repeat(64)};
+  for (const args of [
+    {wait_ms:1}, {id:null,wait_ms:1}, {until:'ready'}, {id:null,until:''},
+    {wait_ms:0,until:'ready'}, {output,wait_ms:1}, {output,until:'ready'},
+    {output,stream:'stdout',offset:0,limit:1,wait_ms:30000},
+  ]) assert.equal(read(args).error.code, 'invalid_request');
+  for (const args of [
+    {wait_ms:0}, {id:null,wait_ms:0}, {output,wait_ms:0},
+    {output,stream:'stdout',offset:0,limit:1,wait_ms:0},
+  ]) assert.deepEqual(read(args),args);
+});
+
 test('command format affects only the summary', () => {
   const manifest = JSON.parse(readFileSync(new URL('../plugin.json', import.meta.url)));
   const declaration = manifest.extensions['dev.sailry.platform'].tools
     .find(tool => tool.name === 'run_command');
+  assert.match(declaration.description, /read_command with wait_ms/);
+  assert.match(declaration.description, /Don't append &; use background=true/);
+  assert.doesNotMatch(declaration.description, /Do not poll with sleep or repeated read_command/);
+  assert.doesNotMatch(declaration.description, /Keep the shell command in the foreground/);
   assert.deepEqual(declaration.display.input.summary, {path:'/command',code:true,format:'command'});
   assert.deepEqual(declaration.display.input.content, {path:'/command'});
   assert.equal(declaration.handler.operation, 'process.run');
