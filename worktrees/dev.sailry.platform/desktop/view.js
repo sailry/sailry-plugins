@@ -1,8 +1,8 @@
 // Approved forms composed with native Kit fields, buttons, checkbox and modal.
-import {div,list} from 'gpui-kit';
-import {Button,Checkbox,Field,Form,Icon} from 'gpui-component';
+import {div} from 'gpui-kit';
+import {Button,Checkbox,Field,Form} from 'gpui-component';
 import {TextField} from 'sailry/forms';
-import {Modal} from 'sailry/ui';
+import {Modal,Picker} from 'sailry/ui';
 
 function button(id,label,action,disabled = false,primary = false) {
   let control = new Button(id).label(label).disabled(disabled).on_click(action);
@@ -40,40 +40,24 @@ function removal(view,owner) {
   return div().id('worktree-remove-form').v_flex().gap_4()
     .child(div().text_sm().child(view.text('worktree_remove_named').replace('%{name}',owner.entry.path)));
 }
-function row(id,label,icon,checked,disabled,action,detail) {
-  return new Button(id).ghost().w_full().accessibility_label(label).disabled(disabled).on_click(action)
-    .child(div().h_flex().w_full().gap_2()
-      .children(icon ? [new Icon(`icons/${icon}.svg`).size('small')] : [])
-      .child(div().v_flex().flex_1().min_w_0().items_start()
-        .child(div().truncate().child(label))
-        .children(detail ? [div().text_xs().truncate().child(detail)] : []))
-      .children(checked ? [new Icon('icons/check.svg').size('small')] : []));
-}
+/** Picker ids change with each list so its search and selection reset. */
+export function pickerId(owner) { return `worktrees-picker-${owner.token}-${owner.kind}`; }
+// Worktree lists use the shared command picker, like other searchable resource lists.
 function management(view,owner) {
-  const choices = owner.choices;
-  return div().v_flex().gap_2()
-    .children(owner.kind === 'actions' ? [
-      button('worktree-back',view.text('location_back'),(_,cx) => {view.model.back();cx.notify();},owner.pending),
-    ] : [])
-    .child(list(`worktree-list-${owner.kind}`,choices.length,index => choices[index].id,index => {
-      const choice = choices[index];
-      return row(`worktree-${choice.id}`,choice.label,choice.icon,!!choice.checked,
-        !!(owner.pending || choice.disabled),(_,cx) => view.run(() => view.model.choose(choice.id,
-          {token:owner.token,choice}),cx),choice.detail).h_12();
-    })
-      .w_full().h(Math.min(360,Math.max(40,choices.length*48))))
-    .children(owner.loading && !choices.length ? [div().text_sm().child(view.text('git_loading'))] : [])
-    .child(div().h_flex().justify_end().gap_2()
-      .child(button('worktree-reload',view.text('worktree_retry'),(_,cx) => view.run(() => view.model.open(),cx),owner.pending || owner.loading))
-      .child(button('worktree-close',view.text('close'),(_,cx) => view.close(cx))));
+  const choices = owner.choices ?? [];
+  return Picker.new(pickerId(owner),{mode:'command',open:true,loading:!!owner.loading && !choices.length,
+    title:owner.kind === 'actions' ? owner.title ?? view.text('worktree_manage') : view.text('worktree_manage'),
+    empty:view.text('git_no_matches'),items:choices.map(choice => ({id:choice.id,label:choice.label,
+      detail:choice.detail ?? '',icon:choice.icon,group:choice.group ?? '',checked:!!choice.checked,
+      disabled:!!(owner.pending || choice.disabled || !choice.action),value:choice.id}))});
 }
 export function render(view) {
   const owner = view.model.dialog;
-  const picking = owner && ['list','actions'].includes(owner.kind);
-  const title = !owner ? '' : picking ? view.text('worktree_manage') : owner.kind === 'create' ? view.text('worktree_create') : owner.kind === 'managed'
+  if (owner && ['list','actions'].includes(owner.kind)) return div().id('worktrees-controller').child(management(view,owner));
+  const title = !owner ? '' : owner.kind === 'create' ? view.text('worktree_create') : owner.kind === 'managed'
     ? view.text(owner.fork ? 'location_fork' : 'location_create') : view.text('worktree_remove');
   const modal = Modal.new(owner?.token ?? 'worktree-dialog',{open:!!owner,form:true,title,
-    width:owner?.kind === 'create' ? 488 : 448}).children(picking ? [management(view,owner)] : owner ? [
+    width:owner?.kind === 'create' ? 488 : 448}).children(owner ? [
       owner.kind === 'create' ? create(view,owner) : owner.kind === 'managed' ? managed(view,owner) : removal(view,owner),
       footer(view,owner,owner.kind === 'create' ? 'live-worktree-submit' : owner.kind === 'managed' ? 'location-create-submit' : 'worktree-remove-confirm',
         owner.kind === 'create' ? 'live-worktree-cancel' : owner.kind === 'managed' ? 'location-cancel' : 'worktree-remove-cancel')

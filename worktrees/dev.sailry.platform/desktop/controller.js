@@ -129,8 +129,8 @@ export class Controller {
     const action = choice.action;
     if (action.kind === 'actions') {
       owner.previous = owner.choices;
-      owner.choices = action.actions.map((action,index) => ({id:`action-${index}`,label:this.text(action.kind === 'open' ? 'workspace_open_worktree' : 'worktree_remove'),detail:choice.label,action}));
-      owner.kind = 'actions'; owner.loading = false; this.notify();
+      owner.choices = action.actions.map((action,index) => ({id:`action-${index}`,label:this.text(action.kind === 'open' ? 'workspace_open_worktree' : 'worktree_remove'),action}));
+      owner.title = choice.label; owner.kind = 'actions'; owner.loading = false; this.notify();
     } else if (action.kind === 'managed') await this.createManaged(action.fork);
     else if (action.kind === 'create') this.create(action.entry);
     else if (action.kind === 'prune') await this.prune(owner,action.entry);

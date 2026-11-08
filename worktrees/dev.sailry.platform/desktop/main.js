@@ -3,11 +3,11 @@ import {context} from 'sailry';
 import {readWorktreeCatalog,listWorktrees,inspectGit,resolveGitRevision,prepareWorktreeChange,nextChange,
   prepareGitChange,completeRequest,forgetRequest,newId,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import {readLocation,nextLocationChange,selectLocation,worktreeHasDrafts,releaseWorktree,
-  modal_closed,toast,dismissToast,nextToastEvent} from 'sailry/ui';
+  modal_closed,toast,dismissToast,nextToastEvent,nextPickerEvent} from 'sailry/ui';
 import {createText,readText,releaseText,focusText,nextTextEvent} from 'sailry/forms';
 import {Controller} from './controller.js';
 import {messages} from './locales.js';
-import {render} from './view.js';
+import {render,pickerId} from './view.js';
 import {navigationLabel} from './policy.js';
 
 export default class Worktrees extends View {
@@ -48,6 +48,14 @@ export default class Worktrees extends View {
           this.run(() => this.model.open(event.handler,event.value && typeof event.value === 'object' ? event.value : undefined),cx);
         }
       } } catch (_) { /* Unmounting closes the contribution channel. */ }
+    });
+    cx.spawn(async cx => {
+      try { while (true) {
+        const event = await nextPickerEvent(), owner = this.model.dialog;
+        if (!owner || event.picker !== pickerId(owner)) continue;
+        if (event.kind === 'close') this.close(cx);
+        else if (event.kind === 'select') this.run(() => this.model.choose(event.id),cx);
+      } } catch (_) { /* Unmounting releases the picker events. */ }
     });
     cx.spawn(async cx => {
       try { while (true) { if (await modal_closed() === this.model.dialog?.token) this.close(cx); } }

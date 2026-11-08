@@ -8,6 +8,7 @@ const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',
 const element = new Proxy({}, {get:() => () => element});
 let checkbox;
 let modal;
+let picker;
 const buttons=[];
 // The pinned component-shell contract exposes semantic size and boolean changes.
 class Checkbox {
@@ -35,6 +36,7 @@ const {render} = vm.runInNewContext(`${source}\n({render})`, {
   Checkbox,
   TextField:{new:() => element},
   window:{viewport_size:() => ({width:800,height:600})},
+  Picker:{new:(id,props) => {picker={id,props};return element;}},
   Modal:{new:(_,props) => {
     modal={props,items:[]};
     return new Proxy(modal,{get:(target,key) => key==='child' ? child=>{target.items.push(child);return element;}
@@ -42,18 +44,17 @@ const {render} = vm.runInNewContext(`${source}\n({render})`, {
   }},
 });
 
-test('management rows retain disabled and pending state', () => {
+test('management lists use the command picker with disabled and pending rows', () => {
   const owner = {kind:'list',token:'picker',pending:false,loading:false,
-    choices:[{id:'available',label:'Available'},{id:'locked',label:'Locked',disabled:true}]};
+    choices:[{id:'available',label:'Available',action:{}},{id:'locked',label:'Locked',disabled:true,action:{}}]};
   render({model:{dialog:owner},text:key => key});
-  assert.equal(modal.props.open,true);
-  assert.equal(modal.props.title,'worktree_manage');
-  const rows=()=>buttons.filter(button=>['worktree-available','worktree-locked'].includes(button.id)).slice(-2);
-  assert.deepEqual(rows().map(button=>button.disabled),[false,true]);
+  assert.equal(picker.id,'worktrees-picker-picker-list');
+  assert.equal(picker.props.mode,'command');
+  assert.equal(picker.props.title,'worktree_manage');
+  assert.deepEqual(picker.props.items.map(item=>item.disabled),[false,true]);
   owner.pending=true;
   render({model:{dialog:owner},text:key => key});
-  assert.equal(modal.props.open,true);
-  assert.deepEqual(rows().map(button=>button.disabled),[true,true]);
+  assert.deepEqual(picker.props.items.map(item=>item.disabled),[true,true]);
 });
 
 test('managed checkbox uses semantic size and boolean changes', () => {
