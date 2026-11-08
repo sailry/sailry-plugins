@@ -64,10 +64,10 @@ export class Controller {
     if (id === this.selected()) return;
     const selection = id === 'unassigned' ? {project:null} : id === 'add_project' ? {add_project:true}
       : id === 'projects' ? {projects:true} : {project:id.slice('project:'.length)};
-    try {
-      await this.api.selectLocation(this.location.cursor,selection);
-      this.accept(this.api.readLocation());
-    } catch (_) { this.fail(owner,'worktree_context_changed'); }
+    try { await this.api.selectLocation(this.location.cursor,selection); }
+    catch (_) { this.fail(owner,'worktree_context_changed'); return; }
+    // A project change replaces this view, so its location may already be closed.
+    try { this.accept(this.api.readLocation()); } catch (_) {}
   }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
   show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }

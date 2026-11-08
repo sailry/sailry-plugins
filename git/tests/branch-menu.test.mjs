@@ -64,7 +64,7 @@ describe('new conversations',()=>{
     const {published}=fixture();
     const {choices}=chip(published);
     assert.deepEqual(choices.map(choice=>choice.id),['branch:main','branch:dev','branch:topic','remote','start']);
-    assert.deepEqual(choices.slice(0,3).map(choice=>choice.description?.label),['Current',undefined,'Worktree']);
+    assert.deepEqual(choices.slice(0,3).map(choice=>choice.description?.label),[undefined,undefined,'Worktree']);
     assert.deepEqual(choices.slice(0,3).map(choice=>choice.icon),[undefined,undefined,undefined]);
     assert.deepEqual(choices[3].children.map(choice=>choice.id),['remote:origin/main']);
     assert.equal(choices[3].label.label,'Remote branches');
@@ -160,3 +160,9 @@ test('checkouts map other registered worktrees by branch',()=>{
   assert.deepEqual([...found],[['topic','other']]);
 });
 
+
+test('the default branch leads the local list',()=>{
+  const branches=[{name:'dev',remote:false},{name:'master',remote:false},{name:'topic',remote:false}];
+  const {choices}=policy.branchMenu({branch:'dev',session:null},branches,new Map(),new Proxy({},{get:(_,key)=>key}),false);
+  assert.deepEqual(choices.map(choice=>choice.id).slice(0,3),['branch:master','branch:dev','branch:topic']);
+});

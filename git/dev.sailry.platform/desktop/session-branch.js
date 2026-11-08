@@ -44,6 +44,11 @@ export function label(location, text) {
   return location.branch ? fit(location.branch) : text.git_detached;
 }
 
+// The default branch leads each list; the rest keep their repository order.
+const PRIMARY = ['main', 'master'];
+const primaryFirst = list => [...list].sort((a, b) =>
+  (PRIMARY.includes(b.name) ? 1 : 0) - (PRIMARY.includes(a.name) ? 1 : 0));
+
 function bounded(list, keep) {
   const shown = list.slice(0, MENU_BRANCHES);
   for (const branch of list.slice(MENU_BRANCHES)) if (keep(branch)) shown.push(branch);
@@ -58,7 +63,7 @@ function row(prefix, branch, group, description) {
 /** Menu rows and checked id for the composer branch contribution. */
 export function branchMenu(location, branches, found, text, forkable) {
   const entries = (branches ?? []).filter(branch => usable(branch.name));
-  const local = entries.filter(branch => !branch.remote), remote = entries.filter(branch => branch.remote);
+  const local = primaryFirst(entries.filter(branch => !branch.remote)), remote = entries.filter(branch => branch.remote);
   if (location.session) {
     const choices = location.branch
       ? [{id:'copy', label:{label:text.git_copy_branch}, icon:'copy', group:{label:text.git_branch_actions}}] : [];
@@ -70,10 +75,10 @@ export function branchMenu(location, branches, found, text, forkable) {
     return {choices, value:null};
   }
   const current = location.branch, from = location.base?.from;
-  if (!branches && current && usable(current)) local.push({name:current, remote:false});
+  if (!branches && current && usable(current)) local.unshift({name:current, remote:false});
   const choices = bounded(local, branch => branch.name === current || branch.name === from).map(branch =>
-    row('branch', branch, text.git_local_branches, branch.name === current ? text.git_branch_current
-      : found.has(branch.name) ? text.git_branch_worktree : null));
+    row('branch', branch, text.git_local_branches,
+      branch.name !== current && found.has(branch.name) ? text.git_branch_worktree : null));
   if (remote.length) choices.push({id:'remote', label:{label:text.git_remote_branches_menu}, group:{label:text.git_remote_branches},
     children:bounded(remote, branch => branch.name === from).map(branch => row('remote', branch, text.git_remote_branches))});
   choices.push({id:'start', label:{label:text.git_start_new_branch}, icon:'plus', group:{label:text.git_branch_actions}});
