@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- New worktree forms label their fields and submit with a plain Submit button
+
 ## 0.1.15
 
 - List chats and projects in the project chip; worktree actions stay in the project menu

@@ -1,6 +1,7 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
-  "location_fork_from": "From %{branch}",
+  "location_source": "Source branch",
+  "worktree_submit": "Submit",
   "git_discard_changes": "Discard Changes",
   "git_ignore": "Ignore (add to .gitignore)",
   "git_index_failed": "Could not update staging, try again",
@@ -245,7 +246,8 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
-  "location_fork_from": "基于 %{branch}",
+  "location_source": "来源分支",
+  "worktree_submit": "提交",
   "workspace_native_menu_unavailable": "此平台尚未接入系统原生菜单",
   "workspace_native_menu_platform": "当前平台暂不支持系统右键菜单",
   "workspace_project": "项目概览",
@@ -493,20 +495,20 @@ const chatLabels = {
   "zh-TW": "對話", ja: "チャット", ko: "대화", "pt-BR": "Conversas", ru: "Чаты",
 };
 
-// Fork source line in the remaining product locales.
-const forkLabels = {
-  "de": "Von %{branch}",
-  "es": "Desde %{branch}",
-  "fr": "Depuis %{branch}",
-  "ja": "%{branch} から",
-  "ko": "%{branch}에서",
-  "pt-BR": "De %{branch}",
-  "ru": "Из %{branch}",
-  "zh-TW": "基於 %{branch}",
+// Form labels in the remaining product locales.
+const formLabels = {
+  "de": {location_source: "Quell-Branch", worktree_submit: "Senden"},
+  "es": {location_source: "Rama de origen", worktree_submit: "Enviar"},
+  "fr": {location_source: "Branche source", worktree_submit: "Valider"},
+  "ja": {location_source: "元のブランチ", worktree_submit: "送信"},
+  "ko": {location_source: "원본 브랜치", worktree_submit: "제출"},
+  "pt-BR": {location_source: "Branch de origem", worktree_submit: "Enviar"},
+  "ru": {location_source: "Исходная ветка", worktree_submit: "Отправить"},
+  "zh-TW": {location_source: "來源分支", worktree_submit: "提交"},
 };
 
 export function messages(locale) {
   const strings = locale.startsWith("zh") ? {...en,...zh} : {...zh,...en};
   return {...strings, composer_no_project: chatLabels[locale] ?? strings.composer_no_project,
-    location_fork_from: forkLabels[locale] ?? strings.location_fork_from};
+    ...formLabels[locale]};
 }

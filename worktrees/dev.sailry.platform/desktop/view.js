@@ -13,7 +13,7 @@ function footer(view,owner,submit,cancel) {
   return div().h_flex().w_full().mt_3().justify_end().gap_2()
     .children(owner.uncertain && owner.kind === 'create' ? [button('live-worktree-recover',view.text('workspace_project'),(_,cx) => view.overview(cx))] : [])
     .child(button(cancel,view.text('settings_cancel'),(_,cx) => view.close(cx)))
-    .child(button(submit,view.text(owner.request && owner.kind !== 'create' ? 'worktree_retry' : owner.kind === 'remove' ? 'worktree_remove' : 'worktree_create'),(_,cx) => view.submit(cx),owner.pending,true));
+    .child(button(submit,view.text(owner.request && owner.kind !== 'create' ? 'worktree_retry' : owner.kind === 'remove' ? 'worktree_remove' : 'worktree_submit'),(_,cx) => view.submit(cx),owner.pending,true));
 }
 function create(view,owner) {
   const readonly = owner.pending || owner.uncertain;
@@ -27,14 +27,16 @@ function create(view,owner) {
 }
 function managed(view,owner) {
   const readonly = owner.pending || !!owner.request;
-  return div().id('location-create-form').v_flex().gap_4()
+  const name = new Field().label(view.text('worktree_branch')).required(true)
     .child(div().id(owner.pending || !owner.status ? 'location-branch-loading' : 'location-branch-name')
-      .child(TextField.new(owner.fields.branch,{readonly})))
-    // A checkout started from another branch cannot carry this checkout's changes.
-    .children(owner.base ? [div().text_sm().child(view.text('location_fork_from').replace('%{branch}',owner.base.from))]
-      : [div().id('location-copy-changes').child(new Checkbox('location-copy-changes').size('small')
-        .label(view.text('location_copy_changes')).checked(owner.include_changes).disabled(readonly)
-        .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}}))]);
+      .child(TextField.new(owner.fields.branch,{readonly})));
+  // A checkout started from another branch cannot carry this checkout's changes.
+  const source = owner.base
+    ? new Field().label(view.text('location_source')).child(div().text_sm().child(owner.base.from))
+    : new Field().child(div().id('location-copy-changes').child(new Checkbox('location-copy-changes').size('small')
+      .label(view.text('location_copy_changes')).checked(owner.include_changes).disabled(readonly)
+      .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}})));
+  return div().id('location-create-form').v_flex().child(new Form().size('large').gap_y(8).children([name,source]));
 }
 function removal(view,owner) {
   return div().id('worktree-remove-form').v_flex().gap_4()
