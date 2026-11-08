@@ -1,5 +1,5 @@
 import {createText, readText, releaseText, setText, focusText} from 'sailry/forms';
-import {writeClipboard, invokeContribution, openFile, openProjectCreation} from 'sailry/ui';
+import {writeClipboard, invokeContribution, openFile, openProjectCreation, confirmAction} from 'sailry/ui';
 import {openSystem} from 'sailry/file-transfers';
 import {prepareGitChange, completeRequest, forgetRequest, faultCode, listGitRemoteTags} from 'sailry/sdk';
 
@@ -71,6 +71,10 @@ export class Actions {
     if (operation === 'create' || operation === 'rename') { this.form(operation === 'create' ? 'branch' : 'rename',branch); return; }
     if (operation === 'switch') {
       if (branch.current) return;
+      // A checkout moves every session and terminal sharing this worktree.
+      const text = this.view.text;
+      if (!await confirmAction({title:text.git_switch_confirm.replace('%{branch}',branch.name),
+        detail:text.git_switch_confirm_detail,action:text.git_switch_confirm_action})) return;
       if (!branch.remote) { await repo.branch('switch',{name:branch.name,commit:branch.commit}); return; }
       const sync = repo.branches.sync;
       const tracked = repo.branches.entries.find(entry => !entry.remote && sync.tracking[entry.name] === branch.name);

@@ -1,5 +1,8 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
+  "git_switch_confirm": "Switch to %{branch}",
+  "git_switch_confirm_detail": "Sessions, terminals and open files in this worktree all move to this branch.",
+  "git_switch_confirm_action": "Switch",
   "git_branch_worktree": "Worktree",
   "git_remote_branches_menu": "Remote branches",
   "git_start_new_branch": "Start from new branch…",
@@ -270,6 +273,9 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
+  "git_switch_confirm": "切换到 %{branch}",
+  "git_switch_confirm_detail": "使用这个工作树的会话、终端和已打开的文件都会切换到这个分支。",
+  "git_switch_confirm_action": "切换",
   "git_branch_worktree": "工作树",
   "git_remote_branches_menu": "远程分支",
   "git_start_new_branch": "从新分支开始…",
@@ -539,9 +545,12 @@ const zh = {
   "form_target_directory_hint": "工作树目录路径",
   "git": "Git"
 };
-// Composer branch rows in the remaining product locales.
+// Package copy in the remaining product locales.
 const branchLocales = {
   "de": {
+    git_switch_confirm: "Zu %{branch} wechseln",
+    git_switch_confirm_detail: "Sitzungen, Terminals und geöffnete Dateien in diesem Worktree wechseln alle zu diesem Branch.",
+    git_switch_confirm_action: "Wechseln",
     git_branch_worktree: "Worktree",
     git_remote_branches_menu: "Remote-Branches",
     git_start_new_branch: "Mit neuem Branch beginnen…",
@@ -550,6 +559,9 @@ const branchLocales = {
     git_fork_from_branch: "Von anderem Branch abzweigen…",
   },
   "es": {
+    git_switch_confirm: "Cambiar a %{branch}",
+    git_switch_confirm_detail: "Las sesiones, terminales y archivos abiertos de este worktree pasarán a esta rama.",
+    git_switch_confirm_action: "Cambiar",
     git_branch_worktree: "Worktree",
     git_remote_branches_menu: "Ramas remotas",
     git_start_new_branch: "Empezar en una rama nueva…",
@@ -558,6 +570,9 @@ const branchLocales = {
     git_fork_from_branch: "Bifurcar desde otra rama…",
   },
   "fr": {
+    git_switch_confirm: "Passer à %{branch}",
+    git_switch_confirm_detail: "Les sessions, terminaux et fichiers ouverts de ce worktree passeront sur cette branche.",
+    git_switch_confirm_action: "Changer",
     git_branch_worktree: "Worktree",
     git_remote_branches_menu: "Branches distantes",
     git_start_new_branch: "Commencer sur une nouvelle branche…",
@@ -566,6 +581,9 @@ const branchLocales = {
     git_fork_from_branch: "Dériver d’une autre branche…",
   },
   "ja": {
+    git_switch_confirm: "%{branch} に切り替え",
+    git_switch_confirm_detail: "このワークツリーのセッション、ターミナル、開いているファイルがすべてこのブランチに切り替わります。",
+    git_switch_confirm_action: "切り替え",
     git_branch_worktree: "ワークツリー",
     git_remote_branches_menu: "リモートブランチ",
     git_start_new_branch: "新しいブランチで開始…",
@@ -574,6 +592,9 @@ const branchLocales = {
     git_fork_from_branch: "別のブランチから派生…",
   },
   "ko": {
+    git_switch_confirm: "%{branch}(으)로 전환",
+    git_switch_confirm_detail: "이 워크트리의 세션, 터미널, 열린 파일이 모두 이 브랜치로 전환됩니다.",
+    git_switch_confirm_action: "전환",
     git_branch_worktree: "워크트리",
     git_remote_branches_menu: "원격 브랜치",
     git_start_new_branch: "새 브랜치로 시작…",
@@ -582,6 +603,9 @@ const branchLocales = {
     git_fork_from_branch: "다른 브랜치에서 분기…",
   },
   "pt-BR": {
+    git_switch_confirm: "Mudar para %{branch}",
+    git_switch_confirm_detail: "Sessões, terminais e arquivos abertos neste worktree passarão para este branch.",
+    git_switch_confirm_action: "Mudar",
     git_branch_worktree: "Worktree",
     git_remote_branches_menu: "Branches remotos",
     git_start_new_branch: "Começar em um novo branch…",
@@ -590,6 +614,9 @@ const branchLocales = {
     git_fork_from_branch: "Derivar de outro branch…",
   },
   "ru": {
+    git_switch_confirm: "Переключиться на %{branch}",
+    git_switch_confirm_detail: "Сессии, терминалы и открытые файлы этого worktree перейдут на эту ветку.",
+    git_switch_confirm_action: "Переключить",
     git_branch_worktree: "Рабочее дерево",
     git_remote_branches_menu: "Удалённые ветки",
     git_start_new_branch: "Начать с новой ветки…",
@@ -598,6 +625,9 @@ const branchLocales = {
     git_fork_from_branch: "Ответвить от другой ветки…",
   },
   "zh-TW": {
+    git_switch_confirm: "切換到 %{branch}",
+    git_switch_confirm_detail: "使用這個工作樹的工作階段、終端機和已開啟的檔案都會切換到這個分支。",
+    git_switch_confirm_action: "切換",
     git_branch_worktree: "工作樹",
     git_remote_branches_menu: "遠端分支",
     git_start_new_branch: "從新分支開始…",

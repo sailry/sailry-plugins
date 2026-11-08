@@ -6,6 +6,7 @@
 - Copy the branch name or fork from another branch in a running conversation
 - Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check
 - Branch management moves from the project menu to the Git panel
+- Ask for confirmation before switching the branch of a shared worktree
 
 ## 0.1.29
 
