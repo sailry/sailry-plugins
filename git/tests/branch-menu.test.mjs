@@ -87,7 +87,7 @@ describe('new conversations',()=>{
 
   test('a pending base labels and checks the chosen branch',()=>{
     const {published}=fixture({base:{from:'dev',branch:'sailry/1a2b3c4d',commit:commit('b')}});
-    assert.equal(chip(published).label.label,'dev · New worktree');
+    assert.equal(chip(published).label.label,'dev');
     assert.equal(chip(published).value,'branch:dev');
     const remote=fixture({base:{from:'origin/main',branch:'sailry/x',commit:commit('d')}});
     assert.equal(chip(remote.published).value,'remote:origin/main');

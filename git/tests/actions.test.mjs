@@ -187,3 +187,11 @@ test('branch switches ask for native confirmation first',async()=>{
     assert.equal(state.prompts.length,1);
   }
 });
+
+test('the composer start form opens without repository status',()=>{
+  const state=fixture();
+  state.owner.view.repo.status=null;
+  assert.doesNotThrow(()=>state.owner.form('start'));
+  assert.equal(state.owner.dialog.form,'start');
+  assert.equal(state.owner.dialog.revisions,null);
+});

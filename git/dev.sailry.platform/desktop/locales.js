@@ -7,7 +7,6 @@ const en = {
   "git_remote_branches_menu": "Remote branches",
   "git_start_new_branch": "Start from new branch…",
   "git_start_branch": "Start from new branch",
-  "git_new_worktree_label": "%{branch} · New worktree",
   "git_fork_from_branch": "Fork from another branch…",
   "git_back": "Back",
   "git": "Git",
@@ -280,7 +279,6 @@ const zh = {
   "git_remote_branches_menu": "远程分支",
   "git_start_new_branch": "从新分支开始…",
   "git_start_branch": "从新分支开始",
-  "git_new_worktree_label": "%{branch} · 新工作树",
   "git_fork_from_branch": "从其他分支派生…",
   "git_back": "返回",
   "git_check_result": "检查结果",
@@ -555,7 +553,6 @@ const branchLocales = {
     git_remote_branches_menu: "Remote-Branches",
     git_start_new_branch: "Mit neuem Branch beginnen…",
     git_start_branch: "Mit neuem Branch beginnen",
-    git_new_worktree_label: "%{branch} · Neuer Worktree",
     git_fork_from_branch: "Von anderem Branch abzweigen…",
   },
   "es": {
@@ -566,7 +563,6 @@ const branchLocales = {
     git_remote_branches_menu: "Ramas remotas",
     git_start_new_branch: "Empezar en una rama nueva…",
     git_start_branch: "Empezar en una rama nueva",
-    git_new_worktree_label: "%{branch} · Nuevo worktree",
     git_fork_from_branch: "Bifurcar desde otra rama…",
   },
   "fr": {
@@ -577,7 +573,6 @@ const branchLocales = {
     git_remote_branches_menu: "Branches distantes",
     git_start_new_branch: "Commencer sur une nouvelle branche…",
     git_start_branch: "Commencer sur une nouvelle branche",
-    git_new_worktree_label: "%{branch} · Nouveau worktree",
     git_fork_from_branch: "Dériver d’une autre branche…",
   },
   "ja": {
@@ -588,7 +583,6 @@ const branchLocales = {
     git_remote_branches_menu: "リモートブランチ",
     git_start_new_branch: "新しいブランチで開始…",
     git_start_branch: "新しいブランチで開始",
-    git_new_worktree_label: "%{branch} · 新しいワークツリー",
     git_fork_from_branch: "別のブランチから派生…",
   },
   "ko": {
@@ -599,7 +593,6 @@ const branchLocales = {
     git_remote_branches_menu: "원격 브랜치",
     git_start_new_branch: "새 브랜치로 시작…",
     git_start_branch: "새 브랜치로 시작",
-    git_new_worktree_label: "%{branch} · 새 워크트리",
     git_fork_from_branch: "다른 브랜치에서 분기…",
   },
   "pt-BR": {
@@ -610,7 +603,6 @@ const branchLocales = {
     git_remote_branches_menu: "Branches remotos",
     git_start_new_branch: "Começar em um novo branch…",
     git_start_branch: "Começar em um novo branch",
-    git_new_worktree_label: "%{branch} · Novo worktree",
     git_fork_from_branch: "Derivar de outro branch…",
   },
   "ru": {
@@ -621,7 +613,6 @@ const branchLocales = {
     git_remote_branches_menu: "Удалённые ветки",
     git_start_new_branch: "Начать с новой ветки…",
     git_start_branch: "Начать с новой ветки",
-    git_new_worktree_label: "%{branch} · Новое рабочее дерево",
     git_fork_from_branch: "Ответвить от другой ветки…",
   },
   "zh-TW": {
@@ -632,7 +623,6 @@ const branchLocales = {
     git_remote_branches_menu: "遠端分支",
     git_start_new_branch: "從新分支開始…",
     git_start_branch: "從新分支開始",
-    git_new_worktree_label: "%{branch} · 新工作樹",
     git_fork_from_branch: "從其他分支衍生…",
   },
 };

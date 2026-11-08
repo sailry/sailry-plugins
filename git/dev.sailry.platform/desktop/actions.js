@@ -100,8 +100,9 @@ export class Actions {
     const name = form === 'rename' ? branch.name : form === 'remote' ? 'origin' : form === 'tracking' ? branch.name.split('/').at(-1) : '';
     const input = createText(name,{label:text[form === 'remote' ? 'git_remote_name' : form === 'tag' ? 'git_name' : 'git_branch_name'],placeholder:text[form === 'remote' ? 'form_remote_hint' : 'form_branch_hint']});
     const extra = ['remote','tag'].includes(form) ? createText('',{label:text[form === 'remote' ? 'git_remote_url' : 'git_tag_message'],placeholder:form === 'remote' ? text.project_repository_placeholder : text.git_tag_message}) : null;
-    this.dialog = {id:++this.sequence,form,title,input,extra,branch,commit:branch?.commit ?? repo.status?.head,
-      base:branch?.name ?? repo.status?.branch,revisions:repo.revisions(),pending:null,busy:false,error:null};
+    // The composer's start form has no repository status; it only names a branch.
+    this.dialog = {id:++this.sequence,form,title,input,extra,branch,commit:branch?.commit ?? repo?.status?.head,
+      base:branch?.name ?? repo?.status?.branch,revisions:repo?.status ? repo.revisions() : null,pending:null,busy:false,error:null};
     focusText(input); this.view.notify();
   }
   close() {

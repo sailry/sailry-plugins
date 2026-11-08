@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.32
+
+- The branch chip shows only the branch name
+- Starting from a new branch opens its name form instead of failing
+
 ## 0.1.31
 
 - Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched

@@ -40,7 +40,7 @@ export function checkouts(catalog, entries, bound) {
 }
 
 export function label(location, text) {
-  if (location.base) return fit(text.git_new_worktree_label.replace('%{branch}', location.base.from));
+  if (location.base) return fit(location.base.from);
   return location.branch ? fit(location.branch) : text.git_detached;
 }
 
