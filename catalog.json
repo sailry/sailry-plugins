@@ -10811,7 +10811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.32",
+        "version": "0.1.33",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12417,6 +12417,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.33",
+          "commit": "2c6d74e524fa4e5867a6c34f07b334ebfeb39238",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Form dialogs submit with a plain Submit button"
+          }
+        },
+        {
           "version": "0.1.32",
           "commit": "fd5bd39f6ef4989ab4863e6cf33842a96fea2486",
           "min_sailry_version": "0.1.5",
@@ -12682,7 +12690,7 @@
         }
       ],
       "release_notes": {
-        "text": "- The branch chip shows only the branch name\n- Starting from a new branch opens its name form instead of failing"
+        "text": "- Form dialogs submit with a plain Submit button"
       }
     },
     {
