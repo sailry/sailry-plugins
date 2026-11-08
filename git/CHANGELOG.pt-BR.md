@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.34
+
+- Atualiza as branches da conversa após mudanças nas referências, sem verificar o estado dos arquivos
+- Impede que leituras antigas substituam as opções mais recentes
+- Distingue branches locais e remotas com o mesmo nome ao criar uma conversa derivada
+
 ## 0.1.28
 
 - Selecionar branches locais e remotos no painel suspenso com indicação do branch atual

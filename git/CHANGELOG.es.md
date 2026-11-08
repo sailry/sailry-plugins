@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.34
+
+- Actualiza las ramas de la conversación al cambiar las referencias, sin analizar el estado de los archivos
+- Evita que lecturas antiguas sustituyan las opciones más recientes
+- Distingue ramas locales y remotas con el mismo nombre al crear una conversación derivada
+
 ## 0.1.28
 
 - Seleccionar ramas locales y remotas en el menú emergente con la rama actual marcada

@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {readLocation,nextLocationChange,selectLocation,invokeContribution,writeClipboard,openResource} from 'sailry/ui';
 import {context as readScope,publishContributions,nextContributionEvent,readWorktreeCatalog,listWorktrees,listGitBranches,
-  inspectGit,newId} from 'sailry/sdk';
+  inspectGit,newId,nextChange} from 'sailry/sdk';
 import Git from './main.js';
 import {dialogs} from './view.js';
 import {branchMenu,checkouts,label,resolve} from './session-branch.js';
@@ -13,16 +13,26 @@ export default class Context extends Git {
     this.location = readLocation();
     this.node = this.location?.node;
     this.checkouts = new Map(); this.branches = null;
+    this.references = null; this.syncing = null;
+    this.inventory = null; this.loadedInventory = null;
     super.init(props,cx);
     this.publish();
     cx.spawn(async () => this.sync());
+    if (this.location.surface === 'composer') cx.spawn(async () => {
+      let cursor;
+      try { while (true) {
+        const change = await nextChange(cursor,'package');
+        cursor = change.cursor; this.inventory = change.revision;
+        if (change.connected && change.visible !== false) this.sync();
+      } } catch (_) {}
+    });
     cx.spawn(async cx => {
       try { while (true) {
         const previous = this.location;
         this.location = await nextLocationChange(previous.cursor);
         this.publish();
         if (['node','worktree','session','branch','git_status'].some(key => this.location[key] !== previous[key]))
-          this.sync();
+          this.sync(true);
         cx.notify();
       } } catch (_) { /* The controller retains its original checkout. */ }
     });
@@ -42,24 +52,38 @@ export default class Context extends Git {
   }
   /** Lists branches and other checkouts so the chip has rows before it opens.
    * Status stays with the Node, so the composer reads only references. */
-  async sync() {
+  async sync(force = false) {
     const state = this.location;
-    if (state?.surface !== 'composer' || !this.sameScope() || state.git_status !== 'repository') return;
-    try {
-      const branches = await listGitBranches();
-      if (this.location !== state && this.location.worktree !== state.worktree) return;
-      this.branches = branches?.entries ?? null;
-      if (!state.session) {
-        const [catalog,found] = await Promise.all([readWorktreeCatalog(),listWorktrees()]);
+    if (state?.surface !== 'composer' || !this.sameScope() || this.repo?.visible === false || state.git_status !== 'repository') return false;
+    const references = this.repo.references, inventory = this.inventory;
+    if (!force && this.branches !== null && this.references === references && this.loadedInventory === inventory) return true;
+    if (this.syncing && this.syncing.references === references && this.syncing.inventory === inventory
+      && this.syncing.session === state.session) return this.syncing.promise;
+    const request = {references,inventory,session:state.session};
+    this.syncing = request;
+    request.promise = (async () => {
+      try {
+        const [branches,catalog,found] = await Promise.all([listGitBranches(),
+          ...(!state.session ? [readWorktreeCatalog(),listWorktrees()] : [])]);
+        if (this.syncing !== request || !this.sameScope() || this.location.session !== state.session
+          || this.repo.references !== references || this.inventory !== inventory) return false;
+        this.branches = branches?.entries ?? [];
         this.checkouts = checkouts(catalog,found?.entries,this.worktree);
-      }
-    } catch (_) { /* The chip keeps its last rows; selection revalidates against them. */ }
-    this.publish(); this.notify?.();
+        this.references = references;
+        this.loadedInventory = inventory;
+        this.publish(); this.notify?.();
+        return true;
+      } catch (_) { return false; }
+      finally { if (this.syncing === request) this.syncing = null; }
+    })();
+    return request.promise;
   }
   entries() { return this.branches ?? this.repo?.branches?.entries ?? null; }
   async choose(id) {
     const state = this.location;
     if (!state.can_move) return;
+    if (state.surface === 'composer' && id.includes(':') && !(await this.sync())) { this.report('git_branches_failed'); return; }
+    if (this.location !== state) return;
     const action = resolve(id,state,this.entries(),this.checkouts,newId);
     if (!action) { this.report('git_branch_revision'); return; }
     if (action.kind === 'stay') { if (state.base) await selectLocation(state.cursor,{worktree:state.worktree}); }
@@ -96,8 +120,8 @@ export default class Context extends Git {
       && this.repo?.connected !== false && !this.repo?.closed;
   }
   async invalidate() {
-    if (this.location.surface === 'composer') return;
-    if (this.sameScope()) await super.invalidate();
+    if (this.location.surface === 'composer') await this.sync();
+    else if (this.sameScope()) await super.invalidate();
     this.publish();
   }
   publish(event) {

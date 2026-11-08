@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.34
+
+- Refresh composer branch choices after reference changes without scanning file status
+- Keep pending branch reads from replacing newer choices
+- Distinguish local and remote branches with the same name when forking a conversation
+
 ## 0.1.33
 
 - Form dialogs submit with a plain Submit button

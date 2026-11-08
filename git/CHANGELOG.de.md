@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.34
+
+- Aktualisiert die Branch-Auswahl nach Referenzänderungen, ohne den Dateistatus zu prüfen
+- Verhindert, dass ältere Leseergebnisse neuere Auswahlmöglichkeiten überschreiben
+- Unterscheidet gleichnamige lokale und entfernte Branches beim Abzweigen einer Unterhaltung
+
 ## 0.1.28
 
 - Lokale und entfernte Branches im Eingabe-Popup mit Markierung des aktuellen Branches auswählen

@@ -69,8 +69,8 @@ export function branchMenu(location, branches, found, text, forkable) {
       ? [{id:'copy', label:{label:text.git_copy_branch}, icon:'copy', group:{label:text.git_branch_actions}}] : [];
     if (forkable && entries.length) choices.push({id:'fork', label:{label:text.git_fork_from_branch}, icon:'network',
       group:{label:text.git_branch_actions}, children:[
-        ...bounded(local, () => false).map(branch => row('fork', branch, text.git_local_branches)),
-        ...bounded(remote, () => false).map(branch => row('fork', branch, text.git_remote_branches)),
+        ...bounded(local, () => false).map(branch => row('fork-local', branch, text.git_local_branches)),
+        ...bounded(remote, () => false).map(branch => row('fork-remote', branch, text.git_remote_branches)),
       ]});
     return {choices, value:null};
   }
@@ -94,8 +94,9 @@ export function resolve(id, location, branches, found, newId) {
   if (id === 'copy' && location.session && location.branch) return {kind:'copy', text:location.branch};
   const split = id.indexOf(':'), prefix = id.slice(0, split), name = id.slice(split + 1);
   const branch = (branches ?? []).find(entry => entry.name === name
-    && (prefix === 'fork' || entry.remote === (prefix === 'remote')));
-  if (prefix === 'fork') return location.session && branch ? {kind:'fork', base:{from:branch.name, commit:branch.commit}} : null;
+    && entry.remote === ['remote','fork-remote'].includes(prefix));
+  if (['fork-local','fork-remote'].includes(prefix))
+    return location.session && branch?.commit ? {kind:'fork', base:{from:branch.name, commit:branch.commit}} : null;
   if (location.session || !['branch','remote'].includes(prefix)) return null;
   if (prefix === 'branch' && name === location.branch) return {kind:'stay'};
   if (prefix === 'branch' && found.has(name)) return {kind:'worktree', worktree:found.get(name)};

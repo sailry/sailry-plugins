@@ -16,11 +16,11 @@ const branches=[
   {name:'origin/main',commit:commit('d'),current:false,remote:true},
 ];
 
-function fixture(patch={}) {
+function fixture(patch={},api={}) {
   const published=[],selected=[],invoked=[],copied=[],forms=[],reported=[];
   const location={cursor:'1',node:'node',project:'project',worktree:'tree',surface:'composer',session:null,
     branch:'main',main:true,connected:true,can_move:true,git_status:'repository',...patch};
-  const repo={connected:true,loading:false,status:{index_revision:'index',head:commit('a')},refresh:async()=>true,
+  const repo={connected:true,loading:false,references:'1',status:{index_revision:'index',head:commit('a')},refresh:async()=>true,
     invalidate:async()=>true,writable:()=>!repo.loading,branches:{current:'main',entries:branches,sync:{tracking:{},remotes:['origin']}}};
   const Git=class {
     init() {
@@ -37,12 +37,15 @@ function fixture(patch={}) {
     selectLocation:async(cursor,value)=>{selected.push({cursor,value});return true;},
     invokeContribution:async(intent,value)=>{invoked.push({intent,value});return true;},
     writeClipboard:text=>copied.push(text),inspectGit:async()=>({head:commit('a')}),
+    listGitBranches:async()=>({entries:branches}),
+    readWorktreeCatalog:async()=>({worktrees:[{id:'topic-tree',path:'/topic'}]}),
+    listWorktrees:async()=>({entries:[{path:'/topic',branch:'topic'}]}),...api,
   });
   const view=new Context();
   view.init({}, {spawn(){}});
   view.checkouts=new Map([['topic','topic-tree']]);
   view.publish();
-  return {view,published,selected,invoked,copied,forms,reported};
+  return {view,repo,published,selected,invoked,copied,forms,reported};
 }
 const plain=value=>JSON.parse(JSON.stringify(value));
 const chip=published=>published.at(-1).find(entry=>entry.id==='branch');
@@ -130,18 +133,124 @@ describe('running conversations',()=>{
     const {choices,value}=chip(published);
     assert.equal(value,null);
     assert.deepEqual(choices.map(choice=>choice.id),['copy','fork']);
-    assert.deepEqual(choices[1].children.map(choice=>choice.id),['fork:main','fork:dev','fork:topic','fork:origin/main']);
+    assert.deepEqual(choices[1].children.map(choice=>choice.id),['fork-local:main','fork-local:dev','fork-local:topic','fork-remote:origin/main']);
     assert.equal(choices[1].label.label,'Fork from another branch…');
   });
 
   test('copy and fork reuse clipboard and the worktree fork flow',async()=>{
     const {view,copied,invoked,selected}=fixture({session:'session'});
     await view.choose('copy');
-    await view.choose('fork:origin/main');
+    await view.choose('fork-remote:origin/main');
     await view.choose('branch:dev');
     assert.deepEqual(plain(copied),['main']);
     assert.deepEqual(plain(invoked),[{intent:'fork_worktree',value:{base:{from:'origin/main',commit:commit('d')}}}]);
     assert.deepEqual(selected,[]);
+  });
+
+  test('same-named local and remote forks remain distinct',()=>{
+    const local={name:'origin/main',remote:false,commit:commit('b')},remote={...local,remote:true,commit:commit('c')};
+    const location={session:'session',branch:'main'},entries=[local,remote];
+    const menu=policy.branchMenu(location,entries,new Map(),messages('en'),true);
+    assert.deepEqual(menu.choices[1].children.map(choice=>choice.id),['fork-local:origin/main','fork-remote:origin/main']);
+    for (const [id,branch] of [['fork-local:origin/main',local],['fork-remote:origin/main',remote]]) {
+      assert.deepEqual(policy.resolve(id,location,entries,new Map(),()=>assert.fail('forks keep the chosen commit')),
+        {kind:'fork',base:{from:branch.name,commit:branch.commit}});
+    }
+  });
+});
+
+describe('reference updates',()=>{
+  const deferred=()=>{
+    let resolve;
+    const promise=new Promise(done=>{resolve=done;});
+    return {promise,resolve};
+  };
+
+  test('refresh branches and checkouts without status scans',async()=>{
+    let entries=branches,trees=[{id:'topic-tree',path:'/topic'}],listed=[{path:'/topic',branch:'topic'}];
+    const calls={branches:0,catalog:0,worktrees:0};
+    const {view,repo,published,selected}=fixture({},{
+      listGitBranches:async()=>{calls.branches++;return {entries};},
+      readWorktreeCatalog:async()=>{calls.catalog++;return {worktrees:trees};},
+      listWorktrees:async()=>{calls.worktrees++;return {entries:listed};},
+      inspectGit:()=>assert.fail('composer refresh must not inspect repository status'),
+    });
+    await view.invalidate();
+    await view.invalidate();
+    assert.deepEqual(calls,{branches:1,catalog:1,worktrees:1});
+    entries=[branches[0],{name:'new',commit:commit('e'),remote:false},{...branches[3],commit:commit('f')}];
+    trees=[{id:'new-tree',path:'/new'}];listed=[{path:'/new',branch:'new'}];
+    repo.references='2';
+    await view.invalidate();
+    assert.deepEqual(calls,{branches:2,catalog:2,worktrees:2});
+    assert.deepEqual(chip(published).choices.map(choice=>choice.id),['branch:main','branch:new','remote','start']);
+    await view.choose('remote:origin/main');
+    await view.choose('branch:new');
+    assert.deepEqual(plain(selected).map(entry=>entry.value),[
+      {base:{from:'origin/main',branch:'sailry/1a2b3c4d',commit:commit('f')}},
+      {worktree:'new-tree'},
+    ]);
+    assert.deepEqual(calls,{branches:2,catalog:2,worktrees:2});
+  });
+
+  test('late reads cannot replace newer reference results',async()=>{
+    const pending=[];
+    const {view,repo}=fixture({},{
+      listGitBranches:()=>{const read=deferred();pending.push(read);return read.promise;},
+    });
+    const old=view.sync(),duplicate=view.invalidate();
+    assert.equal(pending.length,1);
+    repo.references='2';
+    const latest=view.invalidate();
+    assert.equal(pending.length,2);
+    pending[1].resolve({entries:[{...branches[3],commit:commit('f')}]});
+    await latest;
+    pending[0].resolve({entries:branches});
+    await Promise.all([old,duplicate]);
+    assert.equal(view.references,'2');
+    assert.equal(view.entries().length,1);
+    assert.equal(view.entries()[0].commit,commit('f'));
+  });
+
+  test('registered checkout changes refresh the destination',async()=>{
+    let registered=false;
+    const {view,selected}=fixture({},{
+      readWorktreeCatalog:async()=>({worktrees:registered ? [{id:'registered-dev',path:'/dev'}] : []}),
+      listWorktrees:async()=>({entries:[{path:'/dev',branch:'dev'}]}),
+    });
+    await view.sync();
+    registered=true;view.inventory='2';
+    await view.invalidate();
+    await view.choose('branch:dev');
+    assert.deepEqual(plain(selected).map(entry=>entry.value),[{worktree:'registered-dev'}]);
+  });
+
+  test('failed refreshes cannot select an old commit',async()=>{
+    let fail=false;
+    const {view,repo,selected,reported}=fixture({},{
+      listGitBranches:async()=>{if(fail)throw Error('offline');return {entries:branches};},
+    });
+    await view.sync();
+    repo.references='2';fail=true;
+    await view.choose('remote:origin/main');
+    assert.deepEqual(selected,[]);
+    assert.deepEqual(reported,['git_branches_failed']);
+    fail=false;
+    await view.choose('remote:origin/main');
+    assert.equal(selected.length,1);
+    assert.equal(view.references,'2');
+  });
+
+  test('released or retargeted owners ignore pending reads',async()=>{
+    for (const moved of [{node:'other'},{worktree:'other'},{session:'started'},{connected:false},{closed:true}]) {
+      const pending=deferred(),{view,repo}=fixture({},{listGitBranches:()=>pending.promise});
+      const reading=view.sync();
+      if (moved.closed) repo.closed=true;
+      else view.location={...view.location,...moved};
+      pending.resolve({entries:branches});
+      assert.equal(await reading,false);
+      assert.equal(view.branches,null);
+    }
   });
 });
 
