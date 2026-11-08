@@ -1871,7 +1871,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2235,6 +2235,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.15",
+          "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Advance code impact and map pagination past entries larger than the output budget."
+          }
+        },
+        {
           "version": "0.1.14",
           "commit": "80e99bdee7b2b8eb921fc0fb6b774dd4c7aa93b6",
           "min_sailry_version": "0.1.5",
@@ -2356,7 +2364,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Resume code impact and map pages at the first file omitted by the output budget."
+        "text": "- Advance code impact and map pagination past entries larger than the output budget."
       }
     },
     {
@@ -3202,7 +3210,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.5",
@@ -3436,6 +3444,7 @@
                       },
                       "until": {
                         "type": "string",
+                        "minLength": 1,
                         "description": "With id and a positive wait_ms, wait for this substring in either output preview, command exit or deadline."
                       }
                     },
@@ -3651,6 +3660,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Reject empty command wait text so output waits do not return immediately."
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "134e4b9f993600bb4c6dbf5c2a5f0d2857890d86",
           "min_sailry_version": "0.1.5",
@@ -3794,7 +3811,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Wait for command output, matching text or exit with read_command, up to 30 seconds\n- Clarify background execution and require Sailry 0.1.5 for command waits\n- Keep terminal splits associated with the requested terminal creation"
+        "text": "- Reject empty command wait text so output waits do not return immediately."
       }
     },
     {
@@ -10755,7 +10772,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.25",
+        "version": "0.1.26",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11504,6 +11521,12 @@
                           "after": {
                             "type": "string",
                             "pattern": "^[0-9a-fA-F]{40}$"
+                          },
+                          "path": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
                           }
                         },
                         "required": [
@@ -12350,6 +12373,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.26",
+          "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Keep the captured path filter in history cursors and reject cross-path continuation"
+          }
+        },
+        {
           "version": "0.1.25",
           "commit": "134e4b9f993600bb4c6dbf5c2a5f0d2857890d86",
           "min_sailry_version": "0.1.5",
@@ -12537,7 +12568,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Page history with exact commit cursors and preserve the original head when returning to earlier pages\n- Filter history by starting revision and literal path\n- Require Sailry 0.1.5 for the updated history contract"
+        "text": "- Keep the captured path filter in history cursors and reject cross-path continuation"
       }
     },
     {
@@ -16840,7 +16871,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "provider-status",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "description": "Account usage for configured OAuth model channels",
         "license": "Apache-2.0",
         "extensions": {
@@ -16994,6 +17025,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.9",
+          "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
+          "min_sailry_version": "0.1.0-alpha.4",
+          "release_notes": {
+            "text": "- Resume refresh requests deferred by account cooldowns without periodic polling\n- Coalesce deferred reads and discard them when their view is hidden or account changes"
+          }
+        },
+        {
           "version": "0.1.8",
           "commit": "b386076d531f7c6d62edc78f47afaf0b5c33b753",
           "min_sailry_version": "0.1.0-alpha.4",
@@ -17059,7 +17098,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Refresh account usage on visible activity and completed work instead of periodic timers\n- Preserve account results and in-flight reads across unchanged model contexts"
+        "text": "- Resume refresh requests deferred by account cooldowns without periodic polling\n- Coalesce deferred reads and discard them when their view is hidden or account changes"
       }
     },
     {
