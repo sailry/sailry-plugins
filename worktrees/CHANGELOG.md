@@ -1,6 +1,6 @@
 # Changes
 
-## 0.1.14
+## 0.1.15
 
 - List chats and projects in the project chip; worktree actions stay in the project menu
 - Fork from another branch starts the new worktree at that branch without copying changes

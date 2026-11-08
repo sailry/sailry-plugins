@@ -1,6 +1,6 @@
 # Changes
 
-## 0.1.30
+## 0.1.31
 
 - Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched
 - Copy the branch name or fork from another branch in a running conversation
