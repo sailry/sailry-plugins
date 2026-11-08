@@ -22012,7 +22012,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.10",
+        "version": "0.1.11",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22241,6 +22241,7 @@
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/controller.js",
                 "dev.sailry.platform/desktop/policy.js",
+                "dev.sailry.platform/desktop/publication.js",
                 "dev.sailry.platform/desktop/view.js",
                 "dev.sailry.platform/desktop/locales.js"
               ]
@@ -22321,6 +22322,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.11",
+          "commit": "e54704f5e794401fa7aee0223c24cf96d9f2fc8a",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Refresh location menus when project or worktree inventories change\n- Keep large menus within host limits while retaining full project and worktree selectors",
+            "locales": {
+              "zh-CN": "- 项目或工作树列表变化后刷新位置菜单\n- 大列表遵循宿主菜单容量，保留完整项目和工作树选择入口",
+              "zh-TW": "- 專案或工作樹清單變更後更新位置選單\n- 大型清單遵循主程式選單容量，保留完整專案與工作樹選擇入口",
+              "ja": "- プロジェクトやワークツリーの一覧変更時に場所メニューを更新\n- 大きなメニューをホストの容量内に収め、すべての項目を選択できる入口を維持",
+              "ko": "- 프로젝트 또는 워크트리 목록이 변경되면 위치 메뉴 갱신\n- 큰 메뉴를 호스트 용량에 맞추면서 전체 선택 메뉴 진입점 유지",
+              "fr": "- Actualiser les menus d’emplacement lors des changements de projets ou d’arbres de travail\n- Respecter la capacité des menus de l’hôte tout en conservant les sélecteurs complets",
+              "de": "- Standortmenüs bei Änderungen an Projekten oder Worktrees aktualisieren\n- Große Menüs an Hostgrenzen anpassen und die vollständige Auswahl erreichbar halten",
+              "es": "- Actualizar los menús de ubicación al cambiar proyectos o árboles de trabajo\n- Ajustar los menús grandes a los límites del anfitrión conservando la selección completa",
+              "pt-BR": "- Atualizar menus de localização quando projetos ou árvores de trabalho mudarem\n- Ajustar menus grandes aos limites do aplicativo mantendo os seletores completos",
+              "ru": "- Обновлять меню расположения при изменении проектов или рабочих деревьев\n- Учитывать пределы меню приложения, сохраняя доступ к полному выбору"
+            }
+          }
+        },
         {
           "version": "0.1.10",
           "commit": "68ad23794fd166cd1a3f9e69d8a783bf44ff959b",
@@ -22422,17 +22442,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Select projects and registered worktrees from the composer dropdown\n- Reuse worktree discovery across menus and the management dialog",
+        "text": "- Refresh location menus when project or worktree inventories change\n- Keep large menus within host limits while retaining full project and worktree selectors",
         "locales": {
-          "zh-CN": "- 在输入框下拉菜单中选择项目和已注册工作树\n- 下拉菜单与管理窗口共用工作树读取结果",
-          "zh-TW": "- 在輸入框下拉選單中選擇專案與已登錄工作樹\n- 下拉選單與管理視窗共用工作樹讀取結果",
-          "ja": "- 入力欄のドロップダウンからプロジェクトと登録済みワークツリーを選択\n- メニューと管理ダイアログでワークツリーの取得結果を共有",
-          "ko": "- 입력창 드롭다운에서 프로젝트와 등록된 워크트리 선택\n- 메뉴와 관리 대화상자에서 워크트리 조회 결과 공유",
-          "fr": "- Sélectionner les projets et arbres de travail enregistrés depuis le menu de saisie\n- Réutiliser les données des arbres de travail entre le menu et la fenêtre de gestion",
-          "de": "- Projekte und registrierte Worktrees im Dropdown des Eingabefelds auswählen\n- Worktree-Daten zwischen Menü und Verwaltungsdialog wiederverwenden",
-          "es": "- Seleccionar proyectos y árboles de trabajo registrados desde el menú del editor\n- Compartir los datos de árboles de trabajo entre el menú y el diálogo de gestión",
-          "pt-BR": "- Selecionar projetos e árvores de trabalho registradas no menu do editor\n- Compartilhar dados de árvores de trabalho entre o menu e a janela de gerenciamento",
-          "ru": "- Выбор проектов и зарегистрированных рабочих деревьев в меню поля ввода\n- Повторное использование данных рабочих деревьев в меню и окне управления"
+          "zh-CN": "- 项目或工作树列表变化后刷新位置菜单\n- 大列表遵循宿主菜单容量，保留完整项目和工作树选择入口",
+          "zh-TW": "- 專案或工作樹清單變更後更新位置選單\n- 大型清單遵循主程式選單容量，保留完整專案與工作樹選擇入口",
+          "ja": "- プロジェクトやワークツリーの一覧変更時に場所メニューを更新\n- 大きなメニューをホストの容量内に収め、すべての項目を選択できる入口を維持",
+          "ko": "- 프로젝트 또는 워크트리 목록이 변경되면 위치 메뉴 갱신\n- 큰 메뉴를 호스트 용량에 맞추면서 전체 선택 메뉴 진입점 유지",
+          "fr": "- Actualiser les menus d’emplacement lors des changements de projets ou d’arbres de travail\n- Respecter la capacité des menus de l’hôte tout en conservant les sélecteurs complets",
+          "de": "- Standortmenüs bei Änderungen an Projekten oder Worktrees aktualisieren\n- Große Menüs an Hostgrenzen anpassen und die vollständige Auswahl erreichbar halten",
+          "es": "- Actualizar los menús de ubicación al cambiar proyectos o árboles de trabajo\n- Ajustar los menús grandes a los límites del anfitrión conservando la selección completa",
+          "pt-BR": "- Atualizar menus de localização quando projetos ou árvores de trabalho mudarem\n- Ajustar menus grandes aos limites do aplicativo mantendo os seletores completos",
+          "ru": "- Обновлять меню расположения при изменении проектов или рабочих деревьев\n- Учитывать пределы меню приложения, сохраняя доступ к полному выбору"
         }
       }
     },
