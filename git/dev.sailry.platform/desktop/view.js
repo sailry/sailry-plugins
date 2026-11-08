@@ -240,7 +240,7 @@ export function dialogs(view) {
         .child(TextField.new(dialog.extra,{disabled:dialog.busy}))] : []),
       div().h_flex().justify_end().gap_2()
         .child(new Button('git-form-cancel').label(text.settings_cancel).on_click((_,cx) => { view.actions.close(); cx.notify(); }))
-        .child(new Button('git-form-confirm').primary().label(text[form === 'branch' ? 'git_create_branch' : dialog.title] ?? text.settings_save)
+        .child(new Button('git-form-confirm').primary().label(dialog.input ? text.git_submit : text[dialog.title] ?? text.settings_save)
           .disabled(dialog.busy).loading(dialog.busy).on_click((_,cx) => view.run(() => view.actions.submit(),cx)))
     ] : [])]);
 }

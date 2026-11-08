@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.33
+
+- Form dialogs submit with a plain Submit button
+
 ## 0.1.32
 
 - The branch chip shows only the branch name

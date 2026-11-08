@@ -1,5 +1,6 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
+  "git_submit": "Submit",
   "git_switch_confirm": "Switch to %{branch}",
   "git_switch_confirm_detail": "Sessions, terminals and open files in this worktree all move to this branch.",
   "git_switch_confirm_action": "Switch",
@@ -272,6 +273,7 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
+  "git_submit": "提交",
   "git_switch_confirm": "切换到 %{branch}",
   "git_switch_confirm_detail": "使用这个工作树的会话、终端和已打开的文件都会切换到这个分支。",
   "git_switch_confirm_action": "切换",
@@ -546,6 +548,7 @@ const zh = {
 // Package copy in the remaining product locales.
 const branchLocales = {
   "de": {
+    git_submit: "Senden",
     git_switch_confirm: "Zu %{branch} wechseln",
     git_switch_confirm_detail: "Sitzungen, Terminals und geöffnete Dateien in diesem Worktree wechseln alle zu diesem Branch.",
     git_switch_confirm_action: "Wechseln",
@@ -556,6 +559,7 @@ const branchLocales = {
     git_fork_from_branch: "Von anderem Branch abzweigen…",
   },
   "es": {
+    git_submit: "Enviar",
     git_switch_confirm: "Cambiar a %{branch}",
     git_switch_confirm_detail: "Las sesiones, terminales y archivos abiertos de este worktree pasarán a esta rama.",
     git_switch_confirm_action: "Cambiar",
@@ -566,6 +570,7 @@ const branchLocales = {
     git_fork_from_branch: "Bifurcar desde otra rama…",
   },
   "fr": {
+    git_submit: "Valider",
     git_switch_confirm: "Passer à %{branch}",
     git_switch_confirm_detail: "Les sessions, terminaux et fichiers ouverts de ce worktree passeront sur cette branche.",
     git_switch_confirm_action: "Changer",
@@ -576,6 +581,7 @@ const branchLocales = {
     git_fork_from_branch: "Dériver d’une autre branche…",
   },
   "ja": {
+    git_submit: "送信",
     git_switch_confirm: "%{branch} に切り替え",
     git_switch_confirm_detail: "このワークツリーのセッション、ターミナル、開いているファイルがすべてこのブランチに切り替わります。",
     git_switch_confirm_action: "切り替え",
@@ -586,6 +592,7 @@ const branchLocales = {
     git_fork_from_branch: "別のブランチから派生…",
   },
   "ko": {
+    git_submit: "제출",
     git_switch_confirm: "%{branch}(으)로 전환",
     git_switch_confirm_detail: "이 워크트리의 세션, 터미널, 열린 파일이 모두 이 브랜치로 전환됩니다.",
     git_switch_confirm_action: "전환",
@@ -596,6 +603,7 @@ const branchLocales = {
     git_fork_from_branch: "다른 브랜치에서 분기…",
   },
   "pt-BR": {
+    git_submit: "Enviar",
     git_switch_confirm: "Mudar para %{branch}",
     git_switch_confirm_detail: "Sessões, terminais e arquivos abertos neste worktree passarão para este branch.",
     git_switch_confirm_action: "Mudar",
@@ -606,6 +614,7 @@ const branchLocales = {
     git_fork_from_branch: "Derivar de outro branch…",
   },
   "ru": {
+    git_submit: "Отправить",
     git_switch_confirm: "Переключиться на %{branch}",
     git_switch_confirm_detail: "Сессии, терминалы и открытые файлы этого worktree перейдут на эту ветку.",
     git_switch_confirm_action: "Переключить",
@@ -616,6 +625,7 @@ const branchLocales = {
     git_fork_from_branch: "Ответвить от другой ветки…",
   },
   "zh-TW": {
+    git_submit: "提交",
     git_switch_confirm: "切換到 %{branch}",
     git_switch_confirm_detail: "使用這個工作樹的工作階段、終端機和已開啟的檔案都會切換到這個分支。",
     git_switch_confirm_action: "切換",

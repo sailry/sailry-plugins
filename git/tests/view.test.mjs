@@ -102,7 +102,7 @@ test('branch creation uses the modal title without exposing its captured start',
   const dialog={id:4,form:'branch',title:'git_new_branch',input:'branch-name',base:'main',
     commit:'02265059abcdef',busy:false};
   const view={text:{git_new_branch:'New branch',git_branch_base:'Starting point',git_branch_name:'Branch name',
-    git_create_branch:'Create',settings_cancel:'Cancel',git_no_matches:'No matches'},
+    git_create_branch:'Create',git_submit:'Submit',settings_cancel:'Cancel',git_no_matches:'No matches'},
     actions:{dialog,picker:null,close(){},submit(){}},run(){}};
   const modal=descendants(dialogs(view)).find(node=>node.kind==='modal');
   assert.deepEqual({...modal.props},{id:'git-dialog-4',open:true,form:true,title:'New branch',width:468});
