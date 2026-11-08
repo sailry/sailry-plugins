@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Los proyectos con caracteres de control en el nombre siguen disponibles con etiquetas legibles
+
 ## 0.1.12
 
 - Mantener el cambio de proyecto y la navegación atrás en el menú emergente con nombres legibles de árboles de trabajo

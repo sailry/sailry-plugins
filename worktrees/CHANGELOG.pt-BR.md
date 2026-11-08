@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Projetos com caracteres de controle no nome continuam disponíveis com rótulos legíveis
+
 ## 0.1.12
 
 - Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho

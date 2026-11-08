@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {menu,fit,MENU_PROJECTS} from '../dev.sailry.platform/desktop/policy.js';
+import {menu,fit,navigationLabel,MENU_PROJECTS} from '../dev.sailry.platform/desktop/policy.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const strings=messages('en'),text=key=>strings[key];
@@ -21,6 +21,15 @@ test('project menus list chats, projects and the add action',()=>{
 test('fixed projects offer no menu',()=>{
   assert.deepEqual(menu({...location,can_retarget:false},text),[]);
   assert.deepEqual(menu({...location,project:null,session:'session',can_retarget:false},text),[]);
+});
+
+test('control characters preserve valid selectable project labels',()=>{
+  const projects=[{id:'newline',name:'one\ntwo'},{id:'tab',name:'one\ttwo'},{id:'controls',name:'\u0000\u0085'}];
+  const choices=menu({...location,projects},text).filter(choice=>choice.id.startsWith('project:'));
+  assert.deepEqual(choices.map(choice=>choice.id),['project:newline','project:tab','project:controls']);
+  assert.deepEqual(choices.map(choice=>choice.label.label),['one two','one two',text('location_project')]);
+  for (const choice of choices) assert.deepEqual(navigationLabel(choice.label.label),choice.label);
+  assert.deepEqual(projects.map(project=>project.name),['one\ntwo','one\ttwo','\u0000\u0085']);
 });
 
 test('large hosts keep the current project and open the picker',()=>{

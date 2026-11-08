@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Les projets dont le nom contient des caractères de contrôle restent sélectionnables avec des libellés lisibles
+
 ## 0.1.12
 
 - Conserver le changement de projet et le retour dans la fenêtre contextuelle, avec des noms de worktrees lisibles

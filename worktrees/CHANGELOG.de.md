@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Projekte mit Steuerzeichen im Namen bleiben mit lesbaren Menüeinträgen auswählbar
+
 ## 0.1.12
 
 - Projektwechsel und Zurück-Navigation im Eingabefenster-Popup mit lesbaren Worktree-Namen anbieten

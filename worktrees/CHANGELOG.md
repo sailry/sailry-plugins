@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Keep projects with control characters in their names selectable with readable menu labels
+
 ## 0.1.16
 
 - New worktree forms label their fields and submit with a plain Submit button

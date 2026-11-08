@@ -25,6 +25,7 @@ function byteLength(value) {
 export const MENU_PROJECTS = 100;
 /** Shortens a dynamic name to the 128-byte contribution label limit. */
 export function fit(value) {
+  value = value.replace(/[\u0000-\u001f\u007f-\u009f]/gu,' ').trim();
   if (byteLength(value) <= 128) return value;
   let kept = '';
   for (const character of value) {
@@ -35,7 +36,7 @@ export function fit(value) {
 }
 export function menu(location,text) {
   if (!location.can_retarget) return [];
-  const choice = (id,name,group,icon) => ({id,label:{label:fit(name)},group:{label:text(group)},
+  const choice = (id,name,group,icon) => ({id,label:navigationLabel(fit(name)) ?? {label:text('location_project')},group:{label:text(group)},
     ...(icon ? {icon} : {})});
   const projects = location.projects.filter(project => typeof project.name === 'string' && project.name.trim());
   const shown = projects.slice(0,MENU_PROJECTS);
