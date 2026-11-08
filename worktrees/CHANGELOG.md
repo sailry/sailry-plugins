@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Move Switch project… to the end of the project menu
+
 ## 0.1.13
 
 - Render project choices with native Kit menus and a single hover surface

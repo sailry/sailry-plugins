@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.30
+
+- Show branch choices without repeated row icons; the current branch keeps its check
+
 ## 0.1.29
 
 - Render branch choices with native Kit menus and a single hover surface

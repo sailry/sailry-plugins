@@ -48,12 +48,12 @@ export function menu(location,catalog,entries,text,showProjects=false) {
     choices.push(choice(`worktree:${location.worktree}`,location.main ? mainLabel(location.branch)
       : location.branch || text('composer_branch_none'),location.main ? 'folder' : 'network','workspace_worktrees'));
   }
-  choices.unshift(choice('projects',text('location_project'),'chevron-left','location_project',!!location.can_retarget));
   if (location.git) {
     choices.push(choice('create',text('location_create'),'plus','workspace_session_actions'));
     if (location.session) choices.push(choice('fork',text('location_fork'),'plus','workspace_session_actions'));
   }
   choices.push(choice('manage',text('location_manage'),'network','workspace_session_actions'));
+  choices.push(choice('projects',text('location_project'),'folder','location_project',!!location.can_retarget));
   return choices;
 }
 export function listing(catalog, found, location, text) {

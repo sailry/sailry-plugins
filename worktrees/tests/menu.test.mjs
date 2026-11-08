@@ -24,14 +24,15 @@ test('unassigned locations list projects and their creation action',()=>{
 
 test('project menus group registered worktrees and actions',()=>{
   const choices=menu(location,catalog,entries,text);
-  assert.deepEqual(choices.map(choice=>choice.id),['projects','worktree:main','worktree:topic','create','manage']);
-  assert.deepEqual(choices.slice(1,3).map(choice=>[choice.label.label,choice.icon]),
+  assert.deepEqual(choices.map(choice=>choice.id),['worktree:main','worktree:topic','create','manage','projects']);
+  assert.deepEqual(choices.slice(0,2).map(choice=>[choice.label.label,choice.icon]),
     [['Main workspace (main)','folder'],['feature','network']]);
-  assert.notDeepEqual(choices[0].group,choices[1].group);
-  assert.deepEqual(choices[1].group,choices[2].group);
-  assert.notDeepEqual(choices[2].group,choices[3].group);
-  assert.deepEqual(choices[3].group,choices[4].group);
-  assert.equal(choices[4].label.label,'Manage worktrees…');
+  assert.deepEqual(choices[0].group,choices[1].group);
+  assert.notDeepEqual(choices[1].group,choices[2].group);
+  assert.deepEqual(choices[2].group,choices[3].group);
+  assert.notDeepEqual(choices[3].group,choices[4].group);
+  assert.equal(choices[3].label.label,'Manage worktrees…');
+  assert.equal(choices[4].label.label,'Switch project…');
 });
 
 test('forking requires both Git and a session',()=>{
@@ -46,21 +47,21 @@ test('forking requires both Git and a session',()=>{
 
 test('main labels retain their own branch elsewhere',()=>{
   const choices=menu({...location,worktree:'topic',branch:'feature'},catalog,entries,text);
-  assert.equal(choices[1].label.label,'Main workspace (main)');
-  assert.equal(choices[2].label.label,'feature');
+  assert.equal(choices[0].label.label,'Main workspace (main)');
+  assert.equal(choices[1].label.label,'feature');
 });
 
 test('unavailable worktrees remain visible without an action',()=>{
   const choices=menu(location,catalog,entries.map(entry=>({...entry,available:false})),text);
+  assert.equal(choices[0].enabled,false);
   assert.equal(choices[1].enabled,false);
-  assert.equal(choices[2].enabled,false);
 });
 
 test('list labels preserve complete dynamic names',()=>{
   const choices=menu({...location,project:null,projects:[{id:'project',name:'a'.repeat(129)}]},null,null,text);
   assert.equal(choices[1].label.label,'a'.repeat(129));
   const branches=menu({...location,branch:'a'.repeat(128)},catalog,entries,text);
-  assert.equal(branches[1].label.label,`Main workspace (${'a'.repeat(128)})`);
+  assert.equal(branches[0].label.label,`Main workspace (${'a'.repeat(128)})`);
 });
 
 test('incomplete discovery shows only the bound human label',()=>{

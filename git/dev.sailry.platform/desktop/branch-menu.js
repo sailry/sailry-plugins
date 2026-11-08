@@ -7,7 +7,8 @@ export function render(view,dialogs) {
     ...(view.branchPath.length ? [{id:'back',label:view.text.git_back,icon:'arrow-left',enabled:true}] : []),
     ...choices.flatMap((choice,index) => [
       ...(choice.group && choice.group !== choices[index-1]?.group ? [{header:true,label:choice.group}] : []),
-      {id:`choice:${index}`,label:choice.label,icon:choice.icon ?? 'network',checked:!!choice.checked,
+      // Branch rows share one meaning, so only actions keep an icon; Kit marks the current branch.
+      {id:`choice:${index}`,label:choice.label,icon:choice.icon === 'network' ? undefined : choice.icon,checked:!!choice.checked,
         enabled:!choice.disabled && view.repo.writable() && view.location.can_move,value:choice},
     ]),
   ];
