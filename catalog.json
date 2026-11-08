@@ -22090,7 +22090,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22400,6 +22400,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.16",
+          "commit": "30593dddd8aa0cd2fd6a869f388f1279f9f39654",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- New worktree forms label their fields and submit with a plain Submit button"
+          }
+        },
+        {
           "version": "0.1.15",
           "commit": "04aebd9033d4b347aebb6eb2c026f2abb6a20f93",
           "min_sailry_version": "0.1.5",
@@ -22562,7 +22570,7 @@
         }
       ],
       "release_notes": {
-        "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
+        "text": "- New worktree forms label their fields and submit with a plain Submit button"
       }
     },
     {
