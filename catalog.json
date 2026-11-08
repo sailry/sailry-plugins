@@ -1871,7 +1871,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2235,6 +2235,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.16",
+          "commit": "713462a58ea30af03c7a7136daa84fa08af0187b",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Correct the package identity check for the current version.",
+            "locales": {
+              "zh-CN": "- 修正当前版本的包身份检查",
+              "zh-TW": "- 修正目前版本的套件身分檢查",
+              "ja": "- 現在のバージョンに合わせてパッケージ識別チェックを修正",
+              "ko": "- 현재 버전에 맞게 패키지 식별 검사를 수정",
+              "fr": "- Corrige la vérification de l’identité du paquet pour la version actuelle",
+              "de": "- Korrigiert die Paketidentitätsprüfung für die aktuelle Version",
+              "es": "- Corrige la comprobación de identidad del paquete para la versión actual",
+              "pt-BR": "- Corrige a verificação de identidade do pacote para a versão atual",
+              "ru": "- Исправлена проверка идентичности пакета для текущей версии"
+            }
+          }
+        },
+        {
           "version": "0.1.15",
           "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
           "min_sailry_version": "0.1.5",
@@ -2364,7 +2383,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Advance code impact and map pagination past entries larger than the output budget."
+        "text": "- Correct the package identity check for the current version.",
+        "locales": {
+          "zh-CN": "- 修正当前版本的包身份检查",
+          "zh-TW": "- 修正目前版本的套件身分檢查",
+          "ja": "- 現在のバージョンに合わせてパッケージ識別チェックを修正",
+          "ko": "- 현재 버전에 맞게 패키지 식별 검사를 수정",
+          "fr": "- Corrige la vérification de l’identité du paquet pour la version actuelle",
+          "de": "- Korrigiert die Paketidentitätsprüfung für die aktuelle Version",
+          "es": "- Corrige la comprobación de identidad del paquete para la versión actual",
+          "pt-BR": "- Corrige a verificação de identidade do pacote para a versão atual",
+          "ru": "- Исправлена проверка идентичности пакета для текущей версии"
+        }
       }
     },
     {
@@ -10811,7 +10841,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.33",
+        "version": "0.1.34",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12417,6 +12447,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.34",
+          "commit": "ed716db07a241a3cc7aaf1f2b4fcebdf5049dd47",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Refresh composer branch choices after reference changes without scanning file status\n- Keep pending branch reads from replacing newer choices\n- Distinguish local and remote branches with the same name when forking a conversation",
+            "locales": {
+              "zh-CN": "- 分支引用变化后刷新会话分支菜单，无需扫描文件状态\n- 防止较早的分支读取结果覆盖新选项\n- 派生会话时区分同名的本地与远程分支",
+              "zh-TW": "- 分支參照變更後更新對話分支選單，無需掃描檔案狀態\n- 防止較早的分支讀取結果覆蓋新選項\n- 衍生對話時區分同名的本機與遠端分支",
+              "ja": "- 参照の変更後、ファイル状態を走査せずに会話のブランチ一覧を更新\n- 古い読み取り結果による選択肢の上書きを防止\n- 会話の分岐時に同名のローカルブランチとリモートブランチを区別",
+              "ko": "- 참조 변경 후 파일 상태 검사 없이 대화의 브랜치 목록을 갱신\n- 이전 조회 결과가 최신 선택 항목을 덮어쓰지 않도록 수정\n- 대화를 분기할 때 이름이 같은 로컬 및 원격 브랜치를 구분",
+              "fr": "- Actualise les branches de conversation après une modification des références, sans analyser l’état des fichiers\n- Empêche les anciennes lectures de remplacer les nouveaux choix\n- Distingue les branches locales et distantes de même nom lors de la création d’une conversation dérivée",
+              "de": "- Aktualisiert die Branch-Auswahl nach Referenzänderungen, ohne den Dateistatus zu prüfen\n- Verhindert, dass ältere Leseergebnisse neuere Auswahlmöglichkeiten überschreiben\n- Unterscheidet gleichnamige lokale und entfernte Branches beim Abzweigen einer Unterhaltung",
+              "es": "- Actualiza las ramas de la conversación al cambiar las referencias, sin analizar el estado de los archivos\n- Evita que lecturas antiguas sustituyan las opciones más recientes\n- Distingue ramas locales y remotas con el mismo nombre al crear una conversación derivada",
+              "pt-BR": "- Atualiza as branches da conversa após mudanças nas referências, sem verificar o estado dos arquivos\n- Impede que leituras antigas substituam as opções mais recentes\n- Distingue branches locais e remotas com o mesmo nome ao criar uma conversa derivada",
+              "ru": "- Ветки диалога обновляются при изменении ссылок без проверки состояния файлов\n- Устаревшие результаты чтения больше не заменяют новые варианты\n- При ответвлении диалога различаются одноимённые локальные и удалённые ветки"
+            }
+          }
+        },
+        {
           "version": "0.1.33",
           "commit": "2c6d74e524fa4e5867a6c34f07b334ebfeb39238",
           "min_sailry_version": "0.1.5",
@@ -12690,7 +12739,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Form dialogs submit with a plain Submit button"
+        "text": "- Refresh composer branch choices after reference changes without scanning file status\n- Keep pending branch reads from replacing newer choices\n- Distinguish local and remote branches with the same name when forking a conversation",
+        "locales": {
+          "zh-CN": "- 分支引用变化后刷新会话分支菜单，无需扫描文件状态\n- 防止较早的分支读取结果覆盖新选项\n- 派生会话时区分同名的本地与远程分支",
+          "zh-TW": "- 分支參照變更後更新對話分支選單，無需掃描檔案狀態\n- 防止較早的分支讀取結果覆蓋新選項\n- 衍生對話時區分同名的本機與遠端分支",
+          "ja": "- 参照の変更後、ファイル状態を走査せずに会話のブランチ一覧を更新\n- 古い読み取り結果による選択肢の上書きを防止\n- 会話の分岐時に同名のローカルブランチとリモートブランチを区別",
+          "ko": "- 참조 변경 후 파일 상태 검사 없이 대화의 브랜치 목록을 갱신\n- 이전 조회 결과가 최신 선택 항목을 덮어쓰지 않도록 수정\n- 대화를 분기할 때 이름이 같은 로컬 및 원격 브랜치를 구분",
+          "fr": "- Actualise les branches de conversation après une modification des références, sans analyser l’état des fichiers\n- Empêche les anciennes lectures de remplacer les nouveaux choix\n- Distingue les branches locales et distantes de même nom lors de la création d’une conversation dérivée",
+          "de": "- Aktualisiert die Branch-Auswahl nach Referenzänderungen, ohne den Dateistatus zu prüfen\n- Verhindert, dass ältere Leseergebnisse neuere Auswahlmöglichkeiten überschreiben\n- Unterscheidet gleichnamige lokale und entfernte Branches beim Abzweigen einer Unterhaltung",
+          "es": "- Actualiza las ramas de la conversación al cambiar las referencias, sin analizar el estado de los archivos\n- Evita que lecturas antiguas sustituyan las opciones más recientes\n- Distingue ramas locales y remotas con el mismo nombre al crear una conversación derivada",
+          "pt-BR": "- Atualiza as branches da conversa após mudanças nas referências, sem verificar o estado dos arquivos\n- Impede que leituras antigas substituam as opções mais recentes\n- Distingue branches locais e remotas com o mesmo nome ao criar uma conversa derivada",
+          "ru": "- Ветки диалога обновляются при изменении ссылок без проверки состояния файлов\n- Устаревшие результаты чтения больше не заменяют новые варианты\n- При ответвлении диалога различаются одноимённые локальные и удалённые ветки"
+        }
       }
     },
     {
@@ -22090,7 +22150,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22400,6 +22460,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "a6de157f1039eb80179575706f41cb9bb4b64710",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Keep projects with control characters in their names selectable with readable menu labels",
+            "locales": {
+              "zh-CN": "- 项目名称含控制字符时仍可选择，菜单显示可读名称",
+              "zh-TW": "- 專案名稱含控制字元時仍可選取，選單顯示可讀名稱",
+              "ja": "- 名前に制御文字を含むプロジェクトも読みやすいメニュー項目で選択可能",
+              "ko": "- 이름에 제어 문자가 있는 프로젝트도 읽기 쉬운 메뉴 항목으로 선택 가능",
+              "fr": "- Les projets dont le nom contient des caractères de contrôle restent sélectionnables avec des libellés lisibles",
+              "de": "- Projekte mit Steuerzeichen im Namen bleiben mit lesbaren Menüeinträgen auswählbar",
+              "es": "- Los proyectos con caracteres de control en el nombre siguen disponibles con etiquetas legibles",
+              "pt-BR": "- Projetos com caracteres de controle no nome continuam disponíveis com rótulos legíveis",
+              "ru": "- Проекты с управляющими символами в имени остаются доступными с читаемыми названиями в меню"
+            }
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "30593dddd8aa0cd2fd6a869f388f1279f9f39654",
           "min_sailry_version": "0.1.5",
@@ -22570,7 +22649,18 @@
         }
       ],
       "release_notes": {
-        "text": "- New worktree forms label their fields and submit with a plain Submit button"
+        "text": "- Keep projects with control characters in their names selectable with readable menu labels",
+        "locales": {
+          "zh-CN": "- 项目名称含控制字符时仍可选择，菜单显示可读名称",
+          "zh-TW": "- 專案名稱含控制字元時仍可選取，選單顯示可讀名稱",
+          "ja": "- 名前に制御文字を含むプロジェクトも読みやすいメニュー項目で選択可能",
+          "ko": "- 이름에 제어 문자가 있는 프로젝트도 읽기 쉬운 메뉴 항목으로 선택 가능",
+          "fr": "- Les projets dont le nom contient des caractères de contrôle restent sélectionnables avec des libellés lisibles",
+          "de": "- Projekte mit Steuerzeichen im Namen bleiben mit lesbaren Menüeinträgen auswählbar",
+          "es": "- Los proyectos con caracteres de control en el nombre siguen disponibles con etiquetas legibles",
+          "pt-BR": "- Projetos com caracteres de controle no nome continuam disponíveis com rótulos legíveis",
+          "ru": "- Проекты с управляющими символами в имени остаются доступными с читаемыми названиями в меню"
+        }
       }
     },
     {
