@@ -10811,7 +10811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.28",
+        "version": "0.1.29",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12362,7 +12362,7 @@
               {
                 "id": "branch",
                 "slot": "context",
-                "kind": "popover",
+                "kind": "menu",
                 "label": {
                   "label": "Branch",
                   "locales": {
@@ -12417,6 +12417,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.29",
+          "commit": "c5bdd0289dd7cf64c7e403bb48312ff6204d91cf",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Render branch choices with native Kit menus and a single hover surface"
+          }
+        },
         {
           "version": "0.1.28",
           "commit": "5a870a29dfd1ce67f39629157a0b6cfa0fe7eba6",
@@ -12651,18 +12659,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Select local and remote branches in the composer popup with current-branch checks\n- Keep branch navigation inside the popup and use the existing creation forms",
-        "locales": {
-          "zh-CN": "- 在输入框浮层中选择本地与远程分支，标记当前分支\n- 分支导航保留在浮层内，创建操作继续使用现有表单",
-          "zh-TW": "- 在輸入框浮層中選擇本機與遠端分支，標記目前分支\n- 分支導覽保留在浮層內，建立操作繼續使用既有表單",
-          "ja": "- 入力欄のポップアップでローカルとリモートのブランチを選択し、現在のブランチを表示\n- ブランチ移動はポップアップ内で行い、作成には既存フォームを使用",
-          "ko": "- 입력창 팝업에서 로컬 및 원격 브랜치를 선택하고 현재 브랜치 표시\n- 팝업 내부에서 브랜치를 탐색하고 기존 생성 양식 사용",
-          "fr": "- Sélectionner les branches locales et distantes dans une fenêtre contextuelle avec indication de la branche actuelle\n- Conserver la navigation entre branches dans la fenêtre contextuelle et réutiliser les formulaires de création",
-          "de": "- Lokale und entfernte Branches im Eingabe-Popup mit Markierung des aktuellen Branches auswählen\n- Branch-Navigation im Popup behalten und bestehende Erstellungsformulare verwenden",
-          "es": "- Seleccionar ramas locales y remotas en el menú emergente con la rama actual marcada\n- Mantener la navegación entre ramas en el menú y reutilizar los formularios de creación",
-          "pt-BR": "- Selecionar branches locais e remotos no painel suspenso com indicação do branch atual\n- Manter a navegação entre branches no painel e reutilizar os formulários de criação",
-          "ru": "- Выбирать локальные и удалённые ветки во всплывающем списке с отметкой текущей ветки\n- Переходить между ветками внутри списка и использовать существующие формы создания"
-        }
+        "text": "- Render branch choices with native Kit menus and a single hover surface"
       }
     },
     {
@@ -22062,7 +22059,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22299,7 +22296,7 @@
               {
                 "id": "location",
                 "slot": "context",
-                "kind": "popover",
+                "kind": "menu",
                 "label": {
                   "label": "Worktree",
                   "locales": {
@@ -22371,6 +22368,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.13",
+          "commit": "c5bdd0289dd7cf64c7e403bb48312ff6204d91cf",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Render project choices with native Kit menus and a single hover surface"
+          }
+        },
         {
           "version": "0.1.12",
           "commit": "5a870a29dfd1ce67f39629157a0b6cfa0fe7eba6",
@@ -22510,18 +22515,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep project switching and Back inside the composer popup with readable worktree names\n- Manage worktrees in ordinary dialogs and keep offline background reads quiet",
-        "locales": {
-          "zh-CN": "- 项目切换与返回保留在输入框浮层内，工作树显示可读名称\n- 工作树管理使用普通对话框，离线后台读取不再弹出错误",
-          "zh-TW": "- 專案切換與返回保留在輸入框浮層內，工作樹顯示可讀名稱\n- 工作樹管理使用一般對話框，離線背景讀取不再彈出錯誤",
-          "ja": "- 入力欄のポップアップ内でプロジェクト切り替えと戻る操作に対応し、ワークツリー名を読みやすく表示\n- ワークツリー管理を通常のダイアログに変更し、オフライン時のバックグラウンド読み込みエラー通知を抑制",
-          "ko": "- 입력창 팝업 안에서 프로젝트 전환과 뒤로 가기를 제공하고 읽기 쉬운 작업 트리 이름 표시\n- 일반 대화상자로 작업 트리를 관리하고 오프라인 백그라운드 읽기 오류 알림 생략",
-          "fr": "- Conserver le changement de projet et le retour dans la fenêtre contextuelle, avec des noms de worktrees lisibles\n- Gérer les worktrees dans des dialogues classiques et éviter les alertes des lectures en arrière-plan hors ligne",
-          "de": "- Projektwechsel und Zurück-Navigation im Eingabefenster-Popup mit lesbaren Worktree-Namen anbieten\n- Worktrees in normalen Dialogen verwalten und Offline-Lesefehler im Hintergrund ohne Meldung behandeln",
-          "es": "- Mantener el cambio de proyecto y la navegación atrás en el menú emergente con nombres legibles de árboles de trabajo\n- Gestionar árboles de trabajo en diálogos normales y evitar avisos de lecturas en segundo plano sin conexión",
-          "pt-BR": "- Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho\n- Gerenciar árvores de trabalho em diálogos comuns e evitar alertas de leituras em segundo plano sem conexão",
-          "ru": "- Переключать проекты и возвращаться назад внутри всплывающего списка с понятными названиями рабочих деревьев\n- Управлять рабочими деревьями в обычных диалогах без уведомлений об ошибках фонового чтения вне сети"
-        }
+        "text": "- Render project choices with native Kit menus and a single hover surface"
       }
     },
     {
