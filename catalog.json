@@ -12418,10 +12418,10 @@
       "versions": [
         {
           "version": "0.1.30",
-          "commit": "0b155b0792f8103b3b6d1208e7fd23d9fc7736aa",
+          "commit": "03a7c7d6393a11922d511e27a5a7735c22e1180d",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel"
+            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel\n- Ask for confirmation before switching the branch of a shared worktree"
           }
         },
         {
@@ -12666,7 +12666,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel"
+        "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel\n- Ask for confirmation before switching the branch of a shared worktree"
       }
     },
     {
