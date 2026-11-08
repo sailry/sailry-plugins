@@ -5,6 +5,7 @@
 - Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched
 - Copy the branch name or fork from another branch in a running conversation
 - Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check
+- Branch management moves from the project menu to the Git panel
 
 ## 0.1.29
 

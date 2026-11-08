@@ -337,7 +337,7 @@ test('composer metadata changes never duplicate Node scans',async()=>{
     assert.equal(reads,0);assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);
     updates[0].resolve({...location,cursor:'1',project:'initialized',git:true,git_status:'repository'});await settle();
     assert.equal(reads,0);
-    assert.deepEqual(Array.from(published,state=>state.visible),[true,true]);
+    assert.deepEqual(Array.from(published,state=>state.visible),[true,false]);
     updates[1].resolve({...location,cursor:'2'});await settle();
     assert.equal(reads,0);
     assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);

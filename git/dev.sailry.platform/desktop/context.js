@@ -114,7 +114,8 @@ export default class Context extends Git {
       {id:'branch',...(targeted && repository ? {label:{label:label(state,this.text)}} : {}),icon:'network',loading:false,
         enabled:scoped && repository && state.can_move && menu.choices.length > 0,visible:targeted && repository,
         value:menu.value,choices:menu.choices,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
-      {id:'manage',enabled:scoped && repository && state.can_move,visible:targeted && repository,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})}
+      // Hidden from the project menu; branch switching lives in the Git panel.
+      {id:'manage',enabled:scoped && repository && state.can_move,visible:false,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})}
     ]);
   }
   render() { return div().child(dialogs(this)); }

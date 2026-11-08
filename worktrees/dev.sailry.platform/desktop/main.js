@@ -82,7 +82,8 @@ export default class Worktrees extends View {
     publishContributions([
       {id:'location',enabled:state.can_move && choices.length > 0,label:navigationLabel(label),
         icon:'folder',value:this.model.selected(),choices,...reply('location')},
-      {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
+      // Hidden from the project menu; the Git panel still opens it through its intent.
+      {id:'manage',enabled:state.can_move,visible:false,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},
     ]);
