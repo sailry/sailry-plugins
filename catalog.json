@@ -12418,10 +12418,10 @@
       "versions": [
         {
           "version": "0.1.30",
-          "commit": "643f953ab2a14d0ee9427a028b6605e24835c4e1",
+          "commit": "0b155b0792f8103b3b6d1208e7fd23d9fc7736aa",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check"
+            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel"
           }
         },
         {
@@ -12666,7 +12666,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check"
+        "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel"
       }
     },
     {
@@ -22377,10 +22377,10 @@
       "versions": [
         {
           "version": "0.1.14",
-          "commit": "210fc66307e12de279182327cc856c95e4f407d4",
+          "commit": "0b155b0792f8103b3b6d1208e7fd23d9fc7736aa",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list"
+            "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
           }
         },
         {
@@ -22530,7 +22530,7 @@
         }
       ],
       "release_notes": {
-        "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list"
+        "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
       }
     },
     {
