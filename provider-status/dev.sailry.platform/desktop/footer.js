@@ -37,6 +37,7 @@ export default class Footer extends View {
     const key = identity(state);
     if (key !== this.key) {
       this.snapshot = null;this.refreshAt = 0;this.pending = null;
+      this.scheduled=null;
     }
     this.state = state;this.key = key;
     this.publish();this.wake();
@@ -49,7 +50,9 @@ export default class Footer extends View {
 
   refresh(cx) {
     if (!this.visible || !this.state.connected) return;
-    if (this.pending?.key === this.key || !this.key || Date.now() < this.refreshAt) return;
+    if (this.pending?.key === this.key || !this.key) return;
+    if (Date.now() < this.refreshAt) {this.deferRefresh(this.refreshAt);return;}
+    this.scheduled=null;
     const key = this.key,provider = this.state.provider;
     const pending = {key};this.pending = pending;
     cx.spawn(async cx => {

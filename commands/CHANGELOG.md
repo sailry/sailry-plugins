@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Reject empty command wait text so output waits do not return immediately.
+
 ## 0.1.17
 
 - Wait for command output, matching text or exit with read_command, up to 30 seconds

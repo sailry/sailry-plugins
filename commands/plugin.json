@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.5",
@@ -224,6 +224,7 @@
                 },
                 "until": {
                   "type": "string",
+                  "minLength": 1,
                   "description": "With id and a positive wait_ms, wait for this substring in either output preview, command exit or deadline."
                 }
               },

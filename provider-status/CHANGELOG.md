@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9
+
+- Resume refresh requests deferred by account cooldowns without periodic polling
+- Coalesce deferred reads and discard them when their view is hidden or account changes
+
 ## 0.1.8
 
 - Refresh account usage on visible activity and completed work instead of periodic timers

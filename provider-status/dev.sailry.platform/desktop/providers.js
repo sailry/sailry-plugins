@@ -41,11 +41,14 @@ export default class Providers {
     }
   }
 
-  refresh(cx) {
+  refresh(cx,deferred=false) {
     if (!this.visible || !this.state.connected) return;
-    const pending=[...this.entries.entries()].filter(([,entry])=>!entry.pending&&Date.now()>=entry.refreshAt);
+    if (!deferred) for (const entry of this.entries.values()) if (!entry.pending) entry.requested=true;
+    const pending=[...this.entries.entries()].filter(([,entry])=>entry.requested&&!entry.pending&&Date.now()>=entry.refreshAt);
+    for(const [,entry] of pending) {entry.pending=true;entry.requested=false;}
+    const delayed=[...this.entries.values()].filter(entry=>entry.requested&&!entry.pending);
+    if(delayed.length) this.deferRefresh(Math.min(...delayed.map(entry=>entry.refreshAt)));
     if(!pending.length) return;
-    for(const [,entry] of pending)entry.pending=true;
     cx.spawn(async cx=>{
       await Promise.all(pending.map(async([key,entry])=>{
         try {
@@ -60,7 +63,7 @@ export default class Providers {
             entry.measurement=null;entry.refreshAt=Date.now()+60000;
           }
           this.publish();cx.notify();
-        } finally {entry.pending=false;this.refresh(cx);}
+        } finally {entry.pending=false;}
       }));
     });
   }

@@ -35,7 +35,7 @@ export function read(args) {
       (args.offset != null && (!Number.isSafeInteger(args.offset) || args.offset < 0)) ||
       (args.limit != null && (!Number.isSafeInteger(args.limit) || args.limit < 1 || args.limit > 32768)) ||
       (args.wait_ms !== undefined && (!Number.isSafeInteger(args.wait_ms) || args.wait_ms < 0 || args.wait_ms > 30000)) ||
-      (args.until !== undefined && typeof args.until !== 'string') ||
+      (args.until !== undefined && (typeof args.until !== 'string' || !args.until.length)) ||
       (args.id == null && args.output == null &&
         ['stream', 'offset', 'limit'].some(key => args[key] != null)))
     return invalid('Invalid output reference or page');

@@ -32,7 +32,7 @@ export function fit(data, key, budget, offset) {
   while (size(data) > budget && data[key].length) {
     data[key].pop();
     omitted(data);
-    if (offset !== undefined) data.next_offset = offset + data[key].length;
+    if (offset !== undefined) data.next_offset = offset + Math.max(1,data[key].length);
   }
   if (size(data) > budget) throw new Error('Code result metadata exceeds the output budget');
   return data;

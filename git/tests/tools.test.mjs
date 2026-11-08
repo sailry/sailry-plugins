@@ -13,11 +13,13 @@ test('history preserves first-page defaults and exact continuation', () => {
   assert.deepEqual(log({cursor,worktree:'captured-project-tree'}),
     {worktree:'captured-project-tree',limit:20,cursor,revision:null,path:null});
   assert.equal(log({cursor}).cursor,cursor);
-  assert.deepEqual(log({revision:'feature',path:'src/资料.rs',cursor}),
-    {worktree:null,limit:20,cursor,revision:'feature',path:'src/资料.rs'});
+  const filtered={...cursor,path:'src/资料.rs'};
+  assert.deepEqual(log({revision:'feature',path:filtered.path,cursor:filtered}),
+    {worktree:null,limit:20,cursor:filtered,revision:'feature',path:filtered.path});
   for (const cursor of ['HEAD',{head:'abcdef',after:'b'.repeat(40)},
     {head:'a'.repeat(40),offset:5},{head:'a'.repeat(40),after:'short'},
-    {head:'a'.repeat(40),after:'b'.repeat(40),offset:5}]) {
+    {head:'a'.repeat(40),after:'b'.repeat(40),offset:5},
+    {head:'a'.repeat(40),after:'b'.repeat(40),path:5}]) {
     assert.equal(log({cursor}).isError,true);
   }
 });
@@ -29,6 +31,7 @@ test('history schema declares filtered commit continuations', async () => {
   const properties = tool.handler.parameters.properties;
   assert.deepEqual(properties.cursor.required,['head','after']);
   assert.equal(properties.cursor.properties.offset,undefined);
+  assert.deepEqual(properties.cursor.properties.path.type,['string','null']);
   assert.deepEqual(properties.revision.type,['string','null']);
   assert.deepEqual(properties.path.type,['string','null']);
   assert.match(tool.description,/keep the same path filter/);

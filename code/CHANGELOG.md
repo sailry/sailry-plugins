@@ -1,3 +1,7 @@
+## 0.1.15
+
+- Advance code impact and map pagination past entries larger than the output budget.
+
 ## 0.1.14
 
 - Resume code impact and map pages at the first file omitted by the output budget.

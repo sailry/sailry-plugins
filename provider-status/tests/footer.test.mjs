@@ -84,7 +84,9 @@ test('shares one refresh owner across native adapters',async()=>{
   assert.equal(setup.requests.length,1);
   setup.advance(120000);await setup.visible(true);
   assert.equal(setup.requests.length,2);
-  assert.equal(setup.sleeps.length,0);
+  assert.equal(setup.sleeps.length,1);
+  setup.sleeps[0].resolve();await settle();
+  assert.equal(setup.requests.length,2);
   assert.deepEqual(setup.toasts,[]);
   assert.deepEqual(setup.failures,[]);
 });
@@ -339,4 +341,57 @@ test('refreshes settled worktrees without polling',async()=>{
   assert.equal(setup.requests.length,2);
   setup.requests[1].resolve(response(20));await settle();
   assert.equal(setup.latest().value,'80%');
+});
+
+test('runs one deferred refresh when cooldown expires',async()=>{
+  const setup=await fixture();
+  setup.requests[0].resolve(response());await settle();
+  setup.advance(1000);
+  await setup.update(state('2'));
+  await setup.update(state('3'));
+  assert.equal(setup.requests.length,1);
+  assert.equal(setup.sleeps.length,1);
+  assert.equal(setup.sleeps[0].ms,179000);
+  setup.advance(179000);setup.sleeps[0].resolve();await settle();
+  assert.equal(setup.requests.length,2);
+  setup.requests[1].resolve(response(30));await settle();
+  assert.equal(setup.latest().value,'70%');
+  assert.equal(setup.sleeps.length,1);
+  assert.deepEqual(setup.failures,[]);
+});
+
+test('discards hidden and replaced deferred refreshes',async()=>{
+  for(const replace of [false,true]) {
+    const setup=await fixture();
+    setup.requests[0].resolve(response());await settle();
+    await setup.update(state('2'));
+    if(replace) {
+      const next=state('3');next.provider.id='replacement';await setup.update(next);
+      setup.requests[1].resolve(response(20));await settle();
+    } else await setup.visible(false);
+    const count=setup.requests.length;
+    setup.advance(180000);setup.sleeps[0].resolve();await settle();
+    assert.equal(setup.requests.length,count);
+    assert.deepEqual(setup.failures,[]);
+  }
+});
+
+test('drains provider cooldowns without repeating fresh reads',async()=>{
+  const first=provider('first'),second=provider('second');
+  const setup=await fixture(state(),batch([first,second]));
+  setup.requests[0].resolve(response());await settle();
+  setup.advance(20000);setup.requests[1].resolve(response());await settle();
+  await setup.update(batch([first,second],'2'));
+  assert.equal(setup.sleeps.length,1);
+  setup.advance(160000);setup.sleeps[0].resolve();await settle();
+  assert.equal(setup.requests.length,3);
+  assert.equal(setup.requests[2].args[0],'first');
+  setup.requests[2].resolve(response(30));await settle();
+  assert.equal(setup.sleeps.length,2);
+  setup.advance(20000);setup.sleeps[1].resolve();await settle();
+  assert.equal(setup.requests.length,4);
+  assert.equal(setup.requests[3].args[0],'second');
+  setup.requests[3].resolve(response(40));await settle();
+  assert.equal(setup.sleeps.length,2);
+  assert.deepEqual(setup.failures,[]);
 });

@@ -58,7 +58,7 @@ test('waits for output with optional text and paging', () => {
   const id = '11111111-1111-4111-8111-111111111111';
   for (const args of [
     {id,wait_ms:0}, {id,wait_ms:1}, {id,wait_ms:30000},
-    {id,until:'ready'}, {id,wait_ms:30000,until:'ready'}, {id,wait_ms:1,until:''},
+    {id,until:'ready'}, {id,wait_ms:30000,until:'ready'},
     {id,stream:'stdout',offset:32768,limit:4096,wait_ms:30000,until:'ready'},
     {id,stream:'stderr',offset:0,limit:1,wait_ms:100},
   ]) assert.deepEqual(read(args),args);
@@ -68,7 +68,7 @@ test('rejects invalid wait bounds and text', () => {
   const id = '11111111-1111-4111-8111-111111111111';
   for (const wait_ms of [-1, 30001, 0.5, '100', null, true, [], {}])
     assert.equal(read({id,wait_ms}).error.code, 'invalid_request');
-  for (const until of [null, true, 1, [], {}])
+  for (const until of ['', null, true, 1, [], {}])
     assert.equal(read({id,until}).error.code, 'invalid_request');
 });
 

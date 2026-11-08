@@ -90,6 +90,21 @@ test('ranks map entries with signatures',() => {
   assert.deepEqual([result.total,result.next_offset,result.truncated],[12,1,true]);
 });
 
+test('advances past oversized first entries',() => {
+  for (const handler of [impact,map]) {
+    const input = {name:'open',max_bytes:1024,offset:4};
+    const oversized = {path:'x'.repeat(2048),depth:1,confidence:'imported',score:1,symbols:[]};
+    const view = handler === impact ? 'impact' : 'map';
+    const result = answer(handler,input,page(view,{[view]:[oversized],total:6,next_offset:5})).result;
+    assert.equal(result.isError,undefined);
+    assert.deepEqual(result.files,[]);
+    assert.equal(result.next_offset,5);
+    assert.equal(result.partial,true);
+    assert.equal(result.truncated,true);
+    assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 1024);
+  }
+});
+
 test('passes graph failures and rejects mismatched results',() => {
   const failure = {isError:true,error:{code:'busy',message:'Busy'}};
   const pending = map({arguments:{},step:0});

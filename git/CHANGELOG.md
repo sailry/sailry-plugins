@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Keep the captured path filter in history cursors and reject cross-path continuation
+
 ## 0.1.25
 
 - Page history with exact commit cursors and preserve the original head when returning to earlier pages
