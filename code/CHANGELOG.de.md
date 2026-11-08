@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Korrigiert die Paketidentitätsprüfung für die aktuelle Version
+
 ## 0.1.7
 
 - Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern

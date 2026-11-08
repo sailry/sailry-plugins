@@ -7,7 +7,7 @@ const MAX_PATHS = 64;
 const MAX_TARGETS = 10;
 
 /** Validates a Node graph page for the requested view. */
-export function graphPage(outcome, view) {
+export function readPage(outcome, view) {
   const data = outcome?.data;
   if (outcome?.kind !== 'code_graph' || !data || data.view !== view
       || !Number.isSafeInteger(data.index_revision) || data.index_revision < 0
@@ -125,7 +125,7 @@ export function impact({arguments:input={},step,state,outcome}) {
     }
     if (step !== 1 || !Number.isSafeInteger(state?.budget)) return invalid('Invalid code impact continuation');
     if (outcome?.isError) return {result:outcome};
-    const data = graphPage(outcome,'impact');
+    const data = readPage(outcome,'impact');
     const result = {targets:data.targets.slice(0,MAX_TARGETS).map(definition),files:data.impact.map(file => impacted(file)),
       ...status(data)};
     if (data.targets.length > MAX_TARGETS) omitted(result);
@@ -148,7 +148,7 @@ export function map({arguments:input={},step,state,outcome}) {
     }
     if (step !== 1 || !Number.isSafeInteger(state?.budget)) return invalid('Invalid code map continuation');
     if (outcome?.isError) return {result:outcome};
-    const data = graphPage(outcome,'map');
+    const data = readPage(outcome,'map');
     const result = {files:data.map.map(entry => ({path:entry.path,score:entry.score,symbols:entry.symbols.map(ranked)})),
       ...status(data)};
     return {result:fit(result,'files',state.budget,state.offset)};

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Corrige a verificação de identidade do pacote para a versão atual
+
 ## 0.1.7
 
 - Aumentar o espaço entre rótulos e controles dos formulários

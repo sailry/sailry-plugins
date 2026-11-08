@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Corrige la vérification de l’identité du paquet pour la version actuelle
+
 ## 0.1.7
 
 - Augmenter l’espace entre les libellés et les champs des formulaires

@@ -6,7 +6,7 @@ const extension = manifest.extensions['dev.sailry.platform'];
 
 test('preserves package identity and enable binding',() => {
   assert.equal(manifest.name,'code');
-  assert.equal(manifest.version,'0.1.14');
+  assert.equal(manifest.version,'0.1.16');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.min_sailry_version,'0.1.5');
   assert.equal(extension.scope,'host');

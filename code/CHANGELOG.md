@@ -1,3 +1,7 @@
+## 0.1.16
+
+- Correct the package identity check for the current version.
+
 ## 0.1.15
 
 - Advance code impact and map pagination past entries larger than the output budget.

@@ -1,5 +1,5 @@
 import {bound, invalid, omitted, size} from './limits.js';
-import {callee, caller, graphPage, impacted} from './graph.js';
+import {callee, caller, readPage, impacted} from './graph.js';
 
 const MAX_SYMBOLS = 20;
 const MAX_SNIPPETS = 5;
@@ -105,7 +105,7 @@ function relate(state, outcome) {
   let page;
   try {
     if (outcome?.isError) throw new Error(outcome.error?.message || 'Code graph failed');
-    page = graphPage(outcome,'context');
+    page = readPage(outcome,'context');
   } catch (error) {
     const reason = Array.from(String(error.message || 'Code graph failed'));
     state.data.partial = true;
