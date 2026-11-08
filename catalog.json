@@ -3210,7 +3210,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.5",
@@ -3660,6 +3660,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "5a870a29dfd1ce67f39629157a0b6cfa0fe7eba6",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Remove duplicate workspace CLI entries and routine refresh from project context menus while preserving recovery actions",
+            "locales": {
+              "zh-CN": "- 项目右键菜单移除重复的工作区 CLI 入口与常驻刷新，保留失败恢复操作",
+              "zh-TW": "- 專案右鍵選單移除重複的工作區 CLI 入口與常駐重新整理，保留失敗復原操作",
+              "ja": "- プロジェクトのコンテキストメニューから重複するワークスペース CLI 項目と常設の更新を削除し、復旧操作は維持",
+              "ko": "- 프로젝트 컨텍스트 메뉴에서 중복 작업 공간 CLI 항목과 상시 새로고침을 제거하고 복구 작업 유지",
+              "fr": "- Retirer les entrées CLI d’espace de travail en double et l’actualisation permanente du menu de projet, tout en conservant les actions de récupération",
+              "de": "- Doppelte Workspace-CLI-Einträge und die ständige Aktualisierungsaktion aus Projekt-Kontextmenüs entfernen; Wiederherstellungsaktionen bleiben erhalten",
+              "es": "- Eliminar entradas CLI de espacio de trabajo duplicadas y la actualización permanente del menú del proyecto, conservando las acciones de recuperación",
+              "pt-BR": "- Remover entradas CLI duplicadas do espaço de trabalho e a atualização permanente do menu do projeto, preservando as ações de recuperação",
+              "ru": "- Удалить повторяющиеся CLI-пункты рабочего пространства и постоянное обновление из меню проекта, сохранив действия восстановления"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
           "min_sailry_version": "0.1.5",
@@ -3811,7 +3830,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Reject empty command wait text so output waits do not return immediately."
+        "text": "- Remove duplicate workspace CLI entries and routine refresh from project context menus while preserving recovery actions",
+        "locales": {
+          "zh-CN": "- 项目右键菜单移除重复的工作区 CLI 入口与常驻刷新，保留失败恢复操作",
+          "zh-TW": "- 專案右鍵選單移除重複的工作區 CLI 入口與常駐重新整理，保留失敗復原操作",
+          "ja": "- プロジェクトのコンテキストメニューから重複するワークスペース CLI 項目と常設の更新を削除し、復旧操作は維持",
+          "ko": "- 프로젝트 컨텍스트 메뉴에서 중복 작업 공간 CLI 항목과 상시 새로고침을 제거하고 복구 작업 유지",
+          "fr": "- Retirer les entrées CLI d’espace de travail en double et l’actualisation permanente du menu de projet, tout en conservant les actions de récupération",
+          "de": "- Doppelte Workspace-CLI-Einträge und die ständige Aktualisierungsaktion aus Projekt-Kontextmenüs entfernen; Wiederherstellungsaktionen bleiben erhalten",
+          "es": "- Eliminar entradas CLI de espacio de trabajo duplicadas y la actualización permanente del menú del proyecto, conservando las acciones de recuperación",
+          "pt-BR": "- Remover entradas CLI duplicadas do espaço de trabalho e a atualização permanente do menu do projeto, preservando as ações de recuperação",
+          "ru": "- Удалить повторяющиеся CLI-пункты рабочего пространства и постоянное обновление из меню проекта, сохранив действия восстановления"
+        }
       }
     },
     {
@@ -10781,7 +10811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.27",
+        "version": "0.1.28",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12289,6 +12319,7 @@
               "resources": [
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/context.js",
+                "dev.sailry.platform/desktop/branch-menu.js",
                 "dev.sailry.platform/desktop/view.js",
                 "dev.sailry.platform/desktop/surfaces.js",
                 "dev.sailry.platform/desktop/menus.js",
@@ -12331,7 +12362,7 @@
               {
                 "id": "branch",
                 "slot": "context",
-                "kind": "button",
+                "kind": "popover",
                 "label": {
                   "label": "Branch",
                   "locales": {
@@ -12386,6 +12417,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.28",
+          "commit": "5a870a29dfd1ce67f39629157a0b6cfa0fe7eba6",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Select local and remote branches in the composer popup with current-branch checks\n- Keep branch navigation inside the popup and use the existing creation forms",
+            "locales": {
+              "zh-CN": "- 在输入框浮层中选择本地与远程分支，标记当前分支\n- 分支导航保留在浮层内，创建操作继续使用现有表单",
+              "zh-TW": "- 在輸入框浮層中選擇本機與遠端分支，標記目前分支\n- 分支導覽保留在浮層內，建立操作繼續使用既有表單",
+              "ja": "- 入力欄のポップアップでローカルとリモートのブランチを選択し、現在のブランチを表示\n- ブランチ移動はポップアップ内で行い、作成には既存フォームを使用",
+              "ko": "- 입력창 팝업에서 로컬 및 원격 브랜치를 선택하고 현재 브랜치 표시\n- 팝업 내부에서 브랜치를 탐색하고 기존 생성 양식 사용",
+              "fr": "- Sélectionner les branches locales et distantes dans une fenêtre contextuelle avec indication de la branche actuelle\n- Conserver la navigation entre branches dans la fenêtre contextuelle et réutiliser les formulaires de création",
+              "de": "- Lokale und entfernte Branches im Eingabe-Popup mit Markierung des aktuellen Branches auswählen\n- Branch-Navigation im Popup behalten und bestehende Erstellungsformulare verwenden",
+              "es": "- Seleccionar ramas locales y remotas en el menú emergente con la rama actual marcada\n- Mantener la navegación entre ramas en el menú y reutilizar los formularios de creación",
+              "pt-BR": "- Selecionar branches locais e remotos no painel suspenso com indicação do branch atual\n- Manter a navegação entre branches no painel e reutilizar os formulários de criação",
+              "ru": "- Выбирать локальные и удалённые ветки во всплывающем списке с отметкой текущей ветки\n- Переходить между ветками внутри списка и использовать существующие формы создания"
+            }
+          }
+        },
         {
           "version": "0.1.27",
           "commit": "cb54073aa7908c8760a47d2daea1e4638899b58d",
@@ -12601,17 +12651,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Preserve row offsets in history cursors to avoid repeating path comparisons on later pages",
+        "text": "- Select local and remote branches in the composer popup with current-branch checks\n- Keep branch navigation inside the popup and use the existing creation forms",
         "locales": {
-          "zh-CN": "- 历史游标保留行偏移，后续翻页不再重复比较已读提交的路径",
-          "zh-TW": "- 歷史游標保留列偏移，後續翻頁不再重複比較已讀提交的路徑",
-          "ja": "- 履歴カーソルに行オフセットを保持し、次ページで既読コミットのパス比較を繰り返さないように改善",
-          "ko": "- 기록 커서에 행 오프셋을 유지해 다음 페이지에서 읽은 커밋의 경로 비교를 반복하지 않도록 개선",
-          "fr": "- Conserver le décalage des lignes dans les curseurs d’historique pour éviter de répéter les comparaisons de chemins",
-          "de": "- Zeilenpositionen in Verlaufscursorn beibehalten, um Pfadvergleiche auf Folgeseiten nicht zu wiederholen",
-          "es": "- Conservar el desplazamiento de filas en los cursores del historial para evitar repetir comparaciones de rutas al avanzar",
-          "pt-BR": "- Preservar o deslocamento de linhas nos cursores do histórico para evitar repetir comparações de caminhos nas próximas páginas",
-          "ru": "- Сохранять смещение строк в курсорах истории, чтобы не повторять сравнение путей на следующих страницах"
+          "zh-CN": "- 在输入框浮层中选择本地与远程分支，标记当前分支\n- 分支导航保留在浮层内，创建操作继续使用现有表单",
+          "zh-TW": "- 在輸入框浮層中選擇本機與遠端分支，標記目前分支\n- 分支導覽保留在浮層內，建立操作繼續使用既有表單",
+          "ja": "- 入力欄のポップアップでローカルとリモートのブランチを選択し、現在のブランチを表示\n- ブランチ移動はポップアップ内で行い、作成には既存フォームを使用",
+          "ko": "- 입력창 팝업에서 로컬 및 원격 브랜치를 선택하고 현재 브랜치 표시\n- 팝업 내부에서 브랜치를 탐색하고 기존 생성 양식 사용",
+          "fr": "- Sélectionner les branches locales et distantes dans une fenêtre contextuelle avec indication de la branche actuelle\n- Conserver la navigation entre branches dans la fenêtre contextuelle et réutiliser les formulaires de création",
+          "de": "- Lokale und entfernte Branches im Eingabe-Popup mit Markierung des aktuellen Branches auswählen\n- Branch-Navigation im Popup behalten und bestehende Erstellungsformulare verwenden",
+          "es": "- Seleccionar ramas locales y remotas en el menú emergente con la rama actual marcada\n- Mantener la navegación entre ramas en el menú y reutilizar los formularios de creación",
+          "pt-BR": "- Selecionar branches locais e remotos no painel suspenso com indicação do branch atual\n- Manter a navegação entre branches no painel e reutilizar os formulários de criação",
+          "ru": "- Выбирать локальные и удалённые ветки во всплывающем списке с отметкой текущей ветки\n- Переходить между ветками внутри списка и использовать существующие формы создания"
         }
       }
     },
@@ -22012,7 +22062,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22241,7 +22291,6 @@
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/controller.js",
                 "dev.sailry.platform/desktop/policy.js",
-                "dev.sailry.platform/desktop/publication.js",
                 "dev.sailry.platform/desktop/view.js",
                 "dev.sailry.platform/desktop/locales.js"
               ]
@@ -22250,7 +22299,7 @@
               {
                 "id": "location",
                 "slot": "context",
-                "kind": "menu",
+                "kind": "popover",
                 "label": {
                   "label": "Worktree",
                   "locales": {
@@ -22266,9 +22315,9 @@
                 "slot": "project_menu",
                 "kind": "button",
                 "label": {
-                  "label": "Manage worktrees",
+                  "label": "Manage worktrees…",
                   "locales": {
-                    "zh-CN": "管理 worktree"
+                    "zh-CN": "管理工作树…"
                   }
                 },
                 "icon": "network",
@@ -22322,6 +22371,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.12",
+          "commit": "5a870a29dfd1ce67f39629157a0b6cfa0fe7eba6",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Keep project switching and Back inside the composer popup with readable worktree names\n- Manage worktrees in ordinary dialogs and keep offline background reads quiet",
+            "locales": {
+              "zh-CN": "- 项目切换与返回保留在输入框浮层内，工作树显示可读名称\n- 工作树管理使用普通对话框，离线后台读取不再弹出错误",
+              "zh-TW": "- 專案切換與返回保留在輸入框浮層內，工作樹顯示可讀名稱\n- 工作樹管理使用一般對話框，離線背景讀取不再彈出錯誤",
+              "ja": "- 入力欄のポップアップ内でプロジェクト切り替えと戻る操作に対応し、ワークツリー名を読みやすく表示\n- ワークツリー管理を通常のダイアログに変更し、オフライン時のバックグラウンド読み込みエラー通知を抑制",
+              "ko": "- 입력창 팝업 안에서 프로젝트 전환과 뒤로 가기를 제공하고 읽기 쉬운 작업 트리 이름 표시\n- 일반 대화상자로 작업 트리를 관리하고 오프라인 백그라운드 읽기 오류 알림 생략",
+              "fr": "- Conserver le changement de projet et le retour dans la fenêtre contextuelle, avec des noms de worktrees lisibles\n- Gérer les worktrees dans des dialogues classiques et éviter les alertes des lectures en arrière-plan hors ligne",
+              "de": "- Projektwechsel und Zurück-Navigation im Eingabefenster-Popup mit lesbaren Worktree-Namen anbieten\n- Worktrees in normalen Dialogen verwalten und Offline-Lesefehler im Hintergrund ohne Meldung behandeln",
+              "es": "- Mantener el cambio de proyecto y la navegación atrás en el menú emergente con nombres legibles de árboles de trabajo\n- Gestionar árboles de trabajo en diálogos normales y evitar avisos de lecturas en segundo plano sin conexión",
+              "pt-BR": "- Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho\n- Gerenciar árvores de trabalho em diálogos comuns e evitar alertas de leituras em segundo plano sem conexão",
+              "ru": "- Переключать проекты и возвращаться назад внутри всплывающего списка с понятными названиями рабочих деревьев\n- Управлять рабочими деревьями в обычных диалогах без уведомлений об ошибках фонового чтения вне сети"
+            }
+          }
+        },
         {
           "version": "0.1.11",
           "commit": "e54704f5e794401fa7aee0223c24cf96d9f2fc8a",
@@ -22442,17 +22510,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Refresh location menus when project or worktree inventories change\n- Keep large menus within host limits while retaining full project and worktree selectors",
+        "text": "- Keep project switching and Back inside the composer popup with readable worktree names\n- Manage worktrees in ordinary dialogs and keep offline background reads quiet",
         "locales": {
-          "zh-CN": "- 项目或工作树列表变化后刷新位置菜单\n- 大列表遵循宿主菜单容量，保留完整项目和工作树选择入口",
-          "zh-TW": "- 專案或工作樹清單變更後更新位置選單\n- 大型清單遵循主程式選單容量，保留完整專案與工作樹選擇入口",
-          "ja": "- プロジェクトやワークツリーの一覧変更時に場所メニューを更新\n- 大きなメニューをホストの容量内に収め、すべての項目を選択できる入口を維持",
-          "ko": "- 프로젝트 또는 워크트리 목록이 변경되면 위치 메뉴 갱신\n- 큰 메뉴를 호스트 용량에 맞추면서 전체 선택 메뉴 진입점 유지",
-          "fr": "- Actualiser les menus d’emplacement lors des changements de projets ou d’arbres de travail\n- Respecter la capacité des menus de l’hôte tout en conservant les sélecteurs complets",
-          "de": "- Standortmenüs bei Änderungen an Projekten oder Worktrees aktualisieren\n- Große Menüs an Hostgrenzen anpassen und die vollständige Auswahl erreichbar halten",
-          "es": "- Actualizar los menús de ubicación al cambiar proyectos o árboles de trabajo\n- Ajustar los menús grandes a los límites del anfitrión conservando la selección completa",
-          "pt-BR": "- Atualizar menus de localização quando projetos ou árvores de trabalho mudarem\n- Ajustar menus grandes aos limites do aplicativo mantendo os seletores completos",
-          "ru": "- Обновлять меню расположения при изменении проектов или рабочих деревьев\n- Учитывать пределы меню приложения, сохраняя доступ к полному выбору"
+          "zh-CN": "- 项目切换与返回保留在输入框浮层内，工作树显示可读名称\n- 工作树管理使用普通对话框，离线后台读取不再弹出错误",
+          "zh-TW": "- 專案切換與返回保留在輸入框浮層內，工作樹顯示可讀名稱\n- 工作樹管理使用一般對話框，離線背景讀取不再彈出錯誤",
+          "ja": "- 入力欄のポップアップ内でプロジェクト切り替えと戻る操作に対応し、ワークツリー名を読みやすく表示\n- ワークツリー管理を通常のダイアログに変更し、オフライン時のバックグラウンド読み込みエラー通知を抑制",
+          "ko": "- 입력창 팝업 안에서 프로젝트 전환과 뒤로 가기를 제공하고 읽기 쉬운 작업 트리 이름 표시\n- 일반 대화상자로 작업 트리를 관리하고 오프라인 백그라운드 읽기 오류 알림 생략",
+          "fr": "- Conserver le changement de projet et le retour dans la fenêtre contextuelle, avec des noms de worktrees lisibles\n- Gérer les worktrees dans des dialogues classiques et éviter les alertes des lectures en arrière-plan hors ligne",
+          "de": "- Projektwechsel und Zurück-Navigation im Eingabefenster-Popup mit lesbaren Worktree-Namen anbieten\n- Worktrees in normalen Dialogen verwalten und Offline-Lesefehler im Hintergrund ohne Meldung behandeln",
+          "es": "- Mantener el cambio de proyecto y la navegación atrás en el menú emergente con nombres legibles de árboles de trabajo\n- Gestionar árboles de trabajo en diálogos normales y evitar avisos de lecturas en segundo plano sin conexión",
+          "pt-BR": "- Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho\n- Gerenciar árvores de trabalho em diálogos comuns e evitar alertas de leituras em segundo plano sem conexão",
+          "ru": "- Переключать проекты и возвращаться назад внутри всплывающего списка с понятными названиями рабочих деревьев\n- Управлять рабочими деревьями в обычных диалогах без уведомлений об ошибках фонового чтения вне сети"
         }
       }
     },
