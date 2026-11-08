@@ -10781,7 +10781,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.26",
+        "version": "0.1.27",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -11502,7 +11502,7 @@
               {
                 "name": "git_log",
                 "presentation": "summary",
-                "description": "Read a page of Git commit history, optionally starting at revision and filtering a literal worktree-relative path. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor and keep the same path filter. Cursors contain the frozen traversal head and last commit ID; never construct them from a short hash, HEAD, branch name or numeric offset. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
+                "description": "Read a page of Git commit history, optionally starting at revision and filtering a literal worktree-relative path. For the first page omit cursor or pass null, for example {\"limit\":5,\"cursor\":null}. For subsequent pages pass the exact next cursor and keep the same path filter. Cursors contain the frozen traversal head, last commit ID and cumulative row offset; never construct them from a short hash, HEAD, branch name or numeric offset. An empty repository returns an empty history. Omit worktree for this turn's directory, or select a registered worktree ID from list_worktrees in the same project.",
                 "contexts": [
                   "workspace"
                 ],
@@ -11531,6 +11531,10 @@
                             "type": "string",
                             "pattern": "^[0-9a-fA-F]{40}$"
                           },
+                          "offset": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
                           "path": {
                             "type": [
                               "string",
@@ -11540,7 +11544,8 @@
                         },
                         "required": [
                           "head",
-                          "after"
+                          "after",
+                          "offset"
                         ],
                         "additionalProperties": false,
                         "description": "Omit or use null for the first page; otherwise pass the exact returned cursor"
@@ -12382,6 +12387,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.27",
+          "commit": "cb54073aa7908c8760a47d2daea1e4638899b58d",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Preserve row offsets in history cursors to avoid repeating path comparisons on later pages",
+            "locales": {
+              "zh-CN": "- 历史游标保留行偏移，后续翻页不再重复比较已读提交的路径",
+              "zh-TW": "- 歷史游標保留列偏移，後續翻頁不再重複比較已讀提交的路徑",
+              "ja": "- 履歴カーソルに行オフセットを保持し、次ページで既読コミットのパス比較を繰り返さないように改善",
+              "ko": "- 기록 커서에 행 오프셋을 유지해 다음 페이지에서 읽은 커밋의 경로 비교를 반복하지 않도록 개선",
+              "fr": "- Conserver le décalage des lignes dans les curseurs d’historique pour éviter de répéter les comparaisons de chemins",
+              "de": "- Zeilenpositionen in Verlaufscursorn beibehalten, um Pfadvergleiche auf Folgeseiten nicht zu wiederholen",
+              "es": "- Conservar el desplazamiento de filas en los cursores del historial para evitar repetir comparaciones de rutas al avanzar",
+              "pt-BR": "- Preservar o deslocamento de linhas nos cursores do histórico para evitar repetir comparações de caminhos nas próximas páginas",
+              "ru": "- Сохранять смещение строк в курсорах истории, чтобы не повторять сравнение путей на следующих страницах"
+            }
+          }
+        },
+        {
           "version": "0.1.26",
           "commit": "2ac61c3cffbabd1b036a101e7f0bffe29e5e1896",
           "min_sailry_version": "0.1.5",
@@ -12577,7 +12601,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep the captured path filter in history cursors and reject cross-path continuation"
+        "text": "- Preserve row offsets in history cursors to avoid repeating path comparisons on later pages",
+        "locales": {
+          "zh-CN": "- 历史游标保留行偏移，后续翻页不再重复比较已读提交的路径",
+          "zh-TW": "- 歷史游標保留列偏移，後續翻頁不再重複比較已讀提交的路徑",
+          "ja": "- 履歴カーソルに行オフセットを保持し、次ページで既読コミットのパス比較を繰り返さないように改善",
+          "ko": "- 기록 커서에 행 오프셋을 유지해 다음 페이지에서 읽은 커밋의 경로 비교를 반복하지 않도록 개선",
+          "fr": "- Conserver le décalage des lignes dans les curseurs d’historique pour éviter de répéter les comparaisons de chemins",
+          "de": "- Zeilenpositionen in Verlaufscursorn beibehalten, um Pfadvergleiche auf Folgeseiten nicht zu wiederholen",
+          "es": "- Conservar el desplazamiento de filas en los cursores del historial para evitar repetir comparaciones de rutas al avanzar",
+          "pt-BR": "- Preservar o deslocamento de linhas nos cursores do histórico para evitar repetir comparações de caminhos nas próximas páginas",
+          "ru": "- Сохранять смещение строк в курсорах истории, чтобы не повторять сравнение путей на следующих страницах"
+        }
       }
     },
     {
@@ -21977,10 +22012,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.9",
+        "version": "0.1.10",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
+            "min_sailry_version": "0.1.5",
             "actions": [
               "worktrees.read",
               "worktrees.write",
@@ -22213,7 +22249,7 @@
               {
                 "id": "location",
                 "slot": "context",
-                "kind": "button",
+                "kind": "menu",
                 "label": {
                   "label": "Worktree",
                   "locales": {
@@ -22221,8 +22257,7 @@
                   }
                 },
                 "icon": "folder",
-                "handler": "manage",
-                "intent": "worktrees",
+                "handler": "location",
                 "order": -10
               },
               {
@@ -22286,6 +22321,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.10",
+          "commit": "68ad23794fd166cd1a3f9e69d8a783bf44ff959b",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Select projects and registered worktrees from the composer dropdown\n- Reuse worktree discovery across menus and the management dialog",
+            "locales": {
+              "zh-CN": "- 在输入框下拉菜单中选择项目和已注册工作树\n- 下拉菜单与管理窗口共用工作树读取结果",
+              "zh-TW": "- 在輸入框下拉選單中選擇專案與已登錄工作樹\n- 下拉選單與管理視窗共用工作樹讀取結果",
+              "ja": "- 入力欄のドロップダウンからプロジェクトと登録済みワークツリーを選択\n- メニューと管理ダイアログでワークツリーの取得結果を共有",
+              "ko": "- 입력창 드롭다운에서 프로젝트와 등록된 워크트리 선택\n- 메뉴와 관리 대화상자에서 워크트리 조회 결과 공유",
+              "fr": "- Sélectionner les projets et arbres de travail enregistrés depuis le menu de saisie\n- Réutiliser les données des arbres de travail entre le menu et la fenêtre de gestion",
+              "de": "- Projekte und registrierte Worktrees im Dropdown des Eingabefelds auswählen\n- Worktree-Daten zwischen Menü und Verwaltungsdialog wiederverwenden",
+              "es": "- Seleccionar proyectos y árboles de trabajo registrados desde el menú del editor\n- Compartir los datos de árboles de trabajo entre el menú y el diálogo de gestión",
+              "pt-BR": "- Selecionar projetos e árvores de trabalho registradas no menu do editor\n- Compartilhar dados de árvores de trabalho entre o menu e a janela de gerenciamento",
+              "ru": "- Выбор проектов и зарегистрированных рабочих деревьев в меню поля ввода\n- Повторное использование данных рабочих деревьев в меню и окне управления"
+            }
+          }
+        },
         {
           "version": "0.1.9",
           "commit": "7cfc335d28f3e948e0bd1b65179bc5061c7277c8",
@@ -22368,7 +22422,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Label conversations without a project consistently across supported languages"
+        "text": "- Select projects and registered worktrees from the composer dropdown\n- Reuse worktree discovery across menus and the management dialog",
+        "locales": {
+          "zh-CN": "- 在输入框下拉菜单中选择项目和已注册工作树\n- 下拉菜单与管理窗口共用工作树读取结果",
+          "zh-TW": "- 在輸入框下拉選單中選擇專案與已登錄工作樹\n- 下拉選單與管理視窗共用工作樹讀取結果",
+          "ja": "- 入力欄のドロップダウンからプロジェクトと登録済みワークツリーを選択\n- メニューと管理ダイアログでワークツリーの取得結果を共有",
+          "ko": "- 입력창 드롭다운에서 프로젝트와 등록된 워크트리 선택\n- 메뉴와 관리 대화상자에서 워크트리 조회 결과 공유",
+          "fr": "- Sélectionner les projets et arbres de travail enregistrés depuis le menu de saisie\n- Réutiliser les données des arbres de travail entre le menu et la fenêtre de gestion",
+          "de": "- Projekte und registrierte Worktrees im Dropdown des Eingabefelds auswählen\n- Worktree-Daten zwischen Menü und Verwaltungsdialog wiederverwenden",
+          "es": "- Seleccionar proyectos y árboles de trabajo registrados desde el menú del editor\n- Compartir los datos de árboles de trabajo entre el menú y el diálogo de gestión",
+          "pt-BR": "- Selecionar projetos e árvores de trabalho registradas no menu do editor\n- Compartilhar dados de árvores de trabalho entre o menu e a janela de gerenciamento",
+          "ru": "- Выбор проектов и зарегистрированных рабочих деревьев в меню поля ввода\n- Повторное использование данных рабочих деревьев в меню и окне управления"
+        }
       }
     },
     {
