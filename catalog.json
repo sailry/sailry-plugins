@@ -10811,7 +10811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.30",
+        "version": "0.1.31",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12416,6 +12416,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.31",
+          "commit": "04aebd9033d4b347aebb6eb2c026f2abb6a20f93",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel\n- Ask for confirmation before switching the branch of a shared worktree"
+          }
+        },
         {
           "version": "0.1.30",
           "commit": "03a7c7d6393a11922d511e27a5a7735c22e1180d",
@@ -22066,7 +22074,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22375,6 +22383,14 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.15",
+          "commit": "04aebd9033d4b347aebb6eb2c026f2abb6a20f93",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
+          }
+        },
         {
           "version": "0.1.14",
           "commit": "0b155b0792f8103b3b6d1208e7fd23d9fc7736aa",
