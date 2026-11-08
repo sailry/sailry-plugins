@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Add a setting to show the agent cursor without moving the physical pointer
+
 ## 0.1.5
 
 - Operate desktop apps through the packaged agent-desktop, including on Linux with AT-SPI

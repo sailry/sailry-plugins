@@ -49,6 +49,17 @@ test('selects headless tools that keep ordinary command boundaries', async () =>
   }
 });
 
+test('offers the cursor overlay in the shared settings form', async () => {
+  const extension = (await document('plugin.json')).extensions['dev.sailry.platform'];
+  assert.equal(extension.settings_schema,'dev.sailry.platform/settings.json');
+  const settings = await document(extension.settings_schema);
+  assert.deepEqual(settings.properties,{
+    cursor_overlay:{type:'boolean',title:'Show agent cursor',default:true}
+  });
+  assert.equal(Object.keys(settings['x-sailry-locales']).length,10);
+  assert.equal(settings['x-sailry-locales']['zh-CN'].cursor_overlay,'显示操作光标');
+});
+
 test('keeps snapshots and actions inspectable', async () => {
   const extension = (await document('plugin.json')).extensions['dev.sailry.platform'];
   const detailed = {
