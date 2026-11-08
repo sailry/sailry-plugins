@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Render branch choices with native Kit menus and a single hover surface
+
 ## 0.1.28
 
 - Select local and remote branches in the composer popup with current-branch checks

@@ -40,6 +40,13 @@ export default class Context extends Git {
       } } catch (_) { /* Disabling the package releases contribution events. */ }
     });
   }
+  menu(event,cx) {
+    if (event.menu !== 'git-branch-choices') { super.menu(event,cx); return; }
+    if (event.kind === 'dismiss') {
+      this.menuOpen = false; this.publish(); cx.notify();
+    } else if (event.id === 'back' && !event.value) this.back();
+    else this.run(() => this.selectBranch(event.value),cx);
+  }
   async openBranches(open) {
     this.menuOpen = open; this.branchPath = []; this.publish(); this.notify();
     if (!open || !this.sameScope()) return;
@@ -95,7 +102,7 @@ export default class Context extends Git {
       : this.repo?.status ? (this.repo.status.kind === 'directory' ? 'plain_directory' : 'repository') : 'unknown';
     const repository = kind === 'repository';
     publishContributions([
-      {id:'branch',...(targeted && repository ? {label:{label:state.branch || this.text.git_detached}} : {}),icon:'network',loading:false,enabled:scoped && repository && state.can_move,visible:targeted && repository,dropdown:true,value:this.menuOpen,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
+      {id:'branch',...(targeted && repository ? {label:{label:state.branch || this.text.git_detached}} : {}),icon:'network',loading:false,enabled:scoped && repository && state.can_move,visible:targeted && repository,value:this.menuOpen,...(event?.id === 'branch' ? {reply_to:event.sequence} : {})},
       {id:'manage',enabled:scoped && repository && state.can_move,visible:targeted && repository,...(event?.id === 'manage' ? {reply_to:event.sequence} : {})}
     ]);
   }

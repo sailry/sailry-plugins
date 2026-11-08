@@ -29,7 +29,7 @@ const {render} = vm.runInNewContext(`${source}\n({render})`, {
   },
   Icon:class {constructor(){return element;}},
   Separator:class {constructor(){return element;}},
-  List:class {constructor(_id,rows,render){for(const row of rows())render(row);return element;}},
+  list:(_id,count,_key,render) => {for(let index=0;index<count;index++)render(index);return element;},
   Field:class {constructor(){return element;}},
   Form:class {constructor(){return element;}},
   Checkbox,

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Render project choices with native Kit menus and a single hover surface
+
 ## 0.1.12
 
 - Keep project switching and Back inside the composer popup with readable worktree names

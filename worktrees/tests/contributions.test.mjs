@@ -9,7 +9,7 @@ import {navigationLabel} from '../dev.sailry.platform/desktop/policy.js';
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8')
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class Worktrees','class Worktrees');
 function fixture(location,locale='en') {
-  const published=[],tasks=[],events=[],changes=[],subscriptions=[];
+  const published=[],tasks=[],events=[],menuEvents=[],changes=[],subscriptions=[];
   const names=['selectLocation','readWorktreeCatalog','listWorktrees','inspectGit','resolveGitRevision',
     'prepareWorktreeChange','prepareGitChange','completeRequest','forgetRequest','newId','worktreeHasDrafts',
     'releaseWorktree','toast','nextLocationChange','nextContributionEvent','nextPickerEvent','modal_closed',
@@ -19,6 +19,7 @@ function fixture(location,locale='en') {
     ...bindings,View:class {},Controller,messages,navigationLabel,render:()=>{},context:()=>JSON.stringify({locale}),
     readLocation:()=>location,publishContributions:states=>published.push(states),
     nextContributionEvent:async()=>{if(events.length)return events.shift();throw Error('Closed');},
+    nextMenuEvent:async()=>{if(menuEvents.length)return menuEvents.shift();throw Error('Closed');},
     nextChange:async(cursor,scope)=>{
       subscriptions.push({cursor,scope});
       if(changes.length)return changes.shift();
@@ -29,7 +30,7 @@ function fixture(location,locale='en') {
   const context={spawn:task=>tasks.push(task),notify:()=>{}};
   view.init({},context);
   tasks[0](context);
-  return {view,published,tasks,events,changes,subscriptions,context};
+  return {view,published,tasks,events,menuEvents,changes,subscriptions,context};
 }
 const base={project:'project',project_name:'Project',worktree:'main',branch:'main',main:true,
   can_move:true,can_retarget:true,connected:true,git:true,session:null,projects:[]};
@@ -38,7 +39,7 @@ test('menu declaration keeps management as the semantic action',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
   const entries=manifest.extensions['dev.sailry.platform'].ui;
   const location=entries.find(entry=>entry.id==='location');
-  assert.equal(location.kind,'popover');
+  assert.equal(location.kind,'menu');
   assert.equal(location.handler,'location');
   assert.equal(location.intent,undefined);
   assert.equal(entries.find(entry=>entry.id==='manage').intent,'worktrees');
@@ -100,6 +101,21 @@ test('inventory subscriptions refresh without moving the location',async()=>{
     {cursor:undefined,scope:'package'},{cursor:'first',scope:'package'},{cursor:'second',scope:'package'},
   ]);
   assert.equal(view.model.location,location);
+});
+
+test('menu choices retain captured locations and dismissal',async()=>{
+  const {view,published,tasks,menuEvents,context}=fixture(base);
+  const selected=[],bound={cursor:'captured',node:'node',project:'project',worktree:'main',session:null};
+  view.model.select=async(id,location)=>selected.push({id,location});
+  view.model.menuOpen=true;
+  menuEvents.push({menu:'location-choices',id:'projects',value:bound},
+    {menu:'location-choices',id:'',kind:'dismiss'});
+  const firstAction=tasks.length;
+  await tasks[4](context);
+  await Promise.all(tasks.slice(firstAction).map(task=>task(context)));
+  assert.deepEqual(selected,[{id:'projects',location:bound}]);
+  assert.equal(view.model.menuOpen,false);
+  assert.equal(published.at(-1)[0].value,false);
 });
 
 test('large inventories stay inside the package list',()=>{

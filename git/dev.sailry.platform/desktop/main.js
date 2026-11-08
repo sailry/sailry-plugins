@@ -35,7 +35,7 @@ export default class Git extends View {
     this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },key => this.report(key),ms => cx.sleep(ms));
     this.actions = new Actions(this); this.menus = new Menus(this);
     this.expanded = new Map(); this.nodes = new Map(); this.current = null;
-    this.watch(nextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
+    this.watch(nextMenuEvent,(event,cx) => this.menu(event,cx),cx);
     this.watch(nextContextMenuEvent,(event,cx) => this.run(() => this.actions.invoke(event.value),cx),cx);
     this.watch(nextControlEvent,(event,cx) => this.control(event.id,cx,event.value),cx);
     this.watch(nextTreeEvent,(event,cx) => this.tree(event,cx),cx);
@@ -78,6 +78,9 @@ export default class Git extends View {
         target = await nextResourceTarget(target.cursor); cx.notify();
       } } catch (_) { /* Resource routing retains the captured checkout. */ }
     });
+  }
+  menu(event,cx) {
+    this.run(() => this.actions.invoke(event.value),cx);
   }
   refreshWorktrees(cx) {
     if (this.worktreesPending || this.repo.closed) return;

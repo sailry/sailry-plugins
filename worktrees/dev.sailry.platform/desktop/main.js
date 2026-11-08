@@ -3,7 +3,7 @@ import {context} from 'sailry';
 import {readWorktreeCatalog,listWorktrees,inspectGit,resolveGitRevision,prepareWorktreeChange,nextChange,
   prepareGitChange,completeRequest,forgetRequest,newId,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import {readLocation,nextLocationChange,selectLocation,worktreeHasDrafts,releaseWorktree,
-  modal_closed,toast,dismissToast,nextToastEvent} from 'sailry/ui';
+  modal_closed,toast,dismissToast,nextToastEvent,nextMenuEvent} from 'sailry/ui';
 import {createText,readText,releaseText,focusText,nextTextEvent} from 'sailry/forms';
 import {Controller} from './controller.js';
 import {messages} from './locales.js';
@@ -52,6 +52,15 @@ export default class Worktrees extends View {
       } } catch (_) { /* Unmounting closes the contribution channel. */ }
     });
     cx.spawn(async cx => {
+      try { while (true) {
+        const event = await nextMenuEvent();
+        if (event.menu !== 'location-choices') continue;
+        if (event.kind === 'dismiss') {
+          this.model.menuOpen = false; this.publish(); cx.notify();
+        } else this.run(() => this.model.select(event.id,event.value),cx);
+      } } catch (_) {}
+    });
+    cx.spawn(async cx => {
       try { while (true) { if (await modal_closed() === this.model.dialog?.token) this.close(cx); } }
       catch (_) { /* Closing the owner releases its modal. */ }
     });
@@ -75,7 +84,7 @@ export default class Worktrees extends View {
     const choices = this.model.choices();
     publishContributions([
       {id:'location',enabled:state.can_move && choices.length > 0 && !(state.session && !state.project),label:navigationLabel(label),
-        icon:'folder',dropdown:true,value:this.model.menuOpen,...reply('location')},
+        icon:'folder',value:this.model.menuOpen,...reply('location')},
       {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},

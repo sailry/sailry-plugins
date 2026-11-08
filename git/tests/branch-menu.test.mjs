@@ -34,9 +34,9 @@ function fixture() {
   return {view,repo,published,invoked};
 }
 
-test('branch contribution uses a popup in every repository worktree',()=>{
+test('branch contribution uses a menu in every repository worktree',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
-  assert.equal(manifest.extensions['dev.sailry.platform'].ui.find(entry=>entry.id==='branch').kind,'popover');
+  assert.equal(manifest.extensions['dev.sailry.platform'].ui.find(entry=>entry.id==='branch').kind,'menu');
   const {view,published}=fixture();
   view.location={...view.location,main:false};
   view.publish();
@@ -112,4 +112,28 @@ test('uncaptured or busy checkouts cannot run branch actions',async()=>{
     await view.selectBranch(choice);
     assert.deepEqual(invoked,[]);
   }
+});
+
+test('menu events retain captured choices and dismiss state',async()=>{
+  const {view,invoked,published}=fixture();
+  const choice=view.branchChoices().find(choice=>choice.label==='feature');
+  let pending;
+  view.run=action=>{pending=action();};
+  view.menuOpen=true;
+  view.menu({menu:'git-branch-choices',id:'choice:1',value:choice},{notify(){}});
+  await pending;
+  assert.deepEqual(invoked,[choice.value]);
+  view.menuOpen=true;
+  view.menu({menu:'git-branch-choices',id:'',kind:'dismiss'},{notify(){}});
+  assert.equal(view.menuOpen,false);
+  assert.equal(published.at(-1)[0].value,false);
+});
+
+test('menu back preserves the open branch chooser',()=>{
+  const {view}=fixture();
+  view.menuOpen=true;
+  view.branchPath.push({items:[]});
+  view.menu({menu:'git-branch-choices',id:'back',value:null},{notify(){}});
+  assert.equal(view.menuOpen,true);
+  assert.equal(view.branchPath.length,0);
 });
