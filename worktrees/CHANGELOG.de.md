@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Standortmenüs bei Änderungen an Projekten oder Worktrees aktualisieren
+- Große Menüs an Hostgrenzen anpassen und die vollständige Auswahl erreichbar halten
+
 ## 0.1.10
 
 - Projekte und registrierte Worktrees im Dropdown des Eingabefelds auswählen

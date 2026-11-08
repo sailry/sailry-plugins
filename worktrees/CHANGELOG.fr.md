@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Actualiser les menus d’emplacement lors des changements de projets ou d’arbres de travail
+- Respecter la capacité des menus de l’hôte tout en conservant les sélecteurs complets
+
 ## 0.1.10
 
 - Sélectionner les projets et arbres de travail enregistrés depuis le menu de saisie

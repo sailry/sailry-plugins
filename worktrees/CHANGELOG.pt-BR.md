@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Atualizar menus de localização quando projetos ou árvores de trabalho mudarem
+- Ajustar menus grandes aos limites do aplicativo mantendo os seletores completos
+
 ## 0.1.10
 
 - Selecionar projetos e árvores de trabalho registradas no menu do editor

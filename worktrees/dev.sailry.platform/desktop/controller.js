@@ -19,6 +19,13 @@ export class Controller {
     if (this.dialog && ['list','actions'].includes(this.dialog.kind) && !this.valid(this.dialog)) this.close();
     this.notify();
   }
+  invalidate(owner) {
+    if (this.disposed || owner && (owner.bound.node !== this.location.node || owner.bound.project !== this.location.project))
+      return Promise.resolve(null);
+    this.catalog = null; this.entries = null; this.catalogRead = null;
+    this.notify();
+    return this.refresh();
+  }
   refresh(force = false) {
     if (!this.location.project || this.disposed) return Promise.resolve(null);
     if (this.catalogRead && (!force || this.catalogRead.pending)) return this.catalogRead.done;
@@ -49,7 +56,9 @@ export class Controller {
   choices() { return menu(this.location,this.catalog,this.entries,this.text); }
   async select(id) {
     const owner = this.owner('location');
-    if (!this.valid(owner) || !this.choices().some(choice => choice.id === id && choice.enabled)) {
+    const enabled = id === 'projects' ? this.location.can_retarget
+      : this.choices().some(choice => choice.id === id && choice.enabled);
+    if (!this.valid(owner) || !enabled) {
       this.fail(owner,'worktree_context_changed'); return;
     }
     try {
@@ -155,6 +164,7 @@ export class Controller {
         }
         id = result.Ok.data.id;
         owner.uncertain = false;
+        this.invalidate(owner);
       }
       if (this.dialog !== owner) return;
       if (!this.valid(owner)) { this.fail(owner,'worktree_context_changed'); return; }
@@ -227,6 +237,7 @@ export class Controller {
     try {
       const result = await this.api.completeRequest(owner.request);
       if (result.Err) { owner.uncertain = result.Err.code === 'outcome_unknown'; this.fail(owner,errorKey(result.Err.code,owner.kind === 'remove')); return; }
+      this.invalidate(owner);
       if (owner.kind === 'remove') await this.api.releaseWorktree(owner.worktree,owner.request);
       owner.uncertain = false;
       if (this.dialog !== owner) {this.api.forgetRequest(owner.request);owner.request = null;return;}
@@ -254,6 +265,7 @@ export class Controller {
       }
       const result = await this.api.completeRequest(owner.request);
       if (result.Err) { owner.uncertain = result.Err.code === 'outcome_unknown'; this.fail(owner,'worktree_prune_failed'); return; }
+      this.invalidate(owner);
       this.api.forgetRequest(owner.request); owner.request = null;
       this.api.toast({id:`${owner.token}-complete`,message:this.text('worktree_pruned'),kind:'info'});
       if (this.dialog === owner) await this.open();

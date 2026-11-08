@@ -5,26 +5,32 @@ import {readFileSync} from 'node:fs';
 import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {navigationLabel} from '../dev.sailry.platform/desktop/policy.js';
+import {fit} from '../dev.sailry.platform/desktop/publication.js';
 
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8')
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class Worktrees','class Worktrees');
 function fixture(location,locale='en') {
-  const published=[],tasks=[],events=[];
+  const published=[],tasks=[],events=[],changes=[],subscriptions=[];
   const names=['selectLocation','readWorktreeCatalog','listWorktrees','inspectGit','resolveGitRevision',
     'prepareWorktreeChange','prepareGitChange','completeRequest','forgetRequest','newId','worktreeHasDrafts',
     'releaseWorktree','toast','nextLocationChange','nextContributionEvent','nextPickerEvent','modal_closed',
     'nextTextEvent','nextToastEvent','createText','readText','releaseText','focusText','dismissToast'];
   const bindings=Object.fromEntries(names.map(name=>[name,()=>{}]));
   const Worktrees=vm.runInNewContext(`${source}\nWorktrees`,{
-    ...bindings,View:class {},Controller,messages,navigationLabel,render:()=>{},context:()=>JSON.stringify({locale}),
+    ...bindings,View:class {},Controller,messages,navigationLabel,fit,render:()=>{},context:()=>JSON.stringify({locale}),
     readLocation:()=>location,publishContributions:states=>published.push(states),
     nextContributionEvent:async()=>{if(events.length)return events.shift();throw Error('Closed');},
+    nextChange:async(cursor,scope)=>{
+      subscriptions.push({cursor,scope});
+      if(changes.length)return changes.shift();
+      throw Error('Closed');
+    },
   });
   const view=new Worktrees();
   const context={spawn:task=>tasks.push(task),notify:()=>{}};
   view.init({},context);
   tasks[0](context);
-  return {view,published,tasks,events,context};
+  return {view,published,tasks,events,changes,subscriptions,context};
 }
 const base={project:'project',project_name:'Project',worktree:'main',branch:'main',main:true,
   can_move:true,can_retarget:true,git:true,session:null,projects:[]};
@@ -76,6 +82,30 @@ test('changes dispatch choice IDs and acknowledge contributions',async()=>{
   assert.deepEqual(opened,['manage']);
   assert.equal(published[1][0].reply_to,7);
   assert.equal(published[2][1].reply_to,8);
+});
+
+test('inventory subscriptions refresh without moving the location',async()=>{
+  const location={...base,cursor:'location'};
+  const {view,tasks,changes,subscriptions,context}=fixture(location);
+  let reads=0;
+  view.model.invalidate=async()=>{reads++;};
+  changes.push({cursor:'first'},{cursor:'second'});
+  await tasks[1](context);
+  await Promise.all(tasks.slice(8).map(task=>task(context)));
+  assert.equal(reads,2);
+  assert.deepEqual(subscriptions,[
+    {cursor:undefined,scope:'package'},{cursor:'first',scope:'package'},{cursor:'second',scope:'package'},
+  ]);
+  assert.equal(view.model.location,location);
+});
+
+test('large project inventories keep the complete picker',()=>{
+  const projects=Array.from({length:255},(_,index)=>({id:`project-${index}`,name:`Project ${index}`}));
+  const {view,published}=fixture({...base,project:null,projects});
+  assert.equal(published[0][0].choices.length,256);
+  assert.ok(published[0][0].choices.some(choice=>choice.id==='projects'));
+  view.publish({id:'location',sequence:7});
+  assert.equal(published.at(-1)[0].reply_to,7);
 });
 
 test('valid UTF-8 labels and captured replies remain intact',()=>{

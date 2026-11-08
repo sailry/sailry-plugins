@@ -11,12 +11,15 @@ export function registered(catalog, location, text) {
 export function navigationLabel(value) {
   if (typeof value !== 'string' || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
     || !value.replace(/[\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/gu,'')) return undefined;
+  return byteLength(value)<=128 ? {label:value} : undefined;
+}
+export function byteLength(value) {
   let bytes=0;
   for (const character of value) {
     const code=character.codePointAt(0);
     bytes += code<=0x7f ? 1 : code<=0x7ff ? 2 : code<=0xffff ? 3 : 4;
   }
-  return bytes<=128 ? {label:value} : undefined;
+  return bytes;
 }
 export function menu(location,catalog,entries,text) {
   const choice = (id,name,icon,group,enabled=true) => ({

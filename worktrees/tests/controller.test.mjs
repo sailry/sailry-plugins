@@ -220,10 +220,12 @@ test('menu project choices use captured selectors',async()=>{
   await model.select('unassigned');
   await model.select('project:project-a');
   await model.select('add_project');
+  await model.select('projects');
   assert.deepEqual(state.selected,[
     {cursor:'1',value:{project:null}},
     {cursor:'1',value:{project:'project-a'}},
     {cursor:'1',value:{add_project:true}},
+    {cursor:'1',value:{projects:true}},
   ]);
 });
 
@@ -293,6 +295,81 @@ test('late catalogs cannot replace a changed location',async()=>{
   await reading;
   assert.equal(model.catalog,null);
   assert.deepEqual(model.choices().map(choice=>choice.id),['unassigned','add_project']);
+});
+
+test('inventory refresh preserves form ownership and handoff',async()=>{
+  const {model,api,state}=fixture('composer');
+  await model.refresh();
+  await model.createManaged(false);
+  const owner=model.dialog,cursor=model.location.cursor;
+  const catalog=api.readWorktreeCatalog;
+  api.readWorktreeCatalog=async()=>({...await catalog(),worktrees:[
+    {id:'tree-a',path:'/main',main:true},{id:'added',path:'/added',main:false},
+  ]});
+  await model.invalidate();
+  assert.equal(model.dialog,owner);
+  assert.equal(model.location.cursor,cursor);
+  assert.ok(model.choices().some(choice=>choice.id==='worktree:added'));
+  await model.submit({branch:'task/new'});
+  assert.deepEqual(state.selected,[{cursor,value:{worktree:'tree-new',fork:false,request:'request-0'}}]);
+});
+
+test('inventory changes discard reads captured before invalidation',async()=>{
+  const {model,api}=fixture();
+  const first=deferred(),second=deferred();
+  const pending=[first,second];
+  api.readWorktreeCatalog=()=>pending.shift().promise;
+  const initial=model.refresh(),refresh=model.invalidate();
+  second.resolve({projects:[],worktrees:[{id:'new',path:'/new',main:true}]});
+  await refresh;
+  first.resolve({projects:[],worktrees:[{id:'old',path:'/old',main:true}]});
+  await initial;
+  assert.deepEqual(model.catalog.worktrees.map(tree=>tree.id),['new']);
+  assert.equal(model.location.cursor,'1');
+});
+
+test('registration refreshes catalog before a removal form',async()=>{
+  const {model,api,state}=fixture();
+  const trees=[{id:'tree-a',path:'/main',main:true}];
+  api.readWorktreeCatalog=async()=>({projects:[],worktrees:[...trees]});
+  state.result=()=>{
+    trees.push({id:'registered',path:'/native',main:false});
+    return {Ok:{data:{id:'registered'}}};
+  };
+  await model.open();
+  await model.choose('entry-1');await model.choose('action-1');
+  await model.refresh();
+  assert.equal(model.dialog.kind,'remove');
+  assert.equal(model.dialog.bound.cursor,'1');
+  assert.ok(model.choices().some(choice=>choice.id==='worktree:registered'));
+  assert.deepEqual(state.selected,[]);
+});
+
+test('removal refreshes an unchanged location menu',async()=>{
+  const {model,api,state}=fixture();
+  let trees=[{id:'tree-a',path:'/main',main:true},{id:'registered',path:'/native',main:false}];
+  api.readWorktreeCatalog=async()=>({projects:[],worktrees:[...trees]});
+  state.result=()=>{
+    trees=trees.filter(tree=>tree.id!=='registered');
+    return {Ok:{kind:'worktree_removed',data:{id:'registered'}}};
+  };
+  await model.open();
+  await model.choose('entry-1');await model.choose('action-1');
+  await model.submit();await model.refresh();
+  assert.equal(model.location.cursor,'1');
+  assert.equal(model.choices().some(choice=>choice.id==='worktree:registered'),false);
+  assert.deepEqual(state.selected,[]);
+});
+
+test('completed mutations cannot invalidate another project',async()=>{
+  const {model,api,change}=fixture();
+  const owner=model.owner('create');
+  change({cursor:'2',project:'project-b',worktree:'tree-b'});
+  await model.refresh();
+  const accepted=model.catalog;
+  api.readWorktreeCatalog=async()=>{throw Error('Unexpected read');};
+  await model.invalidate(owner);
+  assert.equal(model.catalog,accepted);
 });
 
 test('failed discovery reports once and allows manual refresh',async()=>{

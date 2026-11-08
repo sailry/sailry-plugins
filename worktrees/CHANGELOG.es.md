@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Actualizar los menús de ubicación al cambiar proyectos o árboles de trabajo
+- Ajustar los menús grandes a los límites del anfitrión conservando la selección completa
+
 ## 0.1.10
 
 - Seleccionar proyectos y árboles de trabajo registrados desde el menú del editor

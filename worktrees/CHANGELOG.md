@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.11
+
+- Refresh location menus when project or worktree inventories change
+- Keep large menus within host limits while retaining full project and worktree selectors
+
 ## 0.1.10
 
 - Select projects and registered worktrees from the composer dropdown

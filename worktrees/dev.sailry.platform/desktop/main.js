@@ -1,6 +1,6 @@
 import {View} from 'gpui-kit';
 import {context} from 'sailry';
-import {readWorktreeCatalog,listWorktrees,inspectGit,resolveGitRevision,prepareWorktreeChange,
+import {readWorktreeCatalog,listWorktrees,inspectGit,resolveGitRevision,prepareWorktreeChange,nextChange,
   prepareGitChange,completeRequest,forgetRequest,newId,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import {readLocation,nextLocationChange,selectLocation,worktreeHasDrafts,releaseWorktree,
   nextPickerEvent,modal_closed,toast,dismissToast,nextToastEvent} from 'sailry/ui';
@@ -9,6 +9,7 @@ import {Controller} from './controller.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
 import {navigationLabel} from './policy.js';
+import {fit} from './publication.js';
 
 export default class Worktrees extends View {
   init(_props,cx) {
@@ -22,7 +23,14 @@ export default class Worktrees extends View {
         this.syncFields(); this.publish(); this.notify();
       });
     this.publish();
-    this.run(() => this.model.refresh(),cx);
+    cx.spawn(async cx => {
+      let cursor;
+      try { while (true) {
+        const change = await nextChange(cursor,'package');
+        cursor = change.cursor;
+        this.run(() => this.model.invalidate(),cx);
+      } } catch (_) {}
+    });
     cx.spawn(async cx => {
       try { while (true) {
         this.model.accept(await nextLocationChange(this.model.location.cursor));
@@ -68,14 +76,14 @@ export default class Worktrees extends View {
     const state = this.model.location;
     const reply = id => event?.id === id ? {reply_to:event.sequence} : {};
     const label = !state.project ? this.text('composer_no_project') : state.main ? state.project_name : state.branch;
-    publishContributions([
+    publishContributions(fit([
       {id:'location',enabled:state.can_move && !(state.session && !state.project),label:navigationLabel(label),
         icon:state.main ? 'folder' : 'network',choices:this.model.choices(),
         value:state.project ? `worktree:${state.worktree}` : 'unassigned',...reply('location')},
       {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},
-    ]);
+    ],this.text));
   }
   syncFields() {
     const owner = this.model.dialog;

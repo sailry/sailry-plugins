@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "worktrees",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -230,6 +230,7 @@
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/controller.js",
           "dev.sailry.platform/desktop/policy.js",
+          "dev.sailry.platform/desktop/publication.js",
           "dev.sailry.platform/desktop/view.js",
           "dev.sailry.platform/desktop/locales.js"
         ]
