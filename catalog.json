@@ -3819,7 +3819,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "computer",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -3845,6 +3845,7 @@
             "scope": "host",
             "category": "automation",
             "tint": "blue",
+            "settings_schema": "dev.sailry.platform/settings.json",
             "tools": [
               {
                 "name": "desktop_list_apps",
@@ -4570,6 +4571,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.6",
+          "commit": "39c583e44a75ea4bf06ce1bb5482a1cd68ce8b42",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Add a setting to show the agent cursor without moving the physical pointer"
+          }
+        },
+        {
           "version": "0.1.5",
           "commit": "f311c6d6c24337150be3ad5189a40d34205419ae",
           "min_sailry_version": "0.1.5",
@@ -4633,7 +4642,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Operate desktop apps through the packaged agent-desktop, including on Linux with AT-SPI\n- Act on snapshot refs headlessly with a curated set of desktop tools, and request missing macOS permissions with system prompts"
+        "text": "- Add a setting to show the agent cursor without moving the physical pointer"
       }
     },
     {
