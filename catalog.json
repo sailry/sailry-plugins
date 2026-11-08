@@ -12418,7 +12418,7 @@
       "versions": [
         {
           "version": "0.1.30",
-          "commit": "a2c91deb54d96dcb9dea02d80381af1c106a9493",
+          "commit": "643f953ab2a14d0ee9427a028b6605e24835c4e1",
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check"
@@ -22377,7 +22377,7 @@
       "versions": [
         {
           "version": "0.1.14",
-          "commit": "a2c91deb54d96dcb9dea02d80381af1c106a9493",
+          "commit": "643f953ab2a14d0ee9427a028b6605e24835c4e1",
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes"
