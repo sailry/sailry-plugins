@@ -10811,7 +10811,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.29",
+        "version": "0.1.30",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -12418,6 +12418,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.30",
+          "commit": "5b763984135cad0384ee0c34785582078652cdcc",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Show branch choices without repeated row icons; the current branch keeps its check"
+          }
+        },
+        {
           "version": "0.1.29",
           "commit": "c5bdd0289dd7cf64c7e403bb48312ff6204d91cf",
           "min_sailry_version": "0.1.5",
@@ -12659,7 +12667,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Render branch choices with native Kit menus and a single hover surface"
+        "text": "- Show branch choices without repeated row icons; the current branch keeps its check"
       }
     },
     {
@@ -22059,7 +22067,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22369,6 +22377,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.14",
+          "commit": "5b763984135cad0384ee0c34785582078652cdcc",
+          "min_sailry_version": "0.1.5",
+          "release_notes": {
+            "text": "- Move Switch project… to the end of the project menu"
+          }
+        },
+        {
           "version": "0.1.13",
           "commit": "c5bdd0289dd7cf64c7e403bb48312ff6204d91cf",
           "min_sailry_version": "0.1.5",
@@ -22515,7 +22531,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Render project choices with native Kit menus and a single hover surface"
+        "text": "- Move Switch project… to the end of the project menu"
       }
     },
     {
