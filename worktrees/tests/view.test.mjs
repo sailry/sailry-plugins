@@ -6,9 +6,9 @@ import vm from 'node:vm';
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
 const element = new Proxy({}, {get:() => () => element});
-let picker;
 let checkbox;
 let modal;
+const buttons=[];
 // The pinned component-shell contract exposes semantic size and boolean changes.
 class Checkbox {
   constructor(id) {this.id=id;checkbox=this;}
@@ -20,13 +20,21 @@ class Checkbox {
 }
 const {render} = vm.runInNewContext(`${source}\n({render})`, {
   div:() => element,
-  Button:class {constructor(){return element;}},
+  Button:class {
+    constructor(id) {
+      const props={id};buttons.push(props);
+      const control=new Proxy(props,{get:(_target,key)=>value=>{props[key]=value;return control;}});
+      return control;
+    }
+  },
+  Icon:class {constructor(){return element;}},
+  Separator:class {constructor(){return element;}},
+  List:class {constructor(_id,rows,render){for(const row of rows())render(row);return element;}},
   Field:class {constructor(){return element;}},
   Form:class {constructor(){return element;}},
   Checkbox,
   TextField:{new:() => element},
   window:{viewport_size:() => ({width:800,height:600})},
-  Picker:{new:(_,props) => {picker=props;return element;}},
   Modal:{new:(_,props) => {
     modal={props,items:[]};
     return new Proxy(modal,{get:(target,key) => key==='child' ? child=>{target.items.push(child);return element;}
@@ -34,14 +42,18 @@ const {render} = vm.runInNewContext(`${source}\n({render})`, {
   }},
 });
 
-test('picker descriptors always encode disabled as a boolean', () => {
+test('management rows retain disabled and pending state', () => {
   const owner = {kind:'list',token:'picker',pending:false,loading:false,
     choices:[{id:'available',label:'Available'},{id:'locked',label:'Locked',disabled:true}]};
   render({model:{dialog:owner},text:key => key});
-  assert.deepEqual(Array.from(picker.items,item => item.disabled),[false,true]);
+  assert.equal(modal.props.open,true);
+  assert.equal(modal.props.title,'worktree_manage');
+  const rows=()=>buttons.filter(button=>['worktree-available','worktree-locked'].includes(button.id)).slice(-2);
+  assert.deepEqual(rows().map(button=>button.disabled),[false,true]);
   owner.pending=true;
   render({model:{dialog:owner},text:key => key});
-  assert.deepEqual(Array.from(picker.items,item => item.disabled),[true,true]);
+  assert.equal(modal.props.open,true);
+  assert.deepEqual(rows().map(button=>button.disabled),[true,true]);
 });
 
 test('managed checkbox uses semantic size and boolean changes', () => {

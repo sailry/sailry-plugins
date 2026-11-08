@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Remove duplicate workspace CLI entries and routine refresh from project context menus while preserving recovery actions
+
 ## 0.1.18
 
 - Reject empty command wait text so output waits do not return immediately.

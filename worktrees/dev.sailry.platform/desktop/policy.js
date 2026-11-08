@@ -4,7 +4,7 @@ export function label(entry, project) {
     || entry.path.split(/[\\/]/).filter(Boolean).at(-1) || entry.path;
 }
 export function registered(catalog, location, text) {
-  const entries = catalog.worktrees.map(tree => ({...tree,branch:tree.id === location.worktree ? location.branch : null,
+  const entries = catalog.worktrees.filter(tree => tree.id === location.worktree).map(tree => ({...tree,branch:location.branch,
     head:null,locked:false,available:true}));
   return listing(catalog,{kind:'repository',entries},{...location,surface:'project'},text);
 }
@@ -13,7 +13,7 @@ export function navigationLabel(value) {
     || !value.replace(/[\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/gu,'')) return undefined;
   return byteLength(value)<=128 ? {label:value} : undefined;
 }
-export function byteLength(value) {
+function byteLength(value) {
   let bytes=0;
   for (const character of value) {
     const code=character.codePointAt(0);
@@ -21,33 +21,39 @@ export function byteLength(value) {
   }
   return bytes;
 }
-export function menu(location,catalog,entries,text) {
+export function menu(location,catalog,entries,text,showProjects=false) {
   const choice = (id,name,icon,group,enabled=true) => ({
-    id,label:navigationLabel(name) ?? {label:text('workspace_worktrees')},icon,
+    id,label:{label:name || text('workspace_worktrees')},icon,
     group:{label:text(group)},enabled,
   });
-  if (!location.project) {
+  if (!location.project || showProjects) {
     if (!location.can_retarget) return [];
     return [
+      ...(location.project ? [choice('worktrees',text('location_back'),'chevron-left','workspace_worktrees')] : []),
       choice('unassigned',text('composer_no_project'),undefined,'location_project'),
       ...location.projects.map(project => choice(`project:${project.id}`,project.name,'folder','location_project')),
       choice('add_project',text('location_add_project'),'plus','workspace_session_actions'),
     ];
   }
-  const choices = [...(catalog?.worktrees ?? [])].sort((left,right) => Number(right.main)-Number(left.main)).map(tree => {
+  const mainLabel = branch => `${text('location_main')}${branch ? ` (${branch})` : ''}`;
+  const trees = catalog && entries ? catalog.worktrees.filter(tree =>
+    tree.id === location.worktree || tree.main || entries.some(entry => entry.path === tree.path)) : [];
+  const choices = [...trees].sort((left,right) => Number(right.main)-Number(left.main)).map(tree => {
     const entry = entries?.find(entry => entry.path === tree.path);
     const branch = tree.id === location.worktree ? location.branch : entry?.branch;
-    const name = tree.main
-      ? `${text('location_main')}${branch ? ` (${branch})` : ''}`
-      : label({...tree,branch,head:entry?.head},location.project_name);
+    const name = tree.main ? mainLabel(branch) : branch || entry?.head?.slice(0,8) || text('composer_branch_none');
     return choice(`worktree:${tree.id}`,name,tree.main ? 'folder' : 'network','workspace_worktrees',entry?.available !== false);
   });
+  if ((!catalog || !entries) && location.worktree) {
+    choices.push(choice(`worktree:${location.worktree}`,location.main ? mainLabel(location.branch)
+      : location.branch || text('composer_branch_none'),location.main ? 'folder' : 'network','workspace_worktrees'));
+  }
+  choices.unshift(choice('projects',text('location_project'),'chevron-left','location_project',!!location.can_retarget));
   if (location.git) {
     choices.push(choice('create',text('location_create'),'plus','workspace_session_actions'));
     if (location.session) choices.push(choice('fork',text('location_fork'),'plus','workspace_session_actions'));
   }
-  choices.push(choice('manage',text('worktree_manage'),'network','workspace_session_actions'));
-  choices.push(choice('projects',text('location_project'),'folder','location_project',!!location.can_retarget));
+  choices.push(choice('manage',text('location_manage'),'network','workspace_session_actions'));
   return choices;
 }
 export function listing(catalog, found, location, text) {
@@ -74,7 +80,6 @@ export function listing(catalog, found, location, text) {
       choices.push({id:'create',label:text('location_create'),icon:'plus',group:text('workspace_session_actions'),action:{kind:'managed',fork:false}});
       if (location.session) choices.push({id:'fork',label:text('location_fork'),icon:'plus',group:text('workspace_session_actions'),action:{kind:'managed',fork:true}});
     }
-    if (!location.session) choices.push({id:'projects',label:text('location_project'),group:text('workspace_session_actions'),action:{kind:'projects'}});
   } else if (entries.some(entry => entry.available && entry.head)) {
     const base = entries.find(entry => catalog.worktrees.some(tree => tree.id === location.worktree && tree.path === entry.path)) ?? entries.find(entry => entry.available && entry.head);
     choices.push({id:'create',label:text('worktree_create'),icon:'plus',group:text('worktree_actions'),action:{kind:'create',entry:base}});

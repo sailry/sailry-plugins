@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -1506,6 +1506,7 @@
         "resources": [
           "dev.sailry.platform/desktop/main.js",
           "dev.sailry.platform/desktop/context.js",
+          "dev.sailry.platform/desktop/branch-menu.js",
           "dev.sailry.platform/desktop/view.js",
           "dev.sailry.platform/desktop/surfaces.js",
           "dev.sailry.platform/desktop/menus.js",
@@ -1548,7 +1549,7 @@
         {
           "id": "branch",
           "slot": "context",
-          "kind": "button",
+          "kind": "popover",
           "label": {
             "label": "Branch",
             "locales": {

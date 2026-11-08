@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Keep project switching and Back inside the composer popup with readable worktree names
+- Manage worktrees in ordinary dialogs and keep offline background reads quiet
+
 ## 0.1.11
 
 - Refresh location menus when project or worktree inventories change

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Projektwechsel und Zurück-Navigation im Eingabefenster-Popup mit lesbaren Worktree-Namen anbieten
+- Worktrees in normalen Dialogen verwalten und Offline-Lesefehler im Hintergrund ohne Meldung behandeln
+
 ## 0.1.11
 
 - Standortmenüs bei Änderungen an Projekten oder Worktrees aktualisieren

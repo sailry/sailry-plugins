@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.28
+
+- Selecionar branches locais e remotos no painel suspenso com indicação do branch atual
+- Manter a navegação entre branches no painel e reutilizar os formulários de criação
+
 ## 0.1.27
 
 - Preservar o deslocamento de linhas nos cursores do histórico para evitar repetir comparações de caminhos nas próximas páginas

@@ -4,7 +4,7 @@ import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 import {listing} from '../dev.sailry.platform/desktop/policy.js';
 
 function fixture(surface = 'project') {
-  let location = {cursor:'1',surface,node:'node-a',project:'project-a',worktree:'tree-a',session:surface === 'composer' ? 'session-a' : null,can_move:true,can_retarget:false,projects:[],main:true,project_name:'Project',branch:'main',git:true};
+  let location = {cursor:'1',surface,node:'node-a',project:'project-a',worktree:'tree-a',session:surface === 'composer' ? 'session-a' : null,can_move:true,can_retarget:false,connected:true,projects:[],main:true,project_name:'Project',branch:'main',git:true};
   const state = {prepared:[],requests:new Set(),completed:[],forgotten:[],selected:[],released:[],toasts:[],resolution:'head-a',reads:0,result:null,drafts:false};
   const api = {
     readLocation:() => location,
@@ -220,12 +220,10 @@ test('menu project choices use captured selectors',async()=>{
   await model.select('unassigned');
   await model.select('project:project-a');
   await model.select('add_project');
-  await model.select('projects');
   assert.deepEqual(state.selected,[
     {cursor:'1',value:{project:null}},
     {cursor:'1',value:{project:'project-a'}},
     {cursor:'1',value:{add_project:true}},
-    {cursor:'1',value:{projects:true}},
   ]);
 });
 
@@ -235,9 +233,11 @@ test('menu actions reuse checkout and management flows',async()=>{
   await model.refresh();
   await model.select('worktree:tree-a');
   await model.select('projects');
+  assert.equal(model.showProjects,true);
+  await model.select('worktrees');
+  assert.equal(model.showProjects,false);
   assert.deepEqual(state.selected,[
     {cursor:'1',value:{worktree:'tree-a',fork:false}},
-    {cursor:'1',value:{projects:true}},
   ]);
   await model.select('create');
   assert.equal(model.dialog.kind,'managed');
@@ -265,6 +265,15 @@ test('stale and unavailable menu choices report context changes',async()=>{
   assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
 });
 
+test('rendered rows keep their captured location until selection',async()=>{
+  const {model,state,change}=fixture('composer');
+  const bound=model.location;
+  change({cursor:'2'});
+  await model.select('create',bound);
+  assert.equal(model.dialog,null);
+  assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
+});
+
 test('menus cache discovery and management refreshes explicitly',async()=>{
   const {model,api,change}=fixture('composer');
   const catalog=api.readWorktreeCatalog,native=api.listWorktrees;
@@ -281,8 +290,8 @@ test('menus cache discovery and management refreshes explicitly',async()=>{
   assert.equal(catalogs,2);assert.equal(discoveries,2);
   change({cursor:'2',branch:'topic'});
   await model.refresh();
-  assert.equal(catalogs,3);assert.equal(discoveries,3);
-  assert.equal(model.choices()[0].label.label,'location_main (topic)');
+  assert.equal(catalogs,2);assert.equal(discoveries,2);
+  assert.equal(model.choices().find(choice=>choice.id==='worktree:tree-a').label.label,'location_main (topic)');
 });
 
 test('late catalogs cannot replace a changed location',async()=>{
@@ -306,6 +315,11 @@ test('inventory refresh preserves form ownership and handoff',async()=>{
   api.readWorktreeCatalog=async()=>({...await catalog(),worktrees:[
     {id:'tree-a',path:'/main',main:true},{id:'added',path:'/added',main:false},
   ]});
+  const native=api.listWorktrees;
+  api.listWorktrees=async()=>{
+    const found=await native();
+    return {...found,entries:[...found.entries,{path:'/added',branch:'topic/added',head:'head-added',main:false,available:true}]};
+  };
   await model.invalidate();
   assert.equal(model.dialog,owner);
   assert.equal(model.location.cursor,cursor);
@@ -382,6 +396,76 @@ test('failed discovery reports once and allows manual refresh',async()=>{
   api.listWorktrees=native;
   await model.open();
   assert.ok(model.dialog.choices.some(choice=>choice.id==='entry-1'));
+});
+
+test('offline refreshes skip reads and background failures stay quiet',async()=>{
+  const {model,api,state,change}=fixture();
+  const catalog=api.readWorktreeCatalog;
+  let catalogs=0,discoveries=0;
+  api.readWorktreeCatalog=async()=>{catalogs++;throw Error('Disconnected');};
+  api.listWorktrees=async()=>{discoveries++;return {entries:[]};};
+  change({connected:false});
+  await model.refresh();
+  assert.equal(catalogs,0);assert.equal(discoveries,0);
+  change({connected:true});
+  await model.refresh();
+  assert.equal(catalogs,1);assert.equal(discoveries,1);
+  assert.deepEqual(state.toasts,[]);
+  assert.ok(model.choices().some(choice=>choice.id==='worktree:tree-a'));
+  api.readWorktreeCatalog=catalog;
+  await model.openMenu(true);
+  assert.equal(model.catalog.worktrees[0].id,'tree-a');
+  assert.equal(model.menuOpen,true);
+  assert.deepEqual(state.toasts,[]);
+});
+
+test('offline explicit management reports one load failure',async()=>{
+  const {model,state,change}=fixture();
+  change({connected:false});
+  await model.open();
+  assert.equal(state.toasts.length,1);
+  assert.equal(state.toasts[0].message,'worktree_load_failed');
+  assert.equal(model.dialog.loading,false);
+});
+
+test('only resource identity changes invalidate successful discoveries',async()=>{
+  for(const patch of [{cursor:'2'},{branch:'changed'},{session:'other'},{connected:false}]) {
+    const {model,change}=fixture();
+    await model.refresh();
+    const read=model.catalogRead;
+    change(patch);
+    assert.equal(model.catalogRead,read);
+    assert.ok(model.catalog);
+  }
+  for(const patch of [{node:'other'},{project:'other'},{worktree:'other'}]) {
+    const {model,change}=fixture();
+    await model.refresh();
+    change(patch);
+    assert.equal(model.catalogRead,null);
+    assert.equal(model.catalog,null);
+  }
+});
+
+test('pending discovery survives a metadata update',async()=>{
+  const {model,api,change}=fixture(),catalog=deferred();
+  api.readWorktreeCatalog=()=>catalog.promise;
+  const read=model.refresh();
+  change({cursor:'2',branch:'topic'});
+  catalog.resolve({projects:[],worktrees:[{id:'tree-a',path:'/main',main:true}]});
+  await read;
+  assert.equal(model.catalog.worktrees[0].id,'tree-a');
+  assert.equal(model.entries[0].branch,'main');
+});
+
+test('management back restores frozen worktree choices',async()=>{
+  const {model}=fixture();
+  await model.open();
+  const choices=model.dialog.choices;
+  await model.choose('entry-1');
+  assert.equal(model.dialog.kind,'actions');
+  model.back();
+  assert.equal(model.dialog.kind,'list');
+  assert.equal(model.dialog.choices,choices);
 });
 
 test('stale and locked native entries preserve action policy', () => {

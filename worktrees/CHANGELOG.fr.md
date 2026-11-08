@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Conserver le changement de projet et le retour dans la fenêtre contextuelle, avec des noms de worktrees lisibles
+- Gérer les worktrees dans des dialogues classiques et éviter les alertes des lectures en arrière-plan hors ligne
+
 ## 0.1.11
 
 - Actualiser les menus d’emplacement lors des changements de projets ou d’arbres de travail

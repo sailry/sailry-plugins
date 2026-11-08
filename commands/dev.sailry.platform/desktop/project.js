@@ -61,7 +61,9 @@ export default class Project extends View {
       ...['terminal-new', 'terminal-menu-new'].map(id => ({id,
         enabled:enabled && !this.pending, ...reply(id)})),
       ...['terminal-cli', 'terminal-menu-cli'].map(id => ({id,
-        enabled:enabled && !this.loading, choices, ...reply(id)})),
+        enabled:enabled && !this.loading,
+        choices:id === 'terminal-menu-cli' ? choices.filter(choice => !choice.id.includes(':') && choice.id !== 'refresh') : choices,
+        ...reply(id)})),
     ]);
   }
 

@@ -6,14 +6,16 @@ export class Controller {
     this.api = api; this.text = text; this.changed = changed;
     this.location = api.readLocation(); this.serial = 0; this.dialog = null; this.catalog = null;
     this.entries = null; this.catalogRead = null; this.operation = null; this.disposed = false;
+    this.showProjects = false; this.menuOpen = false;
   }
   notify() { if (!this.disposed) this.changed(); }
   owner(kind, extra = {}) {
     return {token:`worktrees-${++this.serial}`,kind,bound:this.location,pending:false,error:null,request:null,uncertain:false,...extra};
   }
   accept(location) {
-    if (location.cursor !== this.location.cursor) {
+    if (['node','project','worktree'].some(key => location[key] !== this.location[key])) {
       this.catalog = null; this.entries = null; this.catalogRead = null;
+      this.showProjects = false;
     }
     this.location = location;
     if (this.dialog && ['list','actions'].includes(this.dialog.kind) && !this.valid(this.dialog)) this.close();
@@ -27,7 +29,7 @@ export class Controller {
     return this.refresh();
   }
   refresh(force = false) {
-    if (!this.location.project || this.disposed) return Promise.resolve(null);
+    if (!this.location.project || !this.location.connected || this.disposed) return Promise.resolve(null);
     if (this.catalogRead && (!force || this.catalogRead.pending)) return this.catalogRead.done;
     const read = {pending:true};
     this.catalogRead = read;
@@ -46,34 +48,46 @@ export class Controller {
         return found.value;
       } catch (_) {
         if (this.catalogRead === read && !this.disposed) {
-          this.catalogRead = null; this.fail(this.owner('location'),'worktree_load_failed');
+          this.catalogRead = null;
         }
         return null;
       } finally { read.pending = false; }
     })();
     return read.done;
   }
-  choices() { return menu(this.location,this.catalog,this.entries,this.text); }
-  async select(id) {
-    const owner = this.owner('location');
-    const enabled = id === 'projects' ? this.location.can_retarget
-      : this.choices().some(choice => choice.id === id && choice.enabled);
+  choices() { return menu(this.location,this.catalog,this.entries,this.text,this.showProjects); }
+  selected() {
+    return !this.location.project ? 'unassigned' : this.showProjects
+      ? `project:${this.location.project}` : `worktree:${this.location.worktree}`;
+  }
+  async openMenu(open) {
+    this.menuOpen = open; this.showProjects = false;
+    this.accept(this.api.readLocation());
+    if (open) return this.refresh();
+  }
+  async select(id,bound = this.location) {
+    const owner = this.owner('location',{bound});
+    const enabled = this.choices().some(choice => choice.id === id && choice.enabled);
     if (!this.valid(owner) || !enabled) {
       this.fail(owner,'worktree_context_changed'); return;
     }
     try {
+      if (id === 'projects' || id === 'worktrees') {
+        this.showProjects = id === 'projects'; this.notify(); return;
+      }
+      if (!id.startsWith('project:')) { this.menuOpen = false; this.notify(); }
       if (id === 'manage') return await this.open();
       if (id === 'create' || id === 'fork') return await this.createManaged(id === 'fork');
       const selection = id === 'unassigned' ? {project:null}
         : id === 'add_project' ? {add_project:true}
-        : id === 'projects' ? {projects:true}
         : id.startsWith('project:') ? {project:id.slice('project:'.length)}
         : {worktree:id.slice('worktree:'.length),fork:false};
       await this.api.selectLocation(owner.bound.cursor,selection);
+      this.showProjects = false; this.accept(this.api.readLocation());
     } catch (_) { this.fail(owner,'worktree_context_changed'); }
   }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
-  show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }
+  show(owner) { if (this.dialog !== owner) this.close(); this.menuOpen = false; this.dialog = owner; this.notify(); return owner; }
   close() {
     const owner = this.dialog;
     this.dialog = null;
@@ -107,13 +121,18 @@ export class Controller {
   async load(owner,entry) {
     try {
       const discovery = this.refresh(true);
-      const catalog = await this.catalogRead.registered;
-      if (!catalog || this.dialog !== owner || !this.valid(owner) || this.disposed) return;
+      const catalog = this.location.connected ? await this.catalogRead?.registered : null;
+      if (this.dialog !== owner || !this.valid(owner) || this.disposed) return;
+      if (!catalog) { this.fail(owner,'worktree_load_failed'); return; }
       owner.choices = registered(catalog,owner.bound,this.text); this.notify();
       const found = await discovery;
-      if (!found || this.dialog !== owner || !this.valid(owner) || this.disposed || owner.kind !== 'list') return;
-      owner.choices = listing(catalog,found,owner.bound,this.text);
-      if (entry) return this.create(entry);
+      if (this.dialog !== owner || !this.valid(owner) || this.disposed) return;
+      if (!found) { this.fail(owner,'worktree_load_failed'); return; }
+      const choices = listing(catalog,found,owner.bound,this.text);
+      if (owner.kind === 'list') {
+        owner.choices = choices;
+        if (entry) return this.create(entry);
+      } else if (owner.kind === 'actions') owner.previous = choices;
     } catch (_) { if (this.dialog === owner && this.valid(owner) && !this.disposed) this.fail(owner,'worktree_load_failed'); }
     finally { owner.loading = false; this.notify(); }
   }
@@ -125,14 +144,18 @@ export class Controller {
     if (!this.valid(owner)) { this.fail(owner,'worktree_context_changed'); return; }
     const action = choice.action;
     if (action.kind === 'actions') {
+      owner.previous = owner.choices;
       owner.choices = action.actions.map((action,index) => ({id:`action-${index}`,label:this.text(action.kind === 'open' ? 'workspace_open_worktree' : 'worktree_remove'),detail:choice.label,action}));
       owner.kind = 'actions'; owner.loading = false; this.notify();
-    } else if (action.kind === 'projects') {
-      this.close(); await this.api.selectLocation(owner.bound.cursor,{projects:true});
     } else if (action.kind === 'managed') await this.createManaged(action.fork);
     else if (action.kind === 'create') this.create(action.entry);
     else if (action.kind === 'prune') await this.prune(owner,action.entry);
     else await this.register(owner,action);
+  }
+  back() {
+    const owner = this.dialog;
+    if (!owner || owner.pending || owner.kind !== 'actions') return;
+    owner.choices = owner.previous; owner.previous = null; owner.kind = 'list'; this.notify();
   }
   create(entry) {
     const owner = this.owner('create',{values:{revision:entry.branch || entry.head || '',branch:'',path:''},fields:{}});

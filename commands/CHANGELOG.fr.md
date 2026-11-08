@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Retirer les entrées CLI d’espace de travail en double et l’actualisation permanente du menu de projet, tout en conservant les actions de récupération
+
 ## 0.1.16
 
 - Les agents activent follow_up lorsqu’ils attendent une commande en arrière-plan

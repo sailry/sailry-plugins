@@ -1,5 +1,6 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
+  "git_back": "Back",
   "git": "Git",
   "git_check_result": "Check result",
   "git_detached": "Detached HEAD",
@@ -263,6 +264,7 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
+  "git_back": "返回",
   "git_check_result": "检查结果",
   "git_detached": "分离头指针",
   "workspace_open_file": "用系统应用打开",

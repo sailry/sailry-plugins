@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Doppelte Workspace-CLI-Einträge und die ständige Aktualisierungsaktion aus Projekt-Kontextmenüs entfernen; Wiederherstellungsaktionen bleiben erhalten
+
 ## 0.1.16
 
 - Agenten setzen follow_up, wenn sie auf einen Hintergrundbefehl warten

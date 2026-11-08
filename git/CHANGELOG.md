@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.28
+
+- Select local and remote branches in the composer popup with current-branch checks
+- Keep branch navigation inside the popup and use the existing creation forms
+
 ## 0.1.27
 
 - Preserve row offsets in history cursors to avoid repeating path comparisons on later pages

@@ -5,7 +5,6 @@ import {readFileSync} from 'node:fs';
 import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {navigationLabel} from '../dev.sailry.platform/desktop/policy.js';
-import {fit} from '../dev.sailry.platform/desktop/publication.js';
 
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8')
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class Worktrees','class Worktrees');
@@ -17,7 +16,7 @@ function fixture(location,locale='en') {
     'nextTextEvent','nextToastEvent','createText','readText','releaseText','focusText','dismissToast'];
   const bindings=Object.fromEntries(names.map(name=>[name,()=>{}]));
   const Worktrees=vm.runInNewContext(`${source}\nWorktrees`,{
-    ...bindings,View:class {},Controller,messages,navigationLabel,fit,render:()=>{},context:()=>JSON.stringify({locale}),
+    ...bindings,View:class {},Controller,messages,navigationLabel,render:()=>{},context:()=>JSON.stringify({locale}),
     readLocation:()=>location,publishContributions:states=>published.push(states),
     nextContributionEvent:async()=>{if(events.length)return events.shift();throw Error('Closed');},
     nextChange:async(cursor,scope)=>{
@@ -33,13 +32,13 @@ function fixture(location,locale='en') {
   return {view,published,tasks,events,changes,subscriptions,context};
 }
 const base={project:'project',project_name:'Project',worktree:'main',branch:'main',main:true,
-  can_move:true,can_retarget:true,git:true,session:null,projects:[]};
+  can_move:true,can_retarget:true,connected:true,git:true,session:null,projects:[]};
 
 test('menu declaration keeps management as the semantic action',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
   const entries=manifest.extensions['dev.sailry.platform'].ui;
   const location=entries.find(entry=>entry.id==='location');
-  assert.equal(location.kind,'menu');
+  assert.equal(location.kind,'popover');
   assert.equal(location.handler,'location');
   assert.equal(location.intent,undefined);
   assert.equal(entries.find(entry=>entry.id==='manage').intent,'worktrees');
@@ -61,26 +60,30 @@ test('initialization keeps declared labels for unrepresentable names',()=>{
 test('menu state keeps its selected identity and groups',()=>{
   const {view,published}=fixture({...base,project:null,projects:[{id:'project',name:'Project'}]});
   const initial=published[0][0];
-  assert.equal(initial.value,'unassigned');
-  assert.deepEqual(Array.from(initial.choices,choice=>choice.id),['unassigned','project:project','add_project']);
-  assert.deepEqual(initial.choices[0].group,initial.choices[1].group);
-  assert.notDeepEqual(initial.choices[1].group,initial.choices[2].group);
+  assert.equal(initial.value,false);
+  assert.equal(initial.choices,undefined);
+  assert.equal(view.model.selected(),'unassigned');
+  const choices=view.model.choices();
+  assert.deepEqual(Array.from(choices,choice=>choice.id),['unassigned','project:project','add_project']);
+  assert.deepEqual(choices[0].group,choices[1].group);
+  assert.notDeepEqual(choices[1].group,choices[2].group);
   view.model.accept({...base,worktree:'main'});
-  assert.equal(published.at(-1)[0].value,'worktree:main');
+  assert.equal(view.model.selected(),'worktree:main');
 });
 
-test('changes dispatch choice IDs and acknowledge contributions',async()=>{
+test('opening replies preserve the popup before refreshing',async()=>{
   const {view,published,tasks,events,context}=fixture(base);
-  const selected=[],opened=[];
-  view.model.select=async id=>selected.push(id);
+  const toggled=[],opened=[];
+  view.model.openMenu=async open=>toggled.push(open);
   view.model.open=async handler=>opened.push(handler);
-  events.push({id:'location',handler:'location',kind:'change',value:'worktree:other',sequence:7},
+  events.push({id:'location',handler:'location',kind:'change',value:true,sequence:7},
     {id:'manage',handler:'manage',kind:'invoke',sequence:8});
   await tasks[3](context);
-  await Promise.all(tasks.slice(8).map(task=>task(context)));
-  assert.deepEqual(selected,['worktree:other']);
+  await Promise.all(tasks.slice(7).map(task=>task(context)));
+  assert.deepEqual(toggled,[true]);
   assert.deepEqual(opened,['manage']);
   assert.equal(published[1][0].reply_to,7);
+  assert.equal(published[1][0].value,true);
   assert.equal(published[2][1].reply_to,8);
 });
 
@@ -91,7 +94,7 @@ test('inventory subscriptions refresh without moving the location',async()=>{
   view.model.invalidate=async()=>{reads++;};
   changes.push({cursor:'first'},{cursor:'second'});
   await tasks[1](context);
-  await Promise.all(tasks.slice(8).map(task=>task(context)));
+  await Promise.all(tasks.slice(7).map(task=>task(context)));
   assert.equal(reads,2);
   assert.deepEqual(subscriptions,[
     {cursor:undefined,scope:'package'},{cursor:'first',scope:'package'},{cursor:'second',scope:'package'},
@@ -99,24 +102,31 @@ test('inventory subscriptions refresh without moving the location',async()=>{
   assert.equal(view.model.location,location);
 });
 
-test('large project inventories keep the complete picker',()=>{
-  const projects=Array.from({length:255},(_,index)=>({id:`project-${index}`,name:`Project ${index}`}));
+test('large inventories stay inside the package list',()=>{
+  const projects=Array.from({length:1000},(_,index)=>({id:`project-${index}`,name:`Project ${index}`}));
   const {view,published}=fixture({...base,project:null,projects});
-  assert.equal(published[0][0].choices.length,256);
-  assert.ok(published[0][0].choices.some(choice=>choice.id==='projects'));
+  assert.equal(published[0][0].choices,undefined);
+  assert.equal(view.model.choices().length,1002);
+  assert.equal(view.model.choices().filter(choice=>choice.id.startsWith('project:')).length,1000);
   view.publish({id:'location',sequence:7});
   assert.equal(published.at(-1)[0].reply_to,7);
 });
 
 test('valid UTF-8 labels and captured replies remain intact',()=>{
   for (const name of ['a'.repeat(128),'中文'.repeat(21),'🙂'.repeat(32),'e\u0301','\ufeff']) {
-    const {view,published}=fixture({...base,main:false,branch:name});
+    const {view,published}=fixture({...base,main:false,project_name:name});
     assert.equal(published[0][0].label.label,name);
     view.publish({id:'location',sequence:7});
     assert.equal(published[1][0].reply_to,7);
     assert.equal(published[1][1].reply_to,undefined);
     assert.equal(published[1][0].enabled,true);
   }
+});
+
+test('empty unassigned locations disable their popup',()=>{
+  const {view,published}=fixture({...base,project:null,session:null,can_retarget:false});
+  assert.deepEqual(view.model.choices(),[]);
+  assert.equal(published[0][0].enabled,false);
 });
 
 test('chat labels and disabled context preserve scope',()=>{

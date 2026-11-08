@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho
+- Gerenciar árvores de trabalho em diálogos comuns e evitar alertas de leituras em segundo plano sem conexão
+
 ## 0.1.11
 
 - Atualizar menus de localização quando projetos ou árvores de trabalho mudarem

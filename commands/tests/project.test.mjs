@@ -66,6 +66,22 @@ test('ordinary project creation defaults to full access',async()=>{
   assert.deepEqual(setup.prepared,[{id:'request-0',tool:null,access:'unrestricted'}]);
 });
 
+test('menus omit duplicate access choices and routine refresh',async()=>{
+  const setup=await fixture();
+  setup.view.publish();
+  const menu=setup.states.at(-1).find(state=>state.id==='terminal-menu-cli');
+  assert.deepEqual(Array.from(menu.choices,choice=>choice.id),['claude']);
+  const toolbar=setup.states.at(-1).find(state=>state.id==='terminal-cli');
+  assert.ok(toolbar.choices.some(choice=>choice.id==='claude:workspace'));
+  assert.ok(toolbar.choices.some(choice=>choice.id==='shell:workspace'));
+  assert.ok(toolbar.choices.some(choice=>choice.id==='refresh'));
+  setup.view.start('claude',null,setup.cx);await setup.settle();
+  const pending=setup.states.at(-1).find(state=>state.id==='terminal-menu-cli').choices;
+  assert.deepEqual(Array.from(pending,choice=>choice.id),['claude','retry']);
+  assert.equal(pending[0].enabled,false);
+  assert.equal(pending[1].enabled,true);
+});
+
 test('creation retries retain their original pane interaction',async()=>{
   const setup=await fixture();
   setup.view.start(null,{id:'terminal-new',sequence:3},setup.cx);await setup.settle();

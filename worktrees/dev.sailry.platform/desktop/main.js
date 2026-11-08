@@ -3,13 +3,12 @@ import {context} from 'sailry';
 import {readWorktreeCatalog,listWorktrees,inspectGit,resolveGitRevision,prepareWorktreeChange,nextChange,
   prepareGitChange,completeRequest,forgetRequest,newId,publishContributions,nextContributionEvent} from 'sailry/sdk';
 import {readLocation,nextLocationChange,selectLocation,worktreeHasDrafts,releaseWorktree,
-  nextPickerEvent,modal_closed,toast,dismissToast,nextToastEvent} from 'sailry/ui';
+  modal_closed,toast,dismissToast,nextToastEvent} from 'sailry/ui';
 import {createText,readText,releaseText,focusText,nextTextEvent} from 'sailry/forms';
 import {Controller} from './controller.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
 import {navigationLabel} from './policy.js';
-import {fit} from './publication.js';
 
 export default class Worktrees extends View {
   init(_props,cx) {
@@ -41,19 +40,16 @@ export default class Worktrees extends View {
     cx.spawn(async cx => {
       try { while (true) {
         const event = await nextContributionEvent();
-        this.publish(event);
         if (event.id === 'location') {
-          if (event.kind === 'change') this.run(() => this.model.select(event.value),cx);
-        } else this.run(() => this.model.open(event.handler,event.value && typeof event.value === 'object' ? event.value : undefined),cx);
+          const open = event.kind === 'invoke' || event.value === true;
+          this.model.menuOpen = open;
+          this.publish(event);
+          this.run(() => this.model.openMenu(open),cx);
+        } else {
+          this.publish(event);
+          this.run(() => this.model.open(event.handler,event.value && typeof event.value === 'object' ? event.value : undefined),cx);
+        }
       } } catch (_) { /* Unmounting closes the contribution channel. */ }
-    });
-    cx.spawn(async cx => {
-      try { while (true) {
-        const event = await nextPickerEvent();
-        if (this.model.dialog?.token !== event.picker) continue;
-        if (event.kind === 'close') this.close(cx);
-        else this.run(() => this.model.choose(event.id,event.value),cx);
-      } } catch (_) { /* Native picker state belongs to this controller. */ }
     });
     cx.spawn(async cx => {
       try { while (true) { if (await modal_closed() === this.model.dialog?.token) this.close(cx); } }
@@ -75,15 +71,15 @@ export default class Worktrees extends View {
   publish(event) {
     const state = this.model.location;
     const reply = id => event?.id === id ? {reply_to:event.sequence} : {};
-    const label = !state.project ? this.text('composer_no_project') : state.main ? state.project_name : state.branch;
-    publishContributions(fit([
-      {id:'location',enabled:state.can_move && !(state.session && !state.project),label:navigationLabel(label),
-        icon:state.main ? 'folder' : 'network',choices:this.model.choices(),
-        value:state.project ? `worktree:${state.worktree}` : 'unassigned',...reply('location')},
+    const label = !state.project ? this.text('composer_no_project') : state.project_name;
+    const choices = this.model.choices();
+    publishContributions([
+      {id:'location',enabled:state.can_move && choices.length > 0 && !(state.session && !state.project),label:navigationLabel(label),
+        icon:'folder',dropdown:true,value:this.model.menuOpen,...reply('location')},
       {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},
-    ],this.text));
+    ]);
   }
   syncFields() {
     const owner = this.model.dialog;

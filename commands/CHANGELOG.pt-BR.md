@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Remover entradas CLI duplicadas do espaço de trabalho e a atualização permanente do menu do projeto, preservando as ações de recuperação
+
 ## 0.1.16
 
 - Os agentes ativam follow_up ao aguardar um comando em segundo plano

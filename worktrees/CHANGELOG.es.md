@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.12
+
+- Mantener el cambio de proyecto y la navegación atrás en el menú emergente con nombres legibles de árboles de trabajo
+- Gestionar árboles de trabajo en diálogos normales y evitar avisos de lecturas en segundo plano sin conexión
+
 ## 0.1.11
 
 - Actualizar los menús de ubicación al cambiar proyectos o árboles de trabajo
