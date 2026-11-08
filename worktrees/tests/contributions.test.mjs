@@ -4,25 +4,40 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
+import {navigationLabel} from '../dev.sailry.platform/desktop/policy.js';
 
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8')
   .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class Worktrees','class Worktrees');
 function fixture(location,locale='en') {
-  const published=[];
+  const published=[],tasks=[],events=[];
   const names=['selectLocation','readWorktreeCatalog','listWorktrees','inspectGit','resolveGitRevision',
     'prepareWorktreeChange','prepareGitChange','completeRequest','forgetRequest','newId','worktreeHasDrafts',
     'releaseWorktree','toast','nextLocationChange','nextContributionEvent','nextPickerEvent','modal_closed',
     'nextTextEvent','nextToastEvent','createText','readText','releaseText','focusText','dismissToast'];
   const bindings=Object.fromEntries(names.map(name=>[name,()=>{}]));
   const Worktrees=vm.runInNewContext(`${source}\nWorktrees`,{
-    ...bindings,View:class {},Controller,messages,render:()=>{},context:()=>JSON.stringify({locale}),
+    ...bindings,View:class {},Controller,messages,navigationLabel,render:()=>{},context:()=>JSON.stringify({locale}),
     readLocation:()=>location,publishContributions:states=>published.push(states),
+    nextContributionEvent:async()=>{if(events.length)return events.shift();throw Error('Closed');},
   });
   const view=new Worktrees();
-  view.init({}, {spawn:()=>{}});
-  return {view,published};
+  const context={spawn:task=>tasks.push(task),notify:()=>{}};
+  view.init({},context);
+  tasks[0](context);
+  return {view,published,tasks,events,context};
 }
-const base={project:'project',project_name:'Project',branch:'main',main:true,can_move:true,git:true,session:null};
+const base={project:'project',project_name:'Project',worktree:'main',branch:'main',main:true,
+  can_move:true,can_retarget:true,git:true,session:null,projects:[]};
+
+test('menu declaration keeps management as the semantic action',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
+  const entries=manifest.extensions['dev.sailry.platform'].ui;
+  const location=entries.find(entry=>entry.id==='location');
+  assert.equal(location.kind,'menu');
+  assert.equal(location.handler,'location');
+  assert.equal(location.intent,undefined);
+  assert.equal(entries.find(entry=>entry.id==='manage').intent,'worktrees');
+});
 
 test('initialization keeps declared labels for unrepresentable names',()=>{
   for (const main of [false,true]) for (const name of [null,undefined,'','   ','\u2003','line\nbreak',
@@ -35,6 +50,32 @@ test('initialization keeps declared labels for unrepresentable names',()=>{
     assert.equal(location[main ? 'project_name' : 'branch'],name);
     assert.deepEqual(Array.from(published[0],state=>state.id),['location','manage','create','fork']);
   }
+});
+
+test('menu state keeps its selected identity and groups',()=>{
+  const {view,published}=fixture({...base,project:null,projects:[{id:'project',name:'Project'}]});
+  const initial=published[0][0];
+  assert.equal(initial.value,'unassigned');
+  assert.deepEqual(Array.from(initial.choices,choice=>choice.id),['unassigned','project:project','add_project']);
+  assert.deepEqual(initial.choices[0].group,initial.choices[1].group);
+  assert.notDeepEqual(initial.choices[1].group,initial.choices[2].group);
+  view.model.accept({...base,worktree:'main'});
+  assert.equal(published.at(-1)[0].value,'worktree:main');
+});
+
+test('changes dispatch choice IDs and acknowledge contributions',async()=>{
+  const {view,published,tasks,events,context}=fixture(base);
+  const selected=[],opened=[];
+  view.model.select=async id=>selected.push(id);
+  view.model.open=async handler=>opened.push(handler);
+  events.push({id:'location',handler:'location',kind:'change',value:'worktree:other',sequence:7},
+    {id:'manage',handler:'manage',kind:'invoke',sequence:8});
+  await tasks[3](context);
+  await Promise.all(tasks.slice(8).map(task=>task(context)));
+  assert.deepEqual(selected,['worktree:other']);
+  assert.deepEqual(opened,['manage']);
+  assert.equal(published[1][0].reply_to,7);
+  assert.equal(published[2][1].reply_to,8);
 });
 
 test('valid UTF-8 labels and captured replies remain intact',()=>{

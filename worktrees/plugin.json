@@ -1,10 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "worktrees",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.5",
       "actions": [
         "worktrees.read",
         "worktrees.write",
@@ -237,7 +238,7 @@
         {
           "id": "location",
           "slot": "context",
-          "kind": "button",
+          "kind": "menu",
           "label": {
             "label": "Worktree",
             "locales": {
@@ -245,8 +246,7 @@
             }
           },
           "icon": "folder",
-          "handler": "manage",
-          "intent": "worktrees",
+          "handler": "location",
           "order": -10
         },
         {

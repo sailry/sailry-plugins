@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Projekte und registrierte Worktrees im Dropdown des Eingabefelds auswählen
+- Worktree-Daten zwischen Menü und Verwaltungsdialog wiederverwenden
+
 ## 0.1.8
 
 - Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern

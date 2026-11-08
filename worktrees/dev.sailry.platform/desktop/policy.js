@@ -8,6 +8,45 @@ export function registered(catalog, location, text) {
     head:null,locked:false,available:true}));
   return listing(catalog,{kind:'repository',entries},{...location,surface:'project'},text);
 }
+export function navigationLabel(value) {
+  if (typeof value !== 'string' || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
+    || !value.replace(/[\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/gu,'')) return undefined;
+  let bytes=0;
+  for (const character of value) {
+    const code=character.codePointAt(0);
+    bytes += code<=0x7f ? 1 : code<=0x7ff ? 2 : code<=0xffff ? 3 : 4;
+  }
+  return bytes<=128 ? {label:value} : undefined;
+}
+export function menu(location,catalog,entries,text) {
+  const choice = (id,name,icon,group,enabled=true) => ({
+    id,label:navigationLabel(name) ?? {label:text('workspace_worktrees')},icon,
+    group:{label:text(group)},enabled,
+  });
+  if (!location.project) {
+    if (!location.can_retarget) return [];
+    return [
+      choice('unassigned',text('composer_no_project'),undefined,'location_project'),
+      ...location.projects.map(project => choice(`project:${project.id}`,project.name,'folder','location_project')),
+      choice('add_project',text('location_add_project'),'plus','workspace_session_actions'),
+    ];
+  }
+  const choices = [...(catalog?.worktrees ?? [])].sort((left,right) => Number(right.main)-Number(left.main)).map(tree => {
+    const entry = entries?.find(entry => entry.path === tree.path);
+    const branch = tree.id === location.worktree ? location.branch : entry?.branch;
+    const name = tree.main
+      ? `${text('location_main')}${branch ? ` (${branch})` : ''}`
+      : label({...tree,branch,head:entry?.head},location.project_name);
+    return choice(`worktree:${tree.id}`,name,tree.main ? 'folder' : 'network','workspace_worktrees',entry?.available !== false);
+  });
+  if (location.git) {
+    choices.push(choice('create',text('location_create'),'plus','workspace_session_actions'));
+    if (location.session) choices.push(choice('fork',text('location_fork'),'plus','workspace_session_actions'));
+  }
+  choices.push(choice('manage',text('worktree_manage'),'network','workspace_session_actions'));
+  choices.push(choice('projects',text('location_project'),'folder','location_project',!!location.can_retarget));
+  return choices;
+}
 export function listing(catalog, found, location, text) {
   const project = catalog.projects.find(project => project.id === location.project);
   const entries = [...found.entries];

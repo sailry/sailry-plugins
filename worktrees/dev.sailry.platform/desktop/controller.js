@@ -1,20 +1,67 @@
 // Package-owned forms and retries; core retains source scope, admission and session moves.
-import {listing,registered,errorKey,current} from './policy.js';
+import {listing,registered,menu,errorKey,current} from './policy.js';
 
 export class Controller {
   constructor(api,text,changed) {
     this.api = api; this.text = text; this.changed = changed;
     this.location = api.readLocation(); this.serial = 0; this.dialog = null; this.catalog = null;
-    this.operation = null; this.disposed = false;
+    this.entries = null; this.catalogRead = null; this.operation = null; this.disposed = false;
   }
   notify() { if (!this.disposed) this.changed(); }
   owner(kind, extra = {}) {
     return {token:`worktrees-${++this.serial}`,kind,bound:this.location,pending:false,error:null,request:null,uncertain:false,...extra};
   }
   accept(location) {
+    if (location.cursor !== this.location.cursor) {
+      this.catalog = null; this.entries = null; this.catalogRead = null;
+    }
     this.location = location;
     if (this.dialog && ['list','actions'].includes(this.dialog.kind) && !this.valid(this.dialog)) this.close();
     this.notify();
+  }
+  refresh(force = false) {
+    if (!this.location.project || this.disposed) return Promise.resolve(null);
+    if (this.catalogRead && (!force || this.catalogRead.pending)) return this.catalogRead.done;
+    const read = {pending:true};
+    this.catalogRead = read;
+    const discovery = this.api.listWorktrees().then(value => ({value}),error => ({error}));
+    read.registered = this.api.readWorktreeCatalog().catch(() => null);
+    read.done = (async () => {
+      try {
+        const catalog = await read.registered;
+        if (this.catalogRead !== read || this.disposed) return null;
+        if (!catalog) throw Error('Worktree catalog is unavailable');
+        this.catalog = catalog; this.notify();
+        const found = await discovery;
+        if (this.catalogRead !== read || this.disposed) return null;
+        if (Object.hasOwn(found,'error')) throw found.error;
+        this.entries = found.value.entries; this.notify();
+        return found.value;
+      } catch (_) {
+        if (this.catalogRead === read && !this.disposed) {
+          this.catalogRead = null; this.fail(this.owner('location'),'worktree_load_failed');
+        }
+        return null;
+      } finally { read.pending = false; }
+    })();
+    return read.done;
+  }
+  choices() { return menu(this.location,this.catalog,this.entries,this.text); }
+  async select(id) {
+    const owner = this.owner('location');
+    if (!this.valid(owner) || !this.choices().some(choice => choice.id === id && choice.enabled)) {
+      this.fail(owner,'worktree_context_changed'); return;
+    }
+    try {
+      if (id === 'manage') return await this.open();
+      if (id === 'create' || id === 'fork') return await this.createManaged(id === 'fork');
+      const selection = id === 'unassigned' ? {project:null}
+        : id === 'add_project' ? {add_project:true}
+        : id === 'projects' ? {projects:true}
+        : id.startsWith('project:') ? {project:id.slice('project:'.length)}
+        : {worktree:id.slice('worktree:'.length),fork:false};
+      await this.api.selectLocation(owner.bound.cursor,selection);
+    } catch (_) { this.fail(owner,'worktree_context_changed'); }
   }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
   show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }
@@ -38,7 +85,7 @@ export class Controller {
     this.notify();
   }
   async open(intent = 'manage', entry) {
-    this.location = this.api.readLocation();
+    this.accept(this.api.readLocation());
     if (!this.location.can_move) return;
     if (!this.location.project) { await this.api.selectLocation(this.location.cursor,{projects:true}); return; }
     if (intent === 'create' && entry) return this.create({branch:entry.branch,head:entry.commit});
@@ -50,15 +97,13 @@ export class Controller {
   }
   async load(owner,entry) {
     try {
-      const discovery = this.api.listWorktrees().then(value => ({value}),error => ({error}));
-      const catalog = await this.api.readWorktreeCatalog();
-      if (this.dialog !== owner || !this.valid(owner) || this.disposed) return;
-      this.catalog = catalog;
+      const discovery = this.refresh(true);
+      const catalog = await this.catalogRead.registered;
+      if (!catalog || this.dialog !== owner || !this.valid(owner) || this.disposed) return;
       owner.choices = registered(catalog,owner.bound,this.text); this.notify();
       const found = await discovery;
-      if (Object.hasOwn(found,'error')) throw found.error;
-      if (this.dialog !== owner || !this.valid(owner) || this.disposed || owner.kind !== 'list') return;
-      owner.choices = listing(catalog,found.value,owner.bound,this.text);
+      if (!found || this.dialog !== owner || !this.valid(owner) || this.disposed || owner.kind !== 'list') return;
+      owner.choices = listing(catalog,found,owner.bound,this.text);
       if (entry) return this.create(entry);
     } catch (_) { if (this.dialog === owner && this.valid(owner) && !this.disposed) this.fail(owner,'worktree_load_failed'); }
     finally { owner.loading = false; this.notify(); }

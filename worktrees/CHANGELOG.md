@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.10
+
+- Select projects and registered worktrees from the composer dropdown
+- Reuse worktree discovery across menus and the management dialog
+
 ## 0.1.9
 
 - Label conversations without a project consistently across supported languages

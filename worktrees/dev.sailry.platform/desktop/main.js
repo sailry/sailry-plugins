@@ -8,19 +8,7 @@ import {createText,readText,releaseText,focusText,nextTextEvent} from 'sailry/fo
 import {Controller} from './controller.js';
 import {messages} from './locales.js';
 import {render} from './view.js';
-
-// Dynamic names must obey the SDK's Navigation label contract. Keep the
-// declared Worktree label when a raw project or branch name cannot represent it.
-function navigationLabel(value) {
-  if (typeof value !== 'string' || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
-    || !value.replace(/[\u0020\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/gu,'')) return undefined;
-  let bytes=0;
-  for (const character of value) {
-    const code=character.codePointAt(0);
-    bytes += code<=0x7f ? 1 : code<=0x7ff ? 2 : code<=0xffff ? 3 : 4;
-  }
-  return bytes<=128 ? {label:value} : undefined;
-}
+import {navigationLabel} from './policy.js';
 
 export default class Worktrees extends View {
   init(_props,cx) {
@@ -34,16 +22,21 @@ export default class Worktrees extends View {
         this.syncFields(); this.publish(); this.notify();
       });
     this.publish();
+    this.run(() => this.model.refresh(),cx);
     cx.spawn(async cx => {
       try { while (true) {
-        this.model.accept(await nextLocationChange(this.model.location.cursor)); cx.notify();
+        this.model.accept(await nextLocationChange(this.model.location.cursor));
+        this.run(() => this.model.refresh(),cx);
+        cx.notify();
       } } catch (_) { /* The captured controller owns its observation. */ }
     });
     cx.spawn(async cx => {
       try { while (true) {
         const event = await nextContributionEvent();
         this.publish(event);
-        this.run(() => this.model.open(event.handler,event.value && typeof event.value === 'object' ? event.value : undefined),cx);
+        if (event.id === 'location') {
+          if (event.kind === 'change') this.run(() => this.model.select(event.value),cx);
+        } else this.run(() => this.model.open(event.handler,event.value && typeof event.value === 'object' ? event.value : undefined),cx);
       } } catch (_) { /* Unmounting closes the contribution channel. */ }
     });
     cx.spawn(async cx => {
@@ -76,7 +69,9 @@ export default class Worktrees extends View {
     const reply = id => event?.id === id ? {reply_to:event.sequence} : {};
     const label = !state.project ? this.text('composer_no_project') : state.main ? state.project_name : state.branch;
     publishContributions([
-      {id:'location',enabled:state.can_move && !(state.session && !state.project),label:navigationLabel(label),icon:state.main ? 'folder' : 'network',dropdown:true,...reply('location')},
+      {id:'location',enabled:state.can_move && !(state.session && !state.project),label:navigationLabel(label),
+        icon:state.main ? 'folder' : 'network',choices:this.model.choices(),
+        value:state.project ? `worktree:${state.worktree}` : 'unassigned',...reply('location')},
       {id:'manage',enabled:state.can_move,visible:!!state.project,...reply('manage')},
       {id:'create',enabled:state.can_move,visible:!!state.project && state.git,...reply('create')},
       {id:'fork',enabled:state.can_move,visible:!!state.project && !!state.session && state.git,...reply('fork')},

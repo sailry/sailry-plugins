@@ -4,7 +4,7 @@ import {Controller} from '../dev.sailry.platform/desktop/controller.js';
 import {listing} from '../dev.sailry.platform/desktop/policy.js';
 
 function fixture(surface = 'project') {
-  let location = {cursor:'1',surface,node:'node-a',project:'project-a',worktree:'tree-a',session:surface === 'composer' ? 'session-a' : null,can_move:true,main:true,project_name:'Project',branch:'main',git:true};
+  let location = {cursor:'1',surface,node:'node-a',project:'project-a',worktree:'tree-a',session:surface === 'composer' ? 'session-a' : null,can_move:true,can_retarget:false,projects:[],main:true,project_name:'Project',branch:'main',git:true};
   const state = {prepared:[],requests:new Set(),completed:[],forgotten:[],selected:[],released:[],toasts:[],resolution:'head-a',reads:0,result:null,drafts:false};
   const api = {
     readLocation:() => location,
@@ -212,6 +212,99 @@ test('frozen picker rows cannot be substituted by a refreshed array', async () =
   owner.choices = [];
   await model.choose('entry-1',captured);await model.choose('action-0');
   assert.equal(state.prepared[0].value.path,'/native');
+});
+
+test('menu project choices use captured selectors',async()=>{
+  const {model,state,change}=fixture('composer');
+  change({project:null,worktree:null,session:null,can_retarget:true,projects:[{id:'project-a',name:'Project'}]});
+  await model.select('unassigned');
+  await model.select('project:project-a');
+  await model.select('add_project');
+  assert.deepEqual(state.selected,[
+    {cursor:'1',value:{project:null}},
+    {cursor:'1',value:{project:'project-a'}},
+    {cursor:'1',value:{add_project:true}},
+  ]);
+});
+
+test('menu actions reuse checkout and management flows',async()=>{
+  const {model,state,change}=fixture('composer');
+  change({can_retarget:true});
+  await model.refresh();
+  await model.select('worktree:tree-a');
+  await model.select('projects');
+  assert.deepEqual(state.selected,[
+    {cursor:'1',value:{worktree:'tree-a',fork:false}},
+    {cursor:'1',value:{projects:true}},
+  ]);
+  await model.select('create');
+  assert.equal(model.dialog.kind,'managed');
+  assert.equal(model.dialog.fork,false);
+  await model.select('fork');
+  assert.equal(model.dialog.kind,'managed');
+  assert.equal(model.dialog.fork,true);
+  await model.select('manage');
+  assert.equal(model.dialog.kind,'list');
+  assert.ok(model.dialog.choices.some(choice=>choice.id==='entry-0'));
+});
+
+test('stale and unavailable menu choices report context changes',async()=>{
+  for(const stale of [false,true]) {
+    const {model,api,state}=fixture('composer');
+    await model.refresh();
+    if(stale)api.readLocation=()=>({...model.location,cursor:'2'});
+    await model.select(stale ? 'worktree:tree-a' : 'project:other');
+    assert.deepEqual(state.selected,[]);
+    assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
+  }
+  const {model,state}=fixture('composer');
+  await model.select('projects');
+  assert.deepEqual(state.selected,[]);
+  assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
+});
+
+test('menus cache discovery and management refreshes explicitly',async()=>{
+  const {model,api,change}=fixture('composer');
+  const catalog=api.readWorktreeCatalog,native=api.listWorktrees;
+  let catalogs=0,discoveries=0;
+  api.readWorktreeCatalog=()=>{catalogs++;return catalog();};
+  api.listWorktrees=()=>{discoveries++;return native();};
+  const first=model.refresh();
+  assert.equal(model.refresh(),first);
+  const opening=model.open();
+  await Promise.all([first,opening]);
+  model.choices();model.choices();await model.refresh();
+  assert.equal(catalogs,1);assert.equal(discoveries,1);
+  await model.open();
+  assert.equal(catalogs,2);assert.equal(discoveries,2);
+  change({cursor:'2',branch:'topic'});
+  await model.refresh();
+  assert.equal(catalogs,3);assert.equal(discoveries,3);
+  assert.equal(model.choices()[0].label.label,'location_main (topic)');
+});
+
+test('late catalogs cannot replace a changed location',async()=>{
+  const {model,api,change}=fixture();
+  const catalog=deferred();api.readWorktreeCatalog=()=>catalog.promise;
+  const reading=model.refresh();
+  change({cursor:'2',project:null,worktree:null,session:null,can_retarget:true,projects:[]});
+  await model.refresh();
+  catalog.resolve({projects:[],worktrees:[{id:'old',path:'/old',main:true}]});
+  await reading;
+  assert.equal(model.catalog,null);
+  assert.deepEqual(model.choices().map(choice=>choice.id),['unassigned','add_project']);
+});
+
+test('failed discovery reports once and allows manual refresh',async()=>{
+  const {model,api,state}=fixture();
+  const native=api.listWorktrees;
+  api.listWorktrees=async()=>{throw Error('Disconnected');};
+  await model.open();
+  assert.equal(state.toasts.length,1);
+  assert.equal(state.toasts[0].message,'worktree_load_failed');
+  api.listWorktrees=native;
+  await model.open();
+  assert.ok(model.dialog.choices.some(choice=>choice.id==='entry-1'));
 });
 
 test('stale and locked native entries preserve action policy', () => {
