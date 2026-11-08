@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Conserver le décalage des lignes dans les curseurs d’historique pour éviter de répéter les comparaisons de chemins
+
 ## 0.1.18
 
 - Conserver la page normale pendant le chargement des données initiales

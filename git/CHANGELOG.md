@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Preserve row offsets in history cursors to avoid repeating path comparisons on later pages
+
 ## 0.1.26
 
 - Keep the captured path filter in history cursors and reject cross-path continuation

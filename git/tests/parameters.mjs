@@ -25,16 +25,21 @@ export function cases() {
       rows.push({...entry,input:{...entry.input,limit},valid:false,schemaValid:limit === Number.MAX_SAFE_INTEGER+1});
     }
   }
-  const cursor = {head:'a'.repeat(40),after:'b'.repeat(40)};
-  for (const input of [{revision:'main',path:'src/资料.rs'},{cursor,path:'src'},
+  const cursor = {head:'a'.repeat(40),after:'b'.repeat(40),offset:20};
+  for (const input of [{revision:'main',path:'src/资料.rs'},{cursor:{...cursor,path:'src'},path:'src'},
+    {cursor:{...cursor,offset:0}},{cursor:{...cursor,path:'src/资料.rs'},path:'src/资料.rs'},
     {cursor:null,revision:null,path:null}]) {
     rows.push({tool:'git_log',handler:'log',input,valid:true,
       expected:{worktree:null,limit:20,cursor:null,revision:null,path:null,...input}});
   }
   for (const input of [{cursor:{head:cursor.head,offset:5}},
-    {cursor:{...cursor,offset:5}},{cursor:{...cursor,after:'short'}},
+    {cursor:{head:cursor.head,after:cursor.after}},{cursor:{...cursor,after:'short'}},
     {revision:8},{path:[]},{cursor:'HEAD'}]) {
     rows.push({tool:'git_log',handler:'log',input,valid:false});
+  }
+  for (const offset of [-1,1.5,null,'20',Number.MAX_SAFE_INTEGER+1]) {
+    rows.push({tool:'git_log',handler:'log',input:{cursor:{...cursor,offset}},valid:false,
+      schemaValid:offset === Number.MAX_SAFE_INTEGER+1});
   }
   return rows;
 }

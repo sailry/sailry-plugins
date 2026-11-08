@@ -349,11 +349,11 @@ test('latest read intent opens a tab only when its result is accepted',async()=>
 });
 
 test('history replaces native pages using the original immutable head',async()=>{
-  const reads=[],head='a'.repeat(40),second={head,after:'b'.repeat(40)},third={head,after:'c'.repeat(40)};
+  const reads=[],head='a'.repeat(40),second={head,after:'b'.repeat(40),offset:100},third={head,after:'c'.repeat(40),offset:200};
   let liveHead=head;
   const {owner}=fixture({readGitLog:async(limit,cursor,options)=>{
     reads.push({limit,cursor,options});
-    const offset=cursor === second ? 100 : cursor === third ? 200 : 0;
+    const offset=cursor?.offset ?? 0;
     return {head:cursor?.head ?? options.revision ?? liveHead,offset,
       entries:[{id:String(offset)}],next:offset === 0 ? second : offset === 100 ? third : null};
   }});
@@ -370,7 +370,7 @@ test('history replaces native pages using the original immutable head',async()=>
 });
 
 test('history paging accepts a newer choice while retaining the committed page',async()=>{
-  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40)},replies=[];
+  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40),offset:100},replies=[];
   const {owner}=fixture({readGitLog:async()=>({head,offset:0,entries:[{id:'current'}],next:cursor})});
   await owner.loadHistory();
   owner.api.readGitLog=async(_limit,cursor)=>new Promise(resolve=>replies.push({cursor,resolve}));
@@ -378,13 +378,13 @@ test('history paging accepts a newer choice while retaining the committed page',
   assert.deepEqual(owner.history.entries,[{id:'current'}]);
   const current=owner.historyPage(1);
   replies[1].resolve({head,offset:0,entries:[{id:'latest'}],next:cursor});await current;
-  replies[0].resolve({head,offset:100,entries:[{id:'stale'}],next:{head,after:'c'.repeat(40)}});await next;
+  replies[0].resolve({head,offset:100,entries:[{id:'stale'}],next:{head,after:'c'.repeat(40),offset:200}});await next;
   assert.deepEqual(owner.history.entries,[{id:'latest'}]);assert.equal(owner.historyLoading,false);
   await owner.historyPage(3);assert.equal(replies.length,2);
 });
 
 test('history failures retain the accepted page and retry cursor',async()=>{
-  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40)},calls=[];
+  const head='a'.repeat(40),cursor={head,after:'b'.repeat(40),offset:100},calls=[];
   const {owner,reported}=fixture({readGitLog:async()=>({head,offset:0,entries:[{id:'current'}],next:cursor})});
   await owner.loadHistory();
   owner.api.readGitLog=async(_limit,selected)=>{

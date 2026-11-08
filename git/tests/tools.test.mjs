@@ -9,19 +9,21 @@ const {status,diff,log,show,blame,changes,change}=await host({context:()=>({}),i
 test('history preserves first-page defaults and exact continuation', () => {
   assert.deepEqual(log({}),{worktree:null,limit:20,cursor:null,revision:null,path:null});
   assert.deepEqual(log({limit:5,cursor:null}),{worktree:null,limit:5,cursor:null,revision:null,path:null});
-  const cursor = {head:'a'.repeat(40),after:'b'.repeat(40)};
+  const cursor = {head:'a'.repeat(40),after:'b'.repeat(40),offset:20};
   assert.deepEqual(log({cursor,worktree:'captured-project-tree'}),
     {worktree:'captured-project-tree',limit:20,cursor,revision:null,path:null});
   assert.equal(log({cursor}).cursor,cursor);
   const filtered={...cursor,path:'src/资料.rs'};
   assert.deepEqual(log({revision:'feature',path:filtered.path,cursor:filtered}),
     {worktree:null,limit:20,cursor:filtered,revision:'feature',path:filtered.path});
-  for (const cursor of ['HEAD',{head:'abcdef',after:'b'.repeat(40)},
-    {head:'a'.repeat(40),offset:5},{head:'a'.repeat(40),after:'short'},
-    {head:'a'.repeat(40),after:'b'.repeat(40),offset:5},
-    {head:'a'.repeat(40),after:'b'.repeat(40),path:5}]) {
-    assert.equal(log({cursor}).isError,true);
+  for (const invalid of ['HEAD',{...cursor,head:'abcdef'},
+    {head:cursor.head,offset:5},{...cursor,after:'short'},
+    {head:cursor.head,after:cursor.after},{...cursor,path:5}]) {
+    assert.equal(log({cursor:invalid}).isError,true);
   }
+  for (const offset of [-1,1.5,null,'20',Number.MAX_SAFE_INTEGER+1])
+    assert.equal(log({cursor:{...cursor,offset}}).isError,true);
+  assert.deepEqual(log({cursor:{...cursor,offset:0}}).cursor,{...cursor,offset:0});
 });
 
 test('history schema declares filtered commit continuations', async () => {
@@ -29,8 +31,8 @@ test('history schema declares filtered commit continuations', async () => {
   const extension = manifest.extensions['dev.sailry.platform'];
   const tool = extension.tools.find(tool => tool.name === 'git_log');
   const properties = tool.handler.parameters.properties;
-  assert.deepEqual(properties.cursor.required,['head','after']);
-  assert.equal(properties.cursor.properties.offset,undefined);
+  assert.deepEqual(properties.cursor.required,['head','after','offset']);
+  assert.deepEqual(properties.cursor.properties.offset,{type:'integer',minimum:0});
   assert.deepEqual(properties.cursor.properties.path.type,['string','null']);
   assert.deepEqual(properties.revision.type,['string','null']);
   assert.deepEqual(properties.path.type,['string','null']);

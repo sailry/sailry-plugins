@@ -54,7 +54,8 @@ export function log(args) {
       !target(args.revision) || !target(args.path)) return invalid();
   const {limit = 20,cursor = null} = args;
   if (!Number.isSafeInteger(limit) || limit < 1) return invalid('limit must be a positive safe integer');
-  if (cursor !== null && (!object(cursor,['head','after','path']) || !target(cursor.path) ||
+  if (cursor !== null && (!object(cursor,['head','after','offset','path']) || !target(cursor.path) ||
+      !Number.isSafeInteger(cursor.offset) || cursor.offset < 0 ||
       typeof cursor.head !== 'string' || !/^[0-9a-fA-F]{40}$/.test(cursor.head) ||
       typeof cursor.after !== 'string' || !/^[0-9a-fA-F]{40}$/.test(cursor.after))) return invalid();
   return {worktree:args.worktree ?? null,limit,cursor,revision:args.revision ?? null,path:args.path ?? null};
