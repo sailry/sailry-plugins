@@ -21,40 +21,32 @@ function byteLength(value) {
   }
   return bytes;
 }
-export function menu(location,catalog,entries,text,showProjects=false) {
-  const choice = (id,name,icon,group,enabled=true) => ({
-    id,label:{label:name || text('workspace_worktrees')},icon,
-    group:{label:text(group)},enabled,
-  });
-  if (!location.project || showProjects) {
-    if (!location.can_retarget) return [];
-    return [
-      ...(location.project ? [choice('worktrees',text('location_back'),'chevron-left','workspace_worktrees')] : []),
-      choice('unassigned',text('composer_no_project'),undefined,'location_project'),
-      ...location.projects.map(project => choice(`project:${project.id}`,project.name,'folder','location_project')),
-      choice('add_project',text('location_add_project'),'plus','workspace_session_actions'),
-    ];
+/** Contribution choices allow 256 rows; larger hosts finish in the core project picker. */
+export const MENU_PROJECTS = 100;
+/** Shortens a dynamic name to the 128-byte contribution label limit. */
+export function fit(value) {
+  if (byteLength(value) <= 128) return value;
+  let kept = '';
+  for (const character of value) {
+    if (byteLength(kept + character) > 125) break;
+    kept += character;
   }
-  const mainLabel = branch => `${text('location_main')}${branch ? ` (${branch})` : ''}`;
-  const trees = catalog && entries ? catalog.worktrees.filter(tree =>
-    tree.id === location.worktree || tree.main || entries.some(entry => entry.path === tree.path)) : [];
-  const choices = [...trees].sort((left,right) => Number(right.main)-Number(left.main)).map(tree => {
-    const entry = entries?.find(entry => entry.path === tree.path);
-    const branch = tree.id === location.worktree ? location.branch : entry?.branch;
-    const name = tree.main ? mainLabel(branch) : branch || entry?.head?.slice(0,8) || text('composer_branch_none');
-    return choice(`worktree:${tree.id}`,name,tree.main ? 'folder' : 'network','workspace_worktrees',entry?.available !== false);
-  });
-  if ((!catalog || !entries) && location.worktree) {
-    choices.push(choice(`worktree:${location.worktree}`,location.main ? mainLabel(location.branch)
-      : location.branch || text('composer_branch_none'),location.main ? 'folder' : 'network','workspace_worktrees'));
-  }
-  if (location.git) {
-    choices.push(choice('create',text('location_create'),'plus','workspace_session_actions'));
-    if (location.session) choices.push(choice('fork',text('location_fork'),'plus','workspace_session_actions'));
-  }
-  choices.push(choice('manage',text('location_manage'),'network','workspace_session_actions'));
-  choices.push(choice('projects',text('location_project'),'folder','location_project',!!location.can_retarget));
-  return choices;
+  return `${kept}…`;
+}
+export function menu(location,text) {
+  if (!location.can_retarget) return [];
+  const choice = (id,name,group,icon) => ({id,label:{label:fit(name)},group:{label:text(group)},
+    ...(icon ? {icon} : {})});
+  const projects = location.projects.filter(project => typeof project.name === 'string' && project.name.trim());
+  const shown = projects.slice(0,MENU_PROJECTS);
+  const current = projects.find(project => project.id === location.project);
+  if (current && !shown.includes(current)) shown.push(current);
+  return [
+    choice('unassigned',text('composer_no_project'),'location_project'),
+    ...shown.map(project => choice(`project:${project.id}`,project.name,'location_project')),
+    ...(shown.length < projects.length ? [choice('projects',text('location_project'),'location_project')] : []),
+    choice('add_project',text('location_add_project'),'workspace_session_actions','plus'),
+  ];
 }
 export function listing(catalog, found, location, text) {
   const project = catalog.projects.find(project => project.id === location.project);

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import {Repository} from '../dev.sailry.platform/desktop/repository.js';
 import {Menus} from '../dev.sailry.platform/desktop/menus.js';
 import {Surfaces} from '../dev.sailry.platform/desktop/surfaces.js';
+import * as policy from '../dev.sailry.platform/desktop/session-branch.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/main.js', import.meta.url), 'utf8'))
   .replace(/^import[\s\S]*?;\n/gm, '').replace('export default class', 'class');
@@ -121,7 +122,7 @@ function contributions() {
       listGitBranches:()=>{const pending=deferred();branches.push(pending);return pending.promise;}}};
   for (const name of ['nextMenuEvent','nextContextMenuEvent','nextControlEvent','nextTreeEvent',
     'nextNavigationTabEvent','nextPickerEvent','modal_closed','nextTextEvent']) globals[name]=never;
-  const Context=vm.runInNewContext(`${source}\n${contextSource}\nContext`,globals);
+  const Context=vm.runInNewContext(`${source}\n${contextSource}\nContext`,{...policy,...globals});
   const owner=new Context();owner.watch=()=>{};
   const live={notify:()=>{},sleep:async()=>{},spawn:task=>task(live),focus_handle:()=>({focus(){}})};owner.init({},live);
   return {owner,change,event,reads,branches,choices,published,resources};
@@ -142,7 +143,7 @@ function contextFixture(options={}) {
     readScope:()=>({worktree:'captured'}),readLocation:()=>location,
     publishContributions:states=>published.push(states),
   };
-  const Context=vm.runInNewContext(`${contextSource}\nContext`,globals),owner=new Context();
+  const Context=vm.runInNewContext(`${contextSource}\nContext`,{...policy,...globals}),owner=new Context();
   owner.init({}, {spawn:()=>{}});
   return {owner,repo,published};
 }
@@ -287,7 +288,7 @@ test('composer location initializes without duplicate repository reads',async()=
     readScope:()=>({worktree:'captured-checkout'}),
     publishContributions:()=>{},
   };
-  const Context=vm.runInNewContext(`${contextSource}\nContext`,globals);
+  const Context=vm.runInNewContext(`${contextSource}\nContext`,{...policy,...globals});
   const owner=new Context();
   owner.init({}, {spawn:()=>{},notify:()=>{},focus_handle:()=>({focus(){}})});
   await settle();
@@ -312,7 +313,7 @@ test('unassigned controllers do not read or publish a repository contribution',a
     readLocation:()=>({surface:'composer',worktree:'new-checkout',branch:'main',main:true,git:true,git_status:'repository',can_move:true}),
     publishContributions:states=>{published=states;},
   };
-  const Context=vm.runInNewContext(`${contextSource}\nContext`,globals);
+  const Context=vm.runInNewContext(`${contextSource}\nContext`,{...policy,...globals});
   const owner=new Context();
   owner.init({}, {spawn:()=>{},notify:()=>{},focus_handle:()=>({focus(){}})});
   await owner.invalidate();
@@ -330,7 +331,7 @@ test('composer metadata changes never duplicate Node scans',async()=>{
       readScope:()=>({worktree:'captured'}),readLocation:()=>location,
       nextLocationChange:()=>updates[cursor++].promise,nextContributionEvent:()=>new Promise(()=>{}),
       publishContributions:states=>{published=states;}};
-    const Context=vm.runInNewContext(`${contextSource}\nContext`,globals),owner=new Context();
+    const Context=vm.runInNewContext(`${contextSource}\nContext`,{...policy,...globals}),owner=new Context();
     const live={notify:()=>{},spawn:task=>task(live)};
     owner.init({},live);await owner.invalidate();await settle();
     assert.equal(reads,0);assert.deepEqual(Array.from(published,state=>state.visible),[false,false]);
@@ -359,7 +360,7 @@ test('hidden repository controls omit initial path labels',()=>{
       published=states;
     },
   };
-  const Context=vm.runInNewContext(`${contextSource}\nContext`,globals);
+  const Context=vm.runInNewContext(`${contextSource}\nContext`,{...policy,...globals});
   const owner=new Context();
   owner.init({}, {spawn:()=>{},notify:()=>{},focus_handle:()=>({focus(){}})});
   const branch = published.find(state=>state.id === 'branch');

@@ -2,7 +2,7 @@
 import {div,list} from 'gpui-kit';
 import {Button,Checkbox,Field,Form,Icon} from 'gpui-component';
 import {TextField} from 'sailry/forms';
-import {Menu,Modal} from 'sailry/ui';
+import {Modal} from 'sailry/ui';
 
 function button(id,label,action,disabled = false,primary = false) {
   let control = new Button(id).label(label).disabled(disabled).on_click(action);
@@ -30,9 +30,11 @@ function managed(view,owner) {
   return div().id('location-create-form').v_flex().gap_4()
     .child(div().id(owner.pending || !owner.status ? 'location-branch-loading' : 'location-branch-name')
       .child(TextField.new(owner.fields.branch,{readonly})))
-    .child(div().id('location-copy-changes').child(new Checkbox('location-copy-changes').size('small')
-      .label(view.text('location_copy_changes')).checked(owner.include_changes).disabled(readonly)
-      .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}})));
+    // A checkout started from another branch cannot carry this checkout's changes.
+    .children(owner.base ? [div().text_sm().child(view.text('location_fork_from').replace('%{branch}',owner.base.from))]
+      : [div().id('location-copy-changes').child(new Checkbox('location-copy-changes').size('small')
+        .label(view.text('location_copy_changes')).checked(owner.include_changes).disabled(readonly)
+        .on_change((value,cx) => {if (!readonly) {owner.include_changes = value; cx.notify();}}))]);
 }
 function removal(view,owner) {
   return div().id('worktree-remove-form').v_flex().gap_4()
@@ -46,17 +48,6 @@ function row(id,label,icon,checked,disabled,action,detail) {
         .child(div().truncate().child(label))
         .children(detail ? [div().text_xs().truncate().child(detail)] : []))
       .children(checked ? [new Icon('icons/check.svg').size('small')] : []));
-}
-function location(view) {
-  const model = view.model, choices = model.choices(), state = model.location;
-  const selected = model.selected();
-  const bound = {cursor:state.cursor,node:state.node,project:state.project,worktree:state.worktree,
-    session:state.session};
-  return Menu.new('location-choices',{content:true,label:view.text('workspace_project'),items:choices.flatMap((choice,index) => [
-    ...(index > 0 && choice.group?.label !== choices[index-1].group?.label ? [{separator:true}] : []),
-    {id:choice.id,label:choice.label.label,icon:choice.icon,checked:choice.id === selected,
-      enabled:choice.enabled && state.can_move,value:bound},
-  ])});
 }
 function management(view,owner) {
   const choices = owner.choices;
@@ -87,5 +78,5 @@ export function render(view) {
       footer(view,owner,owner.kind === 'create' ? 'live-worktree-submit' : owner.kind === 'managed' ? 'location-create-submit' : 'worktree-remove-confirm',
         owner.kind === 'create' ? 'live-worktree-cancel' : owner.kind === 'managed' ? 'location-cancel' : 'worktree-remove-cancel')
     ] : []);
-  return div().id('worktrees-controller').children(view.model.menuOpen ? [location(view)] : []).child(modal);
+  return div().id('worktrees-controller').child(modal);
 }

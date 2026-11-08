@@ -58,33 +58,29 @@ test('initialization keeps declared labels for unrepresentable names',()=>{
   }
 });
 
-test('menu state keeps its selected identity and groups',()=>{
+test('menu state publishes its choices and selection',()=>{
   const {view,published}=fixture({...base,project:null,projects:[{id:'project',name:'Project'}]});
   const initial=published[0][0];
-  assert.equal(initial.value,false);
-  assert.equal(initial.choices,undefined);
-  assert.equal(view.model.selected(),'unassigned');
-  const choices=view.model.choices();
-  assert.deepEqual(Array.from(choices,choice=>choice.id),['unassigned','project:project','add_project']);
-  assert.deepEqual(choices[0].group,choices[1].group);
-  assert.notDeepEqual(choices[1].group,choices[2].group);
+  assert.equal(initial.value,'unassigned');
+  assert.deepEqual(Array.from(initial.choices,choice=>choice.id),['unassigned','project:project','add_project']);
+  assert.deepEqual(initial.choices[0].group,initial.choices[1].group);
+  assert.notDeepEqual(initial.choices[1].group,initial.choices[2].group);
   view.model.accept({...base,worktree:'main'});
-  assert.equal(view.model.selected(),'worktree:main');
+  assert.equal(view.model.selected(),'project:project');
 });
 
-test('opening replies preserve the popup before refreshing',async()=>{
+test('choice events select and keep their replies',async()=>{
   const {view,published,tasks,events,context}=fixture(base);
-  const toggled=[],opened=[];
-  view.model.openMenu=async open=>toggled.push(open);
+  const selected=[],opened=[];
+  view.model.select=async id=>selected.push(id);
   view.model.open=async handler=>opened.push(handler);
-  events.push({id:'location',handler:'location',kind:'change',value:true,sequence:7},
+  events.push({id:'location',handler:'location',kind:'change',value:'add_project',sequence:7},
     {id:'manage',handler:'manage',kind:'invoke',sequence:8});
   await tasks[3](context);
   await Promise.all(tasks.slice(7).map(task=>task(context)));
-  assert.deepEqual(toggled,[true]);
+  assert.deepEqual(selected,['add_project']);
   assert.deepEqual(opened,['manage']);
   assert.equal(published[1][0].reply_to,7);
-  assert.equal(published[1][0].value,true);
   assert.equal(published[2][1].reply_to,8);
 });
 
@@ -103,27 +99,12 @@ test('inventory subscriptions refresh without moving the location',async()=>{
   assert.equal(view.model.location,location);
 });
 
-test('menu choices retain captured locations and dismissal',async()=>{
-  const {view,published,tasks,menuEvents,context}=fixture(base);
-  const selected=[],bound={cursor:'captured',node:'node',project:'project',worktree:'main',session:null};
-  view.model.select=async(id,location)=>selected.push({id,location});
-  view.model.menuOpen=true;
-  menuEvents.push({menu:'location-choices',id:'projects',value:bound},
-    {menu:'location-choices',id:'',kind:'dismiss'});
-  const firstAction=tasks.length;
-  await tasks[4](context);
-  await Promise.all(tasks.slice(firstAction).map(task=>task(context)));
-  assert.deepEqual(selected,[{id:'projects',location:bound}]);
-  assert.equal(view.model.menuOpen,false);
-  assert.equal(published.at(-1)[0].value,false);
-});
-
-test('large inventories stay inside the package list',()=>{
+test('large inventories stay inside the choice limit',()=>{
   const projects=Array.from({length:1000},(_,index)=>({id:`project-${index}`,name:`Project ${index}`}));
   const {view,published}=fixture({...base,project:null,projects});
-  assert.equal(published[0][0].choices,undefined);
-  assert.equal(view.model.choices().length,1002);
-  assert.equal(view.model.choices().filter(choice=>choice.id.startsWith('project:')).length,1000);
+  const choices=published[0][0].choices;
+  assert.ok(choices.length<=256);
+  assert.equal(choices.at(-2).id,'projects');
   view.publish({id:'location',sequence:7});
   assert.equal(published.at(-1)[0].reply_to,7);
 });

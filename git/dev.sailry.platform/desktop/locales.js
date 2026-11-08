@@ -1,5 +1,12 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
+  "git_branch_current": "Current",
+  "git_branch_worktree": "Worktree",
+  "git_remote_branches_menu": "Remote branches",
+  "git_start_new_branch": "Start from new branch…",
+  "git_start_branch": "Start from new branch",
+  "git_new_worktree_label": "%{branch} · New worktree",
+  "git_fork_from_branch": "Fork from another branch…",
   "git_back": "Back",
   "git": "Git",
   "git_check_result": "Check result",
@@ -264,6 +271,13 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
+  "git_branch_current": "当前",
+  "git_branch_worktree": "工作树",
+  "git_remote_branches_menu": "远程分支",
+  "git_start_new_branch": "从新分支开始…",
+  "git_start_branch": "从新分支开始",
+  "git_new_worktree_label": "%{branch} · 新工作树",
+  "git_fork_from_branch": "从其他分支派生…",
   "git_back": "返回",
   "git_check_result": "检查结果",
   "git_detached": "分离头指针",
@@ -527,4 +541,81 @@ const zh = {
   "form_target_directory_hint": "工作树目录路径",
   "git": "Git"
 };
-export function messages(locale) { return locale.startsWith("zh") ? {...en,...zh} : {...zh,...en}; }
+// Composer branch rows in the remaining product locales.
+const branchLocales = {
+  "de": {
+    git_branch_current: "Aktuell",
+    git_branch_worktree: "Worktree",
+    git_remote_branches_menu: "Remote-Branches",
+    git_start_new_branch: "Mit neuem Branch beginnen…",
+    git_start_branch: "Mit neuem Branch beginnen",
+    git_new_worktree_label: "%{branch} · Neuer Worktree",
+    git_fork_from_branch: "Von anderem Branch abzweigen…",
+  },
+  "es": {
+    git_branch_current: "Actual",
+    git_branch_worktree: "Worktree",
+    git_remote_branches_menu: "Ramas remotas",
+    git_start_new_branch: "Empezar en una rama nueva…",
+    git_start_branch: "Empezar en una rama nueva",
+    git_new_worktree_label: "%{branch} · Nuevo worktree",
+    git_fork_from_branch: "Bifurcar desde otra rama…",
+  },
+  "fr": {
+    git_branch_current: "Actuelle",
+    git_branch_worktree: "Worktree",
+    git_remote_branches_menu: "Branches distantes",
+    git_start_new_branch: "Commencer sur une nouvelle branche…",
+    git_start_branch: "Commencer sur une nouvelle branche",
+    git_new_worktree_label: "%{branch} · Nouveau worktree",
+    git_fork_from_branch: "Dériver d’une autre branche…",
+  },
+  "ja": {
+    git_branch_current: "現在",
+    git_branch_worktree: "ワークツリー",
+    git_remote_branches_menu: "リモートブランチ",
+    git_start_new_branch: "新しいブランチで開始…",
+    git_start_branch: "新しいブランチで開始",
+    git_new_worktree_label: "%{branch} · 新しいワークツリー",
+    git_fork_from_branch: "別のブランチから派生…",
+  },
+  "ko": {
+    git_branch_current: "현재",
+    git_branch_worktree: "워크트리",
+    git_remote_branches_menu: "원격 브랜치",
+    git_start_new_branch: "새 브랜치로 시작…",
+    git_start_branch: "새 브랜치로 시작",
+    git_new_worktree_label: "%{branch} · 새 워크트리",
+    git_fork_from_branch: "다른 브랜치에서 분기…",
+  },
+  "pt-BR": {
+    git_branch_current: "Atual",
+    git_branch_worktree: "Worktree",
+    git_remote_branches_menu: "Branches remotos",
+    git_start_new_branch: "Começar em um novo branch…",
+    git_start_branch: "Começar em um novo branch",
+    git_new_worktree_label: "%{branch} · Novo worktree",
+    git_fork_from_branch: "Derivar de outro branch…",
+  },
+  "ru": {
+    git_branch_current: "Текущая",
+    git_branch_worktree: "Рабочее дерево",
+    git_remote_branches_menu: "Удалённые ветки",
+    git_start_new_branch: "Начать с новой ветки…",
+    git_start_branch: "Начать с новой ветки",
+    git_new_worktree_label: "%{branch} · Новое рабочее дерево",
+    git_fork_from_branch: "Ответвить от другой ветки…",
+  },
+  "zh-TW": {
+    git_branch_current: "目前",
+    git_branch_worktree: "工作樹",
+    git_remote_branches_menu: "遠端分支",
+    git_start_new_branch: "從新分支開始…",
+    git_start_branch: "從新分支開始",
+    git_new_worktree_label: "%{branch} · 新工作樹",
+    git_fork_from_branch: "從其他分支衍生…",
+  },
+};
+export function messages(locale) {
+  return {...(locale.startsWith("zh") ? {...en,...zh} : {...zh,...en}),...branchLocales[locale]};
+}

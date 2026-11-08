@@ -13,6 +13,7 @@ test('controller changes use a spawned context after initialization returns',asy
       constructor(api,text,notify){changed=notify;this.location={main:true,can_move:true};}
       refresh(){return new Promise(()=>{});}
       choices(){return [];}
+      selected(){return 'unassigned';}
     },
   };
   for(const name of ['readWorktreeCatalog','listWorktrees','inspectGit','resolveGitRevision','prepareWorktreeChange',

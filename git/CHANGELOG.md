@@ -2,7 +2,9 @@
 
 ## 0.1.30
 
-- Show branch choices without repeated row icons; the current branch keeps its check
+- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched
+- Copy the branch name or fork from another branch in a running conversation
+- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check
 
 ## 0.1.29
 

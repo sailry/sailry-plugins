@@ -6,7 +6,6 @@ export class Controller {
     this.api = api; this.text = text; this.changed = changed;
     this.location = api.readLocation(); this.serial = 0; this.dialog = null; this.catalog = null;
     this.entries = null; this.catalogRead = null; this.operation = null; this.disposed = false;
-    this.showProjects = false; this.menuOpen = false;
   }
   notify() { if (!this.disposed) this.changed(); }
   owner(kind, extra = {}) {
@@ -15,7 +14,6 @@ export class Controller {
   accept(location) {
     if (['node','project','worktree'].some(key => location[key] !== this.location[key])) {
       this.catalog = null; this.entries = null; this.catalogRead = null;
-      this.showProjects = false;
     }
     this.location = location;
     if (this.dialog && ['list','actions'].includes(this.dialog.kind) && !this.valid(this.dialog)) this.close();
@@ -55,39 +53,24 @@ export class Controller {
     })();
     return read.done;
   }
-  choices() { return menu(this.location,this.catalog,this.entries,this.text,this.showProjects); }
-  selected() {
-    return !this.location.project ? 'unassigned' : this.showProjects
-      ? `project:${this.location.project}` : `worktree:${this.location.worktree}`;
-  }
-  async openMenu(open) {
-    this.menuOpen = open; this.showProjects = false;
+  choices() { return menu(this.location,this.text); }
+  selected() { return this.location.project ? `project:${this.location.project}` : 'unassigned'; }
+  async select(id) {
     this.accept(this.api.readLocation());
-    if (open) return this.refresh();
-  }
-  async select(id,bound = this.location) {
-    const owner = this.owner('location',{bound});
-    const enabled = this.choices().some(choice => choice.id === id && choice.enabled);
-    if (!this.valid(owner) || !enabled) {
+    const owner = this.owner('location');
+    if (!this.location.can_move || !this.choices().some(choice => choice.id === id)) {
       this.fail(owner,'worktree_context_changed'); return;
     }
+    if (id === this.selected()) return;
+    const selection = id === 'unassigned' ? {project:null} : id === 'add_project' ? {add_project:true}
+      : id === 'projects' ? {projects:true} : {project:id.slice('project:'.length)};
     try {
-      if (id === 'projects' || id === 'worktrees') {
-        this.showProjects = id === 'projects'; this.notify(); return;
-      }
-      if (!id.startsWith('project:')) { this.menuOpen = false; this.notify(); }
-      if (id === 'manage') return await this.open();
-      if (id === 'create' || id === 'fork') return await this.createManaged(id === 'fork');
-      const selection = id === 'unassigned' ? {project:null}
-        : id === 'add_project' ? {add_project:true}
-        : id.startsWith('project:') ? {project:id.slice('project:'.length)}
-        : {worktree:id.slice('worktree:'.length),fork:false};
-      await this.api.selectLocation(owner.bound.cursor,selection);
-      this.showProjects = false; this.accept(this.api.readLocation());
+      await this.api.selectLocation(this.location.cursor,selection);
+      this.accept(this.api.readLocation());
     } catch (_) { this.fail(owner,'worktree_context_changed'); }
   }
   valid(owner) { return current(owner.bound,this.api.readLocation()); }
-  show(owner) { if (this.dialog !== owner) this.close(); this.menuOpen = false; this.dialog = owner; this.notify(); return owner; }
+  show(owner) { if (this.dialog !== owner) this.close(); this.dialog = owner; this.notify(); return owner; }
   close() {
     const owner = this.dialog;
     this.dialog = null;
@@ -112,6 +95,7 @@ export class Controller {
     if (!this.location.can_move) return;
     if (!this.location.project) { await this.api.selectLocation(this.location.cursor,{projects:true}); return; }
     if (intent === 'create' && entry) return this.create({branch:entry.branch,head:entry.commit});
+    if (intent === 'fork' && entry?.base) return this.createManaged(true,entry.base);
     if (intent === 'create' || intent === 'fork') return this.createManaged(intent === 'fork');
     if (this.dialog?.loading && this.dialog.kind === 'list' && this.valid(this.dialog)) return this.dialog.read;
     const owner = this.show(this.owner('list',{loading:true,choices:[]}));
@@ -161,8 +145,11 @@ export class Controller {
     const owner = this.owner('create',{values:{revision:entry.branch || entry.head || '',branch:'',path:''},fields:{}});
     this.show(owner); return owner;
   }
-  async createManaged(fork) {
-    const owner = this.show(this.owner('managed',{fork,values:{branch:`sailry/task-${this.api.newId().slice(0,8)}`},fields:{},include_changes:true,status:null,pending:true}));
+  /** A `base` ({from, commit}) starts the checkout at another branch without source changes. */
+  async createManaged(fork,base = null) {
+    const valid = base && typeof base.from === 'string' && /^[0-9a-f]{40}$/i.test(base.commit ?? '');
+    const owner = this.show(this.owner('managed',{fork,base:valid ? {from:base.from,commit:base.commit} : null,
+      values:{branch:`sailry/task-${this.api.newId().slice(0,8)}`},fields:{},include_changes:!valid,status:null,pending:true}));
     try { owner.status = await this.api.inspectGit(); }
     catch (_) { if (this.dialog === owner) this.fail(owner,'worktree_load_failed'); }
     finally { owner.pending = false; this.notify(); }
@@ -237,12 +224,14 @@ export class Controller {
   async submitManaged(owner,values) {
     const branch = values.branch.trim();
     if (!owner.status) { this.fail(owner,'worktree_load_failed'); return; }
-    if (!owner.status.head || !owner.status.index_revision) { this.fail(owner,'worktree_commit_first'); return; }
+    if (!owner.base && (!owner.status.head || !owner.status.index_revision)) { this.fail(owner,'worktree_commit_first'); return; }
     if (!branch) { this.fail(owner,'git_branch_name_required'); return; }
     owner.pending = true; owner.error = null; this.notify();
     try {
-      if (!owner.request) owner.request = this.api.prepareWorktreeChange({kind:'managed',project:owner.bound.project,branch,
-        expected_head:owner.status.head,expected_index:owner.status.index_revision,include_changes:owner.include_changes});
+      if (!owner.request) owner.request = this.api.prepareWorktreeChange(owner.base
+        ? {kind:'managed',project:owner.bound.project,branch,expected_head:'',expected_index:'',include_changes:false,base:owner.base.commit}
+        : {kind:'managed',project:owner.bound.project,branch,
+          expected_head:owner.status.head,expected_index:owner.status.index_revision,include_changes:owner.include_changes});
       await this.execute(owner);
     } finally { this.settle(owner); }
   }

@@ -1,5 +1,6 @@
 // Copy retained from Sailry ef5e82ea.
 const en = {
+  "location_fork_from": "From %{branch}",
   "git_discard_changes": "Discard Changes",
   "git_ignore": "Ignore (add to .gitignore)",
   "git_index_failed": "Could not update staging, try again",
@@ -244,6 +245,7 @@ const en = {
   "form_target_directory_hint": "Target directory"
 };
 const zh = {
+  "location_fork_from": "基于 %{branch}",
   "workspace_native_menu_unavailable": "此平台尚未接入系统原生菜单",
   "workspace_native_menu_platform": "当前平台暂不支持系统右键菜单",
   "workspace_project": "项目概览",
@@ -491,7 +493,20 @@ const chatLabels = {
   "zh-TW": "對話", ja: "チャット", ko: "대화", "pt-BR": "Conversas", ru: "Чаты",
 };
 
+// Fork source line in the remaining product locales.
+const forkLabels = {
+  "de": "Von %{branch}",
+  "es": "Desde %{branch}",
+  "fr": "Depuis %{branch}",
+  "ja": "%{branch} から",
+  "ko": "%{branch}에서",
+  "pt-BR": "De %{branch}",
+  "ru": "Из %{branch}",
+  "zh-TW": "基於 %{branch}",
+};
+
 export function messages(locale) {
   const strings = locale.startsWith("zh") ? {...en,...zh} : {...zh,...en};
-  return {...strings, composer_no_project: chatLabels[locale] ?? strings.composer_no_project};
+  return {...strings, composer_no_project: chatLabels[locale] ?? strings.composer_no_project,
+    location_fork_from: forkLabels[locale] ?? strings.location_fork_from};
 }

@@ -92,7 +92,7 @@ export class Actions {
   form(form,branch) {
     this.close();
     const repo = this.view.repo, text = this.view.text;
-    const title = {branch:'git_new_branch',rename:'git_rename_branch',remote:'git_add_remote',tag:'git_tag_create',tracking:'git_tracking_name'}[form];
+    const title = {branch:'git_new_branch',rename:'git_rename_branch',remote:'git_add_remote',tag:'git_tag_create',tracking:'git_tracking_name',start:'git_start_branch'}[form];
     const name = form === 'rename' ? branch.name : form === 'remote' ? 'origin' : form === 'tracking' ? branch.name.split('/').at(-1) : '';
     const input = createText(name,{label:text[form === 'remote' ? 'git_remote_name' : form === 'tag' ? 'git_name' : 'git_branch_name'],placeholder:text[form === 'remote' ? 'form_remote_hint' : 'form_branch_hint']});
     const extra = ['remote','tag'].includes(form) ? createText('',{label:text[form === 'remote' ? 'git_remote_url' : 'git_tag_message'],placeholder:form === 'remote' ? text.project_repository_placeholder : text.git_tag_message}) : null;
@@ -119,6 +119,11 @@ export class Actions {
     if (dialog.operation === 'initialize') { this.close(); await repo.initialize(); return; }
     let draft, name = dialog.input ? readText(dialog.input) : null, extra = dialog.extra ? readText(dialog.extra) : null;
     if (dialog.input && !name.length) { dialog.error = 'git_branch_name_required'; this.view.report(dialog.error); this.view.notify(); return; }
+    if (dialog.form === 'start') {
+      // The Node validates the name when the first message creates the worktree.
+      if (/[\s\u0000-\u001f\u007f]/u.test(name)) { dialog.error = 'git_branch_name_invalid'; this.view.report(dialog.error); this.view.notify(); return; }
+      this.close(); await this.view.startBranch(name); return;
+    }
     if (dialog.form === 'branch') draft = dialog.commit ? {kind:'create',name,commit:dialog.commit}
       : {kind:'action',action:{start_branch:{name}},...dialog.revisions};
     else if (dialog.form === 'rename') draft = {kind:'rename',name:dialog.branch.name,new_name:name,commit:dialog.commit};

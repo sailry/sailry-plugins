@@ -214,63 +214,31 @@ test('frozen picker rows cannot be substituted by a refreshed array', async () =
   assert.equal(state.prepared[0].value.path,'/native');
 });
 
-test('menu project choices use captured selectors',async()=>{
+test('menu project choices use the live cursor',async()=>{
   const {model,state,change}=fixture('composer');
   change({project:null,worktree:null,session:null,can_retarget:true,projects:[{id:'project-a',name:'Project'}]});
   await model.select('unassigned');
+  change({cursor:'2'});
   await model.select('project:project-a');
   await model.select('add_project');
   assert.deepEqual(state.selected,[
-    {cursor:'1',value:{project:null}},
-    {cursor:'1',value:{project:'project-a'}},
-    {cursor:'1',value:{add_project:true}},
+    {cursor:'2',value:{project:'project-a'}},
+    {cursor:'2',value:{add_project:true}},
   ]);
+  assert.equal(state.toasts.length,0);
 });
 
-test('menu actions reuse checkout and management flows',async()=>{
-  const {model,state,change}=fixture('composer');
-  change({can_retarget:true});
-  await model.refresh();
-  await model.select('worktree:tree-a');
-  await model.select('projects');
-  assert.equal(model.showProjects,true);
-  await model.select('worktrees');
-  assert.equal(model.showProjects,false);
-  assert.deepEqual(state.selected,[
-    {cursor:'1',value:{worktree:'tree-a',fork:false}},
-  ]);
-  await model.select('create');
-  assert.equal(model.dialog.kind,'managed');
-  assert.equal(model.dialog.fork,false);
-  await model.select('fork');
-  assert.equal(model.dialog.kind,'managed');
-  assert.equal(model.dialog.fork,true);
-  await model.select('manage');
-  assert.equal(model.dialog.kind,'list');
-  assert.ok(model.dialog.choices.some(choice=>choice.id==='entry-0'));
-});
-
-test('stale and unavailable menu choices report context changes',async()=>{
-  for(const stale of [false,true]) {
-    const {model,api,state}=fixture('composer');
-    await model.refresh();
-    if(stale)api.readLocation=()=>({...model.location,cursor:'2'});
-    await model.select(stale ? 'worktree:tree-a' : 'project:other');
+test('unavailable menu choices report context changes',async()=>{
+  for (const id of ['project:other','worktree:tree-a','create','manage']) {
+    const {model,state,change}=fixture('composer');
+    change({session:null,can_retarget:true,projects:[{id:'project-a',name:'Project'}]});
+    await model.select(id);
     assert.deepEqual(state.selected,[]);
     assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
   }
   const {model,state}=fixture('composer');
-  await model.select('projects');
+  await model.select('project:project-a');
   assert.deepEqual(state.selected,[]);
-  assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
-});
-
-test('rendered rows keep their captured location until selection',async()=>{
-  const {model,state,change}=fixture('composer');
-  const bound=model.location;
-  change({cursor:'2'});
-  await model.select('create',bound);
-  assert.equal(model.dialog,null);
   assert.equal(state.toasts.at(-1).message,'worktree_context_changed');
 });
 
@@ -291,7 +259,6 @@ test('menus cache discovery and management refreshes explicitly',async()=>{
   change({cursor:'2',branch:'topic'});
   await model.refresh();
   assert.equal(catalogs,2);assert.equal(discoveries,2);
-  assert.equal(model.choices().find(choice=>choice.id==='worktree:tree-a').label.label,'location_main (topic)');
 });
 
 test('late catalogs cannot replace a changed location',async()=>{
@@ -323,7 +290,7 @@ test('inventory refresh preserves form ownership and handoff',async()=>{
   await model.invalidate();
   assert.equal(model.dialog,owner);
   assert.equal(model.location.cursor,cursor);
-  assert.ok(model.choices().some(choice=>choice.id==='worktree:added'));
+  assert.ok(model.catalog.worktrees.some(tree=>tree.id==='added'));
   await model.submit({branch:'task/new'});
   assert.deepEqual(state.selected,[{cursor,value:{worktree:'tree-new',fork:false,request:'request-0'}}]);
 });
@@ -355,7 +322,7 @@ test('registration refreshes catalog before a removal form',async()=>{
   await model.refresh();
   assert.equal(model.dialog.kind,'remove');
   assert.equal(model.dialog.bound.cursor,'1');
-  assert.ok(model.choices().some(choice=>choice.id==='worktree:registered'));
+  assert.ok(model.catalog.worktrees.some(tree=>tree.id==='registered'));
   assert.deepEqual(state.selected,[]);
 });
 
@@ -371,7 +338,7 @@ test('removal refreshes an unchanged location menu',async()=>{
   await model.choose('entry-1');await model.choose('action-1');
   await model.submit();await model.refresh();
   assert.equal(model.location.cursor,'1');
-  assert.equal(model.choices().some(choice=>choice.id==='worktree:registered'),false);
+  assert.equal(model.catalog?.worktrees.some(tree=>tree.id==='registered') ?? false,false);
   assert.deepEqual(state.selected,[]);
 });
 
@@ -411,11 +378,10 @@ test('offline refreshes skip reads and background failures stay quiet',async()=>
   await model.refresh();
   assert.equal(catalogs,1);assert.equal(discoveries,1);
   assert.deepEqual(state.toasts,[]);
-  assert.ok(model.choices().some(choice=>choice.id==='worktree:tree-a'));
+  assert.equal(model.catalog,null);
   api.readWorktreeCatalog=catalog;
-  await model.openMenu(true);
+  await model.refresh();
   assert.equal(model.catalog.worktrees[0].id,'tree-a');
-  assert.equal(model.menuOpen,true);
   assert.deepEqual(state.toasts,[]);
 });
 
@@ -477,4 +443,20 @@ test('stale and locked native entries preserve action policy', () => {
   assert.equal(choices[0].label,'abcdef01');assert.equal(choices[0].action.kind,'prune');
   assert.equal(choices[1].disabled,true);assert.equal(choices.at(-1).id,'partial');
   assert.equal(choices.at(-1).disabled,true);
+});
+
+test('forks from another branch start at its commit without source changes',async()=>{
+  const {model,state}=fixture('composer');
+  const commit='b'.repeat(40);
+  await model.open('fork',{base:{from:'dev',commit}});
+  assert.equal(model.dialog.kind,'managed');
+  assert.deepEqual(model.dialog.base,{from:'dev',commit});
+  assert.equal(model.dialog.include_changes,false);
+  await model.submit({branch:'sailry/task-12345678'});
+  assert.deepEqual(state.prepared[0].value,{kind:'managed',project:'project-a',branch:'sailry/task-12345678',
+    expected_head:'',expected_index:'',include_changes:false,base:commit});
+  assert.deepEqual(state.selected.at(-1).value,{worktree:'tree-new',fork:true,request:'request-0'});
+  await model.open('fork',{base:{from:'dev',commit:'short'}});
+  assert.equal(model.dialog.base,null);
+  assert.equal(model.dialog.include_changes,true);
 });
