@@ -12319,7 +12319,7 @@
               "resources": [
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/context.js",
-                "dev.sailry.platform/desktop/branch-menu.js",
+                "dev.sailry.platform/desktop/session-branch.js",
                 "dev.sailry.platform/desktop/view.js",
                 "dev.sailry.platform/desktop/surfaces.js",
                 "dev.sailry.platform/desktop/menus.js",
@@ -12371,7 +12371,6 @@
                 },
                 "icon": "network",
                 "handler": "branches",
-                "intent": "git_branches",
                 "order": 0
               },
               {
@@ -12419,10 +12418,10 @@
       "versions": [
         {
           "version": "0.1.30",
-          "commit": "5b763984135cad0384ee0c34785582078652cdcc",
+          "commit": "a2c91deb54d96dcb9dea02d80381af1c106a9493",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- Show branch choices without repeated row icons; the current branch keeps its check"
+            "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check"
           }
         },
         {
@@ -12667,7 +12666,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Show branch choices without repeated row icons; the current branch keeps its check"
+        "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check"
       }
     },
     {
@@ -22378,10 +22377,10 @@
       "versions": [
         {
           "version": "0.1.14",
-          "commit": "5b763984135cad0384ee0c34785582078652cdcc",
+          "commit": "a2c91deb54d96dcb9dea02d80381af1c106a9493",
           "min_sailry_version": "0.1.5",
           "release_notes": {
-            "text": "- Move Switch project… to the end of the project menu"
+            "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes"
           }
         },
         {
@@ -22531,7 +22530,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Move Switch project… to the end of the project menu"
+        "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes"
       }
     },
     {
