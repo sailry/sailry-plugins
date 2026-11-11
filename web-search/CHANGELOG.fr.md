@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+Faites glisser la poignée d’une ligne pour réorganiser les services, y compris au clavier. Les lignes adoptent la mise en page standard des réglages avec les logos, et Plus est un bouton icône.
+
 ## 0.1.14
 
 Monter et descendre restent visibles sur chaque ligne de service ; les réglages et le test sont dans le menu Plus.

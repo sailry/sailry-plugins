@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+Dienste per Ziehen am Griff neu anordnen, auch per Tastatur. Die Zeilen nutzen das Standardlayout der Einstellungen mit Dienstlogos, und Mehr ist eine Symbolschaltfläche.
+
 ## 0.1.14
 
 Nach oben und unten bleiben in jeder Dienstzeile sichtbar; Einstellungen und Test stehen im Menü „Mehr“.

@@ -1,18 +1,12 @@
 import {div} from 'gpui-kit';
 import {Button,Switch,Field,Form} from 'gpui-component';
-import {theme} from 'sailry';
 import {TextField} from 'sailry/forms';
 import {SecretField} from 'sailry/credentials';
-import {SettingsGroup,SelectField,IconButton,Menu,Modal} from 'sailry/ui';
+import {SettingsGroup,SettingsRow,SelectField,Menu,Modal} from 'sailry/ui';
 import * as catalog from './catalog.js';
 
 function button(id,label,action,disabled=false) {
   return div().id(id).child(new Button(id).label(label).disabled(disabled).on_click(action));
-}
-function row(id,label,control) {
-  return div().id(id).h_flex().w_full().items_center().py_3().gap_4().text_sm()
-    .child(div().flex_1().min_w_0().child(label))
-    .child(div().w_64().max_w_full().h_flex().justify_end().child(control));
 }
 function toggle(id,value,locked,action) {
   return div().id(id).child(new Switch(id).checked(!!value).disabled(locked).on_change(action));
@@ -46,20 +40,16 @@ function editor(view) {
 export function render(view) {
   const text=view.text,settings=view.saved??{providers:{}},locked=view.busy(),drivers=view.available();
   const selected=settings.driver?.kind==='driver'?settings.driver.driver:settings.driver?.kind??'none';
-  const muted=theme().colors.muted_foreground;
-  const providers=drivers.map((driver,index)=>{
+  const providers=drivers.map(driver=>{
     const config=settings.providers[driver]??{},capability=settings.capabilities?.[driver];
     // The switch already shows whether a service is enabled; describe only what it lacks and its quota.
     const missing=catalog.needsKey(capability)&&!config.key_configured?'search_key_required'
       :driver==='searxng'&&!config.endpoint?'search_endpoint_required'
       :driver==='model'&&!catalog.contains(view.models,config.model)?'search_model_required':null;
     const detail=[missing,capability?.quota?`search_quota_${capability.quota}`:null].filter(Boolean).map(key=>text[key]).join(' · ');
-    return div().id(`search-driver-${driver}`).h_flex().w_full().py_2().items_center().gap_2()
-      .child(div().flex_1().min_w_0().v_flex().child(text[`search_driver_${driver}`])
-        .children(detail?[div().text_sm().text_color(muted).child(detail)]:[]))
+    // The application's settings row: brand mark, name, what is missing; drag the handle to reorder.
+    return SettingsRow.new(`${catalog.row}${driver}`,{label:text[`search_driver_${driver}`],description:detail,icon:catalog.icon(driver)})
       .child(toggle(`search-enabled-${driver}`,config.enabled,locked,(value,cx)=>view.enabled(driver,value,cx)))
-      .child(IconButton.new(`search-up-${driver}`,{icon:'arrow-up',label:text.search_move_up,disabled:locked||index===0}))
-      .child(IconButton.new(`search-down-${driver}`,{icon:'arrow-down',label:text.search_move_down,disabled:locked||index===drivers.length-1}))
       .child(Menu.new(`search-more-${driver}`,{label:text.search_more,icon:'ellipsis',disabled:locked,items:[
         {id:'edit',label:text.settings_edit,icon:'settings-2'},{id:'test',label:text.search_test,icon:'play'}]}));
   });
@@ -67,10 +57,10 @@ export function render(view) {
     .children(!view.saved&&!view.loading?[button('search-reload',text.search_reload,(_,cx)=>view.load(cx))]:[])
     .children(view.request&&!view.editor?[button('search-retry',text.search_retry,(_,cx)=>view.retry(cx),view.pending)]:[])
     .child(SettingsGroup.new('search_settings',{title:text.search_settings})
-      .child(row('search-driver-row',text.search_default_driver,SelectField.new('search-default-driver',{
+      .child(SettingsRow.new('search-driver-row',{label:text.search_default_driver,wide:true}).child(SelectField.new('search-default-driver',{
         label:text.search_default_driver,disabled:locked,selected,items:['auto',...drivers,'none'].map(id=>({id,label:text[`search_driver_${id}`]}))})))
-      .child(row('search-fallback',text.search_fallback,toggle('search-fallback-toggle',settings.fallback,locked||selected==='model',
+      .child(SettingsRow.new('search-fallback',{label:text.search_fallback}).child(toggle('search-fallback-toggle',settings.fallback,locked||selected==='model',
         (value,cx)=>view.toggle('fallback',value,cx)))))
-    .child(SettingsGroup.new('search_providers',{title:text.search_providers}).children(providers))
+    .child(SettingsGroup.new('search_providers',{title:text.search_providers,sortable:true,sort_label:text.search_reorder,sort_disabled:locked}).children(providers))
     .child(editor(view));
 }

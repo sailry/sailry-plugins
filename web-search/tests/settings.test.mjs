@@ -7,6 +7,7 @@ import * as catalog from '../dev.sailry.platform/desktop/catalog.js';
 const source=readFileSync(new URL('../dev.sailry.platform/desktop/settings.js',import.meta.url),'utf8')
   .replace(/^import .*;\n/gm,'').replace('export default class','class').replace('export const drivers','const drivers');
 const plain=value=>JSON.parse(JSON.stringify(value)),tick=()=>new Promise(resolve=>setImmediate(resolve));
+const rows=(...drivers)=>drivers.map(driver=>catalog.row+driver);
 async function fixture() {
   let saved={revision:0,fallback:true,providers:{exa:{enabled:true,key_configured:false},searxng:{enabled:true},
     tinyfish:{enabled:false,key_configured:false},model:{enabled:false,model:null}},
@@ -166,12 +167,16 @@ test('search response failures do not blame settings',async()=>{
 
 test('moves services and preserves enable choices',async()=>{
   const f=await fixture(),providers=plain(f.view.saved.providers);
-  f.view.control({id:'search-up-model'},f.cx);await f.settle();
+  f.view.control({id:'search_providers',value:{from:3,to:2,order:rows('exa','tinyfish','model','searxng')}},f.cx);
+  // The dropped order shows while it is saved.
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
-  assert.deepEqual(plain(f.view.saved.order),f.view.available());
+  assert.deepEqual(plain(f.view.saved.order),f.view.available());assert.equal(f.view.saved.revision,1);
   assert.deepEqual(plain(f.view.saved.providers),providers);
-  f.view.control({id:'search-down-model'},f.cx);await f.settle();
-  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
+  f.view.control({id:'search_providers',value:{from:0,to:3,order:rows('tinyfish','model','searxng','exa')}},f.cx);await f.settle();
+  assert.deepEqual(plain(f.view.available()),['tinyfish','model','searxng','exa']);
+  assert.equal(catalog.icon('exa'),'ailogo:exa');assert.equal(catalog.icon('volcengine'),'ailogo:volcengine');
+  assert.equal(catalog.icon('tinyfish'),undefined);assert.equal(catalog.icon('model'),undefined);
 });
 
 test('more menu edits and tests services',async()=>{
@@ -185,19 +190,24 @@ test('more menu edits and tests services',async()=>{
 
 test('ignores moves beyond either list boundary',async()=>{
   const f=await fixture(),revision=f.view.saved.revision;
-  f.view.move('exa',-1,f.cx);f.view.move('model',1,f.cx);f.view.move('missing',1,f.cx);
+  // An unchanged order, an unknown or repeated row, a short list and a missing value change nothing.
+  for(const order of [rows('exa','tinyfish','searxng','model'),rows('exa','tinyfish','searxng','missing'),
+    rows('exa','exa','searxng','model'),rows('exa','tinyfish','searxng'),['exa','tinyfish','model','searxng'],undefined])
+    f.view.control({id:'search_providers',value:{order}},f.cx);
+  f.view.control({id:'search_providers'},f.cx);f.view.control({id:'other',value:{order:rows('model','exa','tinyfish','searxng')}},f.cx);
   await f.settle();assert.equal(f.view.saved.revision,revision);
+  assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
 });
 
 test('blocks moves until pending saves complete',async()=>{
   const f=await fixture();
-  f.view.move('model',-1,f.cx);f.view.move('model',-1,f.cx);await f.settle();
+  f.view.reorder(rows('exa','tinyfish','model','searxng'),f.cx);f.view.reorder(rows('model','exa','tinyfish','searxng'),f.cx);await f.settle();
   assert.equal(f.view.saved.revision,1);
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','model','searxng']);
 });
 
 test('reloads authoritative order after a conflict',async()=>{
-  const f=await fixture();f.external();f.view.move('model',-1,f.cx);await f.settle();
+  const f=await fixture();f.external();f.view.reorder(rows('exa','tinyfish','model','searxng'),f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['exa','tinyfish','searxng','model']);
   assert.equal(f.notices.at(-1).message,messages('en').search_settings_conflict);
 });

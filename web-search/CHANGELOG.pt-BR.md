@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+Arraste a alça de uma linha para reordenar os serviços, também pelo teclado. As linhas usam o layout padrão de configurações com logotipos, e Mais é um botão de ícone.
+
 ## 0.1.14
 
 Mover para cima e para baixo ficam visíveis em cada linha de serviço; configurações e teste estão no menu Mais.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "web-search",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -115,7 +115,7 @@
       },
       "category": "data",
       "tint": "teal",
-      "min_sailry_version": "0.1.0-alpha.5"
+      "min_sailry_version": "0.1.6"
     }
   }
 }

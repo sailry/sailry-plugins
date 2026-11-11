@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+Drag a service row by its handle to reorder; the handle also moves it from the keyboard. Rows use the standard settings layout with service logos, and More is an icon button.
+
 ## 0.1.14
 
 Move up and down stay visible on each service row; settings and test are in the More menu.

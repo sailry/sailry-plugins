@@ -62,12 +62,14 @@ export default class Settings extends View {
     if(this.busy())return;const settings=clone(this.saved);settings.providers[driver].enabled=value;this.save(settings,cx);
   }
   available() {return catalog.available(this.saved);}
-  move(driver,direction,cx) {
+  // rows are the service rows' identifiers as the host dropped them.
+  reorder(rows,cx) {
     if(this.busy())return;
-    const order=this.available(),index=order.indexOf(driver),target=index+direction;
-    if(index<0||target<0||target>=order.length)return;
-    [order[index],order[target]]=[order[target],order[index]];
-    const settings=clone(this.saved);settings.order=order;this.save(settings,cx);
+    const order=catalog.reordered(this.saved,rows);
+    if(!order)return;
+    const settings=clone(this.saved);settings.order=order;
+    // Show the dropped order while it is saved; a failed save reloads the stored one.
+    this.saved.order=order;this.save(settings,cx);
   }
   test(driver,cx) {
     if(this.busy())return;
@@ -158,10 +160,7 @@ export default class Settings extends View {
       }
       this.save(settings,cx);
     }
-    for(const driver of this.available()) {
-      if(event.id===`search-up-${driver}`)this.move(driver,-1,cx);
-      if(event.id===`search-down-${driver}`)this.move(driver,1,cx);
-    }
+    if(event.id==='search_providers')this.reorder(event.value?.order,cx);
   }
   menu(event,cx) {
     const driver=this.available().find(driver=>event.menu===`search-more-${driver}`);

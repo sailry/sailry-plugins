@@ -1,6 +1,23 @@
 // Public settings and model choices carry no authorization material.
 export const drivers = ['exa','tinyfish','tavily','brave','searxng','bocha','volcengine','deepseek','model'];
 const native = ['responses','anthropic','gemini'];
+// AI Logo brand marks; a service without one, or a host without the collection, shows no mark.
+const logos = {exa:'exa',tavily:'tavily',brave:'brave',searxng:'searxng',bocha:'bocha',volcengine:'volcengine',deepseek:'deepseek'};
+// Row identifiers carry the service; a reorder event lists them in the new order.
+export const row = 'search-driver-';
+
+export function icon(driver) {
+  return Object.hasOwn(logos,driver) ? `ailogo:${logos[driver]}` : undefined;
+}
+
+// The saved services in the order a reorder event reports, or null when it is not a permutation of them.
+export function reordered(settings,rows) {
+  const current=available(settings);
+  if(!Array.isArray(rows))return null;
+  const order=rows.map(id=>typeof id==='string'&&id.startsWith(row)?id.slice(row.length):'');
+  if(order.length!==current.length||new Set(order).size!==order.length||order.some(driver=>!current.includes(driver)))return null;
+  return order.every((driver,index)=>driver===current[index])?null:order;
+}
 
 export function available(settings) {
   return (settings?.order ?? drivers).filter(driver => drivers.includes(driver) && Object.hasOwn(settings?.providers ?? {},driver));
