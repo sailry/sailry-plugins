@@ -20357,7 +20357,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -20471,7 +20471,7 @@
             },
             "category": "data",
             "tint": "teal",
-            "min_sailry_version": "0.1.0-alpha.5"
+            "min_sailry_version": "0.1.6"
           }
         }
       },
@@ -20483,6 +20483,25 @@
         "models.read"
       ],
       "versions": [
+        {
+          "version": "0.1.15",
+          "commit": "72027db2b818c97d01b31509204e554ea205bdd3",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "Drag a service row by its handle to reorder; the handle also moves it from the keyboard. Rows use the standard settings layout with service logos, and More is an icon button.",
+            "locales": {
+              "zh-CN": "拖动服务行的手柄即可排序，也可用键盘移动。行采用标准设置布局并显示服务图标，“更多”改为图标按钮。",
+              "zh-TW": "拖曳服務列的把手即可排序，也可用鍵盤移動。列採用標準設定版面並顯示服務圖示，「更多」改為圖示按鈕。",
+              "ja": "サービス行のハンドルをドラッグして並べ替えます。キーボードでも移動できます。行は標準の設定レイアウトになり、サービスのロゴを表示します。「その他」はアイコンボタンになりました。",
+              "ko": "서비스 행의 핸들을 끌어 순서를 바꿉니다. 키보드로도 이동할 수 있습니다. 행은 표준 설정 레이아웃을 사용하고 서비스 로고를 표시하며, 더보기는 아이콘 버튼입니다.",
+              "fr": "Faites glisser la poignée d’une ligne pour réorganiser les services, y compris au clavier. Les lignes adoptent la mise en page standard des réglages avec les logos, et Plus est un bouton icône.",
+              "de": "Dienste per Ziehen am Griff neu anordnen, auch per Tastatur. Die Zeilen nutzen das Standardlayout der Einstellungen mit Dienstlogos, und Mehr ist eine Symbolschaltfläche.",
+              "es": "Arrastra el controlador de una fila para reordenar los servicios, también con el teclado. Las filas usan el diseño estándar de ajustes con logotipos, y Más es un botón de icono.",
+              "pt-BR": "Arraste a alça de uma linha para reordenar os serviços, também pelo teclado. As linhas usam o layout padrão de configurações com logotipos, e Mais é um botão de ícone.",
+              "ru": "Перетаскивайте строку сервиса за маркер, чтобы изменить порядок; работает и с клавиатуры. Строки используют стандартный макет настроек с логотипами, а «Ещё» стало кнопкой-значком."
+            }
+          }
+        },
         {
           "version": "0.1.14",
           "commit": "23f9e58a851b82dc45bf3f56e301efe675a7580a",
@@ -20672,17 +20691,17 @@
         }
       ],
       "release_notes": {
-        "text": "Move up and down stay visible on each service row; settings and test are in the More menu.",
+        "text": "Drag a service row by its handle to reorder; the handle also moves it from the keyboard. Rows use the standard settings layout with service logos, and More is an icon button.",
         "locales": {
-          "zh-CN": "每行服务直接显示上移和下移，设置和测试移至更多菜单。",
-          "zh-TW": "每列服務直接顯示上移和下移，設定和測試移至更多選單。",
-          "ja": "各サービス行に上へ・下へを表示し、設定とテストは「その他」メニューに移動しました。",
-          "ko": "각 서비스 행에 위로·아래로 이동을 표시하고, 설정과 테스트는 더보기 메뉴로 옮겼습니다.",
-          "fr": "Monter et descendre restent visibles sur chaque ligne de service ; les réglages et le test sont dans le menu Plus.",
-          "de": "Nach oben und unten bleiben in jeder Dienstzeile sichtbar; Einstellungen und Test stehen im Menü „Mehr“.",
-          "es": "Subir y bajar siguen visibles en cada fila de servicio; la configuración y la prueba están en el menú Más.",
-          "pt-BR": "Mover para cima e para baixo ficam visíveis em cada linha de serviço; configurações e teste estão no menu Mais.",
-          "ru": "Кнопки вверх и вниз видны в каждой строке сервиса; настройки и проверка перенесены в меню «Ещё»."
+          "zh-CN": "拖动服务行的手柄即可排序，也可用键盘移动。行采用标准设置布局并显示服务图标，“更多”改为图标按钮。",
+          "zh-TW": "拖曳服務列的把手即可排序，也可用鍵盤移動。列採用標準設定版面並顯示服務圖示，「更多」改為圖示按鈕。",
+          "ja": "サービス行のハンドルをドラッグして並べ替えます。キーボードでも移動できます。行は標準の設定レイアウトになり、サービスのロゴを表示します。「その他」はアイコンボタンになりました。",
+          "ko": "서비스 행의 핸들을 끌어 순서를 바꿉니다. 키보드로도 이동할 수 있습니다. 행은 표준 설정 레이아웃을 사용하고 서비스 로고를 표시하며, 더보기는 아이콘 버튼입니다.",
+          "fr": "Faites glisser la poignée d’une ligne pour réorganiser les services, y compris au clavier. Les lignes adoptent la mise en page standard des réglages avec les logos, et Plus est un bouton icône.",
+          "de": "Dienste per Ziehen am Griff neu anordnen, auch per Tastatur. Die Zeilen nutzen das Standardlayout der Einstellungen mit Dienstlogos, und Mehr ist eine Symbolschaltfläche.",
+          "es": "Arrastra el controlador de una fila para reordenar los servicios, también con el teclado. Las filas usan el diseño estándar de ajustes con logotipos, y Más es un botón de icono.",
+          "pt-BR": "Arraste a alça de uma linha para reordenar os serviços, também pelo teclado. As linhas usam o layout padrão de configurações com logotipos, e Mais é um botão de ícone.",
+          "ru": "Перетаскивайте строку сервиса за маркер, чтобы изменить порядок; работает и с клавиатуры. Строки используют стандартный макет настроек с логотипами, а «Ещё» стало кнопкой-значком."
         }
       }
     },
