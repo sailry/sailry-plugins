@@ -14080,327 +14080,6 @@
       }
     },
     {
-      "id": "media",
-      "manifest": {
-        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-        "name": "media",
-        "version": "0.1.4",
-        "extensions": {
-          "dev.sailry.platform": {
-            "api_version": "v1",
-            "actions": [
-              "media.inspect",
-              "media.image",
-              "media.video",
-              "media.settings.read",
-              "media.settings.write"
-            ],
-            "settings_page": {
-              "navigation": {
-                "label": "Media models",
-                "locales": {
-                  "zh-CN": "媒体模型"
-                },
-                "icon": {
-                  "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><line x1=\"22\" x2=\"2\" y1=\"6\" y2=\"6\" /><line x1=\"22\" x2=\"2\" y1=\"18\" y2=\"18\" /><line x1=\"6\" x2=\"6\" y1=\"2\" y2=\"22\" /><line x1=\"18\" x2=\"18\" y1=\"2\" y2=\"22\" /></svg>"
-                }
-              },
-              "placement": {
-                "group": "ai",
-                "order": 200
-              },
-              "entry": "dev.sailry.platform/desktop/settings.js"
-            },
-            "tools": [
-              {
-                "name": "inspect_image",
-                "presentation": "summary",
-                "description": "Ask the admitted session model about one image; an explicit fallback is used only when unsupported. Supply a worktree-relative path or an attachment ID from this conversation and a question in prompt. Do not replay an uncertain request.",
-                "handler": {
-                  "name": "inspect",
-                  "operation": "media.inspect",
-                  "result": "result",
-                  "parameters": {
-                    "type": "object",
-                    "properties": {
-                      "prompt": {
-                        "type": "string"
-                      },
-                      "path": {
-                        "type": "string",
-                        "description": "Select exactly one image source: path or attachment, never both."
-                      },
-                      "attachment": {
-                        "type": "string",
-                        "description": "Select exactly one image source: attachment or path, never both."
-                      }
-                    },
-                    "required": [
-                      "prompt"
-                    ],
-                    "additionalProperties": false,
-                    "allOf": [
-                      {
-                        "if": {
-                          "required": [
-                            "path"
-                          ]
-                        },
-                        "then": {
-                          "not": {
-                            "required": [
-                              "attachment"
-                            ]
-                          }
-                        },
-                        "else": {
-                          "required": [
-                            "attachment"
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                },
-                "display": {
-                  "label": "Inspect image",
-                  "locales": {
-                    "zh-CN": "识别图片",
-                    "zh-TW": "檢視圖片",
-                    "ja": "画像を確認",
-                    "ko": "이미지 확인",
-                    "fr": "Examiner l’image",
-                    "de": "Bild untersuchen",
-                    "es": "Examinar imagen",
-                    "pt-BR": "Examinar imagem",
-                    "ru": "Осмотреть изображение",
-                    "en": "Inspect image"
-                  },
-                  "icon": {
-                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><line x1=\"22\" x2=\"2\" y1=\"6\" y2=\"6\" /><line x1=\"22\" x2=\"2\" y1=\"18\" y2=\"18\" /><line x1=\"6\" x2=\"6\" y1=\"2\" y2=\"22\" /><line x1=\"18\" x2=\"18\" y1=\"2\" y2=\"22\" /></svg>"
-                  },
-                  "input": {
-                    "summary": {
-                      "path": "/path",
-                      "code": true
-                    }
-                  },
-                  "output": {
-                    "paths": {
-                      "value": {
-                        "source": "arguments",
-                        "path": "/path"
-                      }
-                    }
-                  }
-                }
-              },
-              {
-                "name": "generate_image",
-                "presentation": "details",
-                "description": "Generate a real PNG with the admitted session model; an explicit fallback is used only when unsupported. Describe the subject, purpose, style, composition and constraints in prompt. Save under assets/generated without replacing existing files. file_name is an optional plain .png name. Do not substitute SVG or replay an uncertain generation.",
-                "handler": {
-                  "name": "image",
-                  "operation": "media.image",
-                  "result": "result",
-                  "parameters": {
-                    "type": "object",
-                    "properties": {
-                      "prompt": {
-                        "type": "string"
-                      },
-                      "file_name": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "prompt"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "display": {
-                  "label": "Generate image",
-                  "locales": {
-                    "zh-CN": "生成图片",
-                    "zh-TW": "生成圖片",
-                    "ja": "画像を生成",
-                    "ko": "이미지 생성",
-                    "fr": "Générer une image",
-                    "de": "Bild erzeugen",
-                    "es": "Generar imagen",
-                    "pt-BR": "Gerar imagem",
-                    "ru": "Создать изображение",
-                    "en": "Generate image"
-                  },
-                  "output": {
-                    "body": {
-                      "text": {
-                        "source": "arguments",
-                        "path": "/prompt"
-                      },
-                      "path": {
-                        "source": "result",
-                        "path": "/path"
-                      }
-                    }
-                  },
-                  "icon": {
-                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><line x1=\"22\" x2=\"2\" y1=\"6\" y2=\"6\" /><line x1=\"22\" x2=\"2\" y1=\"18\" y2=\"18\" /><line x1=\"6\" x2=\"6\" y1=\"2\" y2=\"22\" /><line x1=\"18\" x2=\"18\" y1=\"2\" y2=\"22\" /></svg>"
-                  }
-                }
-              },
-              {
-                "name": "generate_video",
-                "presentation": "details",
-                "description": "Generate a video with the admitted session model; an explicit fallback is used only when unsupported. Save under assets/generated without replacing existing files. file_name is an optional plain name ending in .mp4. Stopping local work does not cancel a job already accepted by the provider. Do not replay an uncertain generation.",
-                "handler": {
-                  "name": "video",
-                  "operation": "media.video",
-                  "result": "result",
-                  "parameters": {
-                    "type": "object",
-                    "properties": {
-                      "prompt": {
-                        "type": "string"
-                      },
-                      "file_name": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "prompt"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "display": {
-                  "label": "Generate video",
-                  "locales": {
-                    "zh-CN": "生成视频",
-                    "zh-TW": "生成影片",
-                    "ja": "動画を生成",
-                    "ko": "동영상 생성",
-                    "fr": "Générer une vidéo",
-                    "de": "Video erzeugen",
-                    "es": "Generar vídeo",
-                    "pt-BR": "Gerar vídeo",
-                    "ru": "Создать видео",
-                    "en": "Generate video"
-                  },
-                  "icon": {
-                    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" ><line x1=\"22\" x2=\"2\" y1=\"6\" y2=\"6\" /><line x1=\"22\" x2=\"2\" y1=\"18\" y2=\"18\" /><line x1=\"6\" x2=\"6\" y1=\"2\" y2=\"22\" /><line x1=\"18\" x2=\"18\" y1=\"2\" y2=\"22\" /></svg>"
-                  },
-                  "output": {
-                    "paths": {
-                      "value": {
-                        "source": "result",
-                        "path": "/path"
-                      }
-                    },
-                    "preview": {
-                      "parts": [
-                        {
-                          "value": {
-                            "source": "result",
-                            "path": "/job"
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            ],
-            "display": {
-              "label": "Media",
-              "locales": {
-                "zh-CN": "媒体"
-              },
-              "icon": "reicon:video/image"
-            },
-            "description": {
-              "label": "Generate images and work with media",
-              "locales": {
-                "zh-CN": "生成图片与处理媒体"
-              }
-            },
-            "host": {
-              "entry": "dev.sailry.platform/host/main.js",
-              "resources": [
-                "dev.sailry.platform/host/main.js"
-              ],
-              "handlers": [
-                "inspect",
-                "image",
-                "video",
-                "result"
-              ]
-            },
-            "desktop": {
-              "resources": [
-                "dev.sailry.platform/desktop/settings.js",
-                "dev.sailry.platform/desktop/view.js",
-                "dev.sailry.platform/desktop/locales.js"
-              ]
-            },
-            "category": "data",
-            "tint": "teal"
-          }
-        }
-      },
-      "provides_models": false,
-      "permissions": [
-        "media.inspect",
-        "media.image",
-        "media.video",
-        "media.settings.read",
-        "media.settings.write"
-      ],
-      "versions": [
-        {
-          "version": "0.1.4",
-          "commit": "aa036e3e54337347f4350e93c0e092429a7f88ad",
-          "release_notes": {
-            "text": "- Show image inspection as concise activity while retaining generated artifacts"
-          }
-        },
-        {
-          "version": "0.1.3",
-          "commit": "8ba275a1a2e4311f10bc2ee32969b7e0539425de",
-          "release_notes": {
-            "text": "- Add marketplace category and icon color\n- Add localized tool names\n- Add localized skill names",
-            "locales": {
-              "zh-CN": "- 新增市场分类和图标配色\n- 新增本地化工具名称\n- 新增本地化技能名称",
-              "zh-TW": "- 新增市集分類和圖示配色\n- 新增本地化工具名稱\n- 新增本地化技能名稱",
-              "ja": "- マーケットのカテゴリとアイコンカラーを追加\n- ツール名の翻訳を追加\n- スキル名の翻訳を追加",
-              "ko": "- 마켓 분류와 아이콘 색상 추가\n- 도구 이름 번역 추가\n- 스킬 이름 번역 추가",
-              "fr": "- Ajout de la catégorie et de la couleur du catalogue\n- Ajout des noms d’outils traduits\n- Ajout des noms de compétences traduits",
-              "de": "- Marktkategorie und Symbolfarbe hinzugefügt\n- Übersetzte Werkzeugnamen hinzugefügt\n- Übersetzte Skill-Namen hinzugefügt",
-              "es": "- Añade categoría y color de icono al catálogo\n- Añade nombres de herramientas traducidos\n- Añade nombres de habilidades traducidos",
-              "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
-              "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
-            }
-          }
-        },
-        {
-          "version": "0.1.2",
-          "commit": "2ea6484aaa257a1bb6e6e862737aedb2c67f1627"
-        },
-        {
-          "version": "0.1.1",
-          "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11"
-        },
-        {
-          "version": "0.1.0",
-          "commit": "91338d055c2b08da336eb5938374009807c33b01"
-        }
-      ],
-      "release_notes": {
-        "text": "- Show image inspection as concise activity while retaining generated artifacts"
-      }
-    },
-    {
       "id": "memory",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -16635,7 +16314,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -16663,6 +16342,13 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.13",
+          "commit": "76d030241e6a4a2e4244d1272157c784a122e481",
+          "release_notes": {
+            "text": "- Describe media tools as built in; media actions cover only the model assignments"
+          }
+        },
         {
           "version": "0.1.12",
           "commit": "c173e0b939519d0c43bc5709a8df076a3b5f6769",
@@ -16758,7 +16444,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Accept team catalog and local decision actions in package preflight checks"
+        "text": "- Describe media tools as built in; media actions cover only the model assignments"
       }
     },
     {
@@ -23180,11 +22866,6 @@
       "package": "linear",
       "path": "skills/workspace/SKILL.md",
       "frontmatter": "---\nname: workspace\ndescription: Use Linear tools for issues and projects with the authorized account on the execution Node.\nmetadata:\n  display-name.en: \"Linear\"\n  display-name.zh-CN: \"Linear\"\n  display-name.zh-TW: \"Linear\"\n  display-name.ja: \"Linear\"\n  display-name.ko: \"Linear\"\n  display-name.fr: \"Linear\"\n  display-name.de: \"Linear\"\n  display-name.es: \"Linear\"\n  display-name.pt-BR: \"Linear\"\n  display-name.ru: \"Linear\"\n  display-name: Linear\n---\n"
-    },
-    {
-      "package": "media",
-      "path": "skills/imagegen/SKILL.md",
-      "frontmatter": "---\nname: imagegen\ndescription: Generate raster images such as photos, illustrations, textures and visual assets with the media package's image generation tool. Do not use for SVG icons, deterministic diagrams or visuals better expressed in project code.\nmetadata:\n  display-name: \"Image generation\"\n  display-name.en: \"Image generation\"\n  display-name.zh-CN: \"图像生成\"\n  display-name.zh-TW: \"圖片生成\"\n  display-name.ja: \"画像生成\"\n  display-name.ko: \"이미지 생성\"\n  display-name.fr: \"Génération d’images\"\n  display-name.de: \"Bilderzeugung\"\n  display-name.es: \"Generación de imágenes\"\n  display-name.pt-BR: \"Geração de imagens\"\n  display-name.ru: \"Генерация изображений\"\n---\n"
     },
     {
       "package": "microsoft-365",
