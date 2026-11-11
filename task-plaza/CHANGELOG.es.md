@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Nuevo icono del plugin
+
 ## 0.1.8
 
 - Mantener la página normal mientras se cargan los datos iniciales

@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.3",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "usage.read",
         "conversation.read"
@@ -119,7 +119,7 @@
         "locales": {
           "zh-CN": "统计"
         },
-        "icon": "reicon:business/chart-bar"
+        "icon": "phosphor:chart-bar"
       },
       "description": {
         "label": "View session usage and activity",
@@ -152,7 +152,7 @@
           "locales": {
             "zh-CN": "用量"
           },
-          "icon": "reicon:business/chart-bar"
+          "icon": "phosphor:chart-bar"
         },
         "navigation_options": {
           "order": 900,

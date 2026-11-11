@@ -1,3 +1,7 @@
+## 0.1.29
+
+- Use a new plugin icon
+
 ## 0.1.28
 
 - Label time to first token as TTFT

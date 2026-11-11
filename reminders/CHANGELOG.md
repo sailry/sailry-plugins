@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Use a new plugin icon
+
 ## 0.1.10
 
 - Keep scheduling concurrency checks aligned with team execution

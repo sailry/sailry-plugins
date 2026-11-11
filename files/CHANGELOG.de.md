@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Neues Plugin-Symbol
+
 ## 0.1.25
 
 - apply_patch ändert mit einem Patch mehrere Dateien nach einer Genehmigung; der Kontext muss exakt passen und geänderte Dateien müssen zuvor gelesen werden

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Novo ícone do plugin
+
 ## 0.1.19
 
 - Remover rótulos redundantes de ação e escopo dos resultados de memória expandidos

@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "figma",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Design context",
   "homepage": "https://developers.figma.com/docs/rest-api/personal-access-tokens/",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -117,7 +118,7 @@
               "pt-BR": "Figma",
               "ru": "Figma"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:figma"
           }
         }
       ],
@@ -135,7 +136,7 @@
           "pt-BR": "Figma",
           "ru": "Figma"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "ailogo:figma"
       },
       "description": {
         "label": "Design context",
@@ -171,7 +172,7 @@
               "pt-BR": "Figma",
               "ru": "Figma"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:figma"
           },
           "accounts": "single",
           "origins": [

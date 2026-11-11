@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Neues Plugin-Symbol
+
 ## 0.1.16
 
 - Korrigiert die Paketidentitätsprüfung für die aktuelle Version

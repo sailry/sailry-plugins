@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reminders",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "To-dos and scheduled reminders",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "storage": {
         "collections": [
           {
@@ -84,7 +85,7 @@
         "locales": {
           "zh-CN": "待办提醒"
         },
-        "icon": "reicon:notifications/bell"
+        "icon": "phosphor:bell"
       },
       "host": {
         "entry": "dev.sailry.platform/host/main.js",
@@ -253,7 +254,7 @@
               "ru": "Напоминания",
               "en": "Reminders"
             },
-            "icon": "reicon:notifications/bell",
+            "icon": "phosphor:bell",
             "input": {
               "summary": {
                 "path": "/title"
@@ -401,7 +402,7 @@
           "locales": {
             "zh-CN": "待办提醒"
           },
-          "icon": "reicon:notifications/bell"
+          "icon": "phosphor:bell"
         }
       },
       "category": "automation",

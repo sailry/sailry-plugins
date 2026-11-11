@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "xiangqi",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Play Chinese chess against an AI opponent",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "description": {
         "label": "Play Chinese chess against an AI opponent",
         "locales": {
@@ -23,7 +24,7 @@
           "locales": {
             "zh-CN": "中国象棋"
           },
-          "icon": "reicon:ui/crown"
+          "icon": "phosphor:horse"
         },
         "resources": [
           "dev.sailry.platform/desktop/main.js",
@@ -48,7 +49,7 @@
         "locales": {
           "zh-CN": "中国象棋"
         },
-        "icon": "reicon:ui/crown"
+        "icon": "phosphor:horse"
       },
       "category": "entertainment",
       "tint": "teal"

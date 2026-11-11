@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Neues Plugin-Symbol
+
 ## 0.1.19
 
 - Doppelte Workspace-CLI-Einträge und die ständige Aktualisierungsaktion aus Projekt-Kontextmenüs entfernen; Wiederherstellungsaktionen bleiben erhalten

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Nuevo icono del plugin
+
 ## 0.1.8
 
 - Aumentar el espacio entre las etiquetas y los controles del formulario

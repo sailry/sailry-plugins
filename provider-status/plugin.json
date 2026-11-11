@@ -1,13 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "provider-status",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Account usage for configured OAuth model channels",
   "license": "Apache-2.0",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.0-alpha.4",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -25,7 +25,7 @@
           "pt-BR": "Uso da conta",
           "ru": "Использование аккаунта"
         },
-        "icon": "reicon:business/chart"
+        "icon": "phosphor:gauge"
       },
       "description": {
         "label": "Usage for connected model accounts",

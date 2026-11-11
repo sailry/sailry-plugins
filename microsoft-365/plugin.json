@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "microsoft-365",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Outlook and OneDrive",
   "homepage": "https://learn.microsoft.com/graph/overview",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -26,7 +27,7 @@
           "pt-BR": "Microsoft 365",
           "ru": "Microsoft 365"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "ailogo:microsoft"
       },
       "description": {
         "label": "Outlook and OneDrive",
@@ -181,7 +182,7 @@
               "pt-BR": "Microsoft 365",
               "ru": "Microsoft 365"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:microsoft"
           }
         }
       ],
@@ -204,7 +205,7 @@
               "pt-BR": "Microsoft 365",
               "ru": "Microsoft 365"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:microsoft"
           },
           "accounts": "single",
           "origins": [

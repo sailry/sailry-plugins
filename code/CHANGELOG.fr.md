@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Nouvelle icône du plugin
+
 ## 0.1.16
 
 - Corrige la vérification de l’identité du paquet pour la version actuelle

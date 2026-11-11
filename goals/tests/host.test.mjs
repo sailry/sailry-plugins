@@ -13,9 +13,9 @@ test('continuation markers remain localized package declarations',async()=>{
   assert.deepEqual(extension.host.read_only,['read','badge']);
   assert.deepEqual(extension.host.status,{read:'badge',changes:['package','conversation']});
   assert.ok(extension.host.handlers.includes('badge'));
-  assert.equal(extension.min_sailry_version,'0.1.0-alpha.9');
+  assert.equal(extension.min_sailry_version,'0.1.6');
   assert.equal(marker.label,'Continue goal');assert.equal(marker.locales['zh-CN'],'继续执行目标');
-  assert.equal(manifest.version,'0.1.8');assert.equal(extension.api_version,'v1');
+  assert.equal(manifest.version,'0.1.9');assert.equal(extension.api_version,'v1');
 });
 async function fixture(entry={key:'goal',revision:'5',present:true,restored:true,value}) {
   let current=plain(entry),state;

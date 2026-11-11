@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Neues Plugin-Symbol
+
 ## 0.1.19
 
 - Redundante Aktions- und Bereichsbezeichnungen aus aufgeklappten Speicherergebnissen entfernen

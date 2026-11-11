@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "computer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.5",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "computer.read",
         "computer.control"
@@ -16,7 +16,7 @@
         "locales": {
           "zh-CN": "电脑操作"
         },
-        "icon": "reicon:devices/monitor"
+        "icon": "phosphor:desktop"
       },
       "description": {
         "label": "Control desktop apps and capture the screen",
@@ -46,7 +46,7 @@
               "ru": "Список приложений",
               "zh-TW": "應用程式列表"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -67,7 +67,7 @@
               "ru": "Список окон",
               "zh-TW": "視窗列表"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -88,7 +88,7 @@
               "ru": "Открыть приложение",
               "zh-TW": "開啟應用程式"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/app"
@@ -127,7 +127,7 @@
               "ru": "Проверить приложение",
               "zh-TW": "查看應用程式"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/app"
@@ -166,7 +166,7 @@
               "ru": "Найти элементы",
               "zh-TW": "尋找元素"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -187,7 +187,7 @@
               "ru": "Прочитать элемент",
               "zh-TW": "讀取元素"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -208,7 +208,7 @@
               "ru": "Проверить элемент",
               "zh-TW": "檢查元素"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -229,7 +229,7 @@
               "ru": "Снимок экрана",
               "zh-TW": "螢幕截圖"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -250,7 +250,7 @@
               "ru": "Ожидание",
               "zh-TW": "等待"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -271,7 +271,7 @@
               "ru": "Прочитать руководство",
               "zh-TW": "閱讀指南"
             },
-            "icon": "reicon:devices/monitor"
+            "icon": "phosphor:desktop"
           },
           "presentation": "summary"
         },
@@ -292,7 +292,7 @@
               "ru": "Нажать",
               "zh-TW": "點擊"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -331,7 +331,7 @@
               "ru": "Контекстное меню",
               "zh-TW": "右鍵選單"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -370,7 +370,7 @@
               "ru": "Ввести текст",
               "zh-TW": "輸入文字"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -409,7 +409,7 @@
               "ru": "Задать значение",
               "zh-TW": "設定值"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -448,7 +448,7 @@
               "ru": "Нажать клавишу",
               "zh-TW": "按鍵"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/combo"
@@ -487,7 +487,7 @@
               "ru": "Прокрутить",
               "zh-TW": "捲動"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -526,7 +526,7 @@
               "ru": "Прокрутить к элементу",
               "zh-TW": "捲動至元素"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -565,7 +565,7 @@
               "ru": "Выбрать вариант",
               "zh-TW": "選擇選項"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -604,7 +604,7 @@
               "ru": "Переключить",
               "zh-TW": "切換"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -643,7 +643,7 @@
               "ru": "Включить",
               "zh-TW": "開啟"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"
@@ -682,7 +682,7 @@
               "ru": "Выключить",
               "zh-TW": "關閉"
             },
-            "icon": "reicon:devices/monitor",
+            "icon": "phosphor:desktop",
             "input": {
               "summary": {
                 "path": "/ref_id"

@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "yuque",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Knowledge bases and documents",
   "homepage": "https://github.com/yuque/yuque-mcp-server",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -26,7 +27,7 @@
           "pt-BR": "Yuque",
           "ru": "Yuque"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "phosphor:books"
       },
       "description": {
         "label": "Knowledge bases and documents",
@@ -211,7 +212,7 @@
               "pt-BR": "Yuque",
               "ru": "Yuque"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "phosphor:books"
           }
         }
       ],
@@ -234,7 +235,7 @@
               "pt-BR": "Yuque",
               "ru": "Yuque"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "phosphor:books"
           },
           "accounts": "single",
           "origins": [

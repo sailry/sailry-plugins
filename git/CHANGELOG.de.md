@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.35
+
+- Neues Plugin-Symbol
+
 ## 0.1.34
 
 - Aktualisiert die Branch-Auswahl nach Referenzänderungen, ohne den Dateistatus zu prüfen

@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "progress",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Track task progress",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "instructions": "Use update_plan for substantial multi-step tasks; skip direct questions and simple changes. Include affected files, implementation steps and verification, plus risks or questions when relevant. Create a persistent goal only when the user requests one.",
       "actions": [],
       "display": {
@@ -13,7 +14,7 @@
         "locales": {
           "zh-CN": "计划"
         },
-        "icon": "reicon:ui/grid"
+        "icon": "phosphor:list-checks"
       },
       "description": {
         "label": "Track task progress",
@@ -100,7 +101,7 @@
               "ru": "Обновить план",
               "en": "Update plan"
             },
-            "icon": "reicon:ui/grid"
+            "icon": "phosphor:list-checks"
           }
         }
       ],

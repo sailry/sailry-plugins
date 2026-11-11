@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Use a new plugin icon
+
 ## 0.1.19
 
 - Remove redundant action and scope labels from expanded memory results

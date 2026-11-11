@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Use a new plugin icon
+
 ## 0.1.14
 
 - Require Sailry 0.1.0 for team selection and associated task sessions

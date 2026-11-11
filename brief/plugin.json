@@ -1,10 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "brief",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "artifacts.read",
         "artifacts.write"
@@ -22,7 +23,7 @@
           "pt-BR": "HTML",
           "ru": "HTML"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "phosphor:file-html"
       },
       "description": {
         "label": "Create HTML documents and previews",

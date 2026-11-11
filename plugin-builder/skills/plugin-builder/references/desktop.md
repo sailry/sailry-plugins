@@ -9,7 +9,7 @@ Desktop code is JavaScript that renders native GPUI Kit components. It runs only
   "entry": "dev.sailry.platform/desktop/main.js",
   "resources": ["dev.sailry.platform/desktop/main.js", "dev.sailry.platform/desktop/locales.js"],
   "panel": {"label": "Release notes", "locales": {"zh-CN": "发布说明"}},
-  "navigation": {"label": "Release notes", "locales": {"zh-CN": "发布说明"}, "icon": "reicon:files/file-text"}
+  "navigation": {"label": "Release notes", "locales": {"zh-CN": "发布说明"}, "icon": "phosphor:file-text"}
 }
 ```
 

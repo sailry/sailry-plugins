@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "city-trader",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Build a city property portfolio against up to two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "description": {
         "label": "Build a city property portfolio against up to two AI opponents",
         "locales": {
@@ -25,7 +26,7 @@
           "locales": {
             "zh-CN": "筑梦大亨"
           },
-          "icon": "reicon:building/city"
+          "icon": "phosphor:buildings"
         },
         "resources": [
           "dev.sailry.platform/desktop/art.js",
@@ -164,7 +165,7 @@
         "locales": {
           "zh-CN": "筑梦大亨"
         },
-        "icon": "reicon:building/city"
+        "icon": "phosphor:buildings"
       },
       "category": "entertainment",
       "tint": "teal"

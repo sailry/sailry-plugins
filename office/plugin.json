@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "office",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create and edit Word, Excel, PowerPoint and PDF files using the execution Node's tools",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [],
       "display": {
@@ -13,7 +14,7 @@
         "locales": {
           "zh-CN": "办公文档"
         },
-        "icon": "reicon:files/files"
+        "icon": "phosphor:file-doc"
       },
       "description": {
         "label": "Document skills, scripts and templates",

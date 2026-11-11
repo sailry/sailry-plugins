@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scheduled-tasks",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Run tasks on a schedule",
   "extensions": {
     "dev.sailry.platform": {
@@ -229,7 +229,7 @@
         "locales": {
           "zh-CN": "定时任务"
         },
-        "icon": "reicon:time/calendar"
+        "icon": "phosphor:calendar-check"
       },
       "host": {
         "entry": "dev.sailry.platform/host/main.js",
@@ -551,7 +551,7 @@
               "ru": "Запланированные задачи",
               "en": "Scheduled tasks"
             },
-            "icon": "reicon:time/calendar",
+            "icon": "phosphor:calendar-check",
             "input": {
               "summary": {
                 "path": "/name"
@@ -701,12 +701,12 @@
           "locales": {
             "zh-CN": "定时任务"
           },
-          "icon": "reicon:time/calendar"
+          "icon": "phosphor:calendar-check"
         }
       },
       "category": "automation",
       "tint": "amber",
-      "min_sailry_version": "0.1.0"
+      "min_sailry_version": "0.1.6"
     }
   }
 }

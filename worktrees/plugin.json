@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "worktrees",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.5",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "worktrees.read",
         "worktrees.write",
@@ -17,7 +17,7 @@
         "locales": {
           "zh-CN": "工作树"
         },
-        "icon": "reicon:business/diagram-tree"
+        "icon": "phosphor:tree-structure"
       },
       "description": {
         "label": "Manage project worktrees",

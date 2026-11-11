@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Nuevo icono del plugin
+
 ## 0.1.25
 
 - Se añade apply_patch: un parche modifica varios archivos con una sola aprobación; el contexto debe coincidir exactamente y los archivos modificados deben leerse antes

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10
+
+- Use a new plugin icon
+
 ## 0.1.9
 
 - Resume refresh requests deferred by account cooldowns without periodic polling

@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wecom",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Workplace services",
   "homepage": "https://github.com/WecomTeam/wecom-cli",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -26,7 +27,7 @@
           "pt-BR": "WeCom",
           "ru": "WeCom"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "phosphor:chats"
       },
       "description": {
         "label": "Workplace services",
@@ -159,7 +160,7 @@
               "pt-BR": "WeCom",
               "ru": "WeCom"
             },
-            "icon": "reicon:files/file-text",
+            "icon": "phosphor:chats",
             "input": {
               "summary": {
                 "path": "/service"
@@ -214,7 +215,7 @@
               "pt-BR": "WeCom",
               "ru": "WeCom"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "phosphor:chats"
           },
           "accounts": "single",
           "origins": [

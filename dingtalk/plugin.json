@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dingtalk",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Knowledge spaces and files",
   "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "settings_schema": "dev.sailry.platform/settings.json",
       "actions": [
@@ -27,7 +28,7 @@
           "pt-BR": "DingTalk",
           "ru": "DingTalk"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "phosphor:chat-circle-dots"
       },
       "description": {
         "label": "Knowledge spaces and files",
@@ -185,7 +186,7 @@
               "pt-BR": "DingTalk",
               "ru": "DingTalk"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "phosphor:chat-circle-dots"
           }
         }
       ],
@@ -208,7 +209,7 @@
               "pt-BR": "DingTalk",
               "ru": "DingTalk"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "phosphor:chat-circle-dots"
           },
           "accounts": "single",
           "origins": [

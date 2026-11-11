@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Neues Plugin-Symbol
+
 ## 0.1.6
 
 - Aktivitätsübersicht und Planwerkzeuge in getrennte Plugins aufteilen

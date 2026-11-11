@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Use a new plugin icon
+
 ## 0.1.27
 
 - Explain basename globs, ordered exclusions, explicit ignored paths and skipped encodings

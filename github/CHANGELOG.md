@@ -1,3 +1,7 @@
+## 0.1.5
+
+- Use a new plugin icon
+
 ## 0.1.4
 
 - Keep mounted GitHub MCP guidance concise while preserving anonymous reads and credential boundaries

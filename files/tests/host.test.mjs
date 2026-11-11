@@ -220,7 +220,7 @@ test('line pages retain offsets and exact edit fragments', () => {
 test('image reads keep recent images and describe non-vision facts', () => {
   const declaration = tool('read_file');
   assert.equal(declaration.keep_images,5);
-  assert.equal(extension.min_sailry_version,'0.1.5');
+  assert.equal(extension.min_sailry_version,'0.1.6');
   for (const pattern of [/\.png, \.jpg, \.jpeg, \.gif, \.webp or \.bmp/,/5 MiB/,/1568-pixel long side/,
     /format, dimensions and size/,/images lists the reference/,/inspect_image with the path/]) {
     assert.match(declaration.description,pattern);

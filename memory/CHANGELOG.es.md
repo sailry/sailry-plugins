@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Nuevo icono del plugin
+
 ## 0.1.19
 
 - Eliminar las etiquetas redundantes de acción y alcance en los resultados de memoria expandidos

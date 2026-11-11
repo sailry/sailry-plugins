@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Neues Plugin-Symbol
+
 ## 0.1.13
 
 - Den Abstand zwischen Formularbeschriftungen und Eingaben vergrößern

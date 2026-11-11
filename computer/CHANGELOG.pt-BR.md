@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Novo ícone do plugin
+
 ## 0.1.2
 
 - Usar o Open Computer Use incluído e isolar a sessão de ferramentas de cada turno

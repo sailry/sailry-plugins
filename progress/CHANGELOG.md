@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Use a new plugin icon
+
 ## 0.1.7
 
 - Keep task planning guidance separate from update tool rules

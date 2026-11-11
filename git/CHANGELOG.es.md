@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.35
+
+- Nuevo icono del plugin
+
 ## 0.1.34
 
 - Actualiza las ramas de la conversación al cambiar las referencias, sin analizar el estado de los archivos

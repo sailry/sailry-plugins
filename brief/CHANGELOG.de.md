@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Neues Plugin-Symbol
+
 ## 0.1.10
 
 - Kleine Vorschaugrafiken auch ohne Anfrage erstellen, wenn sie klar helfen

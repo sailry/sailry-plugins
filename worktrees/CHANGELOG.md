@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Use a new plugin icon
+
 ## 0.1.17
 
 - Keep projects with control characters in their names selectable with readable menu labels

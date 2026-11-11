@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Novo ícone do plugin
+
 ## 0.1.12
 
 - Aumentar o espaço entre rótulos e controles dos formulários

@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.5",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "code.index.read",
         "files.read"
@@ -23,7 +23,7 @@
           "pt-BR": "Índice de código",
           "ru": "Индекс кода"
         },
-        "icon": "reicon:it/code"
+        "icon": "phosphor:code"
       },
       "description": {
         "label": "Find code symbols and source context",
@@ -87,7 +87,7 @@
               "pt-BR": "Estrutura do arquivo",
               "ru": "Структура файла"
             },
-            "icon": "reicon:it/code",
+            "icon": "phosphor:code",
             "input": {
               "summary": {
                 "path": "/path"
@@ -167,7 +167,7 @@
               "pt-BR": "Contexto do código",
               "ru": "Контекст кода"
             },
-            "icon": "reicon:it/code",
+            "icon": "phosphor:code",
             "input": {
               "summary": {
                 "path": "/query"

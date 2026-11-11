@@ -1,3 +1,7 @@
+## 0.1.29
+
+- Nuevo icono del plugin
+
 ## 0.1.28
 
 - El tiempo hasta el primer token se muestra como TTFT

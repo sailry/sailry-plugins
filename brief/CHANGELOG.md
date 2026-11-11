@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Use a new plugin icon
+
 ## 0.1.10
 
 - Allow a small preview visual without a request when it clearly helps

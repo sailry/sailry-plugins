@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "google-workspace",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Mail, calendars and Drive files",
   "homepage": "https://developers.google.com/workspace",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "http.request"
@@ -26,7 +27,7 @@
           "pt-BR": "Google Workspace",
           "ru": "Google Workspace"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "ailogo:google"
       },
       "description": {
         "label": "Mail, calendars and Drive files",
@@ -152,7 +153,7 @@
               "pt-BR": "Google Workspace",
               "ru": "Google Workspace"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:google"
           }
         }
       ],
@@ -175,7 +176,7 @@
               "pt-BR": "Google Workspace",
               "ru": "Google Workspace"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:google"
           },
           "accounts": "single",
           "origins": [

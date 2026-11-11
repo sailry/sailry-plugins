@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Neues Plugin-Symbol
+
 ## 0.1.6
 
 - Inaktive Ziele ohne Abfragen belassen und nur Statusänderungen verfolgen

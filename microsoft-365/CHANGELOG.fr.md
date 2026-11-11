@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Nouvelle icône du plugin
+
 ## 0.1.3
 
 - Ajout de la catégorie et de la couleur du catalogue

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.4
+
+- Use a new plugin icon
+
 ## 0.1.3
 
 - Keep screenshots, PDFs, downloads and script results inspectable

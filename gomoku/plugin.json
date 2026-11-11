@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "gomoku",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Play Gomoku against an AI opponent",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "description": {
         "label": "Play Gomoku against an AI opponent",
         "locales": {
@@ -23,7 +24,7 @@
           "locales": {
             "zh-CN": "五子棋"
           },
-          "icon": "reicon:newicons/grid2"
+          "icon": "phosphor:circles-four"
         },
         "resources": [
           "dev.sailry.platform/desktop/motion.js",
@@ -48,7 +49,7 @@
         "locales": {
           "zh-CN": "五子棋"
         },
-        "icon": "reicon:newicons/grid2"
+        "icon": "phosphor:circles-four"
       },
       "category": "entertainment",
       "tint": "teal"

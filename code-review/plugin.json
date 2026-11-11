@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [
         "git.read",
@@ -19,7 +20,7 @@
         "locales": {
           "zh-CN": "代码审查"
         },
-        "icon": "reicon:it/code"
+        "icon": "phosphor:git-pull-request"
       },
       "description": {
         "label": "Review changes and pull requests",
@@ -229,7 +230,7 @@
               "pt-BR": "Escopo da revisão",
               "ru": "Область проверки"
             },
-            "icon": "reicon:it/code"
+            "icon": "phosphor:git-pull-request"
           }
         },
         {
@@ -291,7 +292,7 @@
               "pt-BR": "Ler alteração revisada",
               "ru": "Читать проверяемое изменение"
             },
-            "icon": "reicon:it/code",
+            "icon": "phosphor:git-pull-request",
             "input": {
               "summary": {
                 "path": "/path"
@@ -500,7 +501,7 @@
               "pt-BR": "Relatar problema",
               "ru": "Сообщить о проблеме"
             },
-            "icon": "reicon:it/code",
+            "icon": "phosphor:git-pull-request",
             "input": {
               "summary": {
                 "path": "/title",
@@ -637,7 +638,7 @@
               "pt-BR": "Concluir revisão",
               "ru": "Завершить проверку"
             },
-            "icon": "reicon:it/code"
+            "icon": "phosphor:git-pull-request"
           }
         },
         {

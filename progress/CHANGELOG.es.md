@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.8
+
+- Nuevo icono del plugin
+
 ## 0.1.6
 
 - Separar el tablero de actividad de las herramientas de planificación

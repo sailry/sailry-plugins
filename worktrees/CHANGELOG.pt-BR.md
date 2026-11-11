@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Novo ícone do plugin
+
 ## 0.1.17
 
 - Projetos com caracteres de controle no nome continuam disponíveis com rótulos legíveis

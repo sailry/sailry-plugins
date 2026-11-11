@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Use a new plugin icon
+
 ## 0.1.8
 
 - Route new-tab shortcuts through the browser controller and focus the address field

@@ -1,10 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "databases",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "databases.read",
         "databases.control",
@@ -19,7 +20,7 @@
         "locales": {
           "zh-CN": "数据库"
         },
-        "icon": "reicon:ui/database"
+        "icon": "phosphor:database"
       },
       "description": {
         "label": "Connect to databases and run queries",
@@ -92,7 +93,7 @@
               "ru": "Каталог баз данных",
               "en": "Database catalog"
             },
-            "icon": "reicon:ui/database",
+            "icon": "phosphor:database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -153,7 +154,7 @@
               "ru": "Запрос к базе данных",
               "en": "Query database"
             },
-            "icon": "reicon:ui/database",
+            "icon": "phosphor:database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -235,7 +236,7 @@
               "ru": "Выполнить SQL",
               "en": "Execute SQL"
             },
-            "icon": "reicon:ui/database",
+            "icon": "phosphor:database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -326,7 +327,7 @@
               "ru": "Подключения к базам данных",
               "en": "Database connections"
             },
-            "icon": "reicon:ui/database"
+            "icon": "phosphor:database"
           }
         },
         {
@@ -473,7 +474,7 @@
               "ru": "Сохранить подключение к базе",
               "en": "Save database connection"
             },
-            "icon": "reicon:ui/database",
+            "icon": "phosphor:database",
             "input": {
               "summary": {
                 "path": "/name",
@@ -521,7 +522,7 @@
           "locales": {
             "zh-CN": "数据库"
           },
-          "icon": "reicon:ui/database"
+          "icon": "phosphor:database"
         },
         "navigation_options": {
           "pinned": true,

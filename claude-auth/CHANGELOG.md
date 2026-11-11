@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Use a new plugin icon
+
 ## 0.1.2
 
 Align Claude OAuth endpoints, refresh headers, PKCE state and account identity bootstrap with oh-my-pi c29f7c56.

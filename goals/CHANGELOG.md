@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Use a new plugin icon
+
 ## 0.1.8
 
 - Read localized goal status on the execution Node for every controller

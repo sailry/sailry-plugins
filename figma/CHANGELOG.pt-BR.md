@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Novo ícone do plugin
+
 ## 0.1.4
 
 - Adiciona categoria e cor do ícone ao catálogo

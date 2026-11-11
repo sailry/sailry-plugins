@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "task-plaza",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Project rooms and session activity",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "actions": [
         "activity.read",
         "conversation.read",
@@ -16,7 +17,7 @@
         "locales": {
           "zh-CN": "任务广场"
         },
-        "icon": "reicon:building/buildings"
+        "icon": "phosphor:users-three"
       },
       "description": {
         "label": "Project rooms and session activity",
@@ -44,7 +45,7 @@
           "locales": {
             "zh-CN": "任务广场"
           },
-          "icon": "reicon:building/buildings"
+          "icon": "phosphor:users-three"
         },
         "navigation_options": {
           "pinned": true,

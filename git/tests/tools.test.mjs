@@ -37,7 +37,7 @@ test('history schema declares filtered commit continuations', async () => {
   assert.deepEqual(properties.revision.type,['string','null']);
   assert.deepEqual(properties.path.type,['string','null']);
   assert.match(tool.description,/keep the same path filter/);
-  assert.equal(extension.min_sailry_version,'0.1.5');
+  assert.equal(extension.min_sailry_version,'0.1.6');
 });
 
 test('status and diff preserve explicit registered target and scope', () => {

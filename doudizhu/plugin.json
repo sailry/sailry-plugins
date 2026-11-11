@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "doudizhu",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Play Dou Dizhu with two AI opponents",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "description": {
         "label": "Play Dou Dizhu with two AI opponents",
         "locales": {
@@ -23,7 +24,7 @@
           "locales": {
             "zh-CN": "斗地主"
           },
-          "icon": "reicon:newicons/cards"
+          "icon": "phosphor:cards-three"
         },
         "resources": [
           "dev.sailry.platform/desktop/main.js",
@@ -52,7 +53,7 @@
         "locales": {
           "zh-CN": "斗地主"
         },
-        "icon": "reicon:newicons/cards"
+        "icon": "phosphor:cards-three"
       },
       "category": "entertainment",
       "tint": "teal"

@@ -10,7 +10,7 @@ Common fields:
 | `description` | Model-facing explanation: what it does, when to use it, and what it does not do |
 | `contexts` | Where it is offered: `plugin`, `workspace`, `database`, `ssh`. Omit for every context |
 | `presentation` | `summary`, `details` (default), `progress` or `content` |
-| `display` | Localized label and icon in the conversation: `{"label": "Save note", "locales": {...}, "icon": "reicon:files/file-text"}` |
+| `display` | Localized label and icon in the conversation: `{"label": "Save note", "locales": {...}, "icon": "phosphor:file-text"}` |
 
 Provide exactly one implementation: `operation`, `handler` or `server`.
 

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Nouvelle icône du plugin
+
 ## 0.1.17
 
 - Les projets dont le nom contient des caractères de contrôle restent sélectionnables avec des libellés lisibles

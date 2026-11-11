@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Neues Plugin-Symbol
+
 ## 0.1.17
 
 - Projekte mit Steuerzeichen im Namen bleiben mit lesbaren Menüeinträgen auswählbar

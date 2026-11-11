@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.14
+
+- Neues Plugin-Symbol
+- Referenzen beschreiben Phosphor- und Markensymbolnamen
+
 ## 0.1.3
 
 - Marktkategorie und Symbolfarbe hinzugefügt

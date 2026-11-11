@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Novo ícone do plugin
+
 ## 0.1.25
 
 - Adiciona apply_patch: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes

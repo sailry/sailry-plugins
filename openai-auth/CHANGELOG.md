@@ -1,3 +1,7 @@
+## 0.1.5
+
+- Use a new plugin icon
+
 ## 0.1.4
 
 - Add browser sign-in with PKCE and the fixed local callback

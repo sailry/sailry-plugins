@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Nouvelle icône du plugin
+
 ## 0.1.15
 
 Faites glisser la poignée d’une ligne pour réorganiser les services, y compris au clavier. Les lignes adoptent la mise en page standard des réglages avec les logos, et Plus est un bouton icône.

@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "context7",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Current library documentation through the official Context7 MCP service",
   "homepage": "https://context7.com",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [],
       "display": {
@@ -14,7 +15,7 @@
         "locales": {
           "zh-CN": "Context7"
         },
-        "icon": "reicon:newicons/book-square"
+        "icon": "phosphor:book-open-text"
       },
       "description": {
         "label": "Current library documentation",
@@ -60,7 +61,7 @@
               "ru": "Прочитать документацию",
               "en": "Read documentation"
             },
-            "icon": "reicon:newicons/book-square"
+            "icon": "phosphor:book-open-text"
           }
         }
       ],
@@ -74,7 +75,7 @@
             "locales": {
               "zh-CN": "Context7"
             },
-            "icon": "reicon:newicons/book-square"
+            "icon": "phosphor:book-open-text"
           },
           "accounts": "single",
           "origins": [

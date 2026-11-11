@@ -1,3 +1,7 @@
+## 0.1.29
+
+- Nouvelle icône du plugin
+
 ## 0.1.28
 
 - Le délai du premier token s’affiche comme TTFT

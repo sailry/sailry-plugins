@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Nouvelle icône du plugin
+
 ## 0.1.10
 
 - Autoriser un petit visuel d'aperçu sans demande lorsqu'il aide clairement

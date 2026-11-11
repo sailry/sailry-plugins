@@ -13,7 +13,7 @@ const selected = [
 test('declares metadata without replacing backend tool authority', async () => {
   const manifest = await document('plugin.json');
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(extension.min_sailry_version,'0.1.5');
+  assert.equal(extension.min_sailry_version,'0.1.6');
   assert.deepEqual(extension.actions,['computer.read','computer.control']);
   assert.equal(extension.scope,'host');
   assert.deepEqual(extension.tools.map(tool => tool.name),selected);
@@ -70,7 +70,7 @@ test('keeps snapshots and actions inspectable', async () => {
     ].map(name => [name,'/ref_id']))
   };
   for (const tool of extension.tools) {
-    assert.equal(tool.display.icon,'reicon:devices/monitor');
+    assert.equal(tool.display.icon,'phosphor:desktop');
     assert.equal(Object.keys(tool.display.locales).length,10);
     if (tool.name in detailed) {
       assert.equal(tool.presentation,'details');

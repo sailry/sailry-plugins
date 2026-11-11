@@ -30,7 +30,7 @@ Package names are lowercase kebab-case (`task-notes`) and must equal the folder 
       "display": {
         "label": "Release notes",
         "locales": {"zh-CN": "发布说明"},
-        "icon": "reicon:files/file-text"
+        "icon": "phosphor:file-text"
       },
       "description": {
         "label": "Draft release notes from recent changes",
@@ -75,7 +75,7 @@ Every label uses the same shape. `label` is the default (English) text; `locales
 
 ### Icons
 
-Catalog and navigation icons use the bundled icon set as `reicon:<group>/<name>`, for example `reicon:files/file-text`, `reicon:ui/database`, `reicon:it/code-square`, `reicon:time/calendar` or `reicon:notifications/bell`. Composer controls in `ui` use plain control icon names such as `eye`, `file-text` or `rotate-cw`. Reuse names that existing official plugins use when unsure.
+Catalog and navigation icons name a [Phosphor](https://phosphoricons.com) icon as `phosphor:<name>`, for example `phosphor:file-text`, `phosphor:database`, `phosphor:calendar-check` or `phosphor:bell`; the fill weight is implied and no weight suffix is written. They are drawn in white on a tile of the package tint in catalogs and in the text color elsewhere. A package, tool or connector for one brand may name that brand's mark as `ailogo:<slug>`, for example `ailogo:github`, in its `display.icon`; navigation icons do not accept it, and another company's mark is never a substitute. Earlier `reicon:<group>/<name>` names remain valid. A package that names a Phosphor icon sets `min_sailry_version` to `0.1.6`. Composer controls in `ui` use plain control icon names such as `eye`, `file-text` or `rotate-cw`. Reuse names that existing official plugins use when unsure.
 
 ## Conversation modes
 

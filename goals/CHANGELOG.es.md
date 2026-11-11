@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Nuevo icono del plugin
+
 ## 0.1.6
 
 - Mantener inactivos los objetivos sin uso y observar solo los cambios de estado

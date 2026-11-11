@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Nuevo icono del plugin
+
 ## 0.1.15
 
 Arrastra el controlador de una fila para reordenar los servicios, también con el teclado. Las filas usan el diseño estándar de ajustes con logotipos, y Más es un botón de icono.

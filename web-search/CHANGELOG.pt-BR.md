@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Novo ícone do plugin
+
 ## 0.1.15
 
 Arraste a alça de uma linha para reordenar os serviços, também pelo teclado. As linhas usam o layout padrão de configurações com logotipos, e Mais é um botão de ícone.

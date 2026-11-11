@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.35
+
+- Novo ícone do plugin
+
 ## 0.1.34
 
 - Atualiza as branches da conversa após mudanças nas referências, sem verificar o estado dos arquivos

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Use a new plugin icon
+
 ## 0.1.5
 
 - Keep the connector declaration valid without extra instructions

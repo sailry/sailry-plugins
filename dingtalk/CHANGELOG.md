@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Use a new plugin icon
+
 ## 0.1.8
 
 - Remove redundant numeric schema bounds while preserving host validation

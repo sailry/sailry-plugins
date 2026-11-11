@@ -1,10 +1,10 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "extensions": {
     "dev.sailry.platform": {
-      "min_sailry_version": "0.1.0-alpha.4",
+      "min_sailry_version": "0.1.6",
       "api_version": "v1",
       "actions": [
         "ssh.read",
@@ -19,7 +19,7 @@
         "locales": {
           "zh-CN": "SSH"
         },
-        "icon": "reicon:it/terminal-square"
+        "icon": "phosphor:terminal-window"
       },
       "description": {
         "label": "Connect and manage remote servers",
@@ -98,7 +98,7 @@
               "ru": "Выполнить команду SSH",
               "en": "Run SSH command"
             },
-            "icon": "reicon:it/terminal-square",
+            "icon": "phosphor:terminal-window",
             "input": {
               "summary": {
                 "path": "/connection",
@@ -351,7 +351,7 @@
               "ru": "Передать файл по SSH",
               "en": "Transfer SSH file"
             },
-            "icon": "reicon:it/terminal-square",
+            "icon": "phosphor:terminal-window",
             "input": {
               "summary": {
                 "path": "/connection",
@@ -472,7 +472,7 @@
               "ru": "Подключения SSH",
               "en": "SSH connections"
             },
-            "icon": "reicon:it/terminal-square"
+            "icon": "phosphor:terminal-window"
           }
         },
         {
@@ -711,7 +711,7 @@
               "ru": "Сохранить подключение SSH",
               "en": "Save SSH connection"
             },
-            "icon": "reicon:it/terminal-square",
+            "icon": "phosphor:terminal-window",
             "input": {
               "summary": {
                 "path": "/name",
@@ -786,7 +786,7 @@
           "locales": {
             "zh-CN": "SSH"
           },
-          "icon": "reicon:it/terminal-square"
+          "icon": "phosphor:terminal-window"
         },
         "navigation_options": {
           "pinned": true,

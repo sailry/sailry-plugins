@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "notion",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Pages and databases",
   "homepage": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "host",
       "actions": [],
       "host": {
@@ -50,7 +51,7 @@
               "pt-BR": "Notion",
               "ru": "Notion"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:notion"
           }
         }
       ],
@@ -115,7 +116,7 @@
           "pt-BR": "Notion",
           "ru": "Notion"
         },
-        "icon": "reicon:files/file-text"
+        "icon": "ailogo:notion"
       },
       "description": {
         "label": "Pages and databases",
@@ -151,7 +152,7 @@
               "pt-BR": "Notion",
               "ru": "Notion"
             },
-            "icon": "reicon:files/file-text"
+            "icon": "ailogo:notion"
           },
           "accounts": "single",
           "origins": [

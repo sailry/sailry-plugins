@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Nouvelle icône du plugin
+
 ## 0.1.2
 
 - Utiliser Open Computer Use fourni et isoler la session d’outils de chaque tour

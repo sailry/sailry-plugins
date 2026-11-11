@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Neues Plugin-Symbol
+
 ## 0.1.15
 
 Dienste per Ziehen am Griff neu anordnen, auch per Tastatur. Die Zeilen nutzen das Standardlayout der Einstellungen mit Dienstlogos, und Mehr ist eine Symbolschaltfläche.

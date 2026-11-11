@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Novo ícone do plugin
+
 ## 0.1.19
 
 - Remover entradas CLI duplicadas do espaço de trabalho e a atualização permanente do menu do projeto, preservando as ações de recuperação

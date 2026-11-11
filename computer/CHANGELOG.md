@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Use a new plugin icon
+
 ## 0.1.6
 
 - Add a setting to show the agent cursor without moving the physical pointer

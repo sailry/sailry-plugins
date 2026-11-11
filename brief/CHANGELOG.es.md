@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Nuevo icono del plugin
+
 ## 0.1.10
 
 - Permitir un pequeño visual de vista previa sin solicitud cuando ayude claramente

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.14
+
+- Use a new plugin icon
+- Describe Phosphor and brand icon names in the references
+
 ## 0.1.13
 
 - Describe media tools as built in; media actions cover only the model assignments

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Nouvelle icône du plugin
+
 ## 0.1.13
 
 - Augmenter l’espace entre les libellés et les champs des formulaires

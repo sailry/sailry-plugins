@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Nouvelle icône du plugin
+
 ## 0.1.25
 
 - Ajout de apply_patch : un seul correctif modifie plusieurs fichiers avec une seule approbation ; le contexte doit correspondre exactement et les fichiers modifiés doivent d'abord être lus

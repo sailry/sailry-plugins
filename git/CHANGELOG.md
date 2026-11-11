@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.35
+
+- Use a new plugin icon
+
 ## 0.1.34
 
 - Refresh composer branch choices after reference changes without scanning file status

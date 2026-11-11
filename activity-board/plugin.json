@@ -1,11 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "activity-board",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "View session and terminal activity",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.1.6",
       "scope": "desktop",
       "actions": [
         "activity.read"
@@ -15,7 +16,7 @@
         "locales": {
           "zh-CN": "活动看板"
         },
-        "icon": "reicon:ui/grid"
+        "icon": "phosphor:kanban"
       },
       "description": {
         "label": "View session and terminal activity",
@@ -36,7 +37,7 @@
           "locales": {
             "zh-CN": "活动看板"
           },
-          "icon": "reicon:ui/grid"
+          "icon": "phosphor:kanban"
         },
         "navigation_options": {
           "pinned": true,

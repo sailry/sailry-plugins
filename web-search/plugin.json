@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "web-search",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -26,7 +26,7 @@
             "pt-BR": "Pesquisa",
             "ru": "Поиск"
           },
-          "icon": "reicon:ui/magnifier"
+          "icon": "phosphor:magnifying-glass"
         },
         "placement": {
           "group": "tools",
@@ -83,7 +83,7 @@
               "ru": "Поиск в интернете",
               "en": "Search web"
             },
-            "icon": "reicon:ui/magnifier",
+            "icon": "phosphor:magnifying-glass",
             "input": {
               "summary": {
                 "path": "/query"
@@ -97,7 +97,7 @@
         "locales": {
           "zh-CN": "联网搜索"
         },
-        "icon": "reicon:ui/magnifier"
+        "icon": "phosphor:magnifying-glass"
       },
       "description": {
         "label": "Search the web",

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.7
+
+- Neues Plugin-Symbol
+
 ## 0.1.2
 
 - Gebündeltes Open Computer Use verwenden und Tool-Sitzungen pro Durchgang trennen

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Use a new plugin icon
+
 ## 0.1.18
 
 - Close SSH terminal tabs when their shell exits; report only non-zero exits

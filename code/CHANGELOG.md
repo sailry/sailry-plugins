@@ -1,3 +1,7 @@
+## 0.1.17
+
+- Use a new plugin icon
+
 ## 0.1.16
 
 - Correct the package identity check for the current version.

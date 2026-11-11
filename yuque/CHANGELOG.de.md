@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Neues Plugin-Symbol
+
 ## 0.1.4
 
 - Marktkategorie und Symbolfarbe hinzugefügt

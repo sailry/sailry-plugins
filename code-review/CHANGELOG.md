@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Use a new plugin icon
+
 ## 0.1.15
 
 - Allow review delegation and formal receipts in Flagship mode
