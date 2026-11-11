@@ -134,7 +134,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `ssh.read`, `ssh.control`, `ssh.manage` | SSH connections |
 | `browser.read`, `browser.control`, `external_browser.read`, `external_browser.control` | Built-in and external browsers |
 | `computer.read`, `computer.control` | Screen capture and desktop control |
-| `media.inspect`, `media.image`, `media.video`, `media.settings.read`, `media.settings.write` | Media understanding and generation |
+| `media.settings.read`, `media.settings.write` | The media model assignments. Image inspection and image and video generation are built-in agent tools; `media.inspect`, `media.image` and `media.video` still validate but bind no tool |
 | `agents.delegate`, `roles.read`, `roles.write` | Subagents and delegation roles |
 | `teams.read` | The team catalog |
 | `activity.read`, `usage.read` | Activity and usage reports |

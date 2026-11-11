@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Describe media tools as built in; media actions cover only the model assignments
+
 ## 0.1.12
 
 - Accept team catalog and local decision actions in package preflight checks
