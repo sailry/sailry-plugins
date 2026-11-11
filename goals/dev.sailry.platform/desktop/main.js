@@ -2,13 +2,14 @@ import {View} from 'gpui-kit';
 import {context} from 'sailry';
 import {nextChange,nextConversation,prepareRequest,completeRequest,forgetRequest,faultCode,publishContributions,nextContributionEvent,closeContribution} from 'sailry/sdk';
 import {readComposer,nextComposerChange,toast} from 'sailry/ui';
+import {createText,readText,releaseText} from 'sailry/forms';
 import {messages} from './locales.js';
 import {render} from './view.js';
 
 export default class Goals extends View {
   init(_props,cx) {
     this.scope=JSON.parse(context()); this.text=messages(this.scope.locale);
-    this.state=readComposer(); this.goal=null; this.open=false;
+    this.state=readComposer(); this.goal=null; this.history=[]; this.open=false; this.editing=null;
     this.busy=false; this.loading=false; this.pending=null; this.readFailed=false; this.readError=null;
     this.packageCursor=null;this.runsCursor=null;this.readKey=null;
     this.publish(); this.refresh(cx);
@@ -38,7 +39,7 @@ export default class Goals extends View {
   }
   current() {return !!this.scope.session && this.scope.session===this.state.session && this.state.connected;}
   observeConversation(cx) {
-    const active=()=>this.current() && this.goal?.state==='active';
+    const active=()=>this.current() && this.goal?.status==='active';
     if (this.watching || !active()) return;
     this.watching=true;
     cx.spawn(async cx=>{
@@ -58,7 +59,7 @@ export default class Goals extends View {
     const left=state.cursor,right=this.state.cursor;
     if (left.length>right.length || left.length===right.length && left>=right) this.state=state;
   }
-  enabled() {return this.state.connected && !this.state.busy && !this.state.readonly && !this.busy && !this.pending && this.state.mode!=='plan';}
+  enabled() {return this.state.connected && !this.state.busy && !this.state.readonly && !this.busy && !this.pending;}
   draft() {return this.state.command?.name==='goal' && this.state.command.package.name===this.scope.package.name ? this.state.command.arguments : null;}
   publish(event) {
     publishContributions([
@@ -68,7 +69,7 @@ export default class Goals extends View {
   fail(key) {toast({id:'goal-error',kind:'error',message:this.text[key]});}
   refreshKey() {return JSON.stringify([this.state.session,this.state.connected,this.packageCursor,this.runsCursor]);}
   refresh(cx,force=false) {
-    if (!this.current()) {this.goal=null;this.readKey=null;return;}
+    if (!this.current()) {this.goal=null;this.history=[];this.readKey=null;return;}
     if (force) this.readKey=null;
     if (this.readKey===this.refreshKey() && !this.readFailed) return;
     if (this.loading) return;
@@ -78,13 +79,13 @@ export default class Goals extends View {
       try {do {
         const key=this.refreshKey();
         this.readKey=key;
-        const id=prepareRequest({kind:'read_plugin_callback',data:{handler:'read',input:{}}});
+        const id=prepareRequest({kind:'read_plugin_callback',data:{handler:'inspect',input:{}}});
         let result;
         try {result=await completeRequest(id);}
         finally {forgetRequest(id);}
         if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
-        if (!this.current()) {this.goal=null;break;}
-        this.goal=result.Ok.data.goal;
+        if (!this.current()) {this.goal=null;this.history=[];break;}
+        this.goal=result.Ok.data.goal;this.history=result.Ok.data.history ?? [];
         this.readFailed=false;
         this.readError=null;
       } while(this.current() && this.readKey!==this.refreshKey());}
@@ -95,10 +96,27 @@ export default class Goals extends View {
       finally {this.loading=false;this.observeConversation(cx);this.publish();cx.notify();}
     });
   }
-  perform(kind,cx) {
+  perform(kind,cx,extra={}) {
     if (this.busy || this.loading || this.pending || !this.state.connected || this.state.readonly || !this.goal) return;
-    this.pending={id:prepareRequest({kind:'call_plugin',data:{handler:'control',input:{kind,goal_id:this.goal.id,expected_revision:this.goal.revision}}}),kind};
+    this.pending={id:prepareRequest({kind:'call_plugin',data:{handler:'control',input:{kind,goal_id:this.goal.id,...extra}}}),kind};
     this.execute(cx);
+  }
+  // Edit is a draft in the panel until Save; a failed save keeps it.
+  startEdit(cx) {
+    if (this.editing || !this.goal) return;
+    this.editing=createText(this.goal.objective,{multiline:true,rows:[3,10],placeholder:this.text.hint,label:this.text.edit});
+    cx.notify();
+  }
+  cancelEdit(cx) {
+    if (!this.editing || this.busy) return;
+    if (this.pending?.kind==='edit') {forgetRequest(this.pending.id);this.pending=null;}
+    releaseText(this.editing);this.editing=null;this.publish();cx.notify();
+  }
+  saveEdit(cx) {
+    if (!this.editing) return;
+    const objective=readText(this.editing).trim();
+    if (!objective) return;
+    this.perform('edit',cx,{objective});
   }
   execute(cx) {
     if (this.busy || !this.pending) return;
@@ -110,7 +128,8 @@ export default class Goals extends View {
         if (result.Err) {const error=new Error(result.Err.message);error.code=result.Err.code;throw error;}
         forgetRequest(pending.id);this.pending=null;
         if (pending.kind==='clear') {this.open=false;closeContribution('status');}
-        toast({id:'goal-action',kind:'info',message:this.text[pending.kind==='clear'?'cleared':pending.kind==='pause'?'paused':'active']});
+        if (pending.kind==='edit' && this.editing) {releaseText(this.editing);this.editing=null;}
+        toast({id:'goal-action',kind:'info',message:this.text[{pause:'paused',resume:'resumed',edit:'edited',clear:'removed'}[pending.kind]]});
       } catch(error) {
         const code=error.code ?? faultCode(error.message ?? String(error));
         const uncertain=['outcome_unknown','unavailable','busy'].includes(code);

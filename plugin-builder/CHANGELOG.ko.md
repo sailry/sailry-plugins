@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- 패키지 검사에서 `continuation_markers`를 허용하고 핸들러의 `approval`을 설명
+
 ## 0.1.15
 
 - 참고 문서에서 탐색 및 도구에 선형 아이콘 권장

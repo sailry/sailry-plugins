@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- 包检查接受 `continuation_markers`，并说明处理器的 `approval`
+
 ## 0.1.15
 
 - 参考文档建议导航和工具使用线条图标

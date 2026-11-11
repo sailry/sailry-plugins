@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- Accept `continuation_markers` in the package check and describe handler `approval`
+
 ## 0.1.15
 
 - Recommend outline icons for navigation and tools in the references

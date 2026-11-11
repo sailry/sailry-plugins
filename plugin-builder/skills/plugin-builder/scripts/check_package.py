@@ -31,7 +31,7 @@ MODULES = {
 FIELDS = {
     "api_version", "min_sailry_version", "scope", "actions", "display", "description", "icon", "instructions",
     "settings_schema", "settings_page", "storage", "tools", "host",
-    "desktop", "ui", "artifact_view", "continuation_marker", "credential_source",
+    "desktop", "ui", "artifact_view", "continuation_marker", "continuation_markers", "credential_source",
     "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
     "conversation_options", "conversation_modes", "model_providers", "model_auth", "model_resources", "model_adapters",
 }

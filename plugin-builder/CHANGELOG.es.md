@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- La comprobación acepta `continuation_markers` y la referencia describe `approval` de los manejadores
+
 ## 0.1.15
 
 - Las referencias recomiendan iconos de contorno para la navegación y las herramientas

@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0
+
+- `/goal <texto>` começa na hora e continua em turnos automáticos até concluir o objetivo; uma mensagem ou uma pausa continuam dentro do objetivo
+- Concluir é uma declaração com evidências que um turno separado “Verificar objetivo” precisa confirmar; Reabrir desfaz
+- Parar pausa e uma resposta retoma; Pausar vale até Retomar; reinício, bifurcação, retrocesso ou modo Plano pausam com o motivo
+- Limites: 25 turnos automáticos por padrão, orçamentos opcionais de tokens e tempo e uma regra de falta de progresso; ao atingir um limite, o trabalho é encerrado e pausado
+- Três ferramentas substituem seis; só você edita, substitui ou limpa o objetivo
+
 ## 0.1.10
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

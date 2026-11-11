@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- A verificação aceita `continuation_markers` e a referência descreve `approval` dos manipuladores
+
 ## 0.1.15
 
 - As referências recomendam ícones de contorno para navegação e ferramentas

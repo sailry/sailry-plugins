@@ -1,28 +1,29 @@
 import assert from 'node:assert/strict';
 import {execute, packageInput, runtimeTest} from '../../scripts/test-host.mjs';
 
-runtimeTest('reads older goal interruptions through the SDK', async () => {
+runtimeTest('shows a goal whose last turn was lost as paused, through the SDK', async () => {
   const input=await packageInput(new URL('../',import.meta.url),'read',{});
   const session=input.context.session;
-  const recent='00000000-0000-4000-8000-000000000003';
-  const stopped='00000000-0000-4000-8000-000000000004';
-  const description='Preserve the complete requested objective';
-  const run=(turn,sequence,status)=>({turn,sequence,status,origin:null,error_code:null});
-  const history=(runs,before)=>({session,revision:1,runs,queue_revision:0,next_before:before});
+  const lost='00000000-0000-4000-8000-000000000004';
+  const objective='Preserve the complete requested objective';
+  const goal={id:'00000000-0000-4000-8000-000000000005',objective,version:1,status:'active',reason:null,detail:null,seq:39,waiting:false,
+    claim:null,evidence:null,edited:false,wrap:null,idle:0,notice:null,turns:3,chain:2,tokens:900,window_tokens:900,elapsed_ms:60000,window_ms:60000,
+    since_ms:null,created_ms:0,finished_ms:null};
   input.replies=[
     {command:{kind:'read_plugin_conversation_value',data:{key:'goal'}},response:{Ok:{kind:'plugin_conversation_value',data:{
-      key:'goal',revision:5,present:true,restored:false,value:{id:'00000000-0000-4000-8000-000000000005',description,state:'active',after:null},
+      key:'goal',revision:5,present:true,restored:false,value:goal,
     }}}},
-    {command:{kind:'read_conversation_runs',data:{session,before:null,limit:100}},
-      response:{Ok:{kind:'conversation_runs',data:history([run(recent,40,'completed')],recent)}}},
-    {command:{kind:'read_conversation_runs',data:{session,before:recent,limit:100}},
-      response:{Ok:{kind:'conversation_runs',data:history([run(stopped,2,'cancelled')],null)}}},
+    {command:{kind:'read_conversation_runs',data:{session,before:null,limit:8}},
+      response:{Ok:{kind:'conversation_runs',data:{session,revision:1,queue_revision:0,next_before:null,
+        runs:[{turn:lost,sequence:40,status:'interrupted',origin:null,error_code:null}]}}}},
+    {command:{kind:'read_plugin_settings',data:{package:input.context.package}},
+      response:{Ok:{kind:'plugin_settings',data:{values:{turn_limit:25,token_budget:0,time_limit:0},ready:true}}}},
   ];
   const report=execute(input);
   assert.equal(report.result.Err,undefined);
-  assert.equal(report.result.Ok.goal.state,'paused');
-  assert.equal(report.result.Ok.goal.description,description);
+  assert.equal(report.result.Ok.goal.status,'paused');
+  assert.equal(report.result.Ok.goal.reason,'restart');
+  assert.equal(report.result.Ok.goal.objective,objective);
   assert.equal(report.result.Ok.goal.revision,'5');
-  assert.equal(report.calls.length,3);
   assert.equal(report.calls.some(call=>call.command.kind==='plugin_transaction'),false);
 });

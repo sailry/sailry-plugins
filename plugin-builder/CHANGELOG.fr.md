@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- La vérification accepte `continuation_markers` et la référence décrit `approval` des gestionnaires
+
 ## 0.1.15
 
 - Les références recommandent des icônes au trait pour la navigation et les outils

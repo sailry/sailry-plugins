@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.16
+
+- 套件檢查接受 `continuation_markers`，並說明處理器的 `approval`
+
 ## 0.1.15
 
 - 參考文件建議導覽和工具使用線條圖示

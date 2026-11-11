@@ -4,15 +4,12 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
 const plain=value=>JSON.parse(JSON.stringify(value));
-function element(id,props) {
-  return {id,props,items:[],children(items){this.items.push(...items);return this;},
-    size(){return this;},label(){return this;},ghost(){return this;},
-    disabled(value){this.disabledValue=value;return this;},on_click(action){this.action=action;return this;}};
-}
+import {element,find,actions} from './elements.mjs';
+const goal={id:'goal',revision:'5',objective:'Requested work',status:'active',state:'running',reason:null,detail:null,claim:null,evidence:null,
+  turns:1,automatic_turns:1,turn_limit:25,tokens:120,token_budget:0,elapsed_ms:0,time_limit_ms:0};
 
 async function fixture(options={}) {
-  const host={goal:{id:'goal',description:'Requested work',state:'active',revision:'5'},
-    hold:false,held:[],failure:null,readFailure:null,...options};
+  const host={goal:{...goal},history:[],hold:false,held:[],failure:null,readFailure:null,texts:new Map(),released:[],...options};
   const prepared=[],completed=[],forgotten=[],contributions=[],closed=[],notices=[],jobs=[],conversations=[];
   const listeners={change:null,composer:null,conversation:null,contribution:null},ready={},scopes=[];
   const next=kind=>{ready[kind]?.();return new Promise(resolve=>{listeners[kind]=resolve;});};
@@ -38,29 +35,31 @@ async function fixture(options={}) {
     completeRequest:async id=>{
       completed.push(id);
       const request=prepared[Number(id)];
-      if(request.data.handler==='read') {
+      if(request.data.handler==='inspect') {
         if(host.readFailure instanceof Error) throw host.readFailure;
         if(host.readFailure) return {Err:{code:host.readFailure,message:'Read failed'}};
-        const result={Ok:{data:{goal:plain(host.goal && {...host.goal,state:host.displayState ?? host.goal.state})}}};
+        const result={Ok:{data:{goal:plain(host.goal && {...host.goal,...(host.shown ?? {})}),history:plain(host.history)}}};
         return host.hold ? new Promise(resolve=>host.held.push(()=>resolve(result))) : result;
       }
       assert.equal(request.data.handler,'control');
       if(host.failure) return {Err:{code:host.failure,message:'Unconfirmed action'}};
-      assert.equal(request.data.input.goal_id,host.goal.id);
-      assert.equal(request.data.input.expected_revision,host.goal.revision);
-      const revision=String(BigInt(host.goal.revision)+1n);
-      host.goal=request.data.input.kind==='clear' ? null : {...host.goal,
-        state:request.data.input.kind==='resume' ? 'active' : 'paused',revision};
-      return {Ok:{data:{goal:plain(host.goal)}}};
+      const input=request.data.input,revision=String(BigInt(host.goal.revision)+1n);
+      assert.equal(input.goal_id,host.goal.id);
+      host.goal=input.kind==='clear' ? null : input.kind==='edit' ? {...host.goal,objective:input.objective,revision}
+        : input.kind==='resume' ? {...host.goal,status:'active',state:'running',reason:null,revision}
+        : {...host.goal,status:'paused',state:'paused',reason:'user',revision};
+      return {Ok:{data:{goal:plain(host.goal),history:plain(host.history)}}};
     },
     forgetRequest:id=>forgotten.push(id),faultCode:message=>message,
   };
   const exports={
-    'gpui-kit':{View:class{}},
+    'gpui-kit':{View:class{},div:()=>element()},
     'gpui-component':{Button:function(id){return element(id);}},
-    sailry:{context:()=>JSON.stringify({locale:'en',session:'session',package:{name:'goals'}})},
+    sailry:{context:()=>JSON.stringify({locale:'en',session:'session',package:{name:'goals'}}),theme:()=>({colors:{}})},
+    'sailry/forms':{TextField:{new:element},createText:(value,options)=>{const handle=`text-${host.texts.size}`;host.texts.set(handle,{value,options});return handle;},
+      readText:handle=>host.texts.get(handle).value,releaseText:handle=>host.released.push(handle)},
     'sailry/sdk':sdk,
-    'sailry/ui':{StatusList:{new:element},
+    'sailry/ui':{ScrollRegion:{new:element},
       readComposer:()=>({session:'session',connected:true,readonly:false,busy:false,mode:'code',cursor:'1'}),
       nextComposerChange:()=>next('composer'),toast:value=>{
         if(!['info','error'].includes(value.kind)) throw new TypeError('Unsupported notification kind');
@@ -72,7 +71,7 @@ async function fixture(options={}) {
     const module=exports[name] ? new vm.SyntheticModule(Object.keys(exports[name]),function(){
       for(const [key,value] of Object.entries(exports[name])) this.setExport(key,value);
     },{context}) : new vm.SourceTextModule(await readFile(
-      new URL(`../dev.sailry.platform/desktop/${name}`,import.meta.url),'utf8'),{context,identifier:name});
+      new URL(name,new URL('../dev.sailry.platform/desktop/',import.meta.url)),'utf8'),{context,identifier:name});
     modules.set(name,module);
     if(!exports[name]) await module.link(load);
     return module;
@@ -108,7 +107,7 @@ test('unused conversations do not subscribe',async()=>{
 
 test('first goal activates run observations',async()=>{
   const setup=await fixture({goal:null});
-  setup.host.goal={id:'goal',description:'Requested work',state:'active',revision:'1'};
+  setup.host.goal={...goal,revision:'1'};
   await setup.deliver('change',{cursor:'2',connected:true});
   assert.equal(setup.view.goal.id,'goal');
   assert.equal(setup.conversations.length,1);
@@ -135,9 +134,9 @@ test('retained sessions stop observing old history',async()=>{
 test('successful controls use supported notifications',async()=>{
   const setup=await fixture();
   await setup.perform('pause');
-  assert.equal(setup.host.goal.state,'paused');
+  assert.equal(setup.host.goal.status,'paused');
   await setup.perform('resume');
-  assert.equal(setup.host.goal.state,'active');
+  assert.equal(setup.host.goal.status,'active');
   assert.deepEqual(setup.closed,[]);
   setup.view.open=true;
   await setup.perform('clear');
@@ -149,8 +148,8 @@ test('successful controls use supported notifications',async()=>{
   assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
   assert.deepEqual(setup.notices,[
     {id:'goal-action',kind:'info',message:setup.view.text.paused},
-    {id:'goal-action',kind:'info',message:setup.view.text.active},
-    {id:'goal-action',kind:'info',message:setup.view.text.cleared},
+    {id:'goal-action',kind:'info',message:setup.view.text.resumed},
+    {id:'goal-action',kind:'info',message:setup.view.text.removed},
   ]);
   const controls=setup.prepared.flatMap((request,index)=>request.data.handler==='control' ? [String(index)] : []);
   assert.equal(controls.length,3);
@@ -160,25 +159,24 @@ test('successful controls use supported notifications',async()=>{
   }
 });
 
-test('description remains literal prose with fixed controls',async()=>{
+test('the objective remains literal prose with the controls of its state',async()=>{
   const setup=await fixture();
-  const description='## Requested **work** 中文 🙂\n\nKeep this paragraph and e\u0301 unchanged';
-  setup.view.goal={...setup.view.goal,description};
+  const objective='## Requested **work** 中文 🙂\n\nKeep this paragraph and e\u0301 unchanged';
+  setup.view.goal={...setup.view.goal,objective};
   const panel=setup.view.render();
-  assert.equal(panel.props.body,description);
-  assert.deepEqual(plain(panel.props.items),[]);
-  assert.deepEqual(panel.items.map(item=>item.id),['goal-stop','goal-clear']);
+  assert.deepEqual(find(panel,'goal-objective').text,[objective]);
+  assert.deepEqual(actions(panel),['goal-pause','goal-edit','goal-clear']);
 });
 
 test('forwarded status events refresh the panel',async()=>{
   const setup=await fixture();
-  setup.host.goal={...setup.host.goal,state:'completed',description:'Completed work'};
+  setup.host.goal={...setup.host.goal,status:'completed',state:'completed',objective:'Completed work',evidence:'Suite passed'};
   setup.view.readKey=null;
   await setup.emit('contribution',{id:'status',kind:'invoke',sequence:1,value:null});
   assert.equal(setup.view.open,true);
-  assert.equal(setup.view.goal.state,'completed');
-  assert.equal(setup.view.goal.description,'Completed work');
-  assert.deepEqual(setup.view.render().items.map(item=>item.id),['goal-clear']);
+  assert.equal(setup.view.goal.status,'completed');
+  assert.equal(setup.view.goal.objective,'Completed work');
+  assert.deepEqual(actions(setup.view.render()),['goal-resume','goal-clear']);
   await setup.emit('contribution',{id:'status',kind:'change',sequence:2,value:false});
   assert.equal(setup.view.open,false);
   assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
@@ -196,7 +194,7 @@ test('unsubmitted drafts never publish status',async()=>{
   assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
 });
 
-test('held refresh blocks stale controls until current revision',async()=>{
+test('a held refresh blocks controls until the latest read',async()=>{
   const setup=await fixture();
   assert.equal(setup.view.enabled(),true);
   setup.host.hold=true;
@@ -206,7 +204,7 @@ test('held refresh blocks stale controls until current revision',async()=>{
   assert.equal(setup.view.busy,false);
   assert.equal(setup.view.enabled(),true);
   assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,true);
-  assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
+  assert.ok(buttons(setup.view.render()).every(item=>item.disabledValue===true));
   const count=setup.prepared.length;
   await setup.perform('clear');
   assert.equal(setup.prepared.length,count);
@@ -215,10 +213,9 @@ test('held refresh blocks stale controls until current revision',async()=>{
   assert.equal(setup.view.goal.revision,'6');
   assert.equal(setup.view.enabled(),true);
   await setup.perform('clear');
+  // Controls name the goal, not its revision: the counters change every turn.
   const controls=setup.prepared.filter(request=>request.data.handler==='control');
-  assert.deepEqual(controls.map(request=>request.data.input),[
-    {kind:'pause',goal_id:'goal',expected_revision:'5'},{kind:'clear',goal_id:'goal',expected_revision:'6'},
-  ]);
+  assert.deepEqual(controls.map(request=>request.data.input),[{kind:'pause',goal_id:'goal'},{kind:'clear',goal_id:'goal'}]);
   assert.equal(setup.host.goal,null);
   assert.equal(setup.view.goal,null);
   assert.equal(setup.view.pending,null);
@@ -230,14 +227,14 @@ test('dirty refresh remains blocked until latest read',async()=>{
   setup.view.refresh(setup.cx,true);
   await Promise.resolve();
   assert.equal(setup.view.enabled(),true);
-  assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
-  setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
+  assert.ok(buttons(setup.view.render()).every(item=>item.disabledValue===true));
+  setup.host.goal={...setup.host.goal,revision:'6',objective:'Changed elsewhere'};
   setup.view.refresh(setup.cx,true);
   setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
   assert.equal(setup.view.goal.revision,'6');
-  assert.equal(setup.view.goal.description,'Changed elsewhere');
+  assert.equal(setup.view.goal.objective,'Changed elsewhere');
   assert.equal(setup.view.enabled(),true);
-  assert.equal(setup.prepared.filter(request=>request.data.handler==='read').length,3);
+  assert.equal(setup.prepared.filter(request=>request.data.handler==='inspect').length,3);
   assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
 });
 
@@ -251,7 +248,7 @@ test('refresh preserves new task command and draft',async()=>{
   setup.view.refresh(setup.cx,true);await Promise.resolve();
   assert.equal(setup.view.draft(),argumentsText);
   assert.ok(setup.contributions.slice(first).every(entries=>entries.find(item=>item.id==='goal').enabled));
-  assert.ok(setup.view.render().items.every(item=>item.disabledValue===true));
+  assert.ok(buttons(setup.view.render()).every(item=>item.disabledValue===true));
   const count=setup.prepared.length;
   await setup.perform('clear');
   assert.equal(setup.prepared.length,count);
@@ -305,7 +302,7 @@ test('failed reads release capacity and preserve current goal',async()=>{
   assert.equal(setup.prepared.length,22);
   assert.equal(setup.prepared.length,setup.forgotten.length);
   await setup.perform('pause');
-  assert.equal(setup.host.goal.state,'paused');
+  assert.equal(setup.host.goal.status,'paused');
   assert.equal(setup.view.pending,null);
 });
 
@@ -317,9 +314,9 @@ test('reads stay nondurable while controls retain admission',async()=>{
   assert.equal(setup.prepared.length,1);
   await setup.emit('composer',{...setup.view.state,cursor:'3',busy:true});
   assert.equal(setup.prepared.length,1);
-  setup.host.goal={...setup.host.goal,revision:'6',description:'Changed elsewhere'};
+  setup.host.goal={...setup.host.goal,revision:'6',objective:'Changed elsewhere'};
   await setup.emit('change',{cursor:'package-1',connected:true,entry:'0'});
-  assert.equal(setup.view.goal.description,'Changed elsewhere');
+  assert.equal(setup.view.goal.objective,'Changed elsewhere');
   assert.equal(setup.prepared.length,2);
   assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
   await setup.emit('composer',{...setup.view.state,cursor:'4',busy:false});
@@ -340,11 +337,11 @@ test('external stops refresh without storage changes',async()=>{
   await setup.emit('conversation',change('2','running','session','Streaming text'));
   await setup.emit('conversation',change('3','cancelled','another-session'));
   assert.equal(setup.prepared.length,before);
-  // A service-reduced stop from another controller need not write goal storage.
-  setup.host.displayState='paused';
+  // A loop found dead is shown paused without a write to the goal.
+  setup.host.shown={status:'paused',state:'paused',reason:'restart'};
   await setup.emit('conversation',change('4','cancelled'));
-  assert.equal(setup.host.goal.state,'active');
-  assert.equal(setup.view.goal.state,'paused');
+  assert.equal(setup.host.goal.status,'active');
+  assert.equal(setup.view.goal.status,'paused');
   assert.equal(setup.prepared.length,before+1);
   assert.ok(setup.prepared.every(request=>request.kind==='read_plugin_callback'));
   await setup.deliver('conversation',change('5','cancelled','session','Unrelated output'));
@@ -366,4 +363,46 @@ test('identical status triggers share a read',async()=>{
   assert.equal(setup.prepared.length,count);
   await setup.deliver('change',{cursor:'3',connected:true});
   assert.equal(setup.prepared.length,count+1);
+});
+
+const buttons=panel=>find(panel,'goal-actions').items;
+
+test('/goal stays available in Plan mode',async()=>{
+  const setup=await fixture();
+  await setup.emit('composer',{...setup.view.state,cursor:'2',mode:'plan'});
+  assert.equal(setup.view.enabled(),true);
+  assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,true);
+});
+
+test('Edit is a draft until Save and survives a failed save',async()=>{
+  const setup=await fixture();
+  setup.view.startEdit(setup.cx);
+  const handle=setup.view.editing;
+  assert.deepEqual(plain(setup.host.texts.get(handle)),{value:'Requested work',options:{multiline:true,rows:[3,10],placeholder:setup.view.text.hint,label:setup.view.text.edit}});
+  assert.deepEqual(actions(setup.view.render()),['goal-cancel','goal-save']);
+  assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
+  // A failed save keeps the draft and reports a toast.
+  setup.host.texts.get(handle).value='  Requested work with docs  ';
+  setup.host.failure='conflict';
+  let first=setup.jobs.length;
+  setup.view.saveEdit(setup.cx);await setup.jobs[first];await setup.jobs.at(-1);
+  assert.equal(setup.view.editing,handle);assert.equal(setup.view.pending,null);
+  assert.deepEqual(setup.notices.at(-1),{id:'goal-error',kind:'error',message:setup.view.text.error});
+  assert.deepEqual(setup.host.released,[]);
+  setup.host.failure=null;
+  first=setup.jobs.length;
+  setup.view.saveEdit(setup.cx);await setup.jobs[first];await setup.jobs.at(-1);
+  assert.equal(setup.view.editing,null);assert.deepEqual(setup.host.released,[handle]);
+  assert.equal(setup.view.goal.objective,'Requested work with docs');
+  assert.deepEqual(setup.prepared.filter(request=>request.data.handler==='control').at(-1).data.input,{kind:'edit',goal_id:'goal',objective:'Requested work with docs'});
+  assert.deepEqual(setup.notices.at(-1),{id:'goal-action',kind:'info',message:setup.view.text.edited});
+  // Cancel drops the draft without a request; an empty draft is not sent.
+  setup.view.startEdit(setup.cx);
+  const second=setup.view.editing;
+  setup.host.texts.get(second).value='   ';
+  const count=setup.prepared.length;
+  setup.view.saveEdit(setup.cx);
+  assert.equal(setup.prepared.length,count);
+  setup.view.cancelEdit(setup.cx);
+  assert.equal(setup.view.editing,null);assert.deepEqual(setup.host.released,[handle,second]);
 });
