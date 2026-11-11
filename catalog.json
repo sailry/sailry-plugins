@@ -13683,7 +13683,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.1.10",
+        "version": "0.2.0",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -13696,35 +13696,215 @@
                     "type": "object",
                     "required": [
                       "id",
-                      "description",
-                      "state"
+                      "objective",
+                      "version",
+                      "status"
                     ],
                     "properties": {
                       "id": {
                         "type": "string",
                         "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
                       },
-                      "description": {
+                      "objective": {
                         "type": "string",
                         "minLength": 1
                       },
-                      "state": {
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "status": {
                         "type": "string",
                         "enum": [
                           "active",
                           "paused",
-                          "completed",
                           "blocked",
-                          "failed"
+                          "completed"
                         ]
                       },
-                      "after": {
+                      "reason": {
                         "type": [
                           "string",
                           "null"
                         ],
-                        "default": null,
-                        "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                        "enum": [
+                          "stopped",
+                          "user",
+                          "turns",
+                          "tokens",
+                          "time",
+                          "no_progress",
+                          "needs_you",
+                          "error",
+                          "restart",
+                          "plan",
+                          "restored",
+                          null
+                        ]
+                      },
+                      "detail": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "seq": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "waiting": {
+                        "type": "boolean"
+                      },
+                      "claim": {
+                        "type": [
+                          "object",
+                          "null"
+                        ],
+                        "required": [
+                          "note"
+                        ],
+                        "properties": {
+                          "note": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "evidence": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "edited": {
+                        "type": "boolean"
+                      },
+                      "wrap": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "enum": [
+                          "turns",
+                          "tokens",
+                          "time",
+                          null
+                        ]
+                      },
+                      "notice": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "enum": [
+                          "completed",
+                          "blocked",
+                          null
+                        ]
+                      },
+                      "idle": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "turns": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "chain": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "tokens": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "window_tokens": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "elapsed_ms": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "window_ms": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "since_ms": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "created_ms": {
+                        "type": "integer"
+                      },
+                      "finished_ms": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "scope": "conversation",
+                  "key": "history",
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "items"
+                    ],
+                    "properties": {
+                      "items": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "objective",
+                            "outcome"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+                            },
+                            "objective": {
+                              "type": "string"
+                            },
+                            "outcome": {
+                              "type": "string",
+                              "enum": [
+                                "completed",
+                                "cleared",
+                                "replaced"
+                              ]
+                            },
+                            "turns": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "elapsed_ms": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "tokens": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "evidence": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "finished_ms": {
+                              "type": "integer"
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -13735,14 +13915,16 @@
               "storage.read",
               "storage.write",
               "conversation.read",
-              "conversation.control"
+              "conversation.control",
+              "notifications.publish"
             ],
             "desktop": {
               "ui_entry": "dev.sailry.platform/desktop/main.js",
               "resources": [
                 "dev.sailry.platform/desktop/main.js",
                 "dev.sailry.platform/desktop/view.js",
-                "dev.sailry.platform/desktop/locales.js"
+                "dev.sailry.platform/desktop/locales.js",
+                "dev.sailry.platform/labels.js"
               ]
             },
             "ui": [
@@ -13782,43 +13964,6 @@
             ],
             "tools": [
               {
-                "name": "create_goal",
-                "presentation": "content",
-                "handler": {
-                  "name": "create",
-                  "parameters": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "description": {
-                        "type": "string",
-                        "minLength": 1
-                      }
-                    },
-                    "required": [
-                      "description"
-                    ]
-                  }
-                },
-                "description": "Start persistent goal execution only when the user explicitly requests it. One unfinished goal is allowed per session. The session keeps working until completion or a stop, under existing permissions. Returns the goal identifier and revision.",
-                "display": {
-                  "label": "Create goal",
-                  "locales": {
-                    "zh-CN": "创建目标",
-                    "zh-TW": "建立目標",
-                    "ja": "目標を作成",
-                    "ko": "목표 만들기",
-                    "fr": "Créer un objectif",
-                    "de": "Ziel erstellen",
-                    "es": "Crear objetivo",
-                    "pt-BR": "Criar objetivo",
-                    "ru": "Создать цель",
-                    "en": "Create goal"
-                  },
-                  "icon": "reicon:ui/target"
-                }
-              },
-              {
                 "name": "get_goal",
                 "presentation": "content",
                 "handler": {
@@ -13831,7 +13976,7 @@
                     "required": []
                   }
                 },
-                "description": "Read the current objective, state and exact revision. Read before updating. A goal never grants additional authority.",
+                "description": "Read this conversation's goal: its objective, state and pause reason, the turns, time and tokens used, the limits, and a pending completion claim. A goal never grants additional authority.",
                 "display": {
                   "label": "View goal",
                   "locales": {
@@ -13850,6 +13995,45 @@
                 }
               },
               {
+                "name": "create_goal",
+                "presentation": "content",
+                "handler": {
+                  "name": "create",
+                  "approval": true,
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "objective": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "The outcome to reach and how completion is checked, in the user's terms."
+                      }
+                    },
+                    "required": [
+                      "objective"
+                    ]
+                  }
+                },
+                "description": "Start a goal for this conversation only when the user explicitly asks for one in their own message. The conversation then keeps working, turn after turn, until the objective is achieved and verified or the user stops it, under the existing permissions. One goal exists per conversation; you cannot replace an unfinished one. State the objective as the outcome and how to check it.",
+                "display": {
+                  "label": "Create goal",
+                  "locales": {
+                    "zh-CN": "创建目标",
+                    "zh-TW": "建立目標",
+                    "ja": "目標を作成",
+                    "ko": "목표 만들기",
+                    "fr": "Créer un objectif",
+                    "de": "Ziel erstellen",
+                    "es": "Crear objetivo",
+                    "pt-BR": "Criar objetivo",
+                    "ru": "Создать цель",
+                    "en": "Create goal"
+                  },
+                  "icon": "reicon:ui/target"
+                }
+              },
+              {
                 "name": "update_goal",
                 "presentation": "content",
                 "handler": {
@@ -13858,37 +14042,26 @@
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
-                      "description": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "goal_id": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "expected_revision": {
-                        "type": "string",
-                        "pattern": "^[1-9][0-9]*$"
-                      },
-                      "state": {
+                      "status": {
                         "type": "string",
                         "enum": [
-                          "active",
-                          "completed",
+                          "complete",
                           "blocked",
-                          "failed"
+                          "paused",
+                          "active"
                         ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "Evidence for complete; what is needed for blocked."
                       }
                     },
                     "required": [
-                      "description",
-                      "goal_id",
-                      "expected_revision",
-                      "state"
+                      "status"
                     ]
                   }
                 },
-                "description": "Update the active goal using its exact identifier and string revision from get_goal. Preserve the objective unless the user changes it. Mark completed only after verification with no required work remaining; a final answer does not complete a goal. Mark blocked or failed when work cannot continue. Do not resume or replace an unfinished goal yourself.",
+                "description": "Report the goal's status. \"complete\": the objective is achieved; note states the evidence. The first call records a claim, and the goal closes only when the verification turn that follows calls it again. \"blocked\": the same obstacle stopped progress for three turns in a row and only the user can remove it; note says what is needed. \"paused\" and \"active\": only when the user asks in their own message to pause or resume. You cannot change the objective, clear the goal or reopen a completed one.",
                 "display": {
                   "label": "Update goal",
                   "locales": {
@@ -13902,132 +14075,6 @@
                     "pt-BR": "Atualizar objetivo",
                     "ru": "Обновить цель",
                     "en": "Update goal"
-                  },
-                  "icon": "reicon:ui/target"
-                }
-              },
-              {
-                "name": "resume_goal",
-                "presentation": "content",
-                "handler": {
-                  "name": "resume",
-                  "parameters": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "goal_id": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "expected_revision": {
-                        "type": "string",
-                        "pattern": "^[1-9][0-9]*$"
-                      }
-                    },
-                    "required": [
-                      "goal_id",
-                      "expected_revision"
-                    ]
-                  }
-                },
-                "description": "Resume the inspected paused, blocked or failed goal only when the user explicitly requests resuming it. Use the exact goal identifier and string revision from get_goal. Existing scope and permissions still apply; never undo a Stop yourself.",
-                "display": {
-                  "label": "Resume goal",
-                  "locales": {
-                    "zh-CN": "继续目标",
-                    "zh-TW": "繼續目標",
-                    "ja": "目標を再開",
-                    "ko": "목표 재개",
-                    "fr": "Reprendre l’objectif",
-                    "de": "Ziel fortsetzen",
-                    "es": "Reanudar objetivo",
-                    "pt-BR": "Retomar objetivo",
-                    "ru": "Продолжить цель",
-                    "en": "Resume goal"
-                  },
-                  "icon": "reicon:ui/target"
-                }
-              },
-              {
-                "name": "pause_goal",
-                "presentation": "content",
-                "handler": {
-                  "name": "pause",
-                  "parameters": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "goal_id": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "expected_revision": {
-                        "type": "string",
-                        "pattern": "^[1-9][0-9]*$"
-                      }
-                    },
-                    "required": [
-                      "goal_id",
-                      "expected_revision"
-                    ]
-                  }
-                },
-                "description": "Pause the inspected goal only when the user requests pausing or stopping it. Use the exact goal identifier and string revision from get_goal. Retain the goal and its conversation history.",
-                "display": {
-                  "label": "Pause goal",
-                  "locales": {
-                    "zh-CN": "暂停目标",
-                    "zh-TW": "暫停目標",
-                    "ja": "目標を一時停止",
-                    "ko": "목표 일시중지",
-                    "fr": "Suspendre l’objectif",
-                    "de": "Ziel pausieren",
-                    "es": "Pausar objetivo",
-                    "pt-BR": "Pausar objetivo",
-                    "ru": "Приостановить цель",
-                    "en": "Pause goal"
-                  },
-                  "icon": "reicon:ui/target"
-                }
-              },
-              {
-                "name": "clear_goal",
-                "presentation": "content",
-                "handler": {
-                  "name": "clear",
-                  "parameters": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "goal_id": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "expected_revision": {
-                        "type": "string",
-                        "pattern": "^[1-9][0-9]*$"
-                      }
-                    },
-                    "required": [
-                      "goal_id",
-                      "expected_revision"
-                    ]
-                  }
-                },
-                "description": "Clear the inspected goal only when the user explicitly requests clearing it. Use its exact identifier and string revision from get_goal. This removes that goal and stops its execution, while retaining conversation history. Never clear a goal to replace it yourself.",
-                "display": {
-                  "label": "Clear goal",
-                  "locales": {
-                    "zh-CN": "清除目标",
-                    "zh-TW": "清除目標",
-                    "ja": "目標を消去",
-                    "ko": "목표 지우기",
-                    "fr": "Effacer l’objectif",
-                    "de": "Ziel löschen",
-                    "es": "Borrar objetivo",
-                    "pt-BR": "Limpar objetivo",
-                    "ru": "Очистить цель",
-                    "en": "Clear goal"
                   },
                   "icon": "reicon:ui/target"
                 }
@@ -14050,26 +14097,24 @@
               "entry": "dev.sailry.platform/host/main.js",
               "resources": [
                 "dev.sailry.platform/host/main.js",
-                "dev.sailry.platform/host/labels.js"
+                "dev.sailry.platform/host/prompts.js",
+                "dev.sailry.platform/labels.js"
               ],
               "handlers": [
                 "read",
                 "create",
                 "update",
                 "initialize",
-                "observe",
-                "completed",
+                "ended",
                 "control",
                 "command",
-                "resume",
-                "pause",
-                "clear",
-                "badge"
+                "badge",
+                "inspect"
               ],
               "turn": {
                 "initialize": "initialize",
-                "before_model": "observe",
-                "after_turn": "completed"
+                "before_model": null,
+                "after_turn": "ended"
               },
               "commands": [
                 {
@@ -14079,7 +14124,8 @@
               ],
               "read_only": [
                 "read",
-                "badge"
+                "badge",
+                "inspect"
               ],
               "status": {
                 "read": "badge",
@@ -14105,6 +14151,23 @@
             },
             "category": "automation",
             "tint": "amber",
+            "continuation_markers": {
+              "verify": {
+                "label": "Verify goal",
+                "locales": {
+                  "zh-CN": "核验目标",
+                  "zh-TW": "核驗目標",
+                  "ja": "目標を検証",
+                  "ko": "목표 검증",
+                  "de": "Ziel prüfen",
+                  "es": "Verificar objetivo",
+                  "fr": "Vérifier l’objectif",
+                  "pt-BR": "Verificar objetivo",
+                  "ru": "Проверить цель"
+                }
+              }
+            },
+            "settings_schema": "dev.sailry.platform/settings.json",
             "min_sailry_version": "0.1.6"
           }
         }
@@ -14114,9 +14177,29 @@
         "storage.read",
         "storage.write",
         "conversation.read",
-        "conversation.control"
+        "conversation.control",
+        "notifications.publish"
       ],
       "versions": [
+        {
+          "version": "0.2.0",
+          "commit": "b393ea02a8bda6a5ae2969255d70e673947454b1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- `/goal <text>` starts at once and keeps going through continuation turns until the goal is complete; a message or a pause stays inside the goal\n- Completion is a claim with evidence that a separate Verify goal turn must confirm; Reopen undoes it\n- Stop pauses and a reply resumes; Pause holds until Resume; a restart, fork, rewind or Plan mode pauses with its reason\n- Limits: 25 automatic turns by default, optional token and time budgets, and a no-progress rule; a reached limit wraps up and pauses\n- The goal waits for background work, and notifies when it completes, is blocked or is paused by anything but you\n- Three tools replace six: the model reads, starts on request and reports status; only you edit, replace or clear\n- The badge shows state and time; the panel shows turns, time, tokens, Edit and earlier goals",
+            "locales": {
+              "zh-CN": "- `/goal <文本>` 立即开始，并通过自动轮次持续执行直到目标完成；中途的消息或暂停仍属于该目标\n- 完成需先提交依据，再由独立的“核验目标”轮次确认；可重新打开\n- 停止后暂停，回复即继续；手动暂停需点继续；重启、分叉、回退或计划模式会暂停并显示原因\n- 上限：默认 25 个自动轮次，可选 Token 预算与时间上限，以及无进展规则；达到上限时收尾并暂停\n- 后台任务未结束时等待；完成、受阻或非手动暂停时发送通知\n- 工具由六个减为三个：模型可查看、按请求创建、汇报状态；编辑、替换和清除仅由你操作\n- 徽标显示状态与用时；面板显示轮次、用时、Token、编辑和历史目标",
+              "zh-TW": "- `/goal <文字>` 立即開始，並透過自動輪次持續執行直到目標完成；中途的訊息或暫停仍屬於該目標\n- 完成需先提交依據，再由獨立的「核驗目標」輪次確認；可重新開啟\n- 停止後暫停，回覆即繼續；手動暫停需按繼續；重新啟動、分叉、回退或計畫模式會暫停並顯示原因\n- 上限：預設 25 個自動輪次，可選 Token 預算與時間上限，以及無進展規則；達到上限時收尾並暫停\n- 工具由六個減為三個；編輯、取代和清除僅由你操作",
+              "ja": "- `/goal <テキスト>` はすぐに開始し、目標が完了するまで自動ターンで継続します。途中のメッセージや一時停止も目標の一部です\n- 完了は根拠付きの申告と、別の「目標を検証」ターンでの確認が必要です。再開で取り消せます\n- 停止で一時停止し、返信で再開します。手動の一時停止は「再開」まで保持されます。再起動、フォーク、巻き戻し、プランモードでは理由付きで一時停止します\n- 上限: 既定で自動 25 ターン、任意のトークン予算と時間上限、進捗なしルール。上限に達するとまとめて一時停止します\n- ツールは 6 個から 3 個に。編集、置き換え、消去はユーザーのみが行えます",
+              "ko": "- `/goal <텍스트>`는 즉시 시작하며 목표가 완료될 때까지 자동 턴으로 계속합니다. 중간의 메시지나 일시중지도 목표에 포함됩니다\n- 완료는 근거와 함께 신고한 뒤 별도의 '목표 검증' 턴에서 확인해야 합니다. 다시 열어 취소할 수 있습니다\n- 중지하면 일시중지되고 답장하면 재개됩니다. 직접 일시중지하면 재개할 때까지 유지됩니다. 재시작, 포크, 되돌리기, 계획 모드에서는 이유와 함께 일시중지됩니다\n- 한도: 기본 자동 25턴, 선택적 토큰 예산과 시간 한도, 진행 없음 규칙. 한도에 도달하면 마무리하고 일시중지합니다\n- 도구가 6개에서 3개로 줄었습니다. 편집, 교체, 지우기는 사용자만 할 수 있습니다",
+              "fr": "- `/goal <texte>` démarre aussitôt et continue par des tours automatiques jusqu’à l’achèvement ; un message ou une pause restent dans l’objectif\n- L’achèvement est une déclaration avec preuves qu’un tour distinct « Vérifier l’objectif » doit confirmer ; Rouvrir l’annule\n- Arrêter met en pause et une réponse reprend ; Suspendre tient jusqu’à Reprendre ; un redémarrage, une bifurcation, un retour arrière ou le mode Plan mettent en pause avec leur motif\n- Limites : 25 tours automatiques par défaut, budgets facultatifs de jetons et de temps, règle d’absence de progrès ; une limite atteinte conclut puis met en pause\n- Trois outils en remplacent six ; vous seul modifiez, remplacez ou effacez l’objectif",
+              "de": "- `/goal <Text>` startet sofort und läuft in automatischen Runden weiter, bis das Ziel erreicht ist; eine Nachricht oder Pause bleibt Teil des Ziels\n- Der Abschluss ist eine Meldung mit Belegen, die eine eigene Runde „Ziel prüfen“ bestätigen muss; Wieder öffnen macht ihn rückgängig\n- Stopp pausiert und eine Antwort setzt fort; Pausieren hält bis Fortsetzen; Neustart, Abzweigung, Zurückspulen oder Planmodus pausieren mit ihrem Grund\n- Grenzen: standardmäßig 25 automatische Runden, optionale Token- und Zeitbudgets sowie eine Regel für fehlenden Fortschritt; eine erreichte Grenze schließt ab und pausiert\n- Drei Werkzeuge ersetzen sechs; nur Sie bearbeiten, ersetzen oder löschen das Ziel",
+              "es": "- `/goal <texto>` empieza de inmediato y continúa con turnos automáticos hasta completar el objetivo; un mensaje o una pausa siguen dentro del objetivo\n- Completar es una declaración con pruebas que un turno aparte «Verificar objetivo» debe confirmar; Reabrir lo deshace\n- Detener pausa y una respuesta reanuda; Pausar se mantiene hasta Reanudar; un reinicio, una bifurcación, un retroceso o el modo Plan pausan con su motivo\n- Límites: 25 turnos automáticos por defecto, presupuestos opcionales de tokens y tiempo, y una regla de falta de progreso; al alcanzar un límite se cierra el trabajo y se pausa\n- Tres herramientas sustituyen a seis; solo tú editas, reemplazas o borras el objetivo",
+              "pt-BR": "- `/goal <texto>` começa na hora e continua em turnos automáticos até concluir o objetivo; uma mensagem ou uma pausa continuam dentro do objetivo\n- Concluir é uma declaração com evidências que um turno separado “Verificar objetivo” precisa confirmar; Reabrir desfaz\n- Parar pausa e uma resposta retoma; Pausar vale até Retomar; reinício, bifurcação, retrocesso ou modo Plano pausam com o motivo\n- Limites: 25 turnos automáticos por padrão, orçamentos opcionais de tokens e tempo e uma regra de falta de progresso; ao atingir um limite, o trabalho é encerrado e pausado\n- Três ferramentas substituem seis; só você edita, substitui ou limpa o objetivo",
+              "ru": "- `/goal <текст>` запускается сразу и продолжается автоматическими ходами до выполнения цели; сообщение или пауза остаются частью цели\n- Завершение — это заявление с доказательствами, которое должен подтвердить отдельный ход «Проверить цель»; «Открыть снова» отменяет его\n- Остановка ставит на паузу, ответ продолжает; ручная пауза держится до «Продолжить»; перезапуск, ответвление, откат и режим плана ставят на паузу с причиной\n- Ограничения: по умолчанию 25 автоматических ходов, необязательные бюджеты токенов и времени, правило отсутствия прогресса; при достижении лимита работа завершается и ставится на паузу\n- Три инструмента вместо шести; изменять, заменять и очищать цель можете только вы"
+            }
+          }
+        },
         {
           "version": "0.1.10",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -14232,17 +14315,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- `/goal <text>` starts at once and keeps going through continuation turns until the goal is complete; a message or a pause stays inside the goal\n- Completion is a claim with evidence that a separate Verify goal turn must confirm; Reopen undoes it\n- Stop pauses and a reply resumes; Pause holds until Resume; a restart, fork, rewind or Plan mode pauses with its reason\n- Limits: 25 automatic turns by default, optional token and time budgets, and a no-progress rule; a reached limit wraps up and pauses\n- The goal waits for background work, and notifies when it completes, is blocked or is paused by anything but you\n- Three tools replace six: the model reads, starts on request and reports status; only you edit, replace or clear\n- The badge shows state and time; the panel shows turns, time, tokens, Edit and earlier goals",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- `/goal <文本>` 立即开始，并通过自动轮次持续执行直到目标完成；中途的消息或暂停仍属于该目标\n- 完成需先提交依据，再由独立的“核验目标”轮次确认；可重新打开\n- 停止后暂停，回复即继续；手动暂停需点继续；重启、分叉、回退或计划模式会暂停并显示原因\n- 上限：默认 25 个自动轮次，可选 Token 预算与时间上限，以及无进展规则；达到上限时收尾并暂停\n- 后台任务未结束时等待；完成、受阻或非手动暂停时发送通知\n- 工具由六个减为三个：模型可查看、按请求创建、汇报状态；编辑、替换和清除仅由你操作\n- 徽标显示状态与用时；面板显示轮次、用时、Token、编辑和历史目标",
+          "zh-TW": "- `/goal <文字>` 立即開始，並透過自動輪次持續執行直到目標完成；中途的訊息或暫停仍屬於該目標\n- 完成需先提交依據，再由獨立的「核驗目標」輪次確認；可重新開啟\n- 停止後暫停，回覆即繼續；手動暫停需按繼續；重新啟動、分叉、回退或計畫模式會暫停並顯示原因\n- 上限：預設 25 個自動輪次，可選 Token 預算與時間上限，以及無進展規則；達到上限時收尾並暫停\n- 工具由六個減為三個；編輯、取代和清除僅由你操作",
+          "ja": "- `/goal <テキスト>` はすぐに開始し、目標が完了するまで自動ターンで継続します。途中のメッセージや一時停止も目標の一部です\n- 完了は根拠付きの申告と、別の「目標を検証」ターンでの確認が必要です。再開で取り消せます\n- 停止で一時停止し、返信で再開します。手動の一時停止は「再開」まで保持されます。再起動、フォーク、巻き戻し、プランモードでは理由付きで一時停止します\n- 上限: 既定で自動 25 ターン、任意のトークン予算と時間上限、進捗なしルール。上限に達するとまとめて一時停止します\n- ツールは 6 個から 3 個に。編集、置き換え、消去はユーザーのみが行えます",
+          "ko": "- `/goal <텍스트>`는 즉시 시작하며 목표가 완료될 때까지 자동 턴으로 계속합니다. 중간의 메시지나 일시중지도 목표에 포함됩니다\n- 완료는 근거와 함께 신고한 뒤 별도의 '목표 검증' 턴에서 확인해야 합니다. 다시 열어 취소할 수 있습니다\n- 중지하면 일시중지되고 답장하면 재개됩니다. 직접 일시중지하면 재개할 때까지 유지됩니다. 재시작, 포크, 되돌리기, 계획 모드에서는 이유와 함께 일시중지됩니다\n- 한도: 기본 자동 25턴, 선택적 토큰 예산과 시간 한도, 진행 없음 규칙. 한도에 도달하면 마무리하고 일시중지합니다\n- 도구가 6개에서 3개로 줄었습니다. 편집, 교체, 지우기는 사용자만 할 수 있습니다",
+          "fr": "- `/goal <texte>` démarre aussitôt et continue par des tours automatiques jusqu’à l’achèvement ; un message ou une pause restent dans l’objectif\n- L’achèvement est une déclaration avec preuves qu’un tour distinct « Vérifier l’objectif » doit confirmer ; Rouvrir l’annule\n- Arrêter met en pause et une réponse reprend ; Suspendre tient jusqu’à Reprendre ; un redémarrage, une bifurcation, un retour arrière ou le mode Plan mettent en pause avec leur motif\n- Limites : 25 tours automatiques par défaut, budgets facultatifs de jetons et de temps, règle d’absence de progrès ; une limite atteinte conclut puis met en pause\n- Trois outils en remplacent six ; vous seul modifiez, remplacez ou effacez l’objectif",
+          "de": "- `/goal <Text>` startet sofort und läuft in automatischen Runden weiter, bis das Ziel erreicht ist; eine Nachricht oder Pause bleibt Teil des Ziels\n- Der Abschluss ist eine Meldung mit Belegen, die eine eigene Runde „Ziel prüfen“ bestätigen muss; Wieder öffnen macht ihn rückgängig\n- Stopp pausiert und eine Antwort setzt fort; Pausieren hält bis Fortsetzen; Neustart, Abzweigung, Zurückspulen oder Planmodus pausieren mit ihrem Grund\n- Grenzen: standardmäßig 25 automatische Runden, optionale Token- und Zeitbudgets sowie eine Regel für fehlenden Fortschritt; eine erreichte Grenze schließt ab und pausiert\n- Drei Werkzeuge ersetzen sechs; nur Sie bearbeiten, ersetzen oder löschen das Ziel",
+          "es": "- `/goal <texto>` empieza de inmediato y continúa con turnos automáticos hasta completar el objetivo; un mensaje o una pausa siguen dentro del objetivo\n- Completar es una declaración con pruebas que un turno aparte «Verificar objetivo» debe confirmar; Reabrir lo deshace\n- Detener pausa y una respuesta reanuda; Pausar se mantiene hasta Reanudar; un reinicio, una bifurcación, un retroceso o el modo Plan pausan con su motivo\n- Límites: 25 turnos automáticos por defecto, presupuestos opcionales de tokens y tiempo, y una regla de falta de progreso; al alcanzar un límite se cierra el trabajo y se pausa\n- Tres herramientas sustituyen a seis; solo tú editas, reemplazas o borras el objetivo",
+          "pt-BR": "- `/goal <texto>` começa na hora e continua em turnos automáticos até concluir o objetivo; uma mensagem ou uma pausa continuam dentro do objetivo\n- Concluir é uma declaração com evidências que um turno separado “Verificar objetivo” precisa confirmar; Reabrir desfaz\n- Parar pausa e uma resposta retoma; Pausar vale até Retomar; reinício, bifurcação, retrocesso ou modo Plano pausam com o motivo\n- Limites: 25 turnos automáticos por padrão, orçamentos opcionais de tokens e tempo e uma regra de falta de progresso; ao atingir um limite, o trabalho é encerrado e pausado\n- Três ferramentas substituem seis; só você edita, substitui ou limpa o objetivo",
+          "ru": "- `/goal <текст>` запускается сразу и продолжается автоматическими ходами до выполнения цели; сообщение или пауза остаются частью цели\n- Завершение — это заявление с доказательствами, которое должен подтвердить отдельный ход «Проверить цель»; «Открыть снова» отменяет его\n- Остановка ставит на паузу, ответ продолжает; ручная пауза держится до «Продолжить»; перезапуск, ответвление, откат и режим плана ставят на паузу с причиной\n- Ограничения: по умолчанию 25 автоматических ходов, необязательные бюджеты токенов и времени, правило отсутствия прогресса; при достижении лимита работа завершается и ставится на паузу\n- Три инструмента вместо шести; изменять, заменять и очищать цель можете только вы"
         }
       }
     },
@@ -17462,7 +17545,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.15",
+        "version": "0.1.16",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -17491,6 +17574,25 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.16",
+          "commit": "b393ea02a8bda6a5ae2969255d70e673947454b1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Accept `continuation_markers` in the package check and describe handler `approval`",
+            "locales": {
+              "zh-CN": "- 包检查接受 `continuation_markers`，并说明处理器的 `approval`",
+              "zh-TW": "- 套件檢查接受 `continuation_markers`，並說明處理器的 `approval`",
+              "ja": "- パッケージ検査で `continuation_markers` を受け付け、ハンドラーの `approval` を説明",
+              "ko": "- 패키지 검사에서 `continuation_markers`를 허용하고 핸들러의 `approval`을 설명",
+              "fr": "- La vérification accepte `continuation_markers` et la référence décrit `approval` des gestionnaires",
+              "de": "- Die Paketprüfung akzeptiert `continuation_markers`; die Referenz beschreibt `approval` für Handler",
+              "es": "- La comprobación acepta `continuation_markers` y la referencia describe `approval` de los manejadores",
+              "pt-BR": "- A verificação aceita `continuation_markers` e a referência descreve `approval` dos manipuladores",
+              "ru": "- Проверка пакета принимает `continuation_markers`; в справке описан параметр `approval` обработчика"
+            }
+          }
+        },
         {
           "version": "0.1.15",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -17631,17 +17733,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Recommend outline icons for navigation and tools in the references",
+        "text": "- Accept `continuation_markers` in the package check and describe handler `approval`",
         "locales": {
-          "zh-CN": "- 参考文档建议导航和工具使用线条图标",
-          "zh-TW": "- 參考文件建議導覽和工具使用線條圖示",
-          "ja": "- リファレンスでナビゲーションとツールに線画アイコンを推奨",
-          "ko": "- 참고 문서에서 탐색 및 도구에 선형 아이콘 권장",
-          "fr": "- Les références recommandent des icônes au trait pour la navigation et les outils",
-          "de": "- Referenzen empfehlen Umrisssymbole für Navigation und Werkzeuge",
-          "es": "- Las referencias recomiendan iconos de contorno para la navegación y las herramientas",
-          "pt-BR": "- As referências recomendam ícones de contorno para navegação e ferramentas",
-          "ru": "- Справочные материалы рекомендуют контурные значки для навигации и инструментов"
+          "zh-CN": "- 包检查接受 `continuation_markers`，并说明处理器的 `approval`",
+          "zh-TW": "- 套件檢查接受 `continuation_markers`，並說明處理器的 `approval`",
+          "ja": "- パッケージ検査で `continuation_markers` を受け付け、ハンドラーの `approval` を説明",
+          "ko": "- 패키지 검사에서 `continuation_markers`를 허용하고 핸들러의 `approval`을 설명",
+          "fr": "- La vérification accepte `continuation_markers` et la référence décrit `approval` des gestionnaires",
+          "de": "- Die Paketprüfung akzeptiert `continuation_markers`; die Referenz beschreibt `approval` für Handler",
+          "es": "- La comprobación acepta `continuation_markers` y la referencia describe `approval` de los manejadores",
+          "pt-BR": "- A verificação aceita `continuation_markers` e a referência descreve `approval` dos manipuladores",
+          "ru": "- Проверка пакета принимает `continuation_markers`; в справке описан параметр `approval` обработчика"
         }
       }
     },
