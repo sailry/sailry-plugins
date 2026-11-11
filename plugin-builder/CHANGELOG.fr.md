@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Les références recommandent des icônes au trait pour la navigation et les outils
+
 ## 0.1.14
 
 - Nouvelle icône du plugin

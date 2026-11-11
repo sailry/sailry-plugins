@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -152,7 +152,7 @@
           "locales": {
             "zh-CN": "用量"
           },
-          "icon": "phosphor:chart-bar"
+          "icon": "reicon:business/chart-bar"
         },
         "navigation_options": {
           "order": 900,

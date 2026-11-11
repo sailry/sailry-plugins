@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "google-workspace",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Mail, calendars and Drive files",
   "homepage": "https://developers.google.com/workspace",
   "extensions": {
@@ -153,7 +153,7 @@
               "pt-BR": "Google Workspace",
               "ru": "Google Workspace"
             },
-            "icon": "ailogo:google"
+            "icon": "reicon:files/file-text"
           }
         }
       ],

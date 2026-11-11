@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
@@ -328,7 +328,7 @@
               "ru": "Поиск в памяти",
               "en": "Search memory"
             },
-            "icon": "phosphor:brain",
+            "icon": "reicon:devices/cpu",
             "input": {
               "summary": {
                 "path": "/query"
@@ -368,7 +368,7 @@
               "ru": "Просмотреть память",
               "en": "Review memories"
             },
-            "icon": "phosphor:brain"
+            "icon": "reicon:devices/cpu"
           }
         },
         {
@@ -444,7 +444,7 @@
               "ru": "Сохранить память",
               "en": "Save memory"
             },
-            "icon": "phosphor:brain",
+            "icon": "reicon:devices/cpu",
             "input": {
               "summary": {
                 "path": "/title",
@@ -693,7 +693,7 @@
               "ru": "Удалить запись памяти",
               "en": "Forget memory"
             },
-            "icon": "phosphor:brain",
+            "icon": "reicon:devices/cpu",
             "input": {
               "summary": {
                 "path": "/title",
@@ -972,7 +972,7 @@
               "ru": "Объединить записи памяти",
               "en": "Merge memories"
             },
-            "icon": "phosphor:brain",
+            "icon": "reicon:devices/cpu",
             "input": {
               "summary": {
                 "path": "/title",

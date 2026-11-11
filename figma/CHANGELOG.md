@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Restore outline icons in navigation and tools
+
 ## 0.1.10
 
 - Use a new plugin icon

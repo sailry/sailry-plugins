@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.11
+
+- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt
+
 ## 0.1.10
 
 - Neues Plugin-Symbol

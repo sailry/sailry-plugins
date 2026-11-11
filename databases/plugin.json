@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "databases",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -93,7 +93,7 @@
               "ru": "Каталог баз данных",
               "en": "Database catalog"
             },
-            "icon": "phosphor:database",
+            "icon": "reicon:ui/database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -154,7 +154,7 @@
               "ru": "Запрос к базе данных",
               "en": "Query database"
             },
-            "icon": "phosphor:database",
+            "icon": "reicon:ui/database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -236,7 +236,7 @@
               "ru": "Выполнить SQL",
               "en": "Execute SQL"
             },
-            "icon": "phosphor:database",
+            "icon": "reicon:ui/database",
             "input": {
               "summary": {
                 "path": "/database",
@@ -327,7 +327,7 @@
               "ru": "Подключения к базам данных",
               "en": "Database connections"
             },
-            "icon": "phosphor:database"
+            "icon": "reicon:ui/database"
           }
         },
         {
@@ -474,7 +474,7 @@
               "ru": "Сохранить подключение к базе",
               "en": "Save database connection"
             },
-            "icon": "phosphor:database",
+            "icon": "reicon:ui/database",
             "input": {
               "summary": {
                 "path": "/name",
@@ -522,7 +522,7 @@
           "locales": {
             "zh-CN": "数据库"
           },
-          "icon": "phosphor:database"
+          "icon": "reicon:ui/database"
         },
         "navigation_options": {
           "pinned": true,

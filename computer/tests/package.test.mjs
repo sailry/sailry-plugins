@@ -70,7 +70,7 @@ test('keeps snapshots and actions inspectable', async () => {
     ].map(name => [name,'/ref_id']))
   };
   for (const tool of extension.tools) {
-    assert.equal(tool.display.icon,'phosphor:desktop');
+    assert.equal(tool.display.icon,'reicon:devices/monitor');
     assert.equal(Object.keys(tool.display.locales).length,10);
     if (tool.name in detailed) {
       assert.equal(tool.presentation,'details');

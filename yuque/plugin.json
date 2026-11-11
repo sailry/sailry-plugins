@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "yuque",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Knowledge bases and documents",
   "homepage": "https://github.com/yuque/yuque-mcp-server",
   "extensions": {
@@ -212,7 +212,7 @@
               "pt-BR": "Yuque",
               "ru": "Yuque"
             },
-            "icon": "phosphor:books"
+            "icon": "reicon:files/file-text"
           }
         }
       ],

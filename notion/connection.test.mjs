@@ -30,7 +30,7 @@ test('declares the official remote connection', () => {
 });
 
 test('declares a card-only entry with native named targets', () => {
-  assert.equal(manifest.version, '0.1.9');
+  assert.equal(manifest.version, '0.1.10');
   assert.equal(extension.desktop.entry, undefined);
   assert.equal(extension.desktop.navigation, undefined);
   assert.equal(extension.tools[0].handler.read_only, true);

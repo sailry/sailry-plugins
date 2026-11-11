@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "wecom",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Workplace services",
   "homepage": "https://github.com/WecomTeam/wecom-cli",
   "extensions": {
@@ -160,7 +160,7 @@
               "pt-BR": "WeCom",
               "ru": "WeCom"
             },
-            "icon": "phosphor:chats",
+            "icon": "reicon:files/file-text",
             "input": {
               "summary": {
                 "path": "/service"

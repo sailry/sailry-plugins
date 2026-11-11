@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Recommend outline icons for navigation and tools in the references
+
 ## 0.1.14
 
 - Use a new plugin icon

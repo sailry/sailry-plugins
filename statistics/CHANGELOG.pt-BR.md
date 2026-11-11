@@ -1,3 +1,7 @@
+## 0.1.30
+
+- Ícones de contorno restaurados na navegação e nas ferramentas
+
 ## 0.1.29
 
 - Novo ícone do plugin

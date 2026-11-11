@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Referenzen empfehlen Umrisssymbole für Navigation und Werkzeuge
+
 ## 0.1.14
 
 - Neues Plugin-Symbol

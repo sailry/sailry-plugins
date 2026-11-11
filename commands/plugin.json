@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.6",
@@ -97,7 +97,7 @@
               "ru": "Команда",
               "en": "Command"
             },
-            "icon": "phosphor:terminal",
+            "icon": "reicon:it/terminal-square",
             "approval": [
               {
                 "message": {
@@ -175,7 +175,7 @@
               "ru": "Прочитать команду",
               "en": "Read command"
             },
-            "icon": "phosphor:terminal"
+            "icon": "reicon:it/terminal-square"
           },
           "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. With id, set wait_ms up to 30000 for an event-driven wait: return on new output, command exit or deadline. Add until to wait for that text in either output preview instead of any new output; command exit or deadline still returns. Omitted or zero wait_ms reads immediately. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
           "handler": {
@@ -249,7 +249,7 @@
               "ru": "Остановить команду",
               "en": "Stop command"
             },
-            "icon": "phosphor:terminal"
+            "icon": "reicon:it/terminal-square"
           },
           "description": "Stop a background command and its process group in this session. Pass the id returned by run_command.",
           "handler": {
@@ -287,7 +287,7 @@
               "ru": "Ввод в команду",
               "en": "Write command"
             },
-            "icon": "phosphor:terminal"
+            "icon": "reicon:it/terminal-square"
           },
           "description": "Send input to a running background command in this session. Pass its id and input exactly, including a newline when submitting a line. Accepts at most 64 KiB of UTF-8 input. A success acknowledges queued input; use read_command to inspect the response. Cannot write to another session or a finished command. Writing input has side effects and follows the current permission policy.",
           "handler": {
@@ -365,7 +365,7 @@
           "locales": {
             "zh-CN": "终端"
           },
-          "icon": "phosphor:terminal"
+          "icon": "reicon:it/terminal-square"
         }
       },
       "ui": [

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "dingtalk",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Knowledge spaces and files",
   "homepage": "https://open.dingtalk.com/document/orgapp/get-node",
   "extensions": {
@@ -186,7 +186,7 @@
               "pt-BR": "DingTalk",
               "ru": "DingTalk"
             },
-            "icon": "phosphor:chat-circle-dots"
+            "icon": "reicon:files/file-text"
           }
         }
       ],

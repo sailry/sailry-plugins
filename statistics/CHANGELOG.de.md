@@ -1,3 +1,7 @@
+## 0.1.30
+
+- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt
+
 ## 0.1.29
 
 - Neues Plugin-Symbol

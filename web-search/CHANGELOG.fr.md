@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Icônes au trait rétablies dans la navigation et les outils
+
 ## 0.1.16
 
 - Nouvelle icône du plugin

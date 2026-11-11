@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- As referências recomendam ícones de contorno para navegação e ferramentas
+
 ## 0.1.14
 
 - Novo ícone do plugin

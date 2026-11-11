@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.6",
@@ -98,7 +98,7 @@
               "ru": "Выполнить команду SSH",
               "en": "Run SSH command"
             },
-            "icon": "phosphor:terminal-window",
+            "icon": "reicon:it/terminal-square",
             "input": {
               "summary": {
                 "path": "/connection",
@@ -351,7 +351,7 @@
               "ru": "Передать файл по SSH",
               "en": "Transfer SSH file"
             },
-            "icon": "phosphor:terminal-window",
+            "icon": "reicon:it/terminal-square",
             "input": {
               "summary": {
                 "path": "/connection",
@@ -472,7 +472,7 @@
               "ru": "Подключения SSH",
               "en": "SSH connections"
             },
-            "icon": "phosphor:terminal-window"
+            "icon": "reicon:it/terminal-square"
           }
         },
         {
@@ -711,7 +711,7 @@
               "ru": "Сохранить подключение SSH",
               "en": "Save SSH connection"
             },
-            "icon": "phosphor:terminal-window",
+            "icon": "reicon:it/terminal-square",
             "input": {
               "summary": {
                 "path": "/name",
@@ -786,7 +786,7 @@
           "locales": {
             "zh-CN": "SSH"
           },
-          "icon": "phosphor:terminal-window"
+          "icon": "reicon:it/terminal-square"
         },
         "navigation_options": {
           "pinned": true,

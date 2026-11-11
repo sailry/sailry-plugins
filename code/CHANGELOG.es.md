@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Iconos de contorno restaurados en la navegación y las herramientas
+
 ## 0.1.17
 
 - Nuevo icono del plugin
