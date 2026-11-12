@@ -13683,7 +13683,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.2.1",
+        "version": "0.2.2",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14182,6 +14182,25 @@
       ],
       "versions": [
         {
+          "version": "0.2.2",
+          "commit": "750071a108fca2cc4915106dd41ac2d4efddde5a",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- The Status badge shows the state and the time, or the reason once paused, after its icon; it no longer repeats the word Goal\n- The panel has Pause or Resume and End. Edit is removed: `/goal <new text>` replaces the goal. Clear is now End, `/goal end`, and an ended goal is listed as Ended\n- A goal turn that fails is reported once, by the app's own notification; the goal still shows Paused · Error",
+            "locales": {
+              "zh-CN": "- 状态徽标在图标后显示状态和用时，暂停后显示原因，不再重复“目标”二字\n- 面板只有“暂停”或“继续”以及“结束”。移除“编辑”：用 `/goal <新内容>` 替换目标。“清除”改为“结束”（`/goal end`），已结束的目标在历史中显示为“已结束”\n- 目标轮次失败时只通知一次，由应用自身的通知发出；目标仍显示“已暂停 · 出错”",
+              "zh-TW": "- 狀態徽章在圖示後顯示狀態和用時，暫停後顯示原因，不再重複「目標」二字\n- 面板只有「暫停」或「繼續」以及「結束」。移除「編輯」：用 `/goal <新內容>` 取代目標。「清除」改為「結束」（`/goal end`），已結束的目標在歷史中顯示為「已結束」\n- 目標輪次失敗時只通知一次，由應用程式自身的通知發出；目標仍顯示「已暫停 · 出錯」",
+              "ja": "- ステータスバッジはアイコンの後に状態と経過時間（一時停止後は理由）を表示し、「目標」の語を繰り返しません\n- パネルのボタンは「一時停止」または「再開」と「終了」のみです。「編集」は廃止され、`/goal <新しい内容>` で目標を置き換えます。「クリア」は「終了」（`/goal end`）になり、終了した目標は履歴に「終了」と表示されます\n- 目標のターンが失敗したときの通知は、アプリ自身の通知の 1 件だけになりました。目標には引き続き「一時停止 · エラー」と表示されます",
+              "ko": "- 상태 배지는 아이콘 뒤에 상태와 시간(일시 중지 후에는 이유)을 표시하며 '목표'라는 단어를 반복하지 않습니다\n- 패널에는 일시 중지 또는 재개와 종료만 있습니다. 편집은 제거되었으며 `/goal <새 내용>`으로 목표를 교체합니다. 지우기는 종료(`/goal end`)로 바뀌었고 종료한 목표는 기록에 종료됨으로 표시됩니다\n- 목표 턴이 실패하면 앱 자체 알림으로 한 번만 알립니다. 목표에는 계속 '일시 중지됨 · 오류'가 표시됩니다",
+              "fr": "- Le badge d'état affiche, après son icône, l'état et la durée, ou la raison une fois en pause ; il ne répète plus le mot Objectif\n- Le panneau propose Suspendre ou Reprendre, et Terminer. Modifier est supprimé : `/goal <nouveau texte>` remplace l'objectif. Effacer devient Terminer, `/goal end`, et un objectif terminé apparaît comme Terminé dans l'historique\n- Un tour d'objectif qui échoue est signalé une seule fois, par la notification de l'application ; l'objectif affiche toujours En pause · Erreur",
+              "de": "- Das Statusabzeichen zeigt nach dem Symbol den Zustand und die Zeit, nach einer Pause den Grund; das Wort Ziel wird nicht mehr wiederholt\n- Das Panel hat Pausieren oder Fortsetzen und Beenden. Bearbeiten entfällt: `/goal <neuer Text>` ersetzt das Ziel. Löschen heißt jetzt Beenden, `/goal end`, und ein beendetes Ziel steht im Verlauf als Beendet\n- Ein fehlgeschlagener Ziel-Turn wird nur einmal gemeldet, durch die Benachrichtigung der App; das Ziel zeigt weiterhin Pausiert · Fehler",
+              "es": "- La insignia de estado muestra, tras su icono, el estado y el tiempo, o el motivo una vez en pausa; ya no repite la palabra Objetivo\n- El panel tiene Pausar o Reanudar y Finalizar. Se elimina Editar: `/goal <texto nuevo>` reemplaza el objetivo. Borrar pasa a ser Finalizar, `/goal end`, y un objetivo finalizado aparece como Finalizado en el historial\n- Un turno del objetivo que falla se notifica una sola vez, con la notificación de la aplicación; el objetivo sigue mostrando En pausa · Error",
+              "pt-BR": "- O indicador de status mostra, após o ícone, o estado e o tempo, ou o motivo quando pausada; ele não repete mais a palavra Meta\n- O painel tem Pausar ou Retomar e Encerrar. Editar foi removido: `/goal <novo texto>` substitui a meta. Limpar agora é Encerrar, `/goal end`, e uma meta encerrada aparece como Encerrada no histórico\n- Um turno da meta que falha é notificado uma única vez, pela notificação do próprio aplicativo; a meta continua mostrando Pausada · Erro",
+              "ru": "- Значок состояния показывает после иконки состояние и время, а после паузы — причину; слово «Цель» больше не повторяется\n- В панели остались «Пауза» или «Продолжить» и «Завершить». «Изменить» удалено: `/goal <новый текст>` заменяет цель. «Очистить» теперь «Завершить», `/goal end`, а завершённая так цель отображается в истории как «Завершена»\n- О неудачном ходе цели сообщается один раз — уведомлением самого приложения; цель по-прежнему показывает «Приостановлена · Ошибка»"
+            }
+          }
+        },
+        {
           "version": "0.2.1",
           "commit": "ce6e698034c02736d84ce61a8527d44a54efbe18",
           "min_sailry_version": "0.1.6",
@@ -14334,17 +14353,17 @@
         }
       ],
       "release_notes": {
-        "text": "- A goal no longer stays Waiting or Running when nothing can wake it: it shows paused, reason Stopped, after the background work it waited on was stopped, Turn limit reached when the result was held at the limit, and App restarted when its last turn ended before a restart",
+        "text": "- The Status badge shows the state and the time, or the reason once paused, after its icon; it no longer repeats the word Goal\n- The panel has Pause or Resume and End. Edit is removed: `/goal <new text>` replaces the goal. Clear is now End, `/goal end`, and an ended goal is listed as Ended\n- A goal turn that fails is reported once, by the app's own notification; the goal still shows Paused · Error",
         "locales": {
-          "zh-CN": "- 无法再被唤醒的目标不再停在“等待中”或“执行中”：所等待的后台任务被停止后显示已暂停（已停止），结果因轮次上限被保留时显示已达轮次上限，最后一轮在重启前结束时显示应用已重启",
-          "zh-TW": "- 無法再被喚醒的目標不再停在「等待中」或「執行中」：所等待的背景工作被停止後顯示已暫停（已停止），結果因輪次上限被保留時顯示已達輪次上限，最後一輪在重新啟動前結束時顯示應用程式已重新啟動",
-          "ja": "- 再開のきっかけがなくなった目標が「待機中」や「実行中」のままにならず、一時停止として表示されます（待っていたバックグラウンド作業の停止、ターン上限での結果の保留、再起動前に終了した最後のターン）",
-          "ko": "- 다시 깨울 수 없는 목표가 더 이상 대기 중이나 실행 중으로 남지 않고 일시 중지로 표시됩니다(기다리던 백그라운드 작업 중지, 턴 한도에서 보류된 결과, 재시작 전에 끝난 마지막 턴)",
-          "fr": "- Un objectif que plus rien ne peut relancer ne reste plus en attente ou en cours : il s'affiche en pause lorsque le travail en arrière-plan attendu a été arrêté, que son résultat a été retenu à la limite ou que son dernier tour s'est terminé avant un redémarrage",
-          "de": "- Ein Ziel, das nichts mehr wecken kann, bleibt nicht mehr auf „Wartet“ oder „Läuft“: Es wird pausiert angezeigt, nachdem die erwartete Hintergrundarbeit gestoppt oder ihr Ergebnis am Limit zurückgehalten wurde oder der letzte Turn vor einem Neustart endete",
-          "es": "- Un objetivo que nada puede reactivar ya no se queda en espera o en ejecución: se muestra en pausa cuando el trabajo en segundo plano que esperaba se detuvo, su resultado quedó retenido en el límite o su último turno terminó antes de un reinicio",
-          "pt-BR": "- Uma meta que nada pode retomar não fica mais em espera ou em execução: ela aparece pausada quando o trabalho em segundo plano esperado foi interrompido, quando o resultado ficou retido no limite ou quando o último turno terminou antes de uma reinicialização",
-          "ru": "- Цель, которую больше нечему продолжить, не остаётся в состоянии ожидания или выполнения: она показывается приостановленной, если ожидаемая фоновая работа была остановлена, её результат задержан на лимите или последний ход завершился до перезапуска"
+          "zh-CN": "- 状态徽标在图标后显示状态和用时，暂停后显示原因，不再重复“目标”二字\n- 面板只有“暂停”或“继续”以及“结束”。移除“编辑”：用 `/goal <新内容>` 替换目标。“清除”改为“结束”（`/goal end`），已结束的目标在历史中显示为“已结束”\n- 目标轮次失败时只通知一次，由应用自身的通知发出；目标仍显示“已暂停 · 出错”",
+          "zh-TW": "- 狀態徽章在圖示後顯示狀態和用時，暫停後顯示原因，不再重複「目標」二字\n- 面板只有「暫停」或「繼續」以及「結束」。移除「編輯」：用 `/goal <新內容>` 取代目標。「清除」改為「結束」（`/goal end`），已結束的目標在歷史中顯示為「已結束」\n- 目標輪次失敗時只通知一次，由應用程式自身的通知發出；目標仍顯示「已暫停 · 出錯」",
+          "ja": "- ステータスバッジはアイコンの後に状態と経過時間（一時停止後は理由）を表示し、「目標」の語を繰り返しません\n- パネルのボタンは「一時停止」または「再開」と「終了」のみです。「編集」は廃止され、`/goal <新しい内容>` で目標を置き換えます。「クリア」は「終了」（`/goal end`）になり、終了した目標は履歴に「終了」と表示されます\n- 目標のターンが失敗したときの通知は、アプリ自身の通知の 1 件だけになりました。目標には引き続き「一時停止 · エラー」と表示されます",
+          "ko": "- 상태 배지는 아이콘 뒤에 상태와 시간(일시 중지 후에는 이유)을 표시하며 '목표'라는 단어를 반복하지 않습니다\n- 패널에는 일시 중지 또는 재개와 종료만 있습니다. 편집은 제거되었으며 `/goal <새 내용>`으로 목표를 교체합니다. 지우기는 종료(`/goal end`)로 바뀌었고 종료한 목표는 기록에 종료됨으로 표시됩니다\n- 목표 턴이 실패하면 앱 자체 알림으로 한 번만 알립니다. 목표에는 계속 '일시 중지됨 · 오류'가 표시됩니다",
+          "fr": "- Le badge d'état affiche, après son icône, l'état et la durée, ou la raison une fois en pause ; il ne répète plus le mot Objectif\n- Le panneau propose Suspendre ou Reprendre, et Terminer. Modifier est supprimé : `/goal <nouveau texte>` remplace l'objectif. Effacer devient Terminer, `/goal end`, et un objectif terminé apparaît comme Terminé dans l'historique\n- Un tour d'objectif qui échoue est signalé une seule fois, par la notification de l'application ; l'objectif affiche toujours En pause · Erreur",
+          "de": "- Das Statusabzeichen zeigt nach dem Symbol den Zustand und die Zeit, nach einer Pause den Grund; das Wort Ziel wird nicht mehr wiederholt\n- Das Panel hat Pausieren oder Fortsetzen und Beenden. Bearbeiten entfällt: `/goal <neuer Text>` ersetzt das Ziel. Löschen heißt jetzt Beenden, `/goal end`, und ein beendetes Ziel steht im Verlauf als Beendet\n- Ein fehlgeschlagener Ziel-Turn wird nur einmal gemeldet, durch die Benachrichtigung der App; das Ziel zeigt weiterhin Pausiert · Fehler",
+          "es": "- La insignia de estado muestra, tras su icono, el estado y el tiempo, o el motivo una vez en pausa; ya no repite la palabra Objetivo\n- El panel tiene Pausar o Reanudar y Finalizar. Se elimina Editar: `/goal <texto nuevo>` reemplaza el objetivo. Borrar pasa a ser Finalizar, `/goal end`, y un objetivo finalizado aparece como Finalizado en el historial\n- Un turno del objetivo que falla se notifica una sola vez, con la notificación de la aplicación; el objetivo sigue mostrando En pausa · Error",
+          "pt-BR": "- O indicador de status mostra, após o ícone, o estado e o tempo, ou o motivo quando pausada; ele não repete mais a palavra Meta\n- O painel tem Pausar ou Retomar e Encerrar. Editar foi removido: `/goal <novo texto>` substitui a meta. Limpar agora é Encerrar, `/goal end`, e uma meta encerrada aparece como Encerrada no histórico\n- Um turno da meta que falha é notificado uma única vez, pela notificação do próprio aplicativo; a meta continua mostrando Pausada · Erro",
+          "ru": "- Значок состояния показывает после иконки состояние и время, а после паузы — причину; слово «Цель» больше не повторяется\n- В панели остались «Пауза» или «Продолжить» и «Завершить». «Изменить» удалено: `/goal <новый текст>` заменяет цель. «Очистить» теперь «Завершить», `/goal end`, а завершённая так цель отображается в истории как «Завершена»\n- О неудачном ходе цели сообщается один раз — уведомлением самого приложения; цель по-прежнему показывает «Приостановлена · Ошибка»"
         }
       }
     },
