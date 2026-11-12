@@ -5257,6 +5257,131 @@
       }
     },
     {
+      "id": "copilot-auth",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "copilot-auth",
+        "version": "0.1.0",
+        "description": "Sign in to use GitHub Copilot models",
+        "license": "Apache-2.0",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "scope": "host",
+            "actions": [
+              "models.authenticate",
+              "credentials.inspect"
+            ],
+            "display": {
+              "label": "GitHub Copilot OAuth",
+              "icon": "ailogo:githubcopilot"
+            },
+            "description": {
+              "label": "Sign in to use GitHub Copilot models",
+              "locales": {
+                "zh-CN": "登录并使用 GitHub Copilot 模型",
+                "zh-TW": "登入並使用 GitHub Copilot 模型",
+                "de": "Bei GitHub Copilot anmelden und Modelle nutzen",
+                "es": "Inicia sesión para usar modelos de GitHub Copilot",
+                "fr": "Se connecter pour utiliser les modèles GitHub Copilot",
+                "ja": "ログインして GitHub Copilot モデルを利用",
+                "ko": "로그인하여 GitHub Copilot 모델 사용",
+                "pt-BR": "Entre para usar os modelos GitHub Copilot",
+                "ru": "Войдите, чтобы использовать модели GitHub Copilot"
+              }
+            },
+            "category": "data",
+            "tint": "teal",
+            "model_auth": [
+              {
+                "id": "device",
+                "authentication": "copilot",
+                "display": {
+                  "label": "GitHub Copilot OAuth"
+                },
+                "flow": {
+                  "kind": "script",
+                  "script": {
+                    "entry": "dev.sailry.platform/auth/flow.js",
+                    "resources": []
+                  },
+                  "handler": "authorize",
+                  "requests": {
+                    "device": {
+                      "url": "https://github.com/login/device/code",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "client_id": "{client_id}",
+                          "scope": "{scope}"
+                        }
+                      },
+                      "headers": {
+                        "Accept": "application/json"
+                      }
+                    },
+                    "token": {
+                      "url": "https://github.com/login/oauth/access_token",
+                      "body": {
+                        "kind": "form",
+                        "fields": {
+                          "client_id": "{client_id}",
+                          "device_code": "{device_code}",
+                          "grant_type": "urn:ietf:params:oauth:grant-type:device_code"
+                        }
+                      },
+                      "headers": {
+                        "Accept": "application/json"
+                      }
+                    },
+                    "session": {
+                      "url": "https://api.github.com/copilot_internal/v2/token",
+                      "method": "GET",
+                      "headers": {
+                        "Accept": "application/json",
+                        "Authorization": "token {github}",
+                        "Editor-Version": "{editor_version}",
+                        "Editor-Plugin-Version": "{editor_plugin_version}",
+                        "User-Agent": "{user_agent}"
+                      }
+                    }
+                  },
+                  "callback": null,
+                  "issuer": null,
+                  "refresh": true
+                },
+                "client": {
+                  "client_id": "Iv1.b507a08c87ecfe98"
+                },
+                "scopes": [
+                  "read:user"
+                ]
+              }
+            ],
+            "min_sailry_version": "0.1.6"
+          }
+        }
+      },
+      "provides_models": false,
+      "permissions": [
+        "models.authenticate",
+        "credentials.inspect"
+      ],
+      "versions": [
+        {
+          "version": "0.1.0",
+          "commit": "641a5beece285a13b5125369ac72334f77fea295",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Sign in to GitHub Copilot with a device code\n- Renew the Copilot session with the stored GitHub sign-in"
+          }
+        }
+      ],
+      "release_notes": {
+        "text": "- Sign in to GitHub Copilot with a device code\n- Renew the Copilot session with the stored GitHub sign-in"
+      }
+    },
+    {
       "id": "databases",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
