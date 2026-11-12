@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Ya no se indica al modelo que los documentos admiten formularios; no envían nada
+
 ## 0.1.11
 
 - Nuevo icono del plugin
