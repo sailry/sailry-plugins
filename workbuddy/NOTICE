@@ -51,3 +51,13 @@ https://download.codebuddy.ai/web/workbuddy/2365138d79c29bb1cbce4644f5cbbffd2b56
 (the favicon of https://www.workbuddy.ai), clipped to its circular frame, with the
 background, blur, gradients and colors removed. WorkBuddy is a trademark of its
 owner; it identifies the service this package connects to.
+
+The free-model price rules (catalog credits and promotions), the current
+desktop and CLI request identity with its agent headers, the reasoning replay
+field, the international GLM image limit and the check-in answer codes 1001 and
+1003 follow magpie-community/plugins, packages/workbuddy version 0.2.30, commit
+2b7da48: https://github.com/magpie-community/plugins
+Copyright (c) 2026 magpie-community contributors. MIT License, reproduced in
+LICENSE. The rules are reimplemented here; its enterprise accounts, API-key
+sign-in, desktop sign-in file import, Messages route and usage estimates are not
+included. Free models only starts on here and off there.

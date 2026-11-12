@@ -9,7 +9,7 @@ const active = new Map();
 export async function checkin(input) {
   const provider = input?.provider;
   if (!channel(provider)) return {status:'unsupported'};
-  if (input.automatic === true && (await readSettings()).values.checkin_enabled === false) {
+  if (input.automatic === true && (await readSettings()).values.checkin_enabled !== true) {
     return {status:'disabled',skipped:true};
   }
   if (active.has(provider.id)) return active.get(provider.id);

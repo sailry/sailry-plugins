@@ -89,7 +89,7 @@ runtimeTest('production SDK reconciles timing without a footer',async()=>{
   const report=execute(await packageInput(root,'reconcile',{key:scheduleKey},{
     context:{package:packageRef,session:null,worktree:null},replies:[
       reply({kind:'read_plugin_settings',data:{package:packageRef}},'plugin_settings',
-        {package:packageRef,values:{checkin_time:'07:30'},configured:[],keepable:[],ready:true}),
+        {package:packageRef,values:{checkin_enabled:true,checkin_time:'07:30'},configured:[],keepable:[],ready:true}),
       reply({kind:'read_plugin_value',data:{key:scheduleKey}},'plugin_value',
         {key:scheduleKey,revision:2,present:true,value:record}),
       reply({kind:'dispatch',data:{package:packageRef,action:{kind:'list_schedules'}}},'dispatch',{kind:'schedules',data:[schedule]}),

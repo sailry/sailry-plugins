@@ -58,7 +58,8 @@ export async function register(input) {
   const id = old.present ? old.value.id : newId();
   const schedules = await query('list_schedules');
   const schedule = schedules.find(item=>item.id === id),callback = handlers.find(item=>item.name === id);
-  config.enabled ??= (old.present ? old.value.enabled : undefined) ?? true;
+  // Check-in is opt-in: without a setting or a saved choice it stays off.
+  config.enabled ??= (old.present ? old.value.enabled : undefined) ?? false;
   const payload = {provider,locale:input.locale ?? 'en',automatic:true};
   const listener = handlers.find(item=>item.name === `${id}.settings`);
   operations.push(...changes(key,old,payload,id,schedule,config),...callbackChanges(id,callback,config.enabled),
@@ -79,7 +80,7 @@ export async function reconcile(input) {
   const schedule = schedules.find(item=>item.id === old.value.id);
   // Reconcile known registrations only; a removed schedule is not recreated.
   if (!schedule) return {updated:0};
-  config.enabled ??= old.value.enabled ?? true;
+  config.enabled ??= old.value.enabled ?? false;
   const payload = {provider:old.value.provider,locale:old.value.locale ?? 'en',automatic:true};
   const operations = changes(key,old,payload,old.value.id,schedule,config);
   if ((old.value.enabled ?? true) !== config.enabled) {

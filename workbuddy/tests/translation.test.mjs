@@ -52,7 +52,14 @@ test('carries every Hy4 suffix split across calls',()=>{
 test('groups regional presets without changing route identities',async()=>{
   const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const presets=manifest.extensions['dev.sailry.platform'].model_providers;
-  assert.equal(manifest.version,'0.1.17');
+  assert.equal(manifest.version,'0.1.18');
+  assert.equal(manifest.extensions['dev.sailry.platform'].min_sailry_version,'0.1.6');
+  // Every sign-in states its risk once, in each language the package ships.
+  for (const flow of manifest.extensions['dev.sailry.platform'].model_auth) {
+    assert.match(flow.warning.text,/WorkBuddy account/);
+    assert.deepEqual(Object.keys(flow.warning.locales).sort(),['de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']);
+    for (const text of Object.values(flow.warning.locales)) assert.ok(text.trim().length>0 && text.length<=300);
+  }
   const icon=manifest.extensions['dev.sailry.platform'].display.icon;
   assert.match(icon.svg,/^<svg [^>]*viewBox="0 0 40 40"/);
   assert.deepEqual(presets.map(preset=>preset.id),['china','workbuddy-global','codebuddy-global']);

@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import {inline,image} from './image.mjs';
 
+// The translation cases run with the free-model restriction off; its own cases follow them.
+export const unrestricted = {free_only_china:false,free_only_international:false,free_only_codebuddy:false};
 export const request = overrides => ({version:'v1',model:'fixture-model',endpoint:'https://copilot.tencent.com',
   session:'fixture-session',system:'Preserve the task',messages:[{role:'user',parts:[{kind:'text',text:'A fixture task'}]}],
   tools:[],tool_choice:{kind:'auto'},reasoning:{effort:'default',replay:false},stream:true,
-  max_output_tokens:4096,temperature:null,top_p:null,stop:[],options:{},...overrides});
+  max_output_tokens:4096,temperature:null,top_p:null,stop:[],options:{},settings:unrestricted,...overrides});
 
 const event = document => ({event:null,data:JSON.stringify(document)});
 const prepared = output => {
@@ -15,12 +17,14 @@ const prepared = output => {
   assert.equal(output.headers['X-No-User-Id'],'1');
   assert.equal(output.headers['X-No-Enterprise-Id'],'1');
   assert.equal(output.headers.Origin,'https://www.codebuddy.cn');
-  assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.6 WorkBuddy/5.5.6');
+  assert.equal(output.headers['User-Agent'],'WorkBuddy/5.9.3 WorkBuddy/5.9.3 CLI/2.165.0');
+  assert.equal(output.headers['X-Agent-Purpose'],'conversation');
+  assert.equal(output.headers['X-Agent-Runtime'],'local-agent');
   assert.equal(output.headers['X-CodeBuddy-Request'],'1');
   assert.equal(output.headers['Accept-Language'],'zh-CN');
   assert.equal(output.headers['X-IDE-Type'],'WorkBuddy');
   assert.equal(output.headers['X-IDE-Name'],'WorkBuddy');
-  assert.equal(output.headers['X-IDE-Version'],'5.5.6');
+  assert.equal(output.headers['X-IDE-Version'],'5.9.3');
   const keys = ['X-Conversation-ID','X-Conversation-Request-ID','X-Conversation-Message-ID'];
   for (const key of keys) assert.match(output.headers[key],/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   assert.equal(new Set(keys.map(key=>output.headers[key])).size,3);
@@ -47,7 +51,8 @@ export const cases = [
   }),check(output){
     const body = prepared(output);
     assert.equal(body.messages[1].content[0].image_url.url,'data:image/png;base64,ZmFrZQ==');
-    assert.equal(body.messages[2].reasoning_content,'opaque replay');
+    assert.equal(body.messages[2].reasoning,'opaque replay');
+    assert.equal(body.messages[2].reasoning_content,undefined);
     assert.deepEqual(body.messages[2].tool_calls,[{id:'call-1',type:'function',function:{name:'inspect',arguments:'{"path":"fixture"}'}}]);
     assert.deepEqual(body.messages[3],{role:'tool',tool_call_id:'call-1',content:'{"ok":true}'});
     assert.equal(body.tools[0].function.name,'inspect');
@@ -96,13 +101,13 @@ export const cases = [
   }},
   {name:'prepares regional discovery without exposing credentials',handler:'prepare_discovery',input:{endpoint:'https://www.workbuddy.ai'},check(output){
     assert.equal(output.url,'https://www.workbuddy.ai/v3/config');
-    assert.equal(output.headers['User-Agent'],'WorkBuddy/5.5.2');
+    assert.equal(output.headers['User-Agent'],'WorkBuddy/5.9.3 workbuddy-ai/5.9.3 CLI/2.165.0');
     assert.equal(output.headers.Origin,'https://www.workbuddy.ai');
     assert.equal(output.headers.Referer,'https://www.workbuddy.ai/');
     assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
     assert.equal(output.headers.Authorization,undefined);
   }},
-  {name:'uses declared catalog limits capabilities and CLI roster',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:200,body:JSON.stringify({code:0,data:{
+  {name:'uses declared catalog limits capabilities and CLI roster',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:200,settings:{free_only_china:false},body:JSON.stringify({code:0,data:{
     models:[{id:'hidden',name:'Hidden',maxInputTokens:8192,maxOutputTokens:1024},
       {id:'selected',name:'Selected',maxInputTokens:128000,maxOutputTokens:8192,supportsToolCall:true,supportsImages:true,
         disabledMultimodal:true,reasoning:{supportedEfforts:['low','high'],defaultEffort:'high'}},
@@ -110,11 +115,14 @@ export const cases = [
     agents:[{name:'cli',models:['selected','disabled']}],
   }})},check(output){
     assert.deepEqual(output,{endpoint:'https://copilot.tencent.com',models:[{id:'selected',display_name:'Selected',context:128000,output:8192,
-      capabilities:{tools:true,vision:false,efforts:['low','high'],reasoning:true,default_effort:'high'}}]});
+      capabilities:{tools:true,vision:false,efforts:['low','high'],reasoning:true,default_effort:'high',options:{workbuddy_free:false}}}]});
   }},
 ];
 
-const catalogInput = models => ({endpoint:'https://copilot.tencent.com',status:200,body:JSON.stringify({code:0,data:{
+// A model the catalog prices, or leaves unpriced, is recorded as not free.
+const paid = {workbuddy_free:false};
+const bare = ({options,...capabilities}) => {assert.deepEqual(options,paid);return capabilities;};
+const catalogInput = models => ({endpoint:'https://copilot.tencent.com',status:200,settings:unrestricted,body:JSON.stringify({code:0,data:{
   models:models.map(model=>({maxInputTokens:128000,maxOutputTokens:8192,...model})),
 }})});
 cases.push({name:'reads observed singular reasoning efforts',handler:'decode_discovery',input:catalogInput([
@@ -125,7 +133,7 @@ cases.push({name:'reads observed singular reasoning efforts',handler:'decode_dis
   {id:'hy4-preview',supportsReasoning:true,onlyReasoning:true,
     reasoning:{defaultEffort:'high',supportedEfforts:['high'],canDisableThinking:false}},
 ]),check(output){
-  assert.deepEqual(output.models.map(model=>[model.id,model.capabilities]),[
+  assert.deepEqual(output.models.map(model=>[model.id,bare(model.capabilities)]),[
     ['hy3',{reasoning:true,efforts:['high'],default_effort:'high'}],
     ['minimax-m3',{reasoning:true,efforts:['medium'],default_effort:'medium'}],
     ['glm-5.1',{reasoning:true,efforts:['medium'],default_effort:'medium'}],
@@ -137,7 +145,7 @@ cases.push({name:'preserves plural reasoning declarations',handler:'decode_disco
   {id:'invalid-plural',reasoning:{supportedEfforts:['future'],effort:'medium'}},
   {id:'empty-plural',reasoning:{supportedEfforts:[],effort:'high'}},
 ]),check(output){
-  assert.deepEqual(output.models.map(model=>model.capabilities),[
+  assert.deepEqual(output.models.map(model=>bare(model.capabilities)),[
     {efforts:['low','high'],reasoning:true,default_effort:'low'},
     {efforts:['medium'],reasoning:true,default_effort:'medium'},
     {efforts:['high'],reasoning:true,default_effort:'high'},
@@ -149,7 +157,7 @@ cases.push({name:'does not invent effort choices',handler:'decode_discovery',inp
   {id:'unsupported',supportsReasoning:true,reasoning:{effort:'future'}},
   {id:'unverified-disable',supportsReasoning:true,reasoning:{effort:'none',canDisableThinking:true}},
 ]),check(output){
-  assert.deepEqual(output.models.map(model=>model.capabilities),[
+  assert.deepEqual(output.models.map(model=>bare(model.capabilities)),[
     {reasoning:true},{reasoning:false},{reasoning:true},{reasoning:true},
   ]);
 }});
@@ -163,7 +171,7 @@ for (const [region,endpoint,origin] of [
     assert.equal(output.url,`${endpoint}/v3/config`);
     assert.equal(output.headers.Origin,origin);
     assert.equal(output.headers.Referer,`${origin}/`);
-    assert.equal(output.headers['User-Agent'],region==='China'?'CLI/2.63.2 CodeBuddy/2.63.2':region==='CodeBuddy global'?'CLI/2.168.2 CodeBuddy/2.168.2':'WorkBuddy/5.5.2');
+    assert.equal(output.headers['User-Agent'],region==='China'?'WorkBuddy/5.9.3 WorkBuddy/5.9.3 CLI/2.165.0':region==='CodeBuddy global'?'CLI/2.168.2 CodeBuddy/2.168.2':'WorkBuddy/5.9.3 workbuddy-ai/5.9.3 CLI/2.165.0');
     assert.deepEqual(output.credential,{header:'Authorization',template:'Bearer {access}'});
     assert.equal(output.headers.Authorization,undefined);
   }});
@@ -173,9 +181,9 @@ for (const [region,endpoint,origin] of [
       {id:'unlisted',maxInputTokens:8192,maxOutputTokens:1024}],
       agents:[{name:'cli',models:['fixture-model']}]};
     cases.push({name:`reads ${region} ${shape} catalog`,handler:'decode_discovery',
-      input:{endpoint,status:200,body:JSON.stringify(shape==='bare'?catalog:{code:200,data:catalog})},check(output){
+      input:{endpoint,status:200,settings:unrestricted,body:JSON.stringify(shape==='bare'?catalog:{code:200,data:catalog})},check(output){
         assert.deepEqual(output,{endpoint,models:[{id:'fixture-model',display_name:'Fixture model',
-          context:128000,output:8192,capabilities:{tools:true,vision:false}}]});
+          context:128000,output:8192,capabilities:{tools:true,vision:false,options:paid}}]});
       }});
   }
 }
@@ -191,12 +199,12 @@ export const invalid = [
 ];
 
 for(const [endpoint,version,product] of [
-  ['https://copilot.tencent.com','5.5.6','WorkBuddy'],
-  ['https://www.workbuddy.ai','5.5.2','WorkBuddy AI'],
+  ['https://copilot.tencent.com','5.9.3','WorkBuddy'],
+  ['https://www.workbuddy.ai','5.9.3','workbuddy-ai'],
   ['https://www.codebuddy.ai','2.168.2','CLI'],
 ]) cases.push({name:`uses desktop generation identity for ${new URL(endpoint).hostname}`,handler:'prepare',input:request({endpoint}),check(output){
   assert.equal(output.url,`${endpoint}/v2/chat/completions`);
-  assert.equal(output.headers['User-Agent'],product==='CLI'?`CLI/${version} CodeBuddy/${version}`:`WorkBuddy/${version} ${product}/${version}`);
+  assert.equal(output.headers['User-Agent'],product==='CLI'?`CLI/${version} CodeBuddy/${version}`:`WorkBuddy/${version} ${product}/${version} CLI/2.165.0`);
   assert.equal(output.headers['X-CodeBuddy-Request'],'1');
   assert.equal(output.headers['Accept-Language'],endpoint==='https://copilot.tencent.com'?'zh-CN':'en-US');
   assert.equal(output.headers['X-IDE-Type'],product==='CLI'?'CLI':'WorkBuddy');
@@ -365,4 +373,78 @@ for(const [parallel,terminal,region,endpoint] of [
 
 cases.push({name:'retains upstream error identity',handler:'classify',input:{status:429,body:JSON.stringify({error:{code:'relay_busy',type:'capacity_error',message:'Capacity unavailable'}})},check(output){
   assert.deepEqual(output,{class:'rate_limited',code:'relay_busy',error_type:'capacity_error',message:'Capacity unavailable'});
+}});
+
+// Free models only: discovery lists and records what each site serves at no
+// cost now, and prepare refuses a model without a current record.
+const priced = {models:[
+  {id:'free',name:'Free',credits:'x0.00',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'zero',credits:0,maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'worded',credits:'x0.00 credits',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'paid',credits:'x0.29',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'unpriced',credits:'',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'absent',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'night',credits:'x0.50',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'promoted',credits:'x0.40',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'halved',credits:'x0.40',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'ended',credits:'x0.40',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'switched-off',credits:'x0.40',maxInputTokens:128000,maxOutputTokens:8192},
+  {id:'glm-free',credits:'x0.00',supportsImages:true,maxInputTokens:128000,maxOutputTokens:8192},
+],modelPromotions:[
+  {kind:'discount',modelIds:['night'],discount:{discountedCredits:'0.00x'},schedule:{daily:[{from:'23:00',to:'08:00'}]}},
+  {kind:'discount',modelIds:['promoted'],discount:{discountedCredits:'0.00x'},schedule:{validFrom:'2020-01-01T00:00:00Z',validUntil:'2999-01-01T00:00:00Z'}},
+  {kind:'discount',modelIds:['halved'],discount:{factor:0.5}},
+  {kind:'discount',modelIds:['ended'],discount:{discountedCredits:'0.00x'},schedule:{validUntil:'2020-01-01T00:00:00Z'}},
+  {kind:'discount',enabled:false,modelIds:['switched-off'],discount:{discountedCredits:'0.00x'}},
+]};
+const discovered = (settings,endpoint='https://copilot.tencent.com') => ({endpoint,status:200,body:JSON.stringify({code:0,data:priced}),...(settings===undefined?{}:{settings})});
+for (const [name,settings] of [['by default',undefined],['without a saved choice',{}],['when set',{free_only_china:true}],["whatever another site's switch says",{free_only_international:false}]]) {
+  cases.push({name:`lists only models free now ${name}`,handler:'decode_discovery',input:discovered(settings),check(output){
+    assert.deepEqual(output.models.map(model=>model.id),['free','zero','worded','promoted','glm-free']);
+    for (const model of output.models) {
+      const record=model.capabilities.options.workbuddy_free;
+      assert.equal(typeof record.at,'number');
+      assert.equal(record.until,model.id==='promoted'?Date.parse('2999-01-01T00:00:00Z'):null);
+    }
+  }});
+}
+cases.push({name:'lists every model with its price record when the switch is off',handler:'decode_discovery',input:discovered({free_only_china:false}),check(output){
+  assert.deepEqual(output.models.map(model=>[model.id,model.capabilities.options.workbuddy_free!==false]),[
+    ['free',true],['zero',true],['worded',true],['paid',false],['unpriced',false],['absent',false],['night',false],
+    ['promoted',true],['halved',false],['ended',false],['switched-off',false],['glm-free',true]]);
+}});
+cases.push({name:'reads images off for international GLM models',handler:'decode_discovery',input:discovered(undefined,'https://www.workbuddy.ai'),check(output){
+  assert.equal(output.models.find(model=>model.id==='glm-free').capabilities.vision,false);
+}},{name:'keeps the catalog image flag for China GLM models',handler:'decode_discovery',input:discovered(),check(output){
+  assert.equal(output.models.find(model=>model.id==='glm-free').capabilities.vision,true);
+}});
+invalid.push({name:'rejects a catalog without a free model while restricted',handler:'decode_discovery',input:{endpoint:'https://copilot.tencent.com',status:200,
+  body:JSON.stringify({code:0,data:{models:[{id:'paid',credits:'x0.29',maxInputTokens:128000,maxOutputTokens:8192}]}})}});
+
+const fresh = () => ({at:Date.now(),until:null});
+const refused = (name,overrides,pattern) => cases.push({name,handler:'prepare',input:request({settings:{},...overrides}),check(output){
+  assert.deepEqual(Object.keys(output),['refusal']);
+  assert.equal(output.refusal.class,'invalid_request');
+  assert.match(output.refusal.message,pattern);
+  assert.match(output.refusal.message,/fixture-model/);
+}});
+refused('refuses a model without a price record by default',{},/no price record/);
+refused('refuses a model recorded as charged',{options:{workbuddy_free:false}},/charges credits/);
+refused('refuses a malformed price record',{options:{workbuddy_free:true}},/no price record/);
+refused('refuses a price record older than a week',{options:{workbuddy_free:{at:Date.now()-8*24*60*60*1000,until:null}}},/out of date/);
+refused('refuses a price record from the future',{options:{workbuddy_free:{at:Date.now()+60*60*1000,until:null}}},/out of date/);
+refused('refuses a model whose free promotion ended',{options:{workbuddy_free:{at:Date.now()-60*1000,until:Date.now()-1000}}},/out of date/);
+refused('refuses on the international site by its own switch',{endpoint:'https://www.workbuddy.ai',settings:{free_only_china:false}},/no price record/);
+cases.push({name:'sends a model with a current free record',handler:'prepare',input:request({settings:{},options:{workbuddy_free:fresh()}}),check(output){
+  assert.equal(output.refusal,undefined);
+  assert.equal(JSON.parse(output.body).model,'fixture-model');
+}},{name:'sends a charged model once the site switch is off',handler:'prepare',input:request({settings:{free_only_china:false},options:{workbuddy_free:false}}),check(output){
+  assert.equal(output.refusal,undefined);
+  assert.equal(output.url,'https://copilot.tencent.com/v2/chat/completions');
+}},{name:'replays thinking as reasoning_content on the CodeBuddy route',handler:'prepare',input:request({endpoint:'https://www.codebuddy.ai',
+  messages:[{role:'assistant',parts:[{kind:'reasoning',text:'public',replay:'opaque'}]},{role:'user',parts:[{kind:'text',text:'Next'}]}]}),check(output){
+  const body=JSON.parse(output.body);
+  assert.equal(body.messages[1].reasoning_content,'opaque');
+  assert.equal(body.messages[1].reasoning,undefined);
+  assert.equal(output.headers['X-Agent-Purpose'],undefined);
 }});

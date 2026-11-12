@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "workbuddy",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "WorkBuddy model channels",
   "homepage": "https://www.workbuddy.ai",
   "license": "MIT",
@@ -250,7 +250,7 @@
               "headers": {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "WorkBuddy/5.5.6",
+                "User-Agent": "WorkBuddy/5.9.3",
                 "X-CodeBuddy-Request": "1",
                 "Accept-Language": "zh-CN"
               },
@@ -276,7 +276,7 @@
               "headers": {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "WorkBuddy/5.5.6",
+                "User-Agent": "WorkBuddy/5.9.3",
                 "X-CodeBuddy-Request": "1",
                 "Accept-Language": "zh-CN"
               },
@@ -293,7 +293,7 @@
               "headers": {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "WorkBuddy/5.5.6",
+                "User-Agent": "WorkBuddy/5.9.3",
                 "X-CodeBuddy-Request": "1",
                 "Accept-Language": "zh-CN"
               },
@@ -301,6 +301,20 @@
                 "kind": "json",
                 "value": {}
               }
+            }
+          },
+          "warning": {
+            "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+            "locales": {
+              "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+              "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+              "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+              "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+              "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+              "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+              "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+              "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+              "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
             }
           }
         },
@@ -409,7 +423,7 @@
               "headers": {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "WorkBuddy/5.5.2",
+                "User-Agent": "WorkBuddy/5.9.3",
                 "X-CodeBuddy-Request": "1",
                 "Accept-Language": "en-US"
               },
@@ -428,6 +442,20 @@
                 }
               },
               "cache_ttl_ms": 60000
+            }
+          },
+          "warning": {
+            "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+            "locales": {
+              "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+              "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+              "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+              "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+              "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+              "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+              "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+              "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+              "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
             }
           }
         },
@@ -556,6 +584,20 @@
               },
               "cache_ttl_ms": 60000
             }
+          },
+          "warning": {
+            "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+            "locales": {
+              "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+              "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+              "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+              "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+              "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+              "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+              "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+              "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+              "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
+            }
           }
         }
       ],
@@ -659,7 +701,8 @@
           "reconcile"
         ]
       },
-      "settings_schema": "dev.sailry.platform/settings.json"
+      "settings_schema": "dev.sailry.platform/settings.json",
+      "min_sailry_version": "0.1.6"
     }
   }
 }

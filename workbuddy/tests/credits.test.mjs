@@ -42,8 +42,8 @@ test('declares regional billing gateway metadata',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const flows=manifest.extensions['dev.sailry.platform'].model_auth;
   for(const [id,host,language,version] of [
-    ['china','www.codebuddy.cn','zh-CN','5.5.6'],
-    ['workbuddy-global','www.workbuddy.ai','en-US','5.5.2'],
+    ['china','www.codebuddy.cn','zh-CN','5.9.3'],
+    ['workbuddy-global','www.workbuddy.ai','en-US','5.9.3'],
     ['codebuddy-global','www.codebuddy.ai','en-US','5.5.2'],
   ]) {
     const flow=flows.find(flow=>flow.id===id),request=flow.requests.credits;

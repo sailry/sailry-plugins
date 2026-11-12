@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.18
+
+- Warn about the account risk before every sign-in
+- Add "Free models only" for each site, on by default: list only models free now and refuse the others before sending. Update a saved channel's models once to keep using it
+- Turn automatic check-in off by default; saved settings keep their choice
+- Follow the current WorkBuddy client identity and recognize two more check-in answers
+
 ## 0.1.17
 
 - Pause hidden credit refresh timers and reuse results until the refresh interval expires

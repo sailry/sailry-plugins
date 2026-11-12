@@ -33,7 +33,7 @@ function fixture(options={}) {
     entries.set(key,entry);return plain(entry);
   };
   const environment={Map,day:()=>day(now),status,claimed,ResponseError,channel,read,write,messages,
-    readSettings:async()=>({values:options.settings ?? {}}),
+    readSettings:async()=>({values:options.settings ?? {checkin_enabled:true}}),
     requestProviderHttp:async(...args)=>{requests.push(plain(args));return options.status?options.status():current();},
     prepareProviderHttp:(...args)=>{const id=`request-${drafts.size}`;drafts.set(id,args);return id;},
     forgetRequest:id=>forgotten.push(id),
@@ -57,6 +57,10 @@ test('uses the China calendar without a second timer',()=>{
 test('decodes only declared status and claim outcomes',()=>{
   assert.deepEqual(status(current()),{active:true,checked:false});
   assert.deepEqual(claimed(response({code:10001},400)),{status:'already',credit:null});
+  assert.deepEqual(claimed(response({code:1001},400)),{status:'already',credit:null});
+  assert.deepEqual(claimed(response({code:'1001'})),{status:'already',credit:null});
+  assert.deepEqual(claimed(response({code:1003},400)),{status:'closed',credit:null});
+  assert.throws(()=>claimed(response({code:1002},400)),ResponseError);
   assert.deepEqual(claimed(response({code:0,data:{credit:'12.25'}})),{status:'claimed',credit:12.25});
   assert.deepEqual(claimed(response({code:0,data:{credit:0}})),{status:'claimed',credit:0});
   assert.deepEqual(claimed(response({code:0,data:{}})),{status:'claimed',credit:null});
@@ -169,7 +173,7 @@ test('keeps confirmed claims after observation or notification failures',async()
 test('registers an atomic native callback and daily schedule',async()=>{
   const calls=[],scheduleId='00000000-0000-4000-8000-000000000010';
   const register=vm.runInNewContext(`${schedules}\nregister`,{channel,
-    readSettings:async()=>({values:{}}),read:async()=>({present:false,revision:'0'}),newId:()=>scheduleId,context:()=>({package:{name:'workbuddy'}}),
+    readSettings:async()=>({values:{checkin_enabled:true}}),read:async()=>({present:false,revision:'0'}),newId:()=>scheduleId,context:()=>({package:{name:'workbuddy'}}),
     prepareRequest:command=>{calls.push(plain(command));return command;},
     prepareTransaction:operations=>{calls.push(plain(operations));return operations;},
     complete:async command=>Array.isArray(command)?[]:{data:[]},
@@ -201,7 +205,7 @@ test('keeps existing registration without adding another schedule',async()=>{
 test('updates the existing schedule after settings change',async()=>{
   const calls=[];
   const register=vm.runInNewContext(`${schedules}\nregister`,{channel,
-    readSettings:async()=>({values:{checkin_time:'23:59'}}),context:()=>({package:{name:'workbuddy',settings_revision:4}}),
+    readSettings:async()=>({values:{checkin_enabled:true,checkin_time:'23:59'}}),context:()=>({package:{name:'workbuddy',settings_revision:4}}),
     read:async()=>({present:true,revision:'3',value:{id:'existing',provider:provider(),time:'09:05',settings_revision:'3'}}),
     newId:()=>{throw new Error('Schedule identity must be preserved');},
     prepareRequest:command=>command,prepareTransaction:operations=>{calls.push(plain(operations));return operations;},
@@ -237,7 +241,11 @@ test('declares a validated common time field',async()=>{
   const field=schema.properties.checkin_time,pattern=new RegExp(field.pattern);
   assert.equal(field.default,'09:05');assert.equal(field['x-sailry-time'],true);
   assert.deepEqual(schema.required,['checkin_enabled','checkin_time']);
-  assert.deepEqual(schema.properties.checkin_enabled,{type:'boolean',title:'Automatic check-in',default:true});
+  assert.deepEqual(schema.properties.checkin_enabled,{type:'boolean',title:'Automatic check-in',default:false});
+  for(const name of ['free_only_china','free_only_international','free_only_codebuddy']) {
+    assert.equal(schema.properties[name].type,'boolean');assert.equal(schema.properties[name].default,true);
+    for(const table of Object.values(schema['x-sailry-locales']))assert.equal(typeof table[name],'string');
+  }
   for(const time of ['00:00','09:05','23:59'])assert.equal(pattern.test(time),true);
   for(const time of ['24:00','09:60','9:05','09:5'])assert.equal(pattern.test(time),false);
   assert.equal(field.maxLength,5);
@@ -254,7 +262,7 @@ test('reconciles saved schedules without a selected channel',async()=>{
   };
   const reconcile=vm.runInNewContext(`${schedules}\nreconcile`,{channel,
     context:()=>({package:{name:'workbuddy',settings_revision:2}}),
-    readSettings:async()=>({values:{checkin_time:'07:30'}}),read:async key=>records[key],
+    readSettings:async()=>({values:{checkin_enabled:true,checkin_time:'07:30'}}),read:async key=>records[key],
     prepareRequest:command=>command,prepareTransaction:operations=>{calls.push(plain(operations));return operations;},
     complete:async command=>Array.isArray(command)?[]:{data:[{id:'first',revision:4,enabled:true},{id:'second',revision:6,enabled:false}]},
   });
@@ -408,4 +416,22 @@ test('preserves manual pauses through master toggles',async()=>{
     assert.equal(schedule.enabled,initiallyEnabled);
     assert.equal(saved.some(item=>item.data?.kind==='publish'),false);
   }
+});
+
+test('keeps automatic check-in off until it is chosen',async()=>{
+  for(const settings of [{},{checkin_time:'09:05'},{checkin_enabled:false}]) {
+    const setup=fixture({settings});
+    assert.deepEqual(plain(await setup.checkin({provider:provider(),automatic:true})),{status:'disabled',skipped:true});
+    assert.deepEqual([setup.requests.length,setup.claims.length,setup.notifications.length],[0,0,0]);
+  }
+  const calls=[];
+  const register=vm.runInNewContext(`${schedules}\nregister`,{channel,
+    readSettings:async()=>({values:{}}),read:async()=>({present:false,revision:'0'}),newId:()=>'new',context:()=>({package:{name:'workbuddy'}}),
+    prepareRequest:command=>command,prepareTransaction:operations=>{calls.push(plain(operations));return operations;},
+    complete:async command=>Array.isArray(command)?[]:{data:[]},
+  });
+  assert.equal((await register({provider:provider(),locale:'en'})).registered,true);
+  assert.equal(calls[0][0].data.value.enabled,false);
+  assert.equal(calls[0][1].data.data.enabled,false);
+  assert.equal(calls[0].some(item=>item.data?.kind==='publish'),false);
 });

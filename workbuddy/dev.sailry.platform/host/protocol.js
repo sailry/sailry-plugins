@@ -21,7 +21,12 @@ export function status(input) {
 
 export function claimed(input) {
   const value = document(input);
-  if (value.code === 10001) return {status:'already',credit:null};
+  // 10001 is the code this package was written against; 1001 and 1003 are the
+  // claim's answers for a day already in and an ended event in the reference
+  // named in NOTICE. Either spelling ends the day without another claim.
+  const code = Number(value.code);
+  if (code === 10001 || code === 1001) return {status:'already',credit:null};
+  if (code === 1003) return {status:'closed',credit:null};
   if (input.status < 200 || input.status >= 300 || value.code !== 0) throw new ResponseError(input.status,value);
   let credit = value.data?.credit;
   if (typeof credit === 'string' && /^[0-9]+(?:\.[0-9]+)?$/.test(credit)) credit = Number(credit);
