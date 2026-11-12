@@ -13,7 +13,7 @@
         "credentials.inspect"
       ],
       "display": {
-        "label": "GitHub Copilot OAuth",
+        "label": "Copilot",
         "icon": "ailogo:githubcopilot"
       },
       "description": {
@@ -37,7 +37,7 @@
           "id": "device",
           "authentication": "copilot",
           "display": {
-            "label": "GitHub Copilot OAuth"
+            "label": "Copilot"
           },
           "flow": {
             "kind": "script",
