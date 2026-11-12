@@ -4381,7 +4381,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "computer",
-        "version": "0.1.8",
+        "version": "0.1.9",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -4407,7 +4407,6 @@
             "scope": "host",
             "category": "automation",
             "tint": "blue",
-            "settings_schema": "dev.sailry.platform/settings.json",
             "tools": [
               {
                 "name": "desktop_list_apps",
@@ -5133,6 +5132,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.9",
+          "commit": "da677b39e30ed28d03df0cdce6c33a6516cdad51",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Always show the agent cursor; the package has no settings",
+            "locales": {
+              "zh-CN": "- 始终显示操作光标，插件不再有配置项",
+              "zh-TW": "- 一律顯示操作游標，外掛不再有設定項",
+              "ja": "- エージェントのカーソルを常に表示し、設定項目を削除",
+              "ko": "- 에이전트 커서를 항상 표시하고 설정 항목을 제거",
+              "fr": "- Toujours afficher le curseur de l’agent ; le paquet n’a plus de réglages",
+              "de": "- Agent-Cursor immer anzeigen; das Paket hat keine Einstellungen mehr",
+              "es": "- Mostrar siempre el cursor del agente; el paquete ya no tiene ajustes",
+              "pt-BR": "- Sempre mostrar o cursor do agente; o pacote não tem mais configurações",
+              "ru": "- Курсор агента показывается всегда; у пакета больше нет настроек"
+            }
+          }
+        },
+        {
           "version": "0.1.8",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "min_sailry_version": "0.1.6",
@@ -5242,17 +5260,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Always show the agent cursor; the package has no settings",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 始终显示操作光标，插件不再有配置项",
+          "zh-TW": "- 一律顯示操作游標，外掛不再有設定項",
+          "ja": "- エージェントのカーソルを常に表示し、設定項目を削除",
+          "ko": "- 에이전트 커서를 항상 표시하고 설정 항목을 제거",
+          "fr": "- Toujours afficher le curseur de l’agent ; le paquet n’a plus de réglages",
+          "de": "- Agent-Cursor immer anzeigen; das Paket hat keine Einstellungen mehr",
+          "es": "- Mostrar siempre el cursor del agente; el paquete ya no tiene ajustes",
+          "pt-BR": "- Sempre mostrar o cursor do agente; o pacote não tem mais configurações",
+          "ru": "- Курсор агента показывается всегда; у пакета больше нет настроек"
         }
       }
     },
