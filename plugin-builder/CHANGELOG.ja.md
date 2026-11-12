@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- パッケージ検査で `programs`、`process.run`、宣言済みプログラムを使うモデルアダプターを受け付け
+
 ## 0.1.16
 
 - パッケージ検査で `continuation_markers` を受け付け、ハンドラーの `approval` を説明

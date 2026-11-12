@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- 包检查接受 `programs`、`process.run` 以及基于已声明程序的模型适配器
+
 ## 0.1.16
 
 - 包检查接受 `continuation_markers`，并说明处理器的 `approval`

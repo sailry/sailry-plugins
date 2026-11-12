@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- 套件檢查接受 `programs`、`process.run` 以及基於已宣告程式的模型轉接器
+
 ## 0.1.16
 
 - 套件檢查接受 `continuation_markers`，並說明處理器的 `approval`

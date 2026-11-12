@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Accept `programs`, `process.run` and model adapters over a declared program in the package check
+
 ## 0.1.16
 
 - Accept `continuation_markers` in the package check and describe handler `approval`

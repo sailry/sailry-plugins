@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Die Paketprüfung akzeptiert `programs`, `process.run` und Modelladapter über ein deklariertes Programm
+
 ## 0.1.16
 
 - Die Paketprüfung akzeptiert `continuation_markers`; die Referenz beschreibt `approval` für Handler

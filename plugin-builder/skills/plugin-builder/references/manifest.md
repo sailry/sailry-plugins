@@ -132,6 +132,7 @@ Declare only what the package uses. Each action grants one capability family:
 | `notifications.publish` | Application notifications |
 | `dispatch.manage` | Scheduled and queued plugin work |
 | `process.read`, `process.control`, `terminals.read`, `terminals.control` | Commands and terminals |
+| `process.run` | Start the installed executables the package declares in `programs` |
 | `databases.read`, `databases.control`, `databases.manage` | Database connections |
 | `ssh.read`, `ssh.control`, `ssh.manage` | SSH connections |
 | `browser.read`, `browser.control`, `external_browser.read`, `external_browser.control` | Built-in and external browsers |
