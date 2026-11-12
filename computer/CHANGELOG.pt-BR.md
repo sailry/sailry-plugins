@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Sempre mostrar o cursor do agente; o pacote não tem mais configurações
+
 ## 0.1.8
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

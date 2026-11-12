@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Toujours afficher le curseur de l’agent ; le paquet n’a plus de réglages
+
 ## 0.1.8
 
 - Icônes au trait rétablies dans la navigation et les outils

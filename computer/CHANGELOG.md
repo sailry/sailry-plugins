@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Always show the agent cursor; the package has no settings
+
 ## 0.1.8
 
 - Restore outline icons in navigation and tools

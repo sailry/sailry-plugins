@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.9
+
+- Agent-Cursor immer anzeigen; das Paket hat keine Einstellungen mehr
+
 ## 0.1.8
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt
