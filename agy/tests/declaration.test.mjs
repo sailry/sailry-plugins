@@ -61,3 +61,14 @@ test('declares the vendor differences', () => {
   assert.ok(adapter.acp.sign_in.length <= 256 && !adapter.acp.sign_in.endsWith('.'));
   assert.deepEqual(provider.models, {kind: 'discover'});
 });
+
+test('warns before a channel is added', () => {
+  // The channel has no sign-in, so the preset carries the warning.
+  assert.equal(manifest.version, '0.1.1');
+  assert.equal(extension.model_auth, undefined);
+  assert.match(provider.warning.text, /your own account/);
+  assert.deepEqual(Object.keys(provider.warning.locales).sort(), ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN', 'zh-TW']);
+  for (const text of [provider.warning.text, ...Object.values(provider.warning.locales)]) {
+    assert.ok(text.trim().length > 0 && Buffer.byteLength(text) <= 1024 && !/[\u0000-\u001f\u007f]/.test(text));
+  }
+});

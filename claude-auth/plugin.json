@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "claude-auth",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Sign in to use Claude models",
   "license": "MIT",
   "extensions": {
@@ -113,7 +113,21 @@
             "user:sessions:claude_code",
             "user:mcp_servers",
             "user:file_upload"
-          ]
+          ],
+          "warning": {
+            "text": "Signing in with a Claude subscription outside Anthropic's own clients may violate Anthropic's terms and can lead to your account being restricted.",
+            "locales": {
+              "zh-CN": "在 Anthropic 官方客户端之外使用 Claude 订阅登录可能违反 Anthropic 的条款，并可能导致账号受限。",
+              "zh-TW": "在 Anthropic 官方用戶端之外使用 Claude 訂閱登入可能違反 Anthropic 的條款，並可能導致帳號受限。",
+              "de": "Die Anmeldung mit einem Claude-Abonnement außerhalb der eigenen Clients von Anthropic kann gegen die Bedingungen von Anthropic verstoßen und dazu führen, dass dein Konto eingeschränkt wird.",
+              "es": "Iniciar sesión con una suscripción de Claude fuera de los clientes propios de Anthropic puede infringir los términos de Anthropic y hacer que se restrinja tu cuenta.",
+              "fr": "Se connecter avec un abonnement Claude en dehors des clients d'Anthropic peut enfreindre les conditions d'Anthropic et entraîner la restriction de votre compte.",
+              "ja": "Anthropic 公式クライアント以外で Claude のサブスクリプションを使ってログインすると、Anthropic の規約に違反し、アカウントが制限されることがあります。",
+              "ko": "Anthropic 공식 클라이언트 밖에서 Claude 구독으로 로그인하면 Anthropic 약관을 위반할 수 있으며 계정이 제한될 수 있습니다.",
+              "pt-BR": "Entrar com uma assinatura do Claude fora dos clientes da própria Anthropic pode violar os termos da Anthropic e levar à restrição da sua conta.",
+              "ru": "Вход с подпиской Claude вне собственных клиентов Anthropic может нарушать условия Anthropic и привести к ограничению аккаунта."
+            }
+          }
         }
       ],
       "min_sailry_version": "0.1.6"

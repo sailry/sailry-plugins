@@ -34,8 +34,13 @@ const grant = {kind: 'copilot', access: 'session-token', github: 'github-token',
 
 test('declares the device flow and the native credential', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json', import.meta.url), 'utf8'));
-  assert.equal(manifest.version, '0.1.0');
+  assert.equal(manifest.version, '0.1.1');
   const [declaration] = manifest.extensions['dev.sailry.platform'].model_auth;
+  assert.match(declaration.warning.text, /GitHub's terms/);
+  assert.deepEqual(Object.keys(declaration.warning.locales).sort(), ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN', 'zh-TW']);
+  for (const text of [declaration.warning.text, ...Object.values(declaration.warning.locales)]) {
+    assert.ok(text.trim().length > 0 && Buffer.byteLength(text) <= 1024 && !/[\u0000-\u001f\u007f]/.test(text));
+  }
   assert.equal(declaration.authentication, 'copilot');
   assert.equal('token' in declaration, false);
   assert.deepEqual(declaration.scopes, ['read:user']);
