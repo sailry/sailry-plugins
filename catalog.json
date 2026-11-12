@@ -13683,7 +13683,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.2.0",
+        "version": "0.2.1",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14182,6 +14182,25 @@
       ],
       "versions": [
         {
+          "version": "0.2.1",
+          "commit": "ce6e698034c02736d84ce61a8527d44a54efbe18",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- A goal no longer stays Waiting or Running when nothing can wake it: it shows paused, reason Stopped, after the background work it waited on was stopped, Turn limit reached when the result was held at the limit, and App restarted when its last turn ended before a restart",
+            "locales": {
+              "zh-CN": "- 无法再被唤醒的目标不再停在“等待中”或“执行中”：所等待的后台任务被停止后显示已暂停（已停止），结果因轮次上限被保留时显示已达轮次上限，最后一轮在重启前结束时显示应用已重启",
+              "zh-TW": "- 無法再被喚醒的目標不再停在「等待中」或「執行中」：所等待的背景工作被停止後顯示已暫停（已停止），結果因輪次上限被保留時顯示已達輪次上限，最後一輪在重新啟動前結束時顯示應用程式已重新啟動",
+              "ja": "- 再開のきっかけがなくなった目標が「待機中」や「実行中」のままにならず、一時停止として表示されます（待っていたバックグラウンド作業の停止、ターン上限での結果の保留、再起動前に終了した最後のターン）",
+              "ko": "- 다시 깨울 수 없는 목표가 더 이상 대기 중이나 실행 중으로 남지 않고 일시 중지로 표시됩니다(기다리던 백그라운드 작업 중지, 턴 한도에서 보류된 결과, 재시작 전에 끝난 마지막 턴)",
+              "fr": "- Un objectif que plus rien ne peut relancer ne reste plus en attente ou en cours : il s'affiche en pause lorsque le travail en arrière-plan attendu a été arrêté, que son résultat a été retenu à la limite ou que son dernier tour s'est terminé avant un redémarrage",
+              "de": "- Ein Ziel, das nichts mehr wecken kann, bleibt nicht mehr auf „Wartet“ oder „Läuft“: Es wird pausiert angezeigt, nachdem die erwartete Hintergrundarbeit gestoppt oder ihr Ergebnis am Limit zurückgehalten wurde oder der letzte Turn vor einem Neustart endete",
+              "es": "- Un objetivo que nada puede reactivar ya no se queda en espera o en ejecución: se muestra en pausa cuando el trabajo en segundo plano que esperaba se detuvo, su resultado quedó retenido en el límite o su último turno terminó antes de un reinicio",
+              "pt-BR": "- Uma meta que nada pode retomar não fica mais em espera ou em execução: ela aparece pausada quando o trabalho em segundo plano esperado foi interrompido, quando o resultado ficou retido no limite ou quando o último turno terminou antes de uma reinicialização",
+              "ru": "- Цель, которую больше нечему продолжить, не остаётся в состоянии ожидания или выполнения: она показывается приостановленной, если ожидаемая фоновая работа была остановлена, её результат задержан на лимите или последний ход завершился до перезапуска"
+            }
+          }
+        },
+        {
           "version": "0.2.0",
           "commit": "b393ea02a8bda6a5ae2969255d70e673947454b1",
           "min_sailry_version": "0.1.6",
@@ -14315,17 +14334,17 @@
         }
       ],
       "release_notes": {
-        "text": "- `/goal <text>` starts at once and keeps going through continuation turns until the goal is complete; a message or a pause stays inside the goal\n- Completion is a claim with evidence that a separate Verify goal turn must confirm; Reopen undoes it\n- Stop pauses and a reply resumes; Pause holds until Resume; a restart, fork, rewind or Plan mode pauses with its reason\n- Limits: 25 automatic turns by default, optional token and time budgets, and a no-progress rule; a reached limit wraps up and pauses\n- The goal waits for background work, and notifies when it completes, is blocked or is paused by anything but you\n- Three tools replace six: the model reads, starts on request and reports status; only you edit, replace or clear\n- The badge shows state and time; the panel shows turns, time, tokens, Edit and earlier goals",
+        "text": "- A goal no longer stays Waiting or Running when nothing can wake it: it shows paused, reason Stopped, after the background work it waited on was stopped, Turn limit reached when the result was held at the limit, and App restarted when its last turn ended before a restart",
         "locales": {
-          "zh-CN": "- `/goal <文本>` 立即开始，并通过自动轮次持续执行直到目标完成；中途的消息或暂停仍属于该目标\n- 完成需先提交依据，再由独立的“核验目标”轮次确认；可重新打开\n- 停止后暂停，回复即继续；手动暂停需点继续；重启、分叉、回退或计划模式会暂停并显示原因\n- 上限：默认 25 个自动轮次，可选 Token 预算与时间上限，以及无进展规则；达到上限时收尾并暂停\n- 后台任务未结束时等待；完成、受阻或非手动暂停时发送通知\n- 工具由六个减为三个：模型可查看、按请求创建、汇报状态；编辑、替换和清除仅由你操作\n- 徽标显示状态与用时；面板显示轮次、用时、Token、编辑和历史目标",
-          "zh-TW": "- `/goal <文字>` 立即開始，並透過自動輪次持續執行直到目標完成；中途的訊息或暫停仍屬於該目標\n- 完成需先提交依據，再由獨立的「核驗目標」輪次確認；可重新開啟\n- 停止後暫停，回覆即繼續；手動暫停需按繼續；重新啟動、分叉、回退或計畫模式會暫停並顯示原因\n- 上限：預設 25 個自動輪次，可選 Token 預算與時間上限，以及無進展規則；達到上限時收尾並暫停\n- 工具由六個減為三個；編輯、取代和清除僅由你操作",
-          "ja": "- `/goal <テキスト>` はすぐに開始し、目標が完了するまで自動ターンで継続します。途中のメッセージや一時停止も目標の一部です\n- 完了は根拠付きの申告と、別の「目標を検証」ターンでの確認が必要です。再開で取り消せます\n- 停止で一時停止し、返信で再開します。手動の一時停止は「再開」まで保持されます。再起動、フォーク、巻き戻し、プランモードでは理由付きで一時停止します\n- 上限: 既定で自動 25 ターン、任意のトークン予算と時間上限、進捗なしルール。上限に達するとまとめて一時停止します\n- ツールは 6 個から 3 個に。編集、置き換え、消去はユーザーのみが行えます",
-          "ko": "- `/goal <텍스트>`는 즉시 시작하며 목표가 완료될 때까지 자동 턴으로 계속합니다. 중간의 메시지나 일시중지도 목표에 포함됩니다\n- 완료는 근거와 함께 신고한 뒤 별도의 '목표 검증' 턴에서 확인해야 합니다. 다시 열어 취소할 수 있습니다\n- 중지하면 일시중지되고 답장하면 재개됩니다. 직접 일시중지하면 재개할 때까지 유지됩니다. 재시작, 포크, 되돌리기, 계획 모드에서는 이유와 함께 일시중지됩니다\n- 한도: 기본 자동 25턴, 선택적 토큰 예산과 시간 한도, 진행 없음 규칙. 한도에 도달하면 마무리하고 일시중지합니다\n- 도구가 6개에서 3개로 줄었습니다. 편집, 교체, 지우기는 사용자만 할 수 있습니다",
-          "fr": "- `/goal <texte>` démarre aussitôt et continue par des tours automatiques jusqu’à l’achèvement ; un message ou une pause restent dans l’objectif\n- L’achèvement est une déclaration avec preuves qu’un tour distinct « Vérifier l’objectif » doit confirmer ; Rouvrir l’annule\n- Arrêter met en pause et une réponse reprend ; Suspendre tient jusqu’à Reprendre ; un redémarrage, une bifurcation, un retour arrière ou le mode Plan mettent en pause avec leur motif\n- Limites : 25 tours automatiques par défaut, budgets facultatifs de jetons et de temps, règle d’absence de progrès ; une limite atteinte conclut puis met en pause\n- Trois outils en remplacent six ; vous seul modifiez, remplacez ou effacez l’objectif",
-          "de": "- `/goal <Text>` startet sofort und läuft in automatischen Runden weiter, bis das Ziel erreicht ist; eine Nachricht oder Pause bleibt Teil des Ziels\n- Der Abschluss ist eine Meldung mit Belegen, die eine eigene Runde „Ziel prüfen“ bestätigen muss; Wieder öffnen macht ihn rückgängig\n- Stopp pausiert und eine Antwort setzt fort; Pausieren hält bis Fortsetzen; Neustart, Abzweigung, Zurückspulen oder Planmodus pausieren mit ihrem Grund\n- Grenzen: standardmäßig 25 automatische Runden, optionale Token- und Zeitbudgets sowie eine Regel für fehlenden Fortschritt; eine erreichte Grenze schließt ab und pausiert\n- Drei Werkzeuge ersetzen sechs; nur Sie bearbeiten, ersetzen oder löschen das Ziel",
-          "es": "- `/goal <texto>` empieza de inmediato y continúa con turnos automáticos hasta completar el objetivo; un mensaje o una pausa siguen dentro del objetivo\n- Completar es una declaración con pruebas que un turno aparte «Verificar objetivo» debe confirmar; Reabrir lo deshace\n- Detener pausa y una respuesta reanuda; Pausar se mantiene hasta Reanudar; un reinicio, una bifurcación, un retroceso o el modo Plan pausan con su motivo\n- Límites: 25 turnos automáticos por defecto, presupuestos opcionales de tokens y tiempo, y una regla de falta de progreso; al alcanzar un límite se cierra el trabajo y se pausa\n- Tres herramientas sustituyen a seis; solo tú editas, reemplazas o borras el objetivo",
-          "pt-BR": "- `/goal <texto>` começa na hora e continua em turnos automáticos até concluir o objetivo; uma mensagem ou uma pausa continuam dentro do objetivo\n- Concluir é uma declaração com evidências que um turno separado “Verificar objetivo” precisa confirmar; Reabrir desfaz\n- Parar pausa e uma resposta retoma; Pausar vale até Retomar; reinício, bifurcação, retrocesso ou modo Plano pausam com o motivo\n- Limites: 25 turnos automáticos por padrão, orçamentos opcionais de tokens e tempo e uma regra de falta de progresso; ao atingir um limite, o trabalho é encerrado e pausado\n- Três ferramentas substituem seis; só você edita, substitui ou limpa o objetivo",
-          "ru": "- `/goal <текст>` запускается сразу и продолжается автоматическими ходами до выполнения цели; сообщение или пауза остаются частью цели\n- Завершение — это заявление с доказательствами, которое должен подтвердить отдельный ход «Проверить цель»; «Открыть снова» отменяет его\n- Остановка ставит на паузу, ответ продолжает; ручная пауза держится до «Продолжить»; перезапуск, ответвление, откат и режим плана ставят на паузу с причиной\n- Ограничения: по умолчанию 25 автоматических ходов, необязательные бюджеты токенов и времени, правило отсутствия прогресса; при достижении лимита работа завершается и ставится на паузу\n- Три инструмента вместо шести; изменять, заменять и очищать цель можете только вы"
+          "zh-CN": "- 无法再被唤醒的目标不再停在“等待中”或“执行中”：所等待的后台任务被停止后显示已暂停（已停止），结果因轮次上限被保留时显示已达轮次上限，最后一轮在重启前结束时显示应用已重启",
+          "zh-TW": "- 無法再被喚醒的目標不再停在「等待中」或「執行中」：所等待的背景工作被停止後顯示已暫停（已停止），結果因輪次上限被保留時顯示已達輪次上限，最後一輪在重新啟動前結束時顯示應用程式已重新啟動",
+          "ja": "- 再開のきっかけがなくなった目標が「待機中」や「実行中」のままにならず、一時停止として表示されます（待っていたバックグラウンド作業の停止、ターン上限での結果の保留、再起動前に終了した最後のターン）",
+          "ko": "- 다시 깨울 수 없는 목표가 더 이상 대기 중이나 실행 중으로 남지 않고 일시 중지로 표시됩니다(기다리던 백그라운드 작업 중지, 턴 한도에서 보류된 결과, 재시작 전에 끝난 마지막 턴)",
+          "fr": "- Un objectif que plus rien ne peut relancer ne reste plus en attente ou en cours : il s'affiche en pause lorsque le travail en arrière-plan attendu a été arrêté, que son résultat a été retenu à la limite ou que son dernier tour s'est terminé avant un redémarrage",
+          "de": "- Ein Ziel, das nichts mehr wecken kann, bleibt nicht mehr auf „Wartet“ oder „Läuft“: Es wird pausiert angezeigt, nachdem die erwartete Hintergrundarbeit gestoppt oder ihr Ergebnis am Limit zurückgehalten wurde oder der letzte Turn vor einem Neustart endete",
+          "es": "- Un objetivo que nada puede reactivar ya no se queda en espera o en ejecución: se muestra en pausa cuando el trabajo en segundo plano que esperaba se detuvo, su resultado quedó retenido en el límite o su último turno terminó antes de un reinicio",
+          "pt-BR": "- Uma meta que nada pode retomar não fica mais em espera ou em execução: ela aparece pausada quando o trabalho em segundo plano esperado foi interrompido, quando o resultado ficou retido no limite ou quando o último turno terminou antes de uma reinicialização",
+          "ru": "- Цель, которую больше нечему продолжить, не остаётся в состоянии ожидания или выполнения: она показывается приостановленной, если ожидаемая фоновая работа была остановлена, её результат задержан на лимите или последний ход завершился до перезапуска"
         }
       }
     },
