@@ -5428,7 +5428,7 @@
               "credentials.inspect"
             ],
             "display": {
-              "label": "GitHub Copilot OAuth",
+              "label": "Copilot",
               "icon": "ailogo:githubcopilot"
             },
             "description": {
@@ -5452,7 +5452,7 @@
                 "id": "device",
                 "authentication": "copilot",
                 "display": {
-                  "label": "GitHub Copilot OAuth"
+                  "label": "Copilot"
                 },
                 "flow": {
                   "kind": "script",
@@ -5525,7 +5525,7 @@
       "versions": [
         {
           "version": "0.1.0",
-          "commit": "641a5beece285a13b5125369ac72334f77fea295",
+          "commit": "e5853cbc615a629ba2cf39308bd19fa43bc9ccff",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Sign in to GitHub Copilot with a device code\n- Renew the Copilot session with the stored GitHub sign-in"
