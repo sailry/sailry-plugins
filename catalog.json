@@ -137,7 +137,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "agy",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Antigravity models through the installed agy CLI",
         "homepage": "https://antigravity.google",
         "license": "MIT",
@@ -240,6 +240,20 @@
                 "adapter": "agy",
                 "models": {
                   "kind": "discover"
+                },
+                "warning": {
+                  "text": "This drives the agy CLI installed on this device with your own account. Heavy automated use may count against that account's limits or violate its terms.",
+                  "locales": {
+                    "zh-CN": "此渠道使用你自己的账号驱动本机已安装的 agy CLI。大量自动化使用可能计入该账号的额度，或违反其条款。",
+                    "zh-TW": "此管道使用你自己的帳號驅動本機已安裝的 agy CLI。大量自動化使用可能計入該帳號的額度，或違反其條款。",
+                    "de": "Dies steuert die auf diesem Gerät installierte agy-CLI mit deinem eigenen Konto. Intensive automatisierte Nutzung kann auf die Limits dieses Kontos angerechnet werden oder gegen dessen Bedingungen verstoßen.",
+                    "es": "Esto controla la CLI agy instalada en este dispositivo con tu propia cuenta. Un uso automatizado intensivo puede contar para los límites de esa cuenta o infringir sus términos.",
+                    "fr": "Ceci pilote la CLI agy installée sur cet appareil avec votre propre compte. Une utilisation automatisée intensive peut être décomptée des limites de ce compte ou enfreindre ses conditions.",
+                    "ja": "このデバイスにインストールされた agy CLI を自分のアカウントで動かします。大量の自動利用は、そのアカウントの利用上限に計上されたり、規約に違反したりすることがあります。",
+                    "ko": "이 기기에 설치된 agy CLI를 사용자의 계정으로 구동합니다. 과도한 자동 사용은 해당 계정의 한도에 포함되거나 약관을 위반할 수 있습니다.",
+                    "pt-BR": "Isto controla a CLI agy instalada neste dispositivo com a sua própria conta. O uso automatizado intenso pode contar para os limites dessa conta ou violar os termos dela.",
+                    "ru": "Здесь используется установленный на этом устройстве agy CLI с вашим аккаунтом. Интенсивное автоматическое использование может учитываться в лимитах этого аккаунта или нарушать его условия."
+                  }
                 }
               }
             ]
@@ -252,6 +266,25 @@
         "process.run"
       ],
       "versions": [
+        {
+          "version": "0.1.1",
+          "commit": "0219081fbf837bd0b9fe4ff8b4cb6418416e67f8",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Ask to accept the account risk before adding the channel",
+            "locales": {
+              "zh-CN": "- 添加渠道前先确认账号风险",
+              "zh-TW": "- 新增管道前先確認帳號風險",
+              "ja": "- チャンネルを追加する前にアカウントのリスクを確認",
+              "ko": "- 채널을 추가하기 전에 계정 위험 확인",
+              "fr": "- Demander d'accepter le risque pour le compte avant d'ajouter le canal",
+              "de": "- Vor dem Hinzufügen des Kanals das Kontorisiko bestätigen lassen",
+              "es": "- Pedir que se acepte el riesgo de la cuenta antes de añadir el canal",
+              "pt-BR": "- Pedir a aceitação do risco da conta antes de adicionar o canal",
+              "ru": "- Запрашивать согласие с риском для аккаунта перед добавлением канала"
+            }
+          }
+        },
         {
           "version": "0.1.0",
           "commit": "fc242d802a0ef9c4a5bde6b9b729373c05741e3d",
@@ -273,17 +306,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Use Antigravity models through the installed, signed-in agy CLI",
+        "text": "- Ask to accept the account risk before adding the channel",
         "locales": {
-          "zh-CN": "- 通过已安装并登录的 agy CLI 使用 Antigravity 模型",
-          "zh-TW": "- 透過已安裝並登入的 agy CLI 使用 Antigravity 模型",
-          "ja": "- インストール済みでサインイン済みの agy CLI から Antigravity モデルを利用",
-          "ko": "- 설치되어 로그인된 agy CLI로 Antigravity 모델 사용",
-          "fr": "- Utiliser les modèles Antigravity via la CLI agy installée et connectée",
-          "de": "- Antigravity-Modelle über die installierte, angemeldete agy-CLI nutzen",
-          "es": "- Usa modelos de Antigravity mediante la CLI agy instalada y con sesión iniciada",
-          "pt-BR": "- Use modelos do Antigravity pela CLI agy instalada e conectada",
-          "ru": "- Модели Antigravity через установленный agy CLI с выполненным входом"
+          "zh-CN": "- 添加渠道前先确认账号风险",
+          "zh-TW": "- 新增管道前先確認帳號風險",
+          "ja": "- チャンネルを追加する前にアカウントのリスクを確認",
+          "ko": "- 채널을 추가하기 전에 계정 위험 확인",
+          "fr": "- Demander d'accepter le risque pour le compte avant d'ajouter le canal",
+          "de": "- Vor dem Hinzufügen des Kanals das Kontorisiko bestätigen lassen",
+          "es": "- Pedir que se acepte el riesgo de la cuenta antes de añadir el canal",
+          "pt-BR": "- Pedir a aceitação do risco da conta antes de adicionar o canal",
+          "ru": "- Запрашивать согласие с риском для аккаунта перед добавлением канала"
         }
       }
     },
@@ -2008,7 +2041,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "claude-auth",
-        "version": "0.1.3",
+        "version": "0.1.4",
         "description": "Sign in to use Claude models",
         "license": "MIT",
         "extensions": {
@@ -2120,7 +2153,21 @@
                   "user:sessions:claude_code",
                   "user:mcp_servers",
                   "user:file_upload"
-                ]
+                ],
+                "warning": {
+                  "text": "Signing in with a Claude subscription outside Anthropic's own clients may violate Anthropic's terms and can lead to your account being restricted.",
+                  "locales": {
+                    "zh-CN": "在 Anthropic 官方客户端之外使用 Claude 订阅登录可能违反 Anthropic 的条款，并可能导致账号受限。",
+                    "zh-TW": "在 Anthropic 官方用戶端之外使用 Claude 訂閱登入可能違反 Anthropic 的條款，並可能導致帳號受限。",
+                    "de": "Die Anmeldung mit einem Claude-Abonnement außerhalb der eigenen Clients von Anthropic kann gegen die Bedingungen von Anthropic verstoßen und dazu führen, dass dein Konto eingeschränkt wird.",
+                    "es": "Iniciar sesión con una suscripción de Claude fuera de los clientes propios de Anthropic puede infringir los términos de Anthropic y hacer que se restrinja tu cuenta.",
+                    "fr": "Se connecter avec un abonnement Claude en dehors des clients d'Anthropic peut enfreindre les conditions d'Anthropic et entraîner la restriction de votre compte.",
+                    "ja": "Anthropic 公式クライアント以外で Claude のサブスクリプションを使ってログインすると、Anthropic の規約に違反し、アカウントが制限されることがあります。",
+                    "ko": "Anthropic 공식 클라이언트 밖에서 Claude 구독으로 로그인하면 Anthropic 약관을 위반할 수 있으며 계정이 제한될 수 있습니다.",
+                    "pt-BR": "Entrar com uma assinatura do Claude fora dos clientes da própria Anthropic pode violar os termos da Anthropic e levar à restrição da sua conta.",
+                    "ru": "Вход с подпиской Claude вне собственных клиентов Anthropic может нарушать условия Anthropic и привести к ограничению аккаунта."
+                  }
+                }
               }
             ],
             "min_sailry_version": "0.1.6"
@@ -2133,6 +2180,14 @@
         "credentials.inspect"
       ],
       "versions": [
+        {
+          "version": "0.1.4",
+          "commit": "cfa4d33de4ff0a402ea9fe99652ab832bd610a2d",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Ask to accept the account risk before each sign-in"
+          }
+        },
         {
           "version": "0.1.3",
           "commit": "432aced4d065017cf7cfdfb8d11ff136eba309c7",
@@ -2165,7 +2220,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Use a new plugin icon"
+        "text": "- Ask to accept the account risk before each sign-in"
       }
     },
     {
@@ -5416,7 +5471,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "copilot-auth",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "description": "Sign in to use GitHub Copilot models",
         "license": "Apache-2.0",
         "extensions": {
@@ -5510,7 +5565,21 @@
                 },
                 "scopes": [
                   "read:user"
-                ]
+                ],
+                "warning": {
+                  "text": "Using a GitHub Copilot subscription outside GitHub's own clients may violate GitHub's terms and can lead to your Copilot access or account being restricted. You proceed at your own risk.",
+                  "locales": {
+                    "zh-CN": "在 GitHub 官方客户端之外使用 GitHub Copilot 订阅可能违反 GitHub 的条款，并可能导致 Copilot 访问权限或账号受限。风险由你自行承担。",
+                    "zh-TW": "在 GitHub 官方用戶端之外使用 GitHub Copilot 訂閱可能違反 GitHub 的條款，並可能導致 Copilot 存取權或帳號受限。風險由你自行承擔。",
+                    "de": "Die Nutzung eines GitHub-Copilot-Abonnements außerhalb der eigenen Clients von GitHub kann gegen die Bedingungen von GitHub verstoßen und dazu führen, dass dein Copilot-Zugang oder dein Konto eingeschränkt wird. Du handelst auf eigenes Risiko.",
+                    "es": "Usar una suscripción de GitHub Copilot fuera de los clientes propios de GitHub puede infringir los términos de GitHub y hacer que se restrinja tu acceso a Copilot o tu cuenta. Continúas bajo tu propia responsabilidad.",
+                    "fr": "Utiliser un abonnement GitHub Copilot en dehors des clients de GitHub peut enfreindre les conditions de GitHub et entraîner la restriction de votre accès à Copilot ou de votre compte. Vous continuez à vos propres risques.",
+                    "ja": "GitHub 公式クライアント以外で GitHub Copilot のサブスクリプションを使うと、GitHub の規約に違反し、Copilot の利用やアカウントが制限されることがあります。自己責任で続行してください。",
+                    "ko": "GitHub 공식 클라이언트 밖에서 GitHub Copilot 구독을 사용하면 GitHub 약관을 위반할 수 있으며 Copilot 이용 권한이나 계정이 제한될 수 있습니다. 위험은 사용자가 부담합니다.",
+                    "pt-BR": "Usar uma assinatura do GitHub Copilot fora dos clientes do próprio GitHub pode violar os termos do GitHub e levar à restrição do seu acesso ao Copilot ou da sua conta. Você continua por sua conta e risco.",
+                    "ru": "Использование подписки GitHub Copilot вне собственных клиентов GitHub может нарушать условия GitHub и привести к ограничению доступа к Copilot или аккаунта. Вы продолжаете на свой риск."
+                  }
+                }
               }
             ],
             "min_sailry_version": "0.1.6"
@@ -5524,6 +5593,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.1",
+          "commit": "f0589ebbf73b0ede75cdece9bfc29fbe1fd71ade",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Ask to accept the account risk before each sign-in"
+          }
+        },
+        {
           "version": "0.1.0",
           "commit": "e5853cbc615a629ba2cf39308bd19fa43bc9ccff",
           "min_sailry_version": "0.1.6",
@@ -5533,7 +5610,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Sign in to GitHub Copilot with a device code\n- Renew the Copilot session with the stored GitHub sign-in"
+        "text": "- Ask to accept the account risk before each sign-in"
       }
     },
     {

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Antigravity models through the installed agy CLI",
   "homepage": "https://antigravity.google",
   "license": "MIT",
@@ -104,6 +104,20 @@
           "adapter": "agy",
           "models": {
             "kind": "discover"
+          },
+          "warning": {
+            "text": "This drives the agy CLI installed on this device with your own account. Heavy automated use may count against that account's limits or violate its terms.",
+            "locales": {
+              "zh-CN": "此渠道使用你自己的账号驱动本机已安装的 agy CLI。大量自动化使用可能计入该账号的额度，或违反其条款。",
+              "zh-TW": "此管道使用你自己的帳號驅動本機已安裝的 agy CLI。大量自動化使用可能計入該帳號的額度，或違反其條款。",
+              "de": "Dies steuert die auf diesem Gerät installierte agy-CLI mit deinem eigenen Konto. Intensive automatisierte Nutzung kann auf die Limits dieses Kontos angerechnet werden oder gegen dessen Bedingungen verstoßen.",
+              "es": "Esto controla la CLI agy instalada en este dispositivo con tu propia cuenta. Un uso automatizado intensivo puede contar para los límites de esa cuenta o infringir sus términos.",
+              "fr": "Ceci pilote la CLI agy installée sur cet appareil avec votre propre compte. Une utilisation automatisée intensive peut être décomptée des limites de ce compte ou enfreindre ses conditions.",
+              "ja": "このデバイスにインストールされた agy CLI を自分のアカウントで動かします。大量の自動利用は、そのアカウントの利用上限に計上されたり、規約に違反したりすることがあります。",
+              "ko": "이 기기에 설치된 agy CLI를 사용자의 계정으로 구동합니다. 과도한 자동 사용은 해당 계정의 한도에 포함되거나 약관을 위반할 수 있습니다.",
+              "pt-BR": "Isto controla a CLI agy instalada neste dispositivo com a sua própria conta. O uso automatizado intenso pode contar para os limites dessa conta ou violar os termos dela.",
+              "ru": "Здесь используется установленный на этом устройстве agy CLI с вашим аккаунтом. Интенсивное автоматическое использование может учитываться в лимитах этого аккаунта или нарушать его условия."
+            }
           }
         }
       ]

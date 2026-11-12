@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Ask to accept the account risk before each sign-in
+
 ## 0.1.3
 
 - Use a new plugin icon
