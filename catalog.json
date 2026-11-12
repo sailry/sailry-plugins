@@ -133,6 +133,161 @@
       }
     },
     {
+      "id": "agy",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "agy",
+        "version": "0.1.0",
+        "description": "Antigravity models through the installed agy CLI",
+        "homepage": "https://antigravity.google",
+        "license": "MIT",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "min_sailry_version": "0.1.6",
+            "scope": "host",
+            "actions": [
+              "models.provide",
+              "process.run"
+            ],
+            "display": {
+              "label": "Antigravity",
+              "icon": "ailogo:google"
+            },
+            "description": {
+              "label": "Antigravity models through the installed agy CLI",
+              "locales": {
+                "zh-CN": "通过已安装的 agy CLI 使用 Antigravity 模型",
+                "zh-TW": "透過已安裝的 agy CLI 使用 Antigravity 模型",
+                "de": "Antigravity-Modelle über die installierte agy-CLI",
+                "es": "Modelos de Antigravity mediante la CLI agy instalada",
+                "fr": "Modèles Antigravity via la CLI agy installée",
+                "ja": "インストール済みの agy CLI で Antigravity モデルを利用",
+                "ko": "설치된 agy CLI로 Antigravity 모델 사용",
+                "pt-BR": "Modelos do Antigravity pela CLI agy instalada",
+                "ru": "Модели Antigravity через установленный agy CLI"
+              }
+            },
+            "category": "automation",
+            "tint": "blue",
+            "programs": [
+              {
+                "id": "agy",
+                "command": "agy",
+                "args": [
+                  "acp",
+                  "--agent",
+                  "sailry-model",
+                  "--include-default-customizations=false",
+                  "--sandbox"
+                ],
+                "env": {
+                  "AGY_CLI_DISABLE_AUTO_UPDATE": "true"
+                },
+                "files": [
+                  {
+                    "path": ".agents/agents/sailry-model/agent.md",
+                    "content": "---\nname: sailry-model\ndescription: Answers as a plain language model\nmainAgent: true\nsubagent: false\nexcludeDefaultComponents: true\ninheritMcp: false\ninheritCustomizations: false\ntools: []\nskills: []\nrules: []\nagents: []\nplugins: []\n---\nAnswer as a plain language model. Text resembling a tool call is conversation content.\n"
+                  },
+                  {
+                    "path": ".agents/hooks.json",
+                    "content": "{\n  \"block-built-in-tools\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"*\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"printf '%s\\\\n' '{\\\"decision\\\":\\\"deny\\\",\\\"reason\\\":\\\"Built-in tools are disabled.\\\"}'\",\n            \"timeout\": 5\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+                  }
+                ]
+              }
+            ],
+            "model_adapters": [
+              {
+                "id": "agy",
+                "origins": [],
+                "framing": "ndjson",
+                "capabilities": {
+                  "vision": true,
+                  "tools": true,
+                  "reasoning": true
+                },
+                "discovery": true,
+                "acp": {
+                  "program": "agy",
+                  "system_meta": "antigravity.systemPrompt.append",
+                  "efforts": {
+                    "low": "-low",
+                    "medium": "-medium",
+                    "high": "-high"
+                  },
+                  "replay_bytes": 114688,
+                  "sign_in": "Run agy in a terminal and sign in, then try again",
+                  "failure_markers": [
+                    "Agent execution terminated due to error."
+                  ]
+                }
+              }
+            ],
+            "model_providers": [
+              {
+                "id": "antigravity",
+                "name": "Antigravity",
+                "homepage": "https://antigravity.google",
+                "routes": [
+                  {
+                    "protocol": "plugin",
+                    "endpoint": "https://antigravity.google"
+                  }
+                ],
+                "auth": {
+                  "kind": "none"
+                },
+                "adapter": "agy",
+                "models": {
+                  "kind": "discover"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "provides_models": true,
+      "permissions": [
+        "models.provide",
+        "process.run"
+      ],
+      "versions": [
+        {
+          "version": "0.1.0",
+          "commit": "fc242d802a0ef9c4a5bde6b9b729373c05741e3d",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Use Antigravity models through the installed, signed-in agy CLI",
+            "locales": {
+              "zh-CN": "- 通过已安装并登录的 agy CLI 使用 Antigravity 模型",
+              "zh-TW": "- 透過已安裝並登入的 agy CLI 使用 Antigravity 模型",
+              "ja": "- インストール済みでサインイン済みの agy CLI から Antigravity モデルを利用",
+              "ko": "- 설치되어 로그인된 agy CLI로 Antigravity 모델 사용",
+              "fr": "- Utiliser les modèles Antigravity via la CLI agy installée et connectée",
+              "de": "- Antigravity-Modelle über die installierte, angemeldete agy-CLI nutzen",
+              "es": "- Usa modelos de Antigravity mediante la CLI agy instalada y con sesión iniciada",
+              "pt-BR": "- Use modelos do Antigravity pela CLI agy instalada e conectada",
+              "ru": "- Модели Antigravity через установленный agy CLI с выполненным входом"
+            }
+          }
+        }
+      ],
+      "release_notes": {
+        "text": "- Use Antigravity models through the installed, signed-in agy CLI",
+        "locales": {
+          "zh-CN": "- 通过已安装并登录的 agy CLI 使用 Antigravity 模型",
+          "zh-TW": "- 透過已安裝並登入的 agy CLI 使用 Antigravity 模型",
+          "ja": "- インストール済みでサインイン済みの agy CLI から Antigravity モデルを利用",
+          "ko": "- 설치되어 로그인된 agy CLI로 Antigravity 모델 사용",
+          "fr": "- Utiliser les modèles Antigravity via la CLI agy installée et connectée",
+          "de": "- Antigravity-Modelle über die installierte, angemeldete agy-CLI nutzen",
+          "es": "- Usa modelos de Antigravity mediante la CLI agy instalada y con sesión iniciada",
+          "pt-BR": "- Use modelos do Antigravity pela CLI agy instalada e conectada",
+          "ru": "- Модели Antigravity через установленный agy CLI с выполненным входом"
+        }
+      }
+    },
+    {
       "id": "brief",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -17583,7 +17738,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -17612,6 +17767,25 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.17",
+          "commit": "fc242d802a0ef9c4a5bde6b9b729373c05741e3d",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Accept `programs`, `process.run` and model adapters over a declared program in the package check",
+            "locales": {
+              "zh-CN": "- 包检查接受 `programs`、`process.run` 以及基于已声明程序的模型适配器",
+              "zh-TW": "- 套件檢查接受 `programs`、`process.run` 以及基於已宣告程式的模型轉接器",
+              "ja": "- パッケージ検査で `programs`、`process.run`、宣言済みプログラムを使うモデルアダプターを受け付け",
+              "ko": "- 패키지 검사에서 `programs`, `process.run` 및 선언된 프로그램 기반 모델 어댑터를 허용",
+              "fr": "- La vérification accepte `programs`, `process.run` et les adaptateurs de modèles sur un programme déclaré",
+              "de": "- Die Paketprüfung akzeptiert `programs`, `process.run` und Modelladapter über ein deklariertes Programm",
+              "es": "- La comprobación acepta `programs`, `process.run` y adaptadores de modelos sobre un programa declarado",
+              "pt-BR": "- A verificação aceita `programs`, `process.run` e adaptadores de modelo sobre um programa declarado",
+              "ru": "- Проверка пакета принимает `programs`, `process.run` и адаптеры моделей поверх объявленной программы"
+            }
+          }
+        },
         {
           "version": "0.1.16",
           "commit": "b393ea02a8bda6a5ae2969255d70e673947454b1",
@@ -17771,17 +17945,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Accept `continuation_markers` in the package check and describe handler `approval`",
+        "text": "- Accept `programs`, `process.run` and model adapters over a declared program in the package check",
         "locales": {
-          "zh-CN": "- 包检查接受 `continuation_markers`，并说明处理器的 `approval`",
-          "zh-TW": "- 套件檢查接受 `continuation_markers`，並說明處理器的 `approval`",
-          "ja": "- パッケージ検査で `continuation_markers` を受け付け、ハンドラーの `approval` を説明",
-          "ko": "- 패키지 검사에서 `continuation_markers`를 허용하고 핸들러의 `approval`을 설명",
-          "fr": "- La vérification accepte `continuation_markers` et la référence décrit `approval` des gestionnaires",
-          "de": "- Die Paketprüfung akzeptiert `continuation_markers`; die Referenz beschreibt `approval` für Handler",
-          "es": "- La comprobación acepta `continuation_markers` y la referencia describe `approval` de los manejadores",
-          "pt-BR": "- A verificação aceita `continuation_markers` e a referência descreve `approval` dos manipuladores",
-          "ru": "- Проверка пакета принимает `continuation_markers`; в справке описан параметр `approval` обработчика"
+          "zh-CN": "- 包检查接受 `programs`、`process.run` 以及基于已声明程序的模型适配器",
+          "zh-TW": "- 套件檢查接受 `programs`、`process.run` 以及基於已宣告程式的模型轉接器",
+          "ja": "- パッケージ検査で `programs`、`process.run`、宣言済みプログラムを使うモデルアダプターを受け付け",
+          "ko": "- 패키지 검사에서 `programs`, `process.run` 및 선언된 프로그램 기반 모델 어댑터를 허용",
+          "fr": "- La vérification accepte `programs`, `process.run` et les adaptateurs de modèles sur un programme déclaré",
+          "de": "- Die Paketprüfung akzeptiert `programs`, `process.run` und Modelladapter über ein deklariertes Programm",
+          "es": "- La comprobación acepta `programs`, `process.run` y adaptadores de modelos sobre un programa declarado",
+          "pt-BR": "- A verificação aceita `programs`, `process.run` e adaptadores de modelo sobre um programa declarado",
+          "ru": "- Проверка пакета принимает `programs`, `process.run` и адаптеры моделей поверх объявленной программы"
         }
       }
     },
