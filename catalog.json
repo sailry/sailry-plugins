@@ -21547,7 +21547,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.30",
+        "version": "0.1.31",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -21716,6 +21716,25 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.31",
+          "commit": "7e0b4bdeba88e96e50075c588a28bf95d28f8714",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show the Usage tables as compact bordered tables with plain model and session names, the cache rate as a percentage and the share beside its bar",
+            "locales": {
+              "zh-CN": "- 用量页表格改为紧凑的带边框样式：模型和会话仅显示名称，缓存显示为百分比，占比在进度条旁显示数值",
+              "zh-TW": "- 用量頁表格改為緊湊的帶邊框樣式：模型和工作階段僅顯示名稱，快取顯示為百分比，占比在進度列旁顯示數值",
+              "ja": "- 使用量の表を枠付きのコンパクトな表示に変更：モデルとセッションは名前のみ、キャッシュ率はパーセント表示、割合はバーの横に数値を表示",
+              "ko": "- 사용량 표를 테두리가 있는 간결한 형태로 변경: 모델과 세션은 이름만, 캐시율은 백분율로, 비중은 막대 옆에 수치로 표시",
+              "fr": "- Tableaux d’utilisation compacts et encadrés : modèle et session par leur seul nom, cache en pourcentage, part affichée à côté de sa barre",
+              "de": "- Nutzungstabellen kompakt und umrahmt: Modell und Sitzung nur mit Namen, Cache-Rate als Prozentwert, Anteil neben seinem Balken",
+              "es": "- Tablas de uso compactas y con borde: modelo y sesión solo con su nombre, caché como porcentaje y la cuota junto a su barra",
+              "pt-BR": "- Tabelas de uso compactas e com borda: modelo e sessão apenas pelo nome, cache como porcentagem e a participação ao lado da barra",
+              "ru": "- Таблицы использования стали компактными и с рамкой: модель и сеанс показаны только названием, кэш — в процентах, доля — рядом с полосой"
+            }
+          }
+        },
         {
           "version": "0.1.30",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -22047,17 +22066,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Show the Usage tables as compact bordered tables with plain model and session names, the cache rate as a percentage and the share beside its bar",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 用量页表格改为紧凑的带边框样式：模型和会话仅显示名称，缓存显示为百分比，占比在进度条旁显示数值",
+          "zh-TW": "- 用量頁表格改為緊湊的帶邊框樣式：模型和工作階段僅顯示名稱，快取顯示為百分比，占比在進度列旁顯示數值",
+          "ja": "- 使用量の表を枠付きのコンパクトな表示に変更：モデルとセッションは名前のみ、キャッシュ率はパーセント表示、割合はバーの横に数値を表示",
+          "ko": "- 사용량 표를 테두리가 있는 간결한 형태로 변경: 모델과 세션은 이름만, 캐시율은 백분율로, 비중은 막대 옆에 수치로 표시",
+          "fr": "- Tableaux d’utilisation compacts et encadrés : modèle et session par leur seul nom, cache en pourcentage, part affichée à côté de sa barre",
+          "de": "- Nutzungstabellen kompakt und umrahmt: Modell und Sitzung nur mit Namen, Cache-Rate als Prozentwert, Anteil neben seinem Balken",
+          "es": "- Tablas de uso compactas y con borde: modelo y sesión solo con su nombre, caché como porcentaje y la cuota junto a su barra",
+          "pt-BR": "- Tabelas de uso compactas e com borda: modelo e sessão apenas pelo nome, cache como porcentagem e a participação ao lado da barra",
+          "ru": "- Таблицы использования стали компактными и с рамкой: модель и сеанс показаны только названием, кэш — в процентах, доля — рядом с полосой"
         }
       }
     },

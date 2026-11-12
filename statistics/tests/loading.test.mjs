@@ -7,8 +7,8 @@ import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {compact,grouped} from '../dev.sailry.platform/desktop/format.js';
 import {heatmap,trend,SERIES} from '../dev.sailry.platform/desktop/charts.js';
 import {overview,percent} from '../dev.sailry.platform/desktop/summary.js';
-import {breakdown,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
-import {formatRows,mark} from '../dev.sailry.platform/desktop/requests.js';
+import {breakdown,annotated,VISIBLE,NAME_WIDTH} from '../dev.sailry.platform/desktop/breakdown.js';
+import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 
 const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
   .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
@@ -33,7 +33,7 @@ function fixture() {
   const constructors=Object.fromEntries(['Button','Progress','Tab','TabBar','Tag','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,VISIBLE,formatRows,mark,unit,DIMENSIONS,
+    div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,annotated,VISIBLE,NAME_WIDTH,formatRows,unit,DIMENSIONS,
     theme:()=>({colors:{muted_foreground:'muted'}}),window:{viewport_size:()=>({width:1440})},
   });
   const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'}),

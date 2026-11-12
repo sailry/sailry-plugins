@@ -1,3 +1,7 @@
+## 0.1.31
+
+- Show the Usage tables as compact bordered tables with plain model and session names, the cache rate as a percentage and the share beside its bar
+
 ## 0.1.30
 
 - Restore outline icons in navigation and tools

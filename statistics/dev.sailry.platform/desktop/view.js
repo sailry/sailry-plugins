@@ -5,8 +5,8 @@ import {SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading,SelectF
 import {compact,grouped} from './format.js';
 import {heatmap,trend,SERIES} from './charts.js';
 import {overview,percent} from './summary.js';
-import {breakdown,VISIBLE} from './breakdown.js';
-import {formatRows,mark} from './requests.js';
+import {breakdown,annotated,VISIBLE,NAME_WIDTH} from './breakdown.js';
+import {formatRows} from './requests.js';
 import {unit,DIMENSIONS} from './state.js';
 
 const column = () => div().v_flex().min_w_0().gap_3();
@@ -17,12 +17,13 @@ const dot = color => div().flex_shrink_0().w_2().h_2().rounded_sm().bg(theme().c
 const swatches = text => div().h_flex().flex_wrap().gap_3().children(SERIES.map(series=>div().h_flex().gap_1p5().items_center()
   .child(dot(series.color)).child(muted(text[series.label]).text_xs())));
 const missing = text => ({text:text.composer_metric_unknown,text_tone:'muted'});
-/** Inventory names and provider logos for the report's Node. */
+/** Table row and header heights; a table showing every row adds FRAME for its header divider and border. */
+const ROW=36,HEADER=32,FRAME=3;
+/** Inventory names for the report's Node. */
 function catalog(view,data) {
-  const inventory=view.inventory?.node===data.node ? view.inventory : null,providers=inventory?.providers ?? [];
-  return {providers:new Map(providers.map(item=>[item.id,item.name])),
-    projects:new Map((inventory?.projects ?? []).map(item=>[item.id,item.name])),
-    icons:new Map(providers.filter(item=>item.icon).map(item=>[item.id,item.icon]))};
+  const inventory=view.inventory?.node===data.node ? view.inventory : null;
+  return {providers:new Map((inventory?.providers ?? []).map(item=>[item.id,item.name])),
+    projects:new Map((inventory?.projects ?? []).map(item=>[item.id,item.name]))};
 }
 
 function composition(parts,sum) {
@@ -93,23 +94,24 @@ function distribution(view,data) {
   // A grouping change keeps the previous report until the regrouped report arrives.
   const pending=(data.query?.dimension ?? 'model')!==state.query.dimension;
   const rows=pending ? [] : breakdown(data.groups,state.breakdown,names,text);
-  const shown=state.expanded ? rows : rows.slice(0,VISIBLE);
+  const shown=state.expanded ? rows : rows.slice(0,VISIBLE),notes=annotated(rows);
   const fields=['name','share','tokens','hit','responses','cost'];
   const table=pending ? div().id('usage-breakdown-pending').relative().w_full().h(160).child(Loading.new('usage-breakdown-loading'))
-    : div().id('usage-breakdown-table').w_full().min_w_0().h(32+(shown.length ? shown.length*36 : 160))
+    : div().id('usage-breakdown-table').w_full().min_w_0().h(HEADER+(shown.length ? FRAME+shown.length*ROW : 160))
       .child(DataTable.new('usage-breakdown',{revision:`${state.generation}:${state.breakdown}`,columns:fields.map(key=>text[`usage_column_${key}`]),
         rows:shown.map(row=>[row.note ? `${row.name} · ${row.note}` : row.name,percent(row.share)??unknown,row.total==null ? unknown : String(row.total),
           row.hit==null ? unknown : `${Math.round(row.hit)}%`,String(row.responses),row.cost==null ? unknown : `$${row.cost}`]),
         cells:shown.map(row=>[
-          {primary:{text:row.name,...row.note ? {note:row.note} : {},...row.provider ? mark(names.icons.get(row.provider),row.note ?? row.name) : {}}},
-          {primary:{text:'',meter:{value:Math.min(row.share ?? 0,100),label:percent(row.share)??unknown,fill:true}}},
+          {primary:{text:row.name,...notes&&row.note ? {note:row.note} : {}}},
+          // End-aligned, the bars line up at the column's edge after their percentages.
+          {primary:row.share==null ? missing(text) : {text:percent(row.share),meter:{value:Math.min(row.share,100),label:percent(row.share),width:72}}},
           {primary:{text:compact(row.total)??unknown}},
           {primary:row.hit==null ? missing(text) : {text:`${Math.round(row.hit)}%`}},
           {primary:{text:grouped(row.responses)}},
           {primary:row.cost==null ? missing(text) : {text:`$${row.cost}`}},
         ]),
-        row_ids:shown.map(row=>row.id),row_height:36,header_height:32,widths:[240,120,80,90,90,90],fill:1,
-        alignments:fields.map((_,index)=>index<2 ? 'start' : 'end'),resizable:false,empty:text.usage_empty,empty_icon:'chart-pie'}));
+        row_ids:shown.map(row=>row.id),row_height:ROW,header_height:HEADER,widths:[NAME_WIDTH,150,80,90,90,90],fill:0,
+        alignments:fields.map((_,index)=>index<1 ? 'start' : 'end'),resizable:false,empty:text.usage_empty,empty_icon:'chart-pie'}));
   return column().id('usage-breakdown-section')
     .child(div().h_flex().justify_between().items_center().gap_3().child(label(text.usage_breakdown))
       .child(new TabBar('usage-breakdown-tabs').variant('segmented').selected_index(DIMENSIONS.indexOf(state.breakdown))
@@ -133,14 +135,13 @@ function filters(view) {
 }
 
 function requests(view,data) {
-  const {state,text}=view,rows=formatRows(data.requests.items,text,Date.now(),catalog(view,data).icons);
+  const {state,text}=view,rows=formatRows(data.requests.items,text);
   const fields=['time','session','model','input','cached','output','first_token','duration','cost'];
-  const rowHeight=40,headerHeight=32;
   return column().child(label(text.usage_requests))
-    .child(div().id('usage-table').w_full().min_w_0().h(headerHeight+(rows.rows.length ? rows.rows.length*rowHeight : 192))
+    .child(div().id('usage-table').w_full().min_w_0().h(HEADER+(rows.rows.length ? FRAME+rows.rows.length*ROW : 192))
       .child(DataTable.new('usage-requests',{revision:`${state.generation}:${state.cursor}`,columns:fields.map(key=>text[`usage_column_${key}`]),
-        // Numeric widths fit values such as "10/14 23:59:59", "999.9 ms", "123.4M" and "$123.4567"; the session column fills.
-        ...rows,row_height:rowHeight,header_height:headerHeight,widths:[116,160,164,72,104,72,88,80,84],fill:1,
+        // Numeric widths fit values such as "10/14 23:59:59", "999.9 ms", "123.4M", "100%" and "$123.4567"; the session column fills.
+        ...rows,row_height:ROW,header_height:HEADER,widths:[116,160,204,72,64,72,88,80,84],fill:1,
         alignments:fields.map((_,index)=>index<3 ? 'start' : 'end'),resizable:false,empty:text.usage_empty,empty_icon:'chart-pie'})))
     .child(div().id('usage-pagination').h_flex().items_center().justify_between().gap_3()
       .child(muted(text.usage_count.replace('%{count}',grouped(data.totals?.responses ?? '0'))).text_xs())

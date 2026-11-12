@@ -1,3 +1,7 @@
+## 0.1.31
+
+- Tablas de uso compactas y con borde: modelo y sesión solo con su nombre, caché como porcentaje y la cuota junto a su barra
+
 ## 0.1.30
 
 - Iconos de contorno restaurados en la navegación y las herramientas
