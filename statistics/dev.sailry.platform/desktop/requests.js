@@ -6,7 +6,6 @@ export const LOW_CACHE = 50;
 export const SLOW_FIRST_TOKEN = 10000000n;
 /** Responses taking at least this many microseconds are highlighted. */
 export const SLOW_RESPONSE = 15000000n;
-export const WARNING_ICON = 'reicon:ui/alert-triangle';
 
 const pad=(value,width=2)=>String(value).padStart(width,'0');
 const sameDay=(left,right)=>left.getFullYear()===right.getFullYear()&&left.getMonth()===right.getMonth()&&left.getDate()===right.getDate();
@@ -33,13 +32,8 @@ export function hits(tokens) {
 export const lateStart=value=>value!=null && integer(value)>SLOW_FIRST_TOKEN;
 export const longResponse=value=>value!=null && integer(value)>=SLOW_RESPONSE;
 
-/** Provider type logo on the badge surface, or the provider's initial when its type has no logo. */
-export function mark(icon,name) {
-  return icon ? {badge_icon:icon} : {badge:Array.from(name||'?')[0].toUpperCase()};
-}
-
-/** Table rows; `icons` maps provider IDs to type logos. */
-export function formatRows(items,text,now = Date.now(),icons = new Map()) {
+/** Table rows: cells are plain text; copied rows and tooltips keep the scope and the provider. */
+export function formatRows(items,text,now = Date.now()) {
   const unknown=text.composer_metric_unknown;
   const exact=value=>value==null?unknown:String(value);
   const missing={text:unknown,text_tone:'muted'};
@@ -60,11 +54,10 @@ export function formatRows(items,text,now = Date.now(),icons = new Map()) {
       `${text.usage_column_first_token}: ${timing[0]}`,`${text.usage_column_duration}: ${timing[1]}`,cost]);
     cells.push([
       {primary:{text:time,text_tone:'muted'}},
-      {primary:{text:title,chip:scope,...request.session_title?{}:{text_tone:'muted'}}},
-      {primary:{text:request.model,note:request.provider_name,...mark(icons.get(request.provider),request.provider_name||request.model)}},
+      {primary:{text:title,...request.session_title?{}:{text_tone:'muted'}}},
+      {primary:{text:request.model}},
       {primary:{text:compact(tokens.input)??unknown}},
-      {primary:rate==null?missing:{text:'',meter:{value:Math.min(rate,100),label:`${rate}%`,
-        tone:low?'warning':'muted',...low?{icon:WARNING_ICON}:{}}}},
+      {primary:rate==null?missing:{text:`${rate}%`,...low?{text_tone:'warning'}:{}}},
       {primary:{text:compact(tokens.output)??unknown}},
       {primary:first==null?missing:{text:duration(first,text),...lateStart(first)?{text_tone:'warning'}:{}}},
       {primary:elapsed==null?missing:{text:duration(elapsed,text),...longResponse(elapsed)?{text_tone:'warning'}:{}}},

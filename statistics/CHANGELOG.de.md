@@ -1,3 +1,7 @@
+## 0.1.31
+
+- Nutzungstabellen kompakt und umrahmt: Modell und Sitzung nur mit Namen, Cache-Rate als Prozentwert, Anteil neben seinem Balken
+
 ## 0.1.30
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {breakdown,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
+import {breakdown,annotated,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
+
+test('provider notes show only when every row fits its name and note',()=>{
+  assert(annotated([{name:'gpt-5',note:'OpenAI'},{name:'Unassigned',note:null}]));
+  assert(!annotated([{name:'gpt-5',note:'OpenAI'},{name:'a-model-name-far-too-long-for-the-column',note:'Provider'}]));
+  assert(!annotated([{name:'通义千问旗舰版长上下文模型',note:'阿里云百炼平台'}]));
+  assert(annotated([]));
+});
 
 const text={usage_unassigned:'Unassigned'};
 const names={providers:new Map([['p1','Anthropic']]),projects:new Map([['proj','Web']])};

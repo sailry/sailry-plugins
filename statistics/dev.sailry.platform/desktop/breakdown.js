@@ -4,6 +4,15 @@ import {parts} from './charts.js';
 
 /** Rows shown before the list is expanded. */
 export const VISIBLE = 6;
+/** Least width of the name column; its text has that less the cell's padding. */
+export const NAME_WIDTH = 280;
+const NAME_ROOM = NAME_WIDTH - 20;
+
+// Estimated width of 14 px interface text: wide characters count as full-width.
+const width = text => Array.from(text).reduce((sum, char) => sum + (char.codePointAt(0) > 0x2e7f ? 15 : 8), 0);
+
+/** Whether every row's name and note fit the name column untruncated: notes show for all rows or none. */
+export const annotated = rows => rows.every(row => !row.note || width(row.name) + 6 + width(row.note) <= NAME_ROOM);
 
 function add(row, metrics) {
   row.responses += integer(metrics.responses);
