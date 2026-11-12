@@ -5711,6 +5711,20 @@
                   "kind": "none"
                 },
                 "adapter": "cursor",
+                "warning": {
+                  "text": "This drives the official Cursor CLI installed on this device with your own Cursor subscription. Requests count against that subscription's limits, and heavy automated use may violate its terms.",
+                  "locales": {
+                    "zh-CN": "此渠道使用你自己的 Cursor 订阅驱动本机已安装的官方 Cursor CLI。请求会计入该订阅的额度，大量自动化使用可能违反其条款。",
+                    "zh-TW": "此管道使用你自己的 Cursor 訂閱驅動本機已安裝的官方 Cursor CLI。請求會計入該訂閱的額度，大量自動化使用可能違反其條款。",
+                    "de": "Dies steuert die auf diesem Gerät installierte offizielle Cursor-CLI mit deinem eigenen Cursor-Abonnement. Anfragen werden auf die Limits dieses Abonnements angerechnet, und intensive automatisierte Nutzung kann gegen dessen Bedingungen verstoßen.",
+                    "es": "Esto controla la CLI oficial de Cursor instalada en este dispositivo con tu propia suscripción de Cursor. Las solicitudes cuentan para los límites de esa suscripción y un uso automatizado intensivo puede infringir sus términos.",
+                    "fr": "Ceci pilote la CLI officielle de Cursor installée sur cet appareil avec votre propre abonnement Cursor. Les requêtes sont décomptées des limites de cet abonnement et une utilisation automatisée intensive peut enfreindre ses conditions.",
+                    "ja": "このデバイスにインストールされた公式 Cursor CLI を自分の Cursor サブスクリプションで動かします。リクエストはそのサブスクリプションの上限に計上され、大量の自動利用は規約に違反することがあります。",
+                    "ko": "이 기기에 설치된 공식 Cursor CLI를 본인의 Cursor 구독으로 구동합니다. 요청은 해당 구독의 한도에 포함되며, 과도한 자동화 사용은 약관을 위반할 수 있습니다.",
+                    "pt-BR": "Isto controla a CLI oficial do Cursor instalada neste dispositivo com a sua própria assinatura do Cursor. As solicitações contam para os limites dessa assinatura, e o uso automatizado intenso pode violar os termos dela.",
+                    "ru": "Этот канал управляет официальным Cursor CLI, установленным на этом устройстве, через вашу подписку Cursor. Запросы учитываются в лимитах этой подписки, а интенсивное автоматическое использование может нарушать её условия."
+                  }
+                },
                 "models": {
                   "kind": "discover"
                 }
@@ -5727,7 +5741,7 @@
       "versions": [
         {
           "version": "0.1.0",
-          "commit": "3b4da9e2f616bf2578484fc2128d2a35e3b62cc2",
+          "commit": "aed5fe7888a3b683a3eabafbe8f6b03057cd7d88",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Use Cursor models through the installed, signed-in Cursor CLI",
