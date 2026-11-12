@@ -22918,7 +22918,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -23167,7 +23167,7 @@
                     "headers": {
                       "Content-Type": "application/json",
                       "Accept": "application/json",
-                      "User-Agent": "WorkBuddy/5.5.6",
+                      "User-Agent": "WorkBuddy/5.9.3",
                       "X-CodeBuddy-Request": "1",
                       "Accept-Language": "zh-CN"
                     },
@@ -23193,7 +23193,7 @@
                     "headers": {
                       "Content-Type": "application/json",
                       "Accept": "application/json",
-                      "User-Agent": "WorkBuddy/5.5.6",
+                      "User-Agent": "WorkBuddy/5.9.3",
                       "X-CodeBuddy-Request": "1",
                       "Accept-Language": "zh-CN"
                     },
@@ -23210,7 +23210,7 @@
                     "headers": {
                       "Content-Type": "application/json",
                       "Accept": "application/json",
-                      "User-Agent": "WorkBuddy/5.5.6",
+                      "User-Agent": "WorkBuddy/5.9.3",
                       "X-CodeBuddy-Request": "1",
                       "Accept-Language": "zh-CN"
                     },
@@ -23218,6 +23218,20 @@
                       "kind": "json",
                       "value": {}
                     }
+                  }
+                },
+                "warning": {
+                  "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+                  "locales": {
+                    "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+                    "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+                    "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+                    "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+                    "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+                    "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+                    "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+                    "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+                    "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
                   }
                 }
               },
@@ -23326,7 +23340,7 @@
                     "headers": {
                       "Content-Type": "application/json",
                       "Accept": "application/json",
-                      "User-Agent": "WorkBuddy/5.5.2",
+                      "User-Agent": "WorkBuddy/5.9.3",
                       "X-CodeBuddy-Request": "1",
                       "Accept-Language": "en-US"
                     },
@@ -23345,6 +23359,20 @@
                       }
                     },
                     "cache_ttl_ms": 60000
+                  }
+                },
+                "warning": {
+                  "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+                  "locales": {
+                    "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+                    "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+                    "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+                    "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+                    "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+                    "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+                    "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+                    "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+                    "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
                   }
                 }
               },
@@ -23473,6 +23501,20 @@
                     },
                     "cache_ttl_ms": 60000
                   }
+                },
+                "warning": {
+                  "text": "Tencent may suspend a WorkBuddy account used outside its own apps, and accounts of the international build have been banned for it. Use an account you can afford to lose.",
+                  "locales": {
+                    "zh-CN": "腾讯可能封禁在其官方应用之外使用的 WorkBuddy 账号，国际版已有账号因此被封。请使用可以承受损失的账号。",
+                    "zh-TW": "騰訊可能封鎖在其官方應用程式之外使用的 WorkBuddy 帳號，國際版已有帳號因此被封。請使用可以承受損失的帳號。",
+                    "de": "Tencent kann ein WorkBuddy-Konto sperren, das außerhalb der eigenen Apps genutzt wird; Konten der internationalen Version wurden deshalb bereits gesperrt. Verwende ein Konto, dessen Verlust du verkraften kannst.",
+                    "es": "Tencent puede suspender una cuenta de WorkBuddy usada fuera de sus propias aplicaciones; ya se han bloqueado cuentas de la versión internacional por ello. Usa una cuenta que puedas permitirte perder.",
+                    "fr": "Tencent peut suspendre un compte WorkBuddy utilisé en dehors de ses propres applications ; des comptes de la version internationale ont déjà été bannis pour cela. Utilisez un compte que vous pouvez vous permettre de perdre.",
+                    "ja": "Tencent は公式アプリ以外で使われた WorkBuddy アカウントを停止することがあり、国際版ではすでに停止された例があります。失っても困らないアカウントを使ってください。",
+                    "ko": "Tencent는 자사 앱 밖에서 사용된 WorkBuddy 계정을 정지할 수 있으며, 국제판에서는 이미 정지된 계정이 있습니다. 잃어도 괜찮은 계정을 사용하세요.",
+                    "pt-BR": "A Tencent pode suspender uma conta do WorkBuddy usada fora dos próprios aplicativos; contas da versão internacional já foram banidas por isso. Use uma conta que você possa perder.",
+                    "ru": "Tencent может заблокировать аккаунт WorkBuddy, используемый вне её собственных приложений; аккаунты международной версии уже блокировались по этой причине. Используйте аккаунт, который не жалко потерять."
+                  }
                 }
               }
             ],
@@ -23576,7 +23618,8 @@
                 "reconcile"
               ]
             },
-            "settings_schema": "dev.sailry.platform/settings.json"
+            "settings_schema": "dev.sailry.platform/settings.json",
+            "min_sailry_version": "0.1.6"
           }
         }
       },
@@ -23592,6 +23635,25 @@
         "notifications.publish"
       ],
       "versions": [
+        {
+          "version": "0.1.18",
+          "commit": "ba5f145ecd97f4b651d42d351544235d033df2d8",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Warn about the account risk before every sign-in\n- Add \"Free models only\" for each site, on by default: list only models free now and refuse the others before sending. Update a saved channel's models once to keep using it\n- Turn automatic check-in off by default; saved settings keep their choice\n- Follow the current WorkBuddy client identity and recognize two more check-in answers",
+            "locales": {
+              "zh-CN": "- 每次登录前提示账号风险\n- 为每个站点新增“仅使用免费模型”，默认开启：只列出当前免费的模型，其他模型在发送前拒绝。已保存的渠道需更新一次模型后才能继续使用\n- 自动签到默认关闭；已保存的设置保持原选择\n- 跟进当前 WorkBuddy 客户端标识，并识别另外两种签到结果",
+              "zh-TW": "- 每次登入前提示帳號風險\n- 為每個站點新增「僅使用免費模型」，預設開啟：只列出目前免費的模型，其他模型在傳送前拒絕。已儲存的渠道需更新一次模型後才能繼續使用\n- 自動簽到預設關閉；已儲存的設定維持原選擇\n- 跟進目前 WorkBuddy 用戶端識別，並辨識另外兩種簽到結果",
+              "ja": "- サインインのたびにアカウントのリスクを警告\n- サイトごとの「無料モデルのみ」を追加（既定でオン）：現在無料のモデルだけを一覧に表示し、それ以外は送信前に拒否。保存済みのチャンネルはモデルを一度更新すると引き続き使えます\n- 自動チェックインを既定でオフに変更。保存済みの設定はそのまま\n- 現行の WorkBuddy クライアント識別に追従し、チェックインの応答を 2 種類追加で認識",
+              "ko": "- 로그인할 때마다 계정 위험을 경고\n- 사이트별 \"무료 모델만 사용\" 추가(기본 켜짐): 현재 무료인 모델만 나열하고 나머지는 전송 전에 거부. 저장된 채널은 모델을 한 번 업데이트해야 계속 사용할 수 있습니다\n- 자동 출석 체크를 기본으로 끔. 저장된 설정은 선택을 유지\n- 현재 WorkBuddy 클라이언트 식별 정보를 따르고 출석 체크 응답 두 가지를 추가로 인식",
+              "fr": "- Avertir du risque pour le compte avant chaque connexion\n- Ajouter « Modèles gratuits uniquement » pour chaque site, activé par défaut : ne lister que les modèles gratuits actuellement et refuser les autres avant l'envoi. Mettez à jour une fois les modèles d'un canal enregistré pour continuer à l'utiliser\n- Désactiver par défaut le pointage automatique ; les réglages enregistrés conservent leur choix\n- Suivre l'identité actuelle du client WorkBuddy et reconnaître deux réponses de pointage supplémentaires",
+              "de": "- Vor jeder Anmeldung auf das Kontorisiko hinweisen\n- „Nur kostenlose Modelle“ je Website hinzugefügt, standardmäßig an: nur aktuell kostenlose Modelle auflisten und andere vor dem Senden ablehnen. Die Modelle eines gespeicherten Kanals einmal aktualisieren, um ihn weiter zu nutzen\n- Automatischer Check-in ist standardmäßig aus; gespeicherte Einstellungen behalten ihre Wahl\n- Aktuelle WorkBuddy-Client-Kennung übernommen und zwei weitere Check-in-Antworten erkannt",
+              "es": "- Avisar del riesgo para la cuenta antes de cada inicio de sesión\n- Añadir «Solo modelos gratuitos» por sitio, activado de forma predeterminada: listar solo los modelos gratuitos ahora y rechazar los demás antes de enviar. Actualiza una vez los modelos de un canal guardado para seguir usándolo\n- Desactivar el registro diario automático de forma predeterminada; los ajustes guardados conservan su elección\n- Seguir la identidad actual del cliente de WorkBuddy y reconocer dos respuestas más del registro diario",
+              "pt-BR": "- Avisar sobre o risco para a conta antes de cada login\n- Adicionar \"Somente modelos gratuitos\" por site, ativado por padrão: listar apenas os modelos gratuitos agora e recusar os demais antes do envio. Atualize uma vez os modelos de um canal salvo para continuar usando\n- Desativar o check-in automático por padrão; configurações salvas mantêm a escolha\n- Seguir a identidade atual do cliente WorkBuddy e reconhecer mais duas respostas de check-in",
+              "ru": "- Предупреждать о риске для аккаунта перед каждым входом\n- Добавлена настройка «Только бесплатные модели» для каждого сайта, включена по умолчанию: показываются только бесплатные сейчас модели, остальные отклоняются до отправки. Обновите модели сохранённого канала один раз, чтобы продолжить работу\n- Автоматическая отметка по умолчанию выключена; сохранённые настройки сохраняют выбор\n- Используется текущая идентификация клиента WorkBuddy и распознаются ещё два ответа отметки"
+            }
+          }
+        },
         {
           "version": "0.1.17",
           "commit": "4dd54d00a39f19f93f8847d4341cfaa322f1b2cd",
@@ -23718,7 +23780,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Pause hidden credit refresh timers and reuse results until the refresh interval expires"
+        "text": "- Warn about the account risk before every sign-in\n- Add \"Free models only\" for each site, on by default: list only models free now and refuse the others before sending. Update a saved channel's models once to keep using it\n- Turn automatic check-in off by default; saved settings keep their choice\n- Follow the current WorkBuddy client identity and recognize two more check-in answers",
+        "locales": {
+          "zh-CN": "- 每次登录前提示账号风险\n- 为每个站点新增“仅使用免费模型”，默认开启：只列出当前免费的模型，其他模型在发送前拒绝。已保存的渠道需更新一次模型后才能继续使用\n- 自动签到默认关闭；已保存的设置保持原选择\n- 跟进当前 WorkBuddy 客户端标识，并识别另外两种签到结果",
+          "zh-TW": "- 每次登入前提示帳號風險\n- 為每個站點新增「僅使用免費模型」，預設開啟：只列出目前免費的模型，其他模型在傳送前拒絕。已儲存的渠道需更新一次模型後才能繼續使用\n- 自動簽到預設關閉；已儲存的設定維持原選擇\n- 跟進目前 WorkBuddy 用戶端識別，並辨識另外兩種簽到結果",
+          "ja": "- サインインのたびにアカウントのリスクを警告\n- サイトごとの「無料モデルのみ」を追加（既定でオン）：現在無料のモデルだけを一覧に表示し、それ以外は送信前に拒否。保存済みのチャンネルはモデルを一度更新すると引き続き使えます\n- 自動チェックインを既定でオフに変更。保存済みの設定はそのまま\n- 現行の WorkBuddy クライアント識別に追従し、チェックインの応答を 2 種類追加で認識",
+          "ko": "- 로그인할 때마다 계정 위험을 경고\n- 사이트별 \"무료 모델만 사용\" 추가(기본 켜짐): 현재 무료인 모델만 나열하고 나머지는 전송 전에 거부. 저장된 채널은 모델을 한 번 업데이트해야 계속 사용할 수 있습니다\n- 자동 출석 체크를 기본으로 끔. 저장된 설정은 선택을 유지\n- 현재 WorkBuddy 클라이언트 식별 정보를 따르고 출석 체크 응답 두 가지를 추가로 인식",
+          "fr": "- Avertir du risque pour le compte avant chaque connexion\n- Ajouter « Modèles gratuits uniquement » pour chaque site, activé par défaut : ne lister que les modèles gratuits actuellement et refuser les autres avant l'envoi. Mettez à jour une fois les modèles d'un canal enregistré pour continuer à l'utiliser\n- Désactiver par défaut le pointage automatique ; les réglages enregistrés conservent leur choix\n- Suivre l'identité actuelle du client WorkBuddy et reconnaître deux réponses de pointage supplémentaires",
+          "de": "- Vor jeder Anmeldung auf das Kontorisiko hinweisen\n- „Nur kostenlose Modelle“ je Website hinzugefügt, standardmäßig an: nur aktuell kostenlose Modelle auflisten und andere vor dem Senden ablehnen. Die Modelle eines gespeicherten Kanals einmal aktualisieren, um ihn weiter zu nutzen\n- Automatischer Check-in ist standardmäßig aus; gespeicherte Einstellungen behalten ihre Wahl\n- Aktuelle WorkBuddy-Client-Kennung übernommen und zwei weitere Check-in-Antworten erkannt",
+          "es": "- Avisar del riesgo para la cuenta antes de cada inicio de sesión\n- Añadir «Solo modelos gratuitos» por sitio, activado de forma predeterminada: listar solo los modelos gratuitos ahora y rechazar los demás antes de enviar. Actualiza una vez los modelos de un canal guardado para seguir usándolo\n- Desactivar el registro diario automático de forma predeterminada; los ajustes guardados conservan su elección\n- Seguir la identidad actual del cliente de WorkBuddy y reconocer dos respuestas más del registro diario",
+          "pt-BR": "- Avisar sobre o risco para a conta antes de cada login\n- Adicionar \"Somente modelos gratuitos\" por site, ativado por padrão: listar apenas os modelos gratuitos agora e recusar os demais antes do envio. Atualize uma vez os modelos de um canal salvo para continuar usando\n- Desativar o check-in automático por padrão; configurações salvas mantêm a escolha\n- Seguir a identidade atual do cliente WorkBuddy e reconhecer mais duas respostas de check-in",
+          "ru": "- Предупреждать о риске для аккаунта перед каждым входом\n- Добавлена настройка «Только бесплатные модели» для каждого сайта, включена по умолчанию: показываются только бесплатные сейчас модели, остальные отклоняются до отправки. Обновите модели сохранённого канала один раз, чтобы продолжить работу\n- Автоматическая отметка по умолчанию выключена; сохранённые настройки сохраняют выбор\n- Используется текущая идентификация клиента WorkBuddy и распознаются ещё два ответа отметки"
+        }
       }
     },
     {
