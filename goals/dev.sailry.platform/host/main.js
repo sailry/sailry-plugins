@@ -75,20 +75,30 @@ async function limits() {
 // The session's own latest runs, newest first.
 async function recent() {
   const page=await readConversationRuns(null,8);
-  return {queue:page.queue_revision,runs:page.runs.filter(run=>run.origin==null)};
+  return {queue:page.queue_revision,runs:page.runs.filter(run=>run.origin==null),background:page.background ?? null};
 }
 // The goal as it stands. An active goal whose loop cannot be running is
 // shown paused with the cause, so a dead loop is never shown as running:
-// history restored by a fork or rewind, or a last turn that ended without
-// this package hearing of it (a restart, a withdrawn or failed turn).
+// history restored by a fork or rewind, a last turn that ended without
+// this package hearing of it (a restart, a withdrawn or failed turn), a
+// last turn that ended before the Node started, or background work the goal
+// waits on that ended with no notice turn to follow (stopped by the user,
+// or held at the automatic turn limit).
 async function shown(entry,inspect=true) {
   const goal=stored(entry);
   if (!goal) return null;
   if (entry.restored && unfinished(goal) && !(goal.status==='paused' && sticky(goal.reason))) return {...paused(goal,'restored'),since_ms:null};
   if (goal.status!=='active' || !inspect) return goal;
-  const last=(await recent()).runs[0];
-  const cause=!last ? null : last.status==='interrupted' ? 'restart' : last.status==='failed' ? 'error'
-    : last.status==='cancelled' ? (last.error_code==='outcome_unknown' ? 'restart' : 'stopped') : null;
+  const page=await recent(),last=page.runs[0];
+  let cause=!last ? null : last.status==='interrupted' ? 'restart' : last.status==='failed' ? 'error'
+    : last.status==='cancelled' ? (last.error_code==='outcome_unknown' ? 'restart' : 'stopped')
+    : last.recovered ? 'restart' : null;
+  // Nothing is left to wake a waiting goal: its last turn was handled and
+  // no background work will start a notice turn.
+  if (!cause && goal.waiting && last && last.sequence<=goal.seq && page.background
+    && page.background.running===0 && page.background.pending===0) {
+    cause=goal.chain>=(await limits()).turns ? 'turns' : 'stopped';
+  }
   return cause ? {...paused(goal,cause),since_ms:null} : goal;
 }
 function view(goal,revision,lim,t) {

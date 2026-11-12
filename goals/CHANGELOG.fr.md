@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.1
+
+- Un objectif que plus rien ne peut relancer ne reste plus en attente ou en cours : il s'affiche en pause lorsque le travail en arrière-plan attendu a été arrêté, que son résultat a été retenu à la limite ou que son dernier tour s'est terminé avant un redémarrage
+
 ## 0.2.0
 
 - `/goal <texte>` démarre aussitôt et continue par des tours automatiques jusqu’à l’achèvement ; un message ou une pause restent dans l’objectif

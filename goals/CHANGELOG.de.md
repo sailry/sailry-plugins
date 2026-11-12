@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.1
+
+- Ein Ziel, das nichts mehr wecken kann, bleibt nicht mehr auf „Wartet“ oder „Läuft“: Es wird pausiert angezeigt, nachdem die erwartete Hintergrundarbeit gestoppt oder ihr Ergebnis am Limit zurückgehalten wurde oder der letzte Turn vor einem Neustart endete
+
 ## 0.2.0
 
 - `/goal <Text>` startet sofort und läuft in automatischen Runden weiter, bis das Ziel erreicht ist; eine Nachricht oder Pause bleibt Teil des Ziels

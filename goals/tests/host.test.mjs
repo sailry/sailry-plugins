@@ -11,7 +11,7 @@ const names=['plugin_x_get_goal','plugin_x_create_goal','plugin_x_update_goal'];
 async function fixture(options={}) {
   const values=new Map(),clock={now:1_000_000},scope={session:'session-id',turn:null};
   const session={revision:'3',config:{mode:options.mode ?? 'code'}};
-  const host={runs:[],queue:'7',refuse:null,settings:{},continued:[],stopped:[],notified:[],submitted:[],unpaused:0,ids:0,state:null,conflict:false,race:null};
+  const host={runs:[],queue:'7',refuse:null,settings:{},continued:[],stopped:[],notified:[],submitted:[],unpaused:0,ids:0,state:null,conflict:false,race:null,background:null};
   const entry=key=>values.get(key) ?? {key,revision:'0',present:false,restored:false,value:null};
   const put=(key,value,restored=false)=>values.set(key,{key,revision:String(BigInt(entry(key).revision)+1n),present:true,restored,value:plain(value)});
   const requests=[];
@@ -50,7 +50,8 @@ async function fixture(options={}) {
       return {Ok:{kind:'plugin_transaction',data:outputs}};
     },
     forgetRequest:()=>{},readSession:async()=>plain(session),
-    readConversationRuns:async()=>({revision:1,runs:plain(host.runs),next_before:null,queue_revision:host.queue}),
+    readConversationRuns:async()=>({revision:1,runs:plain(host.runs),next_before:null,queue_revision:host.queue,
+      ...(host.background ? {background:plain(host.background)} : {})}),
     readSettings:async()=>({values:plain(host.settings),ready:true}),
     readTurnState:()=>host.state,stageTurnState:value=>host.state=plain(value),
   };
@@ -89,7 +90,7 @@ const user={automatic:false,marker:null},loop={automatic:true,marker:null},audit
 test('the manifest declares three tools, both markers and the turn hooks',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.2.0');assert.equal(extension.api_version,'v1');
+  assert.equal(manifest.version,'0.2.1');assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool=>tool.name),['get_goal','create_goal','update_goal']);
   assert.equal(extension.tools[1].handler.approval,true);
   assert.deepEqual(extension.host.turn,{initialize:'initialize',before_model:null,after_turn:'ended'});
@@ -532,6 +533,57 @@ test('restart, fork and rewind leave the goal paused',async t=>{
       await f.api.control({kind:'resume',goal_id:f.goal().id});
       assert.equal(f.host.continued.at(-1).user,true);
     }
+  });
+  await t.test('a turn that ended before the Node started leaves the goal paused',async()=>{
+    // The turn completed as the Node stopped, so its after_turn never came.
+    const f=await fixture();
+    await f.started();
+    f.host.runs=[{turn:'unheard',sequence:2,status:'completed',origin:null,error_code:null,recovered:true},
+      {turn:'turn-1',sequence:1,status:'completed',origin:null,error_code:null,recovered:true}];
+    const shown=(await f.api.inspect()).goal;
+    assert.deepEqual([shown.status,shown.reason,f.goal().status],['paused','restart','active']);
+    await f.api.control({kind:'resume',goal_id:f.goal().id});
+    assert.equal(f.host.continued.at(-1).user,true);
+    // The same turn heard in this process is a running loop.
+    const live=await fixture();
+    await live.started();
+    live.host.runs=[{turn:'turn-2',sequence:2,status:'completed',origin:null,error_code:null}];
+    assert.deepEqual([(await live.api.inspect()).goal.status,(await live.api.inspect()).goal.state],['active','running']);
+  });
+  await t.test('a goal waiting on background work that nothing will report is shown paused',async()=>{
+    const waiting=async chain=>{
+      const f=await fixture();
+      await f.started();
+      await f.api.ended(f.automatic(chain,{background:{running:1,pending:0}}));
+      assert.deepEqual([f.goal().waiting,f.goal().seq],[true,2]);
+      f.host.runs=[{turn:'turn-2',sequence:2,status:'completed',origin:null,error_code:null},{turn:'turn-1',sequence:1,status:'completed',origin:null,error_code:null}];
+      return f;
+    };
+    const state=async f=>{const shown=(await f.api.inspect()).goal;return [shown.status,shown.state,shown.reason];};
+    let f=await waiting(1);
+    // The work runs, or its result waits for its notice turn.
+    for (const background of [null,{running:1,pending:0},{running:0,pending:1}]) {
+      f.host.background=background;
+      assert.deepEqual(await state(f),['active','waiting',null],JSON.stringify(background));
+    }
+    // The user stopped the command: no notice turn follows.
+    f.host.background={running:0,pending:0};
+    assert.deepEqual([...await state(f),f.goal().status],['paused','paused','stopped','active']);
+    // A notice turn that is queued or running will come here when it ends.
+    f.host.runs.unshift({turn:'notice',sequence:3,status:'running',origin:null,error_code:null});
+    assert.deepEqual(await state(f),['active','waiting',null]);
+    f.host.runs.shift();
+    await f.api.control({kind:'resume',goal_id:f.goal().id});
+    assert.deepEqual([f.goal().status,f.goal().waiting,f.host.continued.at(-1).user],['active',false,true]);
+    // A reply continues it as well.
+    f=await waiting(1);
+    f.host.background={running:0,pending:0};
+    await f.api.ended(f.turn({sequence:3}));
+    assert.deepEqual([f.goal().status,f.goal().waiting,f.host.continued.length],['active',false,2]);
+    // The result was held because the automatic turns reached the limit.
+    f=await waiting(25);
+    f.host.background={running:0,pending:0};
+    assert.deepEqual(await state(f),['paused','paused','turns']);
   });
   await t.test('a goal restored from history waits for Resume',async()=>{
     const f=await fixture();

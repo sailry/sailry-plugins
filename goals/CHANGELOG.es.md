@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.1
+
+- Un objetivo que nada puede reactivar ya no se queda en espera o en ejecución: se muestra en pausa cuando el trabajo en segundo plano que esperaba se detuvo, su resultado quedó retenido en el límite o su último turno terminó antes de un reinicio
+
 ## 0.2.0
 
 - `/goal <texto>` empieza de inmediato y continúa con turnos automáticos hasta completar el objetivo; un mensaje o una pausa siguen dentro del objetivo

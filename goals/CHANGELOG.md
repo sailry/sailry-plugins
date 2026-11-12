@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.1
+
+- A goal no longer stays Waiting or Running when nothing can wake it: it shows paused, reason Stopped, after the background work it waited on was stopped, Turn limit reached when the result was held at the limit, and App restarted when its last turn ended before a restart
+
 ## 0.2.0
 
 - `/goal <text>` starts at once and keeps going through continuation turns until the goal is complete; a message or a pause stays inside the goal

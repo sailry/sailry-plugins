@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.1
+
+- Uma meta que nada pode retomar não fica mais em espera ou em execução: ela aparece pausada quando o trabalho em segundo plano esperado foi interrompido, quando o resultado ficou retido no limite ou quando o último turno terminou antes de uma reinicialização
+
 ## 0.2.0
 
 - `/goal <texto>` começa na hora e continua em turnos automáticos até concluir o objetivo; uma mensagem ou uma pausa continuam dentro do objetivo
