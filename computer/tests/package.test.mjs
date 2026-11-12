@@ -53,9 +53,6 @@ test('has no settings: the agent cursor always shows', async () => {
   const extension = (await document('plugin.json')).extensions['dev.sailry.platform'];
   assert.equal(extension.settings_schema,undefined);
 });
-  assert.equal(Object.keys(settings['x-sailry-locales']).length,10);
-  assert.equal(settings['x-sailry-locales']['zh-CN'].cursor_overlay,'显示操作光标');
-});
 
 test('keeps snapshots and actions inspectable', async () => {
   const extension = (await document('plugin.json')).extensions['dev.sailry.platform'];
