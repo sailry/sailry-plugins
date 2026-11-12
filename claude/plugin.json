@@ -34,6 +34,7 @@
       },
       "category": "automation",
       "tint": "amber",
+      "settings_schema": "dev.sailry.platform/settings.json",
       "programs": [
         {
           "id": "claude",

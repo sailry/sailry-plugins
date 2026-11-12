@@ -23,6 +23,13 @@ when the package is disabled or removed.
 - Models are `--model` aliases, so each follows the model Claude Code maps it
   to. Their context sizes are not declared here because an alias has none of
   its own.
+- The setting "Use the terminal interface" is off by default and experimental.
+  When on, turns with tools run `claude` in a terminal Sailry owns instead of
+  print mode: Sailry pastes the turn, reads the reply from the session record
+  Claude Code writes, and falls back to print mode once when a turn is refused
+  for its content. It answers no trust, sign-in or first-run question; run
+  `claude` once yourself in the directory the error names. This mode has been
+  tested with a scripted stand-in only, on macOS and Linux only.
 - A missing executable, a signed-out Claude Code and a refusal by Anthropic are
   errors of the turn, never reply text.
 
