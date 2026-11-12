@@ -71,7 +71,7 @@ export function checkPackage(manifest) {
   const pure = [
     ...(extension.connectors ?? []).flatMap(connector => connector.auth.flatMap(auth => auth.registration?.flow?.kind === 'script' ? [auth.registration.flow.script] : [])),
     // An adapter over a declared program has no translation script.
-    ...(extension.model_adapters ?? []).filter(adapter => !adapter.acp).map(adapter => adapter.script),
+    ...(extension.model_adapters ?? []).filter(adapter => !adapter.acp && !adapter.claude_code).map(adapter => adapter.script),
     ...(extension.model_auth ?? []).flatMap(auth => [
       ...(auth.exchange ? [auth.exchange.script] : []),
       ...(auth.flow?.kind === 'script' ? [auth.flow.script] : []),
@@ -84,6 +84,11 @@ export function checkPackage(manifest) {
   for (const adapter of extension.model_adapters ?? []) {
     if (adapter.acp && (adapter.script || !extension.programs?.some(program => program.id === adapter.acp.program))) {
       throw new Error('Agent adapters name a declared program and no script');
+    }
+    const route = adapter.claude_code;
+    if (route && (adapter.script || adapter.acp || !route.models?.length ||
+      !extension.programs?.some(program => program.id === route.program && !program.args.length && !program.files?.length))) {
+      throw new Error('Claude Code adapters name a declared program without arguments or files, and no script');
     }
   }
   if (extension.model_auth?.length && !extension.actions.includes('models.authenticate')) throw new Error('Model authentication requires models.authenticate');

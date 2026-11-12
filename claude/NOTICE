@@ -1,0 +1,12 @@
+The Claude Code package references one third-party project for the behaviour
+of `claude` as a child process. No source file of it is included.
+
+yetone/magpie, MIT License, Copyright (c) 2026 yetone:
+driving the installed `claude` over stream-json with its built-in tools off,
+the MCP relay for the caller's tools, and the variables that keep the user's
+settings, memory and connectors out of the process. Its code injection into
+the binary, request rewriting, credential and keychain reads, saved accounts,
+permission bypass and downloaded builds are not used.
+
+The license is reproduced in LICENSE. This package is not an official
+Anthropic integration. Claude and Claude Code are trademarks of their owner.

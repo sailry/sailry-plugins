@@ -2037,6 +2037,168 @@
       }
     },
     {
+      "id": "claude",
+      "manifest": {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "claude",
+        "version": "0.1.0",
+        "description": "Claude models through the installed, signed-in Claude Code",
+        "homepage": "https://claude.com/product/claude-code",
+        "license": "MIT",
+        "extensions": {
+          "dev.sailry.platform": {
+            "api_version": "v1",
+            "min_sailry_version": "0.1.6",
+            "scope": "host",
+            "actions": [
+              "models.provide",
+              "process.run"
+            ],
+            "display": {
+              "label": "Claude Code",
+              "icon": "ailogo:claude"
+            },
+            "description": {
+              "label": "Claude models through the installed, signed-in Claude Code",
+              "locales": {
+                "zh-CN": "通过已安装并登录的 Claude Code 使用 Claude 模型",
+                "zh-TW": "透過已安裝並登入的 Claude Code 使用 Claude 模型",
+                "de": "Claude-Modelle über das installierte, angemeldete Claude Code",
+                "es": "Modelos de Claude mediante Claude Code instalado y con sesión iniciada",
+                "fr": "Modèles Claude via Claude Code installé et connecté",
+                "ja": "インストール済みでサインイン済みの Claude Code で Claude モデルを利用",
+                "ko": "설치되어 로그인된 Claude Code로 Claude 모델 사용",
+                "pt-BR": "Modelos Claude pelo Claude Code instalado e conectado",
+                "ru": "Модели Claude через установленный Claude Code с выполненным входом"
+              }
+            },
+            "category": "automation",
+            "tint": "amber",
+            "settings_schema": "dev.sailry.platform/settings.json",
+            "programs": [
+              {
+                "id": "claude",
+                "command": "claude",
+                "args": []
+              }
+            ],
+            "model_adapters": [
+              {
+                "id": "claude",
+                "origins": [],
+                "framing": "ndjson",
+                "capabilities": {
+                  "vision": true,
+                  "tools": true,
+                  "reasoning": true
+                },
+                "discovery": true,
+                "claude_code": {
+                  "program": "claude",
+                  "sign_in": "Run claude in a terminal and sign in, then try again",
+                  "models": [
+                    {
+                      "id": "opus",
+                      "name": "Claude Opus",
+                      "efforts": [
+                        "low",
+                        "medium",
+                        "high",
+                        "xhigh",
+                        "max"
+                      ]
+                    },
+                    {
+                      "id": "sonnet",
+                      "name": "Claude Sonnet",
+                      "efforts": [
+                        "low",
+                        "medium",
+                        "high",
+                        "xhigh",
+                        "max"
+                      ]
+                    },
+                    {
+                      "id": "fable",
+                      "name": "Claude Fable",
+                      "efforts": [
+                        "low",
+                        "medium",
+                        "high",
+                        "xhigh",
+                        "max"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "model_providers": [
+              {
+                "id": "claude-code",
+                "name": "Claude Code",
+                "homepage": "https://claude.com/product/claude-code",
+                "routes": [
+                  {
+                    "protocol": "plugin",
+                    "endpoint": "https://claude.ai"
+                  }
+                ],
+                "auth": {
+                  "kind": "none"
+                },
+                "adapter": "claude",
+                "models": {
+                  "kind": "discover"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "provides_models": true,
+      "permissions": [
+        "models.provide",
+        "process.run"
+      ],
+      "versions": [
+        {
+          "version": "0.1.0",
+          "commit": "7e85c2115168f5722f57942c83fd9fe94ab76229",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Use Claude models through the installed, signed-in Claude Code",
+            "locales": {
+              "zh-CN": "- 通过已安装并登录的 Claude Code 使用 Claude 模型",
+              "zh-TW": "- 透過已安裝並登入的 Claude Code 使用 Claude 模型",
+              "ja": "- インストール済みでサインイン済みの Claude Code から Claude モデルを利用",
+              "ko": "- 설치되어 로그인된 Claude Code로 Claude 모델 사용",
+              "fr": "- Utiliser les modèles Claude via Claude Code installé et connecté",
+              "de": "- Claude-Modelle über das installierte, angemeldete Claude Code nutzen",
+              "es": "- Usa modelos de Claude mediante Claude Code instalado y con sesión iniciada",
+              "pt-BR": "- Use modelos Claude pelo Claude Code instalado e conectado",
+              "ru": "- Модели Claude через установленный Claude Code с выполненным входом"
+            }
+          }
+        }
+      ],
+      "release_notes": {
+        "text": "- Use Claude models through the installed, signed-in Claude Code",
+        "locales": {
+          "zh-CN": "- 通过已安装并登录的 Claude Code 使用 Claude 模型",
+          "zh-TW": "- 透過已安裝並登入的 Claude Code 使用 Claude 模型",
+          "ja": "- インストール済みでサインイン済みの Claude Code から Claude モデルを利用",
+          "ko": "- 설치되어 로그인된 Claude Code로 Claude 모델 사용",
+          "fr": "- Utiliser les modèles Claude via Claude Code installé et connecté",
+          "de": "- Claude-Modelle über das installierte, angemeldete Claude Code nutzen",
+          "es": "- Usa modelos de Claude mediante Claude Code instalado y con sesión iniciada",
+          "pt-BR": "- Use modelos Claude pelo Claude Code instalado e conectado",
+          "ru": "- Модели Claude через установленный Claude Code с выполненным входом"
+        }
+      }
+    },
+    {
       "id": "claude-auth",
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
