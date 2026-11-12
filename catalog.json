@@ -5133,7 +5133,7 @@
       "versions": [
         {
           "version": "0.1.9",
-          "commit": "da677b39e30ed28d03df0cdce6c33a6516cdad51",
+          "commit": "48d7cfb0dbe3427310a9b73ed832cbb2ab3c48f6",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Always show the agent cursor; the package has no settings",
