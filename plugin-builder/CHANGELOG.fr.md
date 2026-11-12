@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- La vérification accepte `programs`, `process.run` et les adaptateurs de modèles sur un programme déclaré
+
 ## 0.1.16
 
 - La vérification accepte `continuation_markers` et la référence décrit `approval` des gestionnaires

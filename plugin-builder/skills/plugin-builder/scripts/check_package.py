@@ -33,7 +33,7 @@ FIELDS = {
     "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "continuation_markers", "credential_source",
     "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
-    "conversation_options", "conversation_modes", "model_providers", "model_auth", "model_resources", "model_adapters",
+    "conversation_options", "conversation_modes", "model_providers", "model_auth", "model_resources", "model_adapters", "programs",
 }
 ACTIONS = {
     "activity.read", "usage.read", "databases.read", "databases.control", "databases.manage",
@@ -43,7 +43,7 @@ ACTIONS = {
     "media.settings.write", "computer.read", "computer.control", "browser.read",
     "browser.control", "external_browser.read", "external_browser.control",
     "notifications.publish", "dispatch.manage", "files.read", "files.write", "git.read",
-    "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control",
+    "git.write", "worktrees.read", "worktrees.write", "process.read", "process.control", "process.run",
     "terminals.read", "terminals.control", "conversation.read", "conversation.control",
     "conversation.message.read",
     "sessions.start", "projects.read", "http.request", "models.generate", "storage.read",
@@ -134,7 +134,7 @@ def check_sections(root, extension, report):
     declared = {}
     sections = [(key, extension.get(key), False) for key in ("host", "desktop", "settings_page")]
     sections.extend(("model_adapters.script", item.get("script"), True)
-                    for item in extension.get("model_adapters", []) if isinstance(item, dict))
+                    for item in extension.get("model_adapters", []) if isinstance(item, dict) and "acp" not in item)
     for item in extension.get("model_auth", []):
         if not isinstance(item, dict):
             continue

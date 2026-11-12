@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- La comprobación acepta `programs`, `process.run` y adaptadores de modelos sobre un programa declarado
+
 ## 0.1.16
 
 - La comprobación acepta `continuation_markers` y la referencia describe `approval` de los manejadores

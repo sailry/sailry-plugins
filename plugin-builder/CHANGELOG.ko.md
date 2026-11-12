@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- 패키지 검사에서 `programs`, `process.run` 및 선언된 프로그램 기반 모델 어댑터를 허용
+
 ## 0.1.16
 
 - 패키지 검사에서 `continuation_markers`를 허용하고 핸들러의 `approval`을 설명

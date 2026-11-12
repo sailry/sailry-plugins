@@ -70,7 +70,8 @@ export function checkPackage(manifest) {
   }
   const pure = [
     ...(extension.connectors ?? []).flatMap(connector => connector.auth.flatMap(auth => auth.registration?.flow?.kind === 'script' ? [auth.registration.flow.script] : [])),
-    ...(extension.model_adapters ?? []).map(adapter => adapter.script),
+    // An adapter over a declared program has no translation script.
+    ...(extension.model_adapters ?? []).filter(adapter => !adapter.acp).map(adapter => adapter.script),
     ...(extension.model_auth ?? []).flatMap(auth => [
       ...(auth.exchange ? [auth.exchange.script] : []),
       ...(auth.flow?.kind === 'script' ? [auth.flow.script] : []),
@@ -78,6 +79,13 @@ export function checkPackage(manifest) {
   ];
   if (pure.some(script => !script || typeof script.entry !== 'string')) throw new Error('Model translations must declare a script');
   if (extension.model_adapters?.length && !extension.actions.includes('models.provide')) throw new Error('Model adapters require models.provide');
+  distinct((extension.programs ?? []).map(program => program.id), 'Programs');
+  if (extension.programs?.length && !extension.actions.includes('process.run')) throw new Error('Programs require process.run');
+  for (const adapter of extension.model_adapters ?? []) {
+    if (adapter.acp && (adapter.script || !extension.programs?.some(program => program.id === adapter.acp.program))) {
+      throw new Error('Agent adapters name a declared program and no script');
+    }
+  }
   if (extension.model_auth?.length && !extension.actions.includes('models.authenticate')) throw new Error('Model authentication requires models.authenticate');
   if (extension.model_auth?.some(auth => auth.exchange || auth.flow?.kind === 'script') && !extension.actions.includes('credentials.inspect')) throw new Error('Credential transformations require credentials.inspect');
   const pureFiles = new Set(), pureScopes = [];

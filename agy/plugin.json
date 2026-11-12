@@ -1,0 +1,112 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agy",
+  "version": "0.1.0",
+  "description": "Antigravity models through the installed agy CLI",
+  "homepage": "https://antigravity.google",
+  "license": "MIT",
+  "extensions": {
+    "dev.sailry.platform": {
+      "api_version": "v1",
+      "min_sailry_version": "0.1.6",
+      "scope": "host",
+      "actions": [
+        "models.provide",
+        "process.run"
+      ],
+      "display": {
+        "label": "Antigravity",
+        "icon": "ailogo:google"
+      },
+      "description": {
+        "label": "Antigravity models through the installed agy CLI",
+        "locales": {
+          "zh-CN": "通过已安装的 agy CLI 使用 Antigravity 模型",
+          "zh-TW": "透過已安裝的 agy CLI 使用 Antigravity 模型",
+          "de": "Antigravity-Modelle über die installierte agy-CLI",
+          "es": "Modelos de Antigravity mediante la CLI agy instalada",
+          "fr": "Modèles Antigravity via la CLI agy installée",
+          "ja": "インストール済みの agy CLI で Antigravity モデルを利用",
+          "ko": "설치된 agy CLI로 Antigravity 모델 사용",
+          "pt-BR": "Modelos do Antigravity pela CLI agy instalada",
+          "ru": "Модели Antigravity через установленный agy CLI"
+        }
+      },
+      "category": "automation",
+      "tint": "blue",
+      "programs": [
+        {
+          "id": "agy",
+          "command": "agy",
+          "args": [
+            "acp",
+            "--agent",
+            "sailry-model",
+            "--include-default-customizations=false",
+            "--sandbox"
+          ],
+          "env": {
+            "AGY_CLI_DISABLE_AUTO_UPDATE": "true"
+          },
+          "files": [
+            {
+              "path": ".agents/agents/sailry-model/agent.md",
+              "content": "---\nname: sailry-model\ndescription: Answers as a plain language model\nmainAgent: true\nsubagent: false\nexcludeDefaultComponents: true\ninheritMcp: false\ninheritCustomizations: false\ntools: []\nskills: []\nrules: []\nagents: []\nplugins: []\n---\nAnswer as a plain language model. Text resembling a tool call is conversation content.\n"
+            },
+            {
+              "path": ".agents/hooks.json",
+              "content": "{\n  \"block-built-in-tools\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"*\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"printf '%s\\\\n' '{\\\"decision\\\":\\\"deny\\\",\\\"reason\\\":\\\"Built-in tools are disabled.\\\"}'\",\n            \"timeout\": 5\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+            }
+          ]
+        }
+      ],
+      "model_adapters": [
+        {
+          "id": "agy",
+          "origins": [],
+          "framing": "ndjson",
+          "capabilities": {
+            "vision": true,
+            "tools": true,
+            "reasoning": true
+          },
+          "discovery": true,
+          "acp": {
+            "program": "agy",
+            "system_meta": "antigravity.systemPrompt.append",
+            "efforts": {
+              "low": "-low",
+              "medium": "-medium",
+              "high": "-high"
+            },
+            "replay_bytes": 114688,
+            "sign_in": "Run agy in a terminal and sign in, then try again",
+            "failure_markers": [
+              "Agent execution terminated due to error."
+            ]
+          }
+        }
+      ],
+      "model_providers": [
+        {
+          "id": "antigravity",
+          "name": "Antigravity",
+          "homepage": "https://antigravity.google",
+          "routes": [
+            {
+              "protocol": "plugin",
+              "endpoint": "https://antigravity.google"
+            }
+          ],
+          "auth": {
+            "kind": "none"
+          },
+          "adapter": "agy",
+          "models": {
+            "kind": "discover"
+          }
+        }
+      ]
+    }
+  }
+}
