@@ -1,0 +1,11 @@
+The Cursor package is written against Cursor's public documentation of its
+command-line agent: the Agent Client Protocol mode (`agent acp`), the CLI
+parameters, the CLI configuration and permissions, and hooks, at
+https://cursor.com/docs/cli. It includes no Cursor source and no third-party
+source.
+
+Reverse-engineered clients of Cursor's private service protocol are not used,
+referenced or ported.
+
+This package is not an official Cursor integration. Cursor is a trademark of
+its owner.
