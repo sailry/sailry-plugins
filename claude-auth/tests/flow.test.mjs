@@ -8,8 +8,11 @@ const context={previous:null,fields:{client_id:'9d1c250a-e61b-44d9-88ed-5944d196
 const step=(event,state=null,overrides={})=>authorize({event,state,context:{...context,...overrides},now_ms:now});
 test('declares the existing callback and token contracts',async()=>{
  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
- assert.equal(manifest.version,'0.1.3');
+ assert.equal(manifest.version,'0.1.4');
  const declaration=manifest.extensions['dev.sailry.platform'].model_auth[0];
+ assert.match(declaration.warning.text,/Anthropic's terms/);
+ assert.deepEqual(Object.keys(declaration.warning.locales).sort(),['de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']);
+ for(const text of [declaration.warning.text,...Object.values(declaration.warning.locales)]) assert.ok(text.trim().length>0&&Buffer.byteLength(text)<=1024&&!/[\u0000-\u001f\u007f]/.test(text));
  assert.equal(declaration.authentication,'claude_oauth');
  assert.deepEqual(declaration.flow.callback,{path:'/callback',redirect_uri:context.redirect,manual:true,allow_localhost:true,port:54545});
  assert.equal('scope' in declaration.flow.requests.refresh.body.value,false);
