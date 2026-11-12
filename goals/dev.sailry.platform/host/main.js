@@ -165,7 +165,9 @@ export async function badge() {
   const tail=value.status==='active' ? [{label:{label:duration(value.elapsed_ms)},tone:'muted'}]
     : value.reason ? [{label:reasons[value.reason],tone:'muted'}] : [];
   return [{id:'status',visible:true,enabled:true,label:labels.goal,
-    segments:[{label:labels.goal,tone:'muted'},{label:labels[value.state],tone},...tail],
+    // The icon and the badge's label say Goal; the capsule holds the state
+    // and the time, or the reason once paused.
+    segments:[{label:labels[value.state],tone},...tail],
     details:[{label:labels.goal,value:clip(value.objective,4096)},
       {label:labels.turns,value:`${value.automatic_turns} / ${value.turn_limit}`,progress:Math.min(100,value.automatic_turns*100/value.turn_limit)},
       {label:labels.time,value:duration(value.elapsed_ms)+(value.time_limit_ms ? ` / ${duration(value.time_limit_ms)}` : '')},
@@ -280,7 +282,9 @@ async function advanceGoal(args) {
   }
   if (args.status==='cancelled') return settle(entry,paused(goal,'stopped'),t);
   if (args.status==='interrupted') return settle(entry,paused(goal,'restart'),t);
-  if (args.status!=='completed') return settle(entry,paused(goal,'error',args.error ?? null),t,true);
+  // The Node raises its own notification for a failed automatic turn; the
+  // goal shows the reason without a second one.
+  if (args.status!=='completed') return settle(entry,paused(goal,'error',args.error ?? null),t);
   if (args.mode==='plan') return settle(entry,paused(goal,'plan'),t);
   if (args.expired>0) return settle(entry,paused(goal,'needs_you'),t,true);
   // Progress is a tool call other than this package's own.
@@ -301,8 +305,8 @@ async function advanceGoal(args) {
   const wrap=args.chain.count+1>=lim.turns ? 'turns' : lim.tokens && goal.window_tokens>=lim.tokens ? 'tokens'
     : lim.minutes && elapsed>=lim.minutes*60000 ? 'time' : null;
   const facts={count:args.chain.count,limit:lim.turns,tokens:goal.window_tokens,token_budget:lim.tokens,elapsed:Math.floor(elapsed/60000),
-    minutes:lim.minutes,edited:goal.edited,unconfirmed:audited,wrap,claim:claim?.note};
-  const next=timed({...goal,claim,waiting:false,wrap,edited:false},t);
+    minutes:lim.minutes,unconfirmed:audited,wrap,claim:claim?.note};
+  const next=timed({...goal,claim,waiting:false,wrap},t);
   try {
     await commit([write(entry,next),advance(entry,args.turn,claim ? auditPrompt(facts) : continuePrompt(facts),claim ? 'verify' : null,lim.turns)]);
   } catch (error) {
@@ -325,7 +329,7 @@ async function advanceGoal(args) {
 
 /** The user's controls: the panel's buttons and the /goal subcommands. */
 export async function control(args) {
-  argumentsOf(args,['kind','goal_id'],['objective']);
+  argumentsOf(args,['kind','goal_id']);
   const entry=await getConversationValue(key),stored_=stored(entry),t=now();
   if (!stored_ || args.goal_id!==stored_.id) fail('The goal changed','conflict');
   const goal=await shown(entry);
@@ -338,15 +342,10 @@ export async function control(args) {
     if (goal.status!=='active') fail('The goal is not active','conflict');
     await commit([write(entry,timed(paused(base,'user'),t)),...await stops()]);
     break;
-  case 'clear':
+  // History keeps the outcome under its stored name, `cleared`.
+  case 'end':
     await commit([await archive(timed(base,t),outcome(base,'cleared'),t),{kind:'conversation_remove',data:{key,expected_revision:entry.revision}},...await stops()]);
     break;
-  case 'edit': {
-    if (!unfinished(goal)) fail('Reopen the goal before editing it','conflict');
-    const text=objective(args.objective);
-    if (text!==stored_.objective) await commit([write(entry,timed({...stored_,objective:text,version:stored_.version+1,edited:true},t))]);
-    break;
-  }
   case 'resume': {
     if (goal.status==='active') fail('The goal is already active','conflict');
     const next=resumed(base);
@@ -355,9 +354,9 @@ export async function control(args) {
     const page=await recent(),lim=await limits();
     const unpause={kind:'queue_pause',data:{session:context().session,expected_revision:page.queue,paused:false}};
     const facts={count:0,limit:lim.turns,tokens:next.window_tokens,token_budget:lim.tokens,elapsed:Math.floor(next.window_ms/60000),
-      minutes:lim.minutes,edited:next.edited,resumed:true,wrap:null};
+      minutes:lim.minutes,resumed:true,wrap:null};
     try {
-      await commit([unpause,write(entry,timed({...next,edited:false},t)),advance(entry,null,continuePrompt(facts),null,lim.turns,true)]);
+      await commit([unpause,write(entry,timed(next,t)),advance(entry,null,continuePrompt(facts),null,lim.turns,true)]);
     } catch (error) {
       // A turn is in flight: the goal continues when it ends.
       if (!['queued_input','running','interaction'].includes(refusal(error))) throw error;
@@ -373,14 +372,14 @@ export async function command(args) {
   const text=args.arguments;
   if (!text) return {...await inspect(),ui_intent:'goal'};
   const [word,...rest]=text.split(/\s+/);
-  const action={pause:'pause',stop:'pause',resume:'resume',clear:'clear',edit:'edit'}[word];
-  const existing=stored(await getConversationValue(key));
-  // A control is its word alone; `edit <text>` is one only while a goal can
-  // be edited, so a new goal may still begin with that word.
-  if (action && (action==='edit' ? rest.length>0 && unfinished(existing) : rest.length===0)) {
+  // `clear` is the earlier word for `end`.
+  const action={pause:'pause',stop:'pause',resume:'resume',end:'end',clear:'end'}[word];
+  // A control is its word alone, so a new goal may still begin with one.
+  if (action && rest.length===0) {
     if (args.message.references?.length || args.message.attachments?.length) fail('Goal controls do not accept references or attachments');
+    const existing=stored(await getConversationValue(key));
     if (!existing) fail('No goal is set','not_found');
-    return control({kind:action,goal_id:existing.id,...(action==='edit' ? {objective:text.slice(word.length)} : {})});
+    return control({kind:action,goal_id:existing.id});
   }
   // Any other text sets the goal, replacing an unfinished one, and is sent
   // as the first turn. In Plan mode that turn plans; pursuit starts after it.

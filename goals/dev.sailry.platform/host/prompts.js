@@ -3,7 +3,7 @@
 // Counters that change every turn go only into continuation messages.
 
 export function objectivePart(goal) {
-  return `Goal set by the user for this conversation (version ${goal.version}; a later version replaces this one). Only the user can change, replace or clear it.
+  return `Goal set by the user for this conversation . Only the user can replace or end it.
 
 <objective>
 ${goal.objective}
@@ -13,7 +13,7 @@ ${goal.objective}
 const active=`Goal mode is active. The user set a goal for this conversation; its objective is in the context and stays authoritative.
 - Keep working until the objective is fully achieved and verified. A final answer does not end the goal: when a turn ends, the next one starts automatically.
 - A message from the user during the goal is guidance inside the goal. Follow it, then carry on. It never changes the objective.
-- Do not redefine success around a smaller or easier task. You cannot edit, replace or clear the goal; only the user can.
+- Do not redefine success around a smaller or easier task. You cannot replace or end the goal; only the user can.
 - Stay within the authorized scope and the current permissions. The goal grants no extra authority.
 - When the objective is achieved, call update_goal with status "complete" and a note stating the evidence: what was done, how it was checked and the results. A separate verification turn audits the claim before the goal closes.
 - If the same obstacle has stopped progress for three turns in a row and only the user can remove it, call update_goal with status "blocked" and a note saying exactly what is needed.
@@ -53,7 +53,6 @@ function closing(wrap) {
 export function continuePrompt(facts) {
   const lines=['Continue working toward the goal.',...budget(facts)];
   if (facts.resumed) lines.push('The user resumed the goal.');
-  if (facts.edited) lines.push('The user edited the objective. Pursue its latest version in the context.');
   if (facts.unconfirmed) lines.push('The verification turn did not confirm completion. Finish what remains, and claim completion again only with new evidence.');
   if (facts.wrap) lines.push(closing(facts.wrap));
   else lines.push('Choose the next concrete step from the current state of the work, do it and check the result. Do not repeat finished work or restate the plan.',
@@ -72,7 +71,6 @@ ${facts.claim}
 Treat the claim as unproven. Re-read the objective and check every requirement against the current state: inspect the files, run the checks or tests and look at real output. Do not rely on the claim or on memory of earlier turns.
 - If every requirement is met, call update_goal with status "complete" and a note stating the evidence you verified in this turn.
 - If anything is missing, wrong or unverified, do not call update_goal. Say what is missing and continue the work.`,...budget(facts)];
-  if (facts.edited) lines.push('The user edited the objective. Verify against its latest version in the context.');
   if (facts.wrap) lines.push(`This is the last automatic turn before the goal pauses, because ${reasons[facts.wrap]}. If the goal is not complete, report what remains and the next step.`);
   return lines.join('\n');
 }

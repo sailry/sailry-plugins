@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2
+
+- La insignia de estado muestra, tras su icono, el estado y el tiempo, o el motivo una vez en pausa; ya no repite la palabra Objetivo
+- El panel tiene Pausar o Reanudar y Finalizar. Se elimina Editar: `/goal <texto nuevo>` reemplaza el objetivo. Borrar pasa a ser Finalizar, `/goal end`, y un objetivo finalizado aparece como Finalizado en el historial
+- Un turno del objetivo que falla se notifica una sola vez, con la notificación de la aplicación; el objetivo sigue mostrando En pausa · Error
+
 ## 0.2.1
 
 - Un objetivo que nada puede reactivar ya no se queda en espera o en ejecución: se muestra en pausa cuando el trabajo en segundo plano que esperaba se detuvo, su resultado quedó retenido en el límite o su último turno terminó antes de un reinicio

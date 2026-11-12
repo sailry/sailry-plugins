@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2
+
+- The Status badge shows the state and the time, or the reason once paused, after its icon; it no longer repeats the word Goal
+- The panel has Pause or Resume and End. Edit is removed: `/goal <new text>` replaces the goal. Clear is now End, `/goal end`, and an ended goal is listed as Ended
+- A goal turn that fails is reported once, by the app's own notification; the goal still shows Paused · Error
+
 ## 0.2.1
 
 - A goal no longer stays Waiting or Running when nothing can wake it: it shows paused, reason Stopped, after the background work it waited on was stopped, Turn limit reached when the result was held at the limit, and App restarted when its last turn ended before a restart

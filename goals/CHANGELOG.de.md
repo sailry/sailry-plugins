@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2
+
+- Das Statusabzeichen zeigt nach dem Symbol den Zustand und die Zeit, nach einer Pause den Grund; das Wort Ziel wird nicht mehr wiederholt
+- Das Panel hat Pausieren oder Fortsetzen und Beenden. Bearbeiten entfällt: `/goal <neuer Text>` ersetzt das Ziel. Löschen heißt jetzt Beenden, `/goal end`, und ein beendetes Ziel steht im Verlauf als Beendet
+- Ein fehlgeschlagener Ziel-Turn wird nur einmal gemeldet, durch die Benachrichtigung der App; das Ziel zeigt weiterhin Pausiert · Fehler
+
 ## 0.2.1
 
 - Ein Ziel, das nichts mehr wecken kann, bleibt nicht mehr auf „Wartet“ oder „Läuft“: Es wird pausiert angezeigt, nachdem die erwartete Hintergrundarbeit gestoppt oder ihr Ergebnis am Limit zurückgehalten wurde oder der letzte Turn vor einem Neustart endete

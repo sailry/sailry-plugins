@@ -90,7 +90,7 @@ const user={automatic:false,marker:null},loop={automatic:true,marker:null},audit
 test('the manifest declares three tools, both markers and the turn hooks',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.2.1');assert.equal(extension.api_version,'v1');
+  assert.equal(manifest.version,'0.2.2');assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool=>tool.name),['get_goal','create_goal','update_goal']);
   assert.equal(extension.tools[1].handler.approval,true);
   assert.deepEqual(extension.host.turn,{initialize:'initialize',before_model:null,after_turn:'ended'});
@@ -137,16 +137,21 @@ test('/goal starts at once, replaces a goal and plans in Plan mode',async t=>{
     await f.started();
     await f.api.command({arguments:'pause',message:{text:'/goal pause'}});
     assert.deepEqual([f.goal().status,f.goal().reason],['paused','user']);
-    await f.api.command({arguments:'edit Ship the feature with docs',message:{text:'/goal edit Ship the feature with docs'}});
-    assert.equal(f.goal().objective,'Ship the feature with docs');assert.equal(f.goal().version,2);
     await f.api.command({arguments:'resume',message:{text:'/goal resume'}});
     assert.equal(f.goal().status,'active');
-    await f.api.command({arguments:'clear',message:{text:'/goal clear'}});
+    await f.api.command({arguments:'end',message:{text:'/goal end'}});
     assert.equal(f.entry('goal').present,false);
     await assert.rejects(f.api.command({arguments:'pause',message:{text:'/goal pause'}}),{code:'not_found'});
-    // Without a goal to edit, the word begins a new goal.
+    // Edit is not a control: the word begins a new goal, as any text does,
+    // and so does a control's word followed by more.
     await f.api.command({arguments:'edit the README until it is accurate',message:{text:'/goal edit the README until it is accurate'}});
     assert.equal(f.goal().objective,'edit the README until it is accurate');
+    const first=f.goal().id;
+    await f.api.command({arguments:'end the flaky test for good',message:{text:'/goal end the flaky test for good'}});
+    assert.deepEqual([f.goal().objective,f.goal().id===first,f.history()[0].outcome],['end the flaky test for good',false,'replaced']);
+    // The earlier word still ends the goal.
+    await f.api.command({arguments:'clear',message:{text:'/goal clear'}});
+    assert.deepEqual([f.entry('goal').present,f.history()[0].outcome],[false,'cleared']);
   });
 });
 
@@ -178,7 +183,7 @@ test('the loop continues, waits and resumes',async t=>{
     await f.started();
     await f.api.ended(f.automatic(1,{background:{running:1,pending:0}}));
     assert.equal(f.host.continued.length,1);assert.equal(f.goal().waiting,true);assert.equal(f.goal().status,'active');
-    assert.equal(plain(await f.api.badge())[0].segments[1].label.label,'Waiting');
+    assert.equal(plain(await f.api.badge())[0].segments[0].label.label,'Waiting');
     await f.api.ended(f.turn({automatic:true,notice:true,chain:{count:2,limit:25}}));
     assert.equal(f.host.continued.length,2);assert.equal(f.goal().waiting,false);
     assert.match(f.host.continued[1].message.text,/automatic turn 3 of at most 25/);
@@ -346,7 +351,7 @@ test('Stop pauses and a reply resumes; Pause holds until Resume',async t=>{
   });
 });
 
-test('the model cannot pause, resume, edit or clear on its own',async t=>{
+test('the model cannot pause, resume or end on its own',async t=>{
   const f=await fixture();
   await f.started();
   await t.test('pause and resume need a turn the user started',async()=>{
@@ -468,7 +473,8 @@ test('limits wrap up and pause with their reason',async t=>{
 
 test('every other pause names its reason',async t=>{
   const cases=[
-    ['a failed turn',{status:'failed',error:'not_configured'},'error','not_configured',1],
+    // The Node notifies of the failed run; the goal adds no second one.
+    ['a failed turn',{status:'failed',error:'not_configured'},'error','not_configured',0],
     ['a turn the Node lost',{status:'interrupted'},'restart',null,0],
     ['an approval or question that expired',{expired:1},'needs_you',null,1],
   ];
@@ -529,7 +535,7 @@ test('restart, fork and rewind leave the goal paused',async t=>{
       f.host.runs=[{turn:'lost',sequence:2,origin:null,...run},{turn:'turn-1',sequence:1,status:'completed',origin:null,error_code:null}];
       const shown=(await f.api.inspect()).goal;
       assert.deepEqual([shown.status,shown.reason,f.goal().status],['paused',reason,'active']);
-      assert.deepEqual(plain(await f.api.badge())[0].segments.map(segment=>segment.label.label).slice(1),['Paused',{restart:'App restarted',stopped:'Stopped',error:'Error'}[reason]]);
+      assert.deepEqual(plain(await f.api.badge())[0].segments.map(segment=>segment.label.label),['Paused',{restart:'App restarted',stopped:'Stopped',error:'Error'}[reason]]);
       await f.api.control({kind:'resume',goal_id:f.goal().id});
       assert.equal(f.host.continued.at(-1).user,true);
     }
@@ -605,25 +611,23 @@ test('restart, fork and rewind leave the goal paused',async t=>{
   });
 });
 
-test('Edit and Clear are the user\'s',async t=>{
-  await t.test('an edit applies from the next turn and is told once',async()=>{
+test('End is the user\'s and there is no edit',async t=>{
+  await t.test('the objective changes only by replacing the goal',async()=>{
     const f=await fixture();
     await f.started('Ship it');
-    await f.api.control({kind:'edit',goal_id:f.goal().id,objective:'  Ship it with docs  '});
-    assert.deepEqual([f.goal().objective,f.goal().version,f.goal().edited,f.goal().status],['Ship it with docs',2,true,'active']);
-    const selection=await f.api.initialize({tools:['get_goal','create_goal','update_goal'],mode:'code',automatic:true,notice:false,continuation:{marker:null}});
-    assert.match(selection.parts[0],/version 2/);assert.match(selection.parts[0],/<objective>\nShip it with docs\n<\/objective>/);
+    const id=f.goal().id;
+    await assert.rejects(f.api.control({kind:'edit',goal_id:id,objective:'Ship it with docs'}),/Invalid goal arguments/);
+    await assert.rejects(f.api.control({kind:'edit',goal_id:id}),/Invalid goal action/);
+    await assert.rejects(f.api.control({kind:'clear',goal_id:id}),/Invalid goal action/);
+    assert.deepEqual([f.goal().objective,f.goal().id],['Ship it',id]);
     await f.api.ended(f.automatic(1));
-    assert.match(f.host.continued.at(-1).message.text,/The user edited the objective/);
-    await f.api.ended(f.automatic(2));
     assert.doesNotMatch(f.host.continued.at(-1).message.text,/edited/);
-    await assert.rejects(f.api.control({kind:'edit',goal_id:f.goal().id,objective:' '}),/Describe the goal/);
   });
-  await t.test('Clear stops the goal turn and keeps the goal as Cleared',async()=>{
+  await t.test('End stops the goal turn and keeps the goal as Ended',async()=>{
     const f=await fixture();
     await f.started('Ship it');
     f.host.runs=[{turn:'running',sequence:2,status:'running',origin:null,error_code:null}];
-    const view=await f.api.control({kind:'clear',goal_id:f.goal().id});
+    const view=await f.api.control({kind:'end',goal_id:f.goal().id});
     assert.equal(view.goal,null);assert.equal(f.entry('goal').present,false);
     assert.deepEqual(f.host.stopped,['running']);
     assert.deepEqual(view.history.map(item=>[item.objective,item.outcome,item.turns,item.tokens]),[['Ship it','cleared',1,120]]);
@@ -646,8 +650,8 @@ test('initialize pins the objective and states the turn',async()=>{
   await f.started('Ship it');
   const active=await f.api.initialize({tools,mode:'code',automatic:true,notice:false,continuation:{marker:'verify'}});
   assert.deepEqual(f.host.state,audit);
-  assert.match(active.instruction,/Goal mode is active/);assert.match(active.instruction,/You cannot edit, replace or clear the goal/);
-  assert.deepEqual(plain(active.parts),[`Goal set by the user for this conversation (version 1; a later version replaces this one). Only the user can change, replace or clear it.\n\n<objective>\nShip it\n</objective>`]);
+  assert.match(active.instruction,/Goal mode is active/);assert.match(active.instruction,/You cannot replace or end the goal/);
+  assert.deepEqual(plain(active.parts),[`Goal set by the user for this conversation . Only the user can replace or end it.\n\n<objective>\nShip it\n</objective>`]);
   // The instruction is fixed text per state, so it is not repeated turn by turn.
   assert.equal((await f.api.initialize({tools,mode:'code',automatic:true,notice:false,continuation:{marker:null}})).instruction,active.instruction);
   const plan=await f.api.initialize({tools,mode:'plan',automatic:false,notice:false});
@@ -671,12 +675,13 @@ test('the badge and the tool result show the goal as it stands',async()=>{
   f.clock.now+=12*60000;
   const [badge]=plain(await f.api.badge());
   assert.deepEqual(badge.segments.map(segment=>[segment.label.label,segment.label.locales?.['zh-CN'],segment.tone]),
-    [['Goal','目标','muted'],['Running','执行中','accent'],['12m',undefined,'muted']]);
+    [['Running','执行中','accent'],['12m',undefined,'muted']]);
+  assert.deepEqual(badge.label,{label:'Goal',locales:{'zh-CN':'目标'}});
   assert.deepEqual(badge.details.map(detail=>[detail.label.label,detail.value]),
     [['Goal','Ship it\nand prove it'],['Turns','0 / 25'],['Time','12m / 1h 0m'],['Tokens','120 / 2.0k']]);
   const result=plain(await f.tool(loop,()=>f.api.read()));
   assert.deepEqual([result.goal.objective,result.goal.state,result.goal.turn_limit,result.goal.token_budget],['Ship it\nand prove it','running',25,2000]);
   assert.deepEqual(result.sailry_content.blocks,[{kind:'notice',message:{label:'Running',locales:{'zh-CN':'执行中'}}},{kind:'text',path:'/goal/objective'}]);
   await f.api.control({kind:'pause',goal_id:f.goal().id});
-  assert.deepEqual(plain(await f.api.badge())[0].segments.map(segment=>[segment.label.label,segment.tone]),[['Goal','muted'],['Paused','warning'],['Paused by you','muted']]);
+  assert.deepEqual(plain(await f.api.badge())[0].segments.map(segment=>[segment.label.label,segment.tone]),[['Paused','warning'],['Paused by you','muted']]);
 });

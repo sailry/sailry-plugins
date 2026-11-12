@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2
+
+- O indicador de status mostra, após o ícone, o estado e o tempo, ou o motivo quando pausada; ele não repete mais a palavra Meta
+- O painel tem Pausar ou Retomar e Encerrar. Editar foi removido: `/goal <novo texto>` substitui a meta. Limpar agora é Encerrar, `/goal end`, e uma meta encerrada aparece como Encerrada no histórico
+- Um turno da meta que falha é notificado uma única vez, pela notificação do próprio aplicativo; a meta continua mostrando Pausada · Erro
+
 ## 0.2.1
 
 - Uma meta que nada pode retomar não fica mais em espera ou em execução: ela aparece pausada quando o trabalho em segundo plano esperado foi interrompido, quando o resultado ficou retido no limite ou quando o último turno terminou antes de uma reinicialização

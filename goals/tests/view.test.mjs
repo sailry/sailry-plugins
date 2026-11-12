@@ -8,7 +8,7 @@ const context=vm.createContext({});
 const exports={
   'gpui-kit':{div:()=>element()},'gpui-component':{Button:function(id){return element(id);}},
   sailry:{theme:()=>({colors:{muted_foreground:'muted',success:'success',warning:'warning'}})},
-  'sailry/ui':{ScrollRegion:{new:element}},'sailry/forms':{TextField:{new:element}},
+  'sailry/ui':{ScrollRegion:{new:element}},
 };
 const modules=new Map();
 async function load(name) {
@@ -28,7 +28,7 @@ const goal=(overrides={})=>({id:'goal',revision:'5',objective:'Ship it',status:'
   turns:14,automatic_turns:12,turn_limit:25,tokens:340000,token_budget:0,elapsed_ms:12*60000,time_limit_ms:0,...overrides});
 function view(value=goal(),locale='en') {
   return {goal:value,history:[],text:messages(locale),scope:{locale},state:{connected:true,readonly:false,mode:'code'},
-    busy:false,loading:false,pending:null,editing:null,draft:()=>'',perform(){},execute(){},startEdit(){},cancelEdit(){},saveEdit(){}};
+    busy:false,loading:false,pending:null,draft:()=>'',perform(){},execute(){}};
 }
 
 test('the panel shows the objective, the state, its reason and the counters',()=>{
@@ -58,16 +58,25 @@ test('states and reasons are named in the window language',()=>{
 });
 
 test('each state offers its own controls',()=>{
-  const cases=[[{status:'active',state:'running'},['goal-pause','goal-edit','goal-clear'],'Pause'],
-    [{status:'active',state:'waiting'},['goal-pause','goal-edit','goal-clear'],'Pause'],
-    [{status:'paused',state:'paused',reason:'stopped'},['goal-resume','goal-edit','goal-clear'],'Resume'],
-    [{status:'blocked',state:'blocked',detail:'Need the key'},['goal-resume','goal-edit','goal-clear'],'Resume'],
-    [{status:'completed',state:'completed',evidence:'Suite passed'},['goal-resume','goal-clear'],'Reopen']];
-  for (const [overrides,ids,first] of cases) {
+  // Two buttons in every state: Pause or Resume, then End. Reopen is the
+  // first button of a completed goal only.
+  const cases=[[{status:'active',state:'running'},['goal-pause','goal-end'],'Pause','暂停'],
+    [{status:'active',state:'waiting'},['goal-pause','goal-end'],'Pause','暂停'],
+    [{status:'paused',state:'paused',reason:'stopped'},['goal-resume','goal-end'],'Resume','继续'],
+    [{status:'blocked',state:'blocked',detail:'Need the key'},['goal-resume','goal-end'],'Resume','继续'],
+    [{status:'completed',state:'completed',evidence:'Suite passed'},['goal-resume','goal-end'],'Reopen','重新打开']];
+  for (const [overrides,ids,first,zh] of cases) {
     const panel=render(view(goal(overrides)));
     assert.deepEqual(actions(panel),ids);
-    assert.equal(find(panel,ids[0]).labelValue,first);
+    assert.deepEqual([find(panel,ids[0]).labelValue,find(panel,'goal-end').labelValue],[first,'End']);
+    const local=render(view(goal(overrides),'zh-CN'));
+    assert.deepEqual([find(local,ids[0]).labelValue,find(local,'goal-end').labelValue],[zh,'结束']);
   }
+  for (const locale of ['en','zh-CN']) {
+    const text=messages(locale);
+    for (const gone of ['edit','edited','save','cancel','clear','removed','hint']) assert.equal(text[gone],undefined,gone);
+  }
+  assert.deepEqual([messages('en').ended,messages('zh-CN').ended],['Goal ended','目标已结束']);
   const blocked=render(view(goal({status:'blocked',state:'blocked',detail:'Need the key'})));
   assert.deepEqual(find(blocked,'goal-note-text').text,['Need the key']);assert.equal(find(blocked,'goal-note-label'),null);
   const done=render(view(goal({status:'completed',state:'completed',evidence:'Suite passed'})));
@@ -84,26 +93,25 @@ test('without a goal the panel shows the draft or the empty text',()=>{
 
 test('earlier goals list their outcome',()=>{
   const setup=view();
-  setup.history=[{id:'a',objective:'Earlier one',outcome:'completed',elapsed_ms:65*60000},{id:'b',objective:'Earlier two',outcome:'replaced',elapsed_ms:0}];
+  setup.history=[{id:'a',objective:'Earlier one',outcome:'completed',elapsed_ms:65*60000},{id:'b',objective:'Earlier two',outcome:'replaced',elapsed_ms:0},
+    {id:'c',objective:'Earlier three',outcome:'cleared',elapsed_ms:5*60000}];
   const panel=render(setup);
   assert.deepEqual(find(panel,'goal-earlier-title').text,['Earlier goals']);
-  assert.deepEqual(['a','b'].map(id=>[find(panel,`goal-earlier-text-${id}`).text[0],find(panel,`goal-earlier-outcome-${id}`).text[0]]),
-    [['Earlier one','Completed · 1h 5m'],['Earlier two','Replaced · <1m']]);
+  assert.deepEqual(['a','b','c'].map(id=>[find(panel,`goal-earlier-text-${id}`).text[0],find(panel,`goal-earlier-outcome-${id}`).text[0]]),
+    [['Earlier one','Completed · 1h 5m'],['Earlier two','Replaced · <1m'],['Earlier three','Ended · 5m']]);
+  setup.text=messages('zh-CN');
+  assert.deepEqual(find(render(setup),'goal-earlier-outcome-c').text,['已结束 · 5m']);
   assert.equal(find(render(view()),'goal-earlier'),null);
 });
 
-test('refresh, a pending action and an edit change the controls',()=>{
+test('refresh and a pending action change the controls',()=>{
   const setup=view();
   setup.loading=true;
   assert.ok(find(render(setup),'goal-actions').items.every(item=>item.disabledValue===true));
   setup.loading=false;setup.pending={id:'request'};
-  assert.deepEqual(actions(render(setup)),['goal-retry','goal-pause','goal-edit','goal-clear']);
+  assert.deepEqual(actions(render(setup)),['goal-retry','goal-pause','goal-end']);
   assert.equal(find(render(setup),'goal-retry').disabledValue,false);
   assert.equal(find(render(setup),'goal-pause').disabledValue,true);
-  setup.pending=null;setup.editing='text-0';
-  const editing=render(setup);
-  assert.deepEqual(actions(editing),['goal-cancel','goal-save']);
-  assert.equal(find(editing,'goal-objective'),null);assert.ok(find(editing,'text-0'));
-  setup.state.readonly=true;
-  assert.equal(find(render(setup),'goal-save').disabledValue,true);assert.equal(find(render(setup),'goal-cancel').disabledValue,false);
+  setup.pending=null;setup.state.readonly=true;
+  assert.ok(find(render(setup),'goal-actions').items.every(item=>item.disabledValue===true));
 });

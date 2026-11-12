@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2
+
+- Le badge d'état affiche, après son icône, l'état et la durée, ou la raison une fois en pause ; il ne répète plus le mot Objectif
+- Le panneau propose Suspendre ou Reprendre, et Terminer. Modifier est supprimé : `/goal <nouveau texte>` remplace l'objectif. Effacer devient Terminer, `/goal end`, et un objectif terminé apparaît comme Terminé dans l'historique
+- Un tour d'objectif qui échoue est signalé une seule fois, par la notification de l'application ; l'objectif affiche toujours En pause · Erreur
+
 ## 0.2.1
 
 - Un objectif que plus rien ne peut relancer ne reste plus en attente ou en cours : il s'affiche en pause lorsque le travail en arrière-plan attendu a été arrêté, que son résultat a été retenu à la limite ou que son dernier tour s'est terminé avant un redémarrage

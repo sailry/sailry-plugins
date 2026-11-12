@@ -9,7 +9,7 @@ const goal={id:'goal',revision:'5',objective:'Requested work',status:'active',st
   turns:1,automatic_turns:1,turn_limit:25,tokens:120,token_budget:0,elapsed_ms:0,time_limit_ms:0};
 
 async function fixture(options={}) {
-  const host={goal:{...goal},history:[],hold:false,held:[],failure:null,readFailure:null,texts:new Map(),released:[],...options};
+  const host={goal:{...goal},history:[],hold:false,held:[],failure:null,readFailure:null,...options};
   const prepared=[],completed=[],forgotten=[],contributions=[],closed=[],notices=[],jobs=[],conversations=[];
   const listeners={change:null,composer:null,conversation:null,contribution:null},ready={},scopes=[];
   const next=kind=>{ready[kind]?.();return new Promise(resolve=>{listeners[kind]=resolve;});};
@@ -45,7 +45,8 @@ async function fixture(options={}) {
       if(host.failure) return {Err:{code:host.failure,message:'Unconfirmed action'}};
       const input=request.data.input,revision=String(BigInt(host.goal.revision)+1n);
       assert.equal(input.goal_id,host.goal.id);
-      host.goal=input.kind==='clear' ? null : input.kind==='edit' ? {...host.goal,objective:input.objective,revision}
+      assert.deepEqual(Object.keys(input),['kind','goal_id']);
+      host.goal=input.kind==='end' ? null
         : input.kind==='resume' ? {...host.goal,status:'active',state:'running',reason:null,revision}
         : {...host.goal,status:'paused',state:'paused',reason:'user',revision};
       return {Ok:{data:{goal:plain(host.goal),history:plain(host.history)}}};
@@ -56,8 +57,6 @@ async function fixture(options={}) {
     'gpui-kit':{View:class{},div:()=>element()},
     'gpui-component':{Button:function(id){return element(id);}},
     sailry:{context:()=>JSON.stringify({locale:'en',session:'session',package:{name:'goals'}}),theme:()=>({colors:{}})},
-    'sailry/forms':{TextField:{new:element},createText:(value,options)=>{const handle=`text-${host.texts.size}`;host.texts.set(handle,{value,options});return handle;},
-      readText:handle=>host.texts.get(handle).value,releaseText:handle=>host.released.push(handle)},
     'sailry/sdk':sdk,
     'sailry/ui':{ScrollRegion:{new:element},
       readComposer:()=>({session:'session',connected:true,readonly:false,busy:false,mode:'code',cursor:'1'}),
@@ -139,7 +138,7 @@ test('successful controls use supported notifications',async()=>{
   assert.equal(setup.host.goal.status,'active');
   assert.deepEqual(setup.closed,[]);
   setup.view.open=true;
-  await setup.perform('clear');
+  await setup.perform('end');
   assert.equal(setup.host.goal,null);
   assert.equal(setup.view.goal,null);
   assert.equal(setup.view.pending,null);
@@ -149,7 +148,7 @@ test('successful controls use supported notifications',async()=>{
   assert.deepEqual(setup.notices,[
     {id:'goal-action',kind:'info',message:setup.view.text.paused},
     {id:'goal-action',kind:'info',message:setup.view.text.resumed},
-    {id:'goal-action',kind:'info',message:setup.view.text.removed},
+    {id:'goal-action',kind:'info',message:setup.view.text.ended},
   ]);
   const controls=setup.prepared.flatMap((request,index)=>request.data.handler==='control' ? [String(index)] : []);
   assert.equal(controls.length,3);
@@ -165,7 +164,7 @@ test('the objective remains literal prose with the controls of its state',async(
   setup.view.goal={...setup.view.goal,objective};
   const panel=setup.view.render();
   assert.deepEqual(find(panel,'goal-objective').text,[objective]);
-  assert.deepEqual(actions(panel),['goal-pause','goal-edit','goal-clear']);
+  assert.deepEqual(actions(panel),['goal-pause','goal-end']);
 });
 
 test('forwarded status events refresh the panel',async()=>{
@@ -176,12 +175,12 @@ test('forwarded status events refresh the panel',async()=>{
   assert.equal(setup.view.open,true);
   assert.equal(setup.view.goal.status,'completed');
   assert.equal(setup.view.goal.objective,'Completed work');
-  assert.deepEqual(actions(setup.view.render()),['goal-resume','goal-clear']);
+  assert.deepEqual(actions(setup.view.render()),['goal-resume','goal-end']);
   await setup.emit('contribution',{id:'status',kind:'change',sequence:2,value:false});
   assert.equal(setup.view.open,false);
   assert.ok(setup.contributions.every(entries=>entries.every(entry=>entry.id!=='status')));
   assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
-  await setup.perform('clear');
+  await setup.perform('end');
   assert.equal(setup.host.goal,null);
 });
 
@@ -206,16 +205,16 @@ test('a held refresh blocks controls until the latest read',async()=>{
   assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,true);
   assert.ok(buttons(setup.view.render()).every(item=>item.disabledValue===true));
   const count=setup.prepared.length;
-  await setup.perform('clear');
+  await setup.perform('end');
   assert.equal(setup.prepared.length,count);
   assert.equal(setup.host.held.length,1);
   setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
   assert.equal(setup.view.goal.revision,'6');
   assert.equal(setup.view.enabled(),true);
-  await setup.perform('clear');
+  await setup.perform('end');
   // Controls name the goal, not its revision: the counters change every turn.
   const controls=setup.prepared.filter(request=>request.data.handler==='control');
-  assert.deepEqual(controls.map(request=>request.data.input),[{kind:'pause',goal_id:'goal'},{kind:'clear',goal_id:'goal'}]);
+  assert.deepEqual(controls.map(request=>request.data.input),[{kind:'pause',goal_id:'goal'},{kind:'end',goal_id:'goal'}]);
   assert.equal(setup.host.goal,null);
   assert.equal(setup.view.goal,null);
   assert.equal(setup.view.pending,null);
@@ -250,7 +249,7 @@ test('refresh preserves new task command and draft',async()=>{
   assert.ok(setup.contributions.slice(first).every(entries=>entries.find(item=>item.id==='goal').enabled));
   assert.ok(buttons(setup.view.render()).every(item=>item.disabledValue===true));
   const count=setup.prepared.length;
-  await setup.perform('clear');
+  await setup.perform('end');
   assert.equal(setup.prepared.length,count);
   setup.host.hold=false;setup.host.held.shift()();await setup.jobs.at(-1);
   assert.equal(setup.view.draft(),argumentsText);
@@ -261,7 +260,7 @@ test('uncertain control retains exact request for retry',async()=>{
   const setup=await fixture();
   setup.view.open=true;
   setup.host.failure='outcome_unknown';
-  await setup.perform('clear');
+  await setup.perform('end');
   const id=setup.view.pending.id;
   assert.equal(setup.view.enabled(),false);
   assert.equal(setup.host.goal.revision,'5');
@@ -374,35 +373,11 @@ test('/goal stays available in Plan mode',async()=>{
   assert.equal(setup.contributions.at(-1).find(item=>item.id==='goal').enabled,true);
 });
 
-test('Edit is a draft until Save and survives a failed save',async()=>{
+test('End closes the panel and says so once',async()=>{
   const setup=await fixture();
-  setup.view.startEdit(setup.cx);
-  const handle=setup.view.editing;
-  assert.deepEqual(plain(setup.host.texts.get(handle)),{value:'Requested work',options:{multiline:true,rows:[3,10],placeholder:setup.view.text.hint,label:setup.view.text.edit}});
-  assert.deepEqual(actions(setup.view.render()),['goal-cancel','goal-save']);
-  assert.equal(setup.prepared.filter(request=>request.data.handler==='control').length,0);
-  // A failed save keeps the draft and reports a toast.
-  setup.host.texts.get(handle).value='  Requested work with docs  ';
-  setup.host.failure='conflict';
-  let first=setup.jobs.length;
-  setup.view.saveEdit(setup.cx);await setup.jobs[first];await setup.jobs.at(-1);
-  assert.equal(setup.view.editing,handle);assert.equal(setup.view.pending,null);
-  assert.deepEqual(setup.notices.at(-1),{id:'goal-error',kind:'error',message:setup.view.text.error});
-  assert.deepEqual(setup.host.released,[]);
-  setup.host.failure=null;
-  first=setup.jobs.length;
-  setup.view.saveEdit(setup.cx);await setup.jobs[first];await setup.jobs.at(-1);
-  assert.equal(setup.view.editing,null);assert.deepEqual(setup.host.released,[handle]);
-  assert.equal(setup.view.goal.objective,'Requested work with docs');
-  assert.deepEqual(setup.prepared.filter(request=>request.data.handler==='control').at(-1).data.input,{kind:'edit',goal_id:'goal',objective:'Requested work with docs'});
-  assert.deepEqual(setup.notices.at(-1),{id:'goal-action',kind:'info',message:setup.view.text.edited});
-  // Cancel drops the draft without a request; an empty draft is not sent.
-  setup.view.startEdit(setup.cx);
-  const second=setup.view.editing;
-  setup.host.texts.get(second).value='   ';
-  const count=setup.prepared.length;
-  setup.view.saveEdit(setup.cx);
-  assert.equal(setup.prepared.length,count);
-  setup.view.cancelEdit(setup.cx);
-  assert.equal(setup.view.editing,null);assert.deepEqual(setup.host.released,[handle,second]);
+  setup.view.open=true;
+  await setup.perform('end');
+  assert.deepEqual(setup.notices.at(-1),{id:'goal-action',kind:'info',message:'Goal ended'});
+  assert.deepEqual(setup.closed,['status']);
+  assert.equal(setup.view.startEdit,undefined);
 });

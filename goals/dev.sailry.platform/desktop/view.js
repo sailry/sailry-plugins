@@ -2,7 +2,6 @@ import {div} from 'gpui-kit';
 import {Button} from 'gpui-component';
 import {theme} from 'sailry';
 import {ScrollRegion} from 'sailry/ui';
-import {TextField} from 'sailry/forms';
 import {labels,reasons,duration,count} from '../labels.js';
 
 const pick=(label,locale)=>label.locales?.[locale] ?? label.label;
@@ -49,20 +48,15 @@ function buttons(view) {
   const button=(id,label,action)=>new Button(id).size('small').label(label).disabled(disabled).on_click(action);
   // An unconfirmed action keeps its request; Retry completes that request.
   const result=view.pending ? [new Button('goal-retry').size('small').label(text.retry).disabled(idle).on_click((_,cx)=>view.execute(cx))] : [];
-  if (view.editing) return [...result,
-    new Button('goal-cancel').size('small').ghost().label(text.cancel).disabled(view.busy).on_click((_,cx)=>view.cancelEdit(cx)),
-    button('goal-save',text.save,(_,cx)=>view.saveEdit(cx))];
   if (!goal) return result;
   if (goal.status==='active') result.push(button('goal-pause',text.pause,(_,cx)=>view.perform('pause',cx)));
   else result.push(button('goal-resume',goal.status==='completed' ? text.reopen : text.resume,(_,cx)=>view.perform('resume',cx)));
-  if (goal.status!=='completed') result.push(button('goal-edit',text.edit,(_,cx)=>view.startEdit(cx)).ghost());
-  result.push(button('goal-clear',text.clear,(_,cx)=>view.perform('clear',cx)).ghost());
+  result.push(button('goal-end',text.end,(_,cx)=>view.perform('end',cx)).ghost());
   return result;
 }
 
 export function render(view) {
-  const content=view.editing ? [TextField.new(view.editing,{disabled:view.busy})] : [...body(view),...earlier(view)];
   return div().id('goal-panel').v_flex().gap_2().w_full()
-    .child(ScrollRegion.new('goal-scroll',{max_height:360}).children(content))
+    .child(ScrollRegion.new('goal-scroll',{max_height:360}).children([...body(view),...earlier(view)]))
     .child(div().id('goal-actions').h_flex().justify_end().gap_2().children(buttons(view)));
 }

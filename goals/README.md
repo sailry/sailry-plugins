@@ -15,14 +15,14 @@
 |---|---|---|
 | Start | `/goal <text>` | `create_goal`, only on request, asks for approval |
 | Replace | `/goal <new text>` | No |
-| Edit, Clear | Panel, `/goal edit <text>`, `/goal clear` | No |
+| End | Panel, `/goal end` | No |
 | Pause, Resume | Panel, `/goal pause`, `/goal resume`, Stop and reply | `update_goal(paused or active)`, only in a turn the user started |
-| Complete | Reopen undoes it | `update_goal(complete)`: claim, then audit |
+| Complete | Reopen, on the completed goal's panel, undoes it | `update_goal(complete)`: claim, then audit |
 | Blocked | A reply or Resume continues | `update_goal(blocked, what is needed)` |
 
 ## Storage
 
-Conversation values `goal` (the current goal: objective, status, reason, counters, pending claim) and `history` (the last 20 goals the session finished, replaced or cleared). Both follow fork and rewind; a restored goal is paused until Resume.
+Conversation values `goal` (the current goal: objective, status, reason, counters, pending claim) and `history` (the last 20 goals the session finished, replaced or ended; an ended goal keeps the stored outcome `cleared`). Both follow fork and rewind; a restored goal is paused until Resume.
 
 ## Settings
 
