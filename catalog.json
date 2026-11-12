@@ -325,7 +325,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.11",
+        "version": "0.1.12",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -363,7 +363,7 @@
                 "ru": "Создавать HTML-документы и макеты"
               }
             },
-            "instructions": "Create session-owned HTML documents, reports, diagrams, demos and interactive previews when the user requests or accepts HTML. An explicit HTML or HTML-preview request authorizes generation directly. Without a request, you may create one small kind=preview visual, such as a chart, diagram, UI mockup or interactive explainer, when it clearly helps the current answer more than text; keep the written answer complete without it, and skip it for simple facts, routine changes or when the user prefers text. For complex development, design or refactor plans, present the full ordinary plan in the conversation first, then end with exactly one concise offer to create an HTML version and wait for the user's choice. Do not repeat the offer for that plan. Do not offer HTML for pure questions or simple changes, and never generate a document or plan HTML version automatically without acceptance. HTML does not authorize execution or project writes. Load this package's brief skill before writing. For an explicitly requested worktree file path, create and verify that real file with available file or command tools and deliver its standalone Markdown link for preview; do not substitute write_brief or create an additional artifact unless separately requested. If writing is unavailable, report the limitation instead of claiming the file was saved. write_brief creates only a session-owned artifact, not a worktree file; its returned card already delivers it. Do not invent a file path or duplicate that card with a Markdown file link. A separately requested file copy must actually be created and verified. write_brief uses kind=document by default for a sanitized main-body fragment and kind=preview for self-contained HTML with inline CSS and local JavaScript in an isolated sandbox. Preview has no Node, tool, credential, filesystem or network bridge; do not rely on CDNs, imports or external images. In previews, keep the body background transparent, center the main element, use the host's --sailry-* theme variables with fallbacks and keep visuals modest in size. Only the main session can write. Read existing HTML before revising, preserve its kind, and pass the exact id and latest revision as expected_revision. Keep the card summary short; do not repeat the full HTML in the final answer. Forms are optional and only supported in document mode. Their answers arrive as ordinary user messages for that document and revision, not permission to execute. Use ask_user for missing choices or information when needed.",
+            "instructions": "Create session-owned HTML documents, reports, diagrams, demos and interactive previews when the user requests or accepts HTML. An explicit HTML or HTML-preview request authorizes generation directly. Without a request, you may create one small kind=preview visual, such as a chart, diagram, UI mockup or interactive explainer, when it clearly helps the current answer more than text; keep the written answer complete without it, and skip it for simple facts, routine changes or when the user prefers text. For complex development, design or refactor plans, present the full ordinary plan in the conversation first, then end with exactly one concise offer to create an HTML version and wait for the user's choice. Do not repeat the offer for that plan. Do not offer HTML for pure questions or simple changes, and never generate a document or plan HTML version automatically without acceptance. HTML does not authorize execution or project writes. Load this package's brief skill before writing. For an explicitly requested worktree file path, create and verify that real file with available file or command tools and deliver its standalone Markdown link for preview; do not substitute write_brief or create an additional artifact unless separately requested. If writing is unavailable, report the limitation instead of claiming the file was saved. write_brief creates only a session-owned artifact, not a worktree file; its returned card already delivers it. Do not invent a file path or duplicate that card with a Markdown file link. A separately requested file copy must actually be created and verified. write_brief uses kind=document by default for a sanitized main-body fragment and kind=preview for self-contained HTML with inline CSS and local JavaScript in an isolated sandbox. Preview has no Node, tool, credential, filesystem or network bridge; do not rely on CDNs, imports or external images. In previews, keep the body background transparent, center the main element, use the host's --sailry-* theme variables with fallbacks and keep visuals modest in size. Only the main session can write. Read existing HTML before revising, preserve its kind, and pass the exact id and latest revision as expected_revision. Keep the card summary short; do not repeat the full HTML in the final answer. A document or preview cannot collect answers; use ask_user for missing choices or information when needed.",
             "artifact_view": {
               "template": "dev.sailry.platform/document/template.html",
               "styles": [
@@ -497,6 +497,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.12",
+          "commit": "02b041a126b83303a99a257ec165df9d2afebd56",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Stop telling the model that documents support forms; they submit nothing",
+            "locales": {
+              "zh-CN": "- 不再告知模型文档支持表单；表单无法提交",
+              "zh-TW": "- 不再告知模型文件支援表單；表單無法提交",
+              "ja": "- ドキュメントがフォームに対応しているとモデルに伝えないように変更（フォームは送信されません）",
+              "ko": "- 문서가 양식을 지원한다고 모델에 알리지 않음(양식은 제출되지 않음)",
+              "fr": "- Le modèle n'est plus informé que les documents prennent en charge les formulaires ; ils n'envoient rien",
+              "de": "- Dem Modell wird nicht mehr mitgeteilt, dass Dokumente Formulare unterstützen; sie senden nichts",
+              "es": "- Ya no se indica al modelo que los documentos admiten formularios; no envían nada",
+              "pt-BR": "- O modelo não é mais informado de que documentos aceitam formulários; eles não enviam nada",
+              "ru": "- Модели больше не сообщается, что документы поддерживают формы; они ничего не отправляют"
+            }
+          }
+        },
+        {
           "version": "0.1.11",
           "commit": "432aced4d065017cf7cfdfb8d11ff136eba309c7",
           "min_sailry_version": "0.1.6",
@@ -606,17 +625,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Use a new plugin icon",
+        "text": "- Stop telling the model that documents support forms; they submit nothing",
         "locales": {
-          "zh-CN": "- 更换插件图标",
-          "zh-TW": "- 更換外掛圖示",
-          "ja": "- プラグインのアイコンを変更",
-          "ko": "- 플러그인 아이콘 변경",
-          "fr": "- Nouvelle icône du plugin",
-          "de": "- Neues Plugin-Symbol",
-          "es": "- Nuevo icono del plugin",
-          "pt-BR": "- Novo ícone do plugin",
-          "ru": "- Новый значок плагина"
+          "zh-CN": "- 不再告知模型文档支持表单；表单无法提交",
+          "zh-TW": "- 不再告知模型文件支援表單；表單無法提交",
+          "ja": "- ドキュメントがフォームに対応しているとモデルに伝えないように変更（フォームは送信されません）",
+          "ko": "- 문서가 양식을 지원한다고 모델에 알리지 않음(양식은 제출되지 않음)",
+          "fr": "- Le modèle n'est plus informé que les documents prennent en charge les formulaires ; ils n'envoient rien",
+          "de": "- Dem Modell wird nicht mehr mitgeteilt, dass Dokumente Formulare unterstützen; sie senden nichts",
+          "es": "- Ya no se indica al modelo que los documentos admiten formularios; no envían nada",
+          "pt-BR": "- O modelo não é mais informado de que documentos aceitam formulários; eles não enviam nada",
+          "ru": "- Модели больше не сообщается, что документы поддерживают формы; они ничего не отправляют"
         }
       }
     },
@@ -6923,7 +6942,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "external-browser",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -8635,7 +8654,7 @@
                       },
                       "file_path": {
                         "type": "string",
-                        "description": "Absolute path to the file to upload"
+                        "description": "Path of the file to upload, relative to the worktree root, with forward slashes (for example docs/report.pdf). Absolute paths and .. are rejected; the file must be a regular file inside the worktree of at most 10 MiB"
                       }
                     },
                     "required": [
@@ -8922,6 +8941,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.5",
+          "commit": "ba82666f9a5d1e1a8d23db031cd67acf0893cac8",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Describe the upload path as worktree-relative; absolute paths were never accepted",
+            "locales": {
+              "zh-CN": "- 将上传路径说明改为相对工作树的路径；绝对路径从未被接受",
+              "zh-TW": "- 將上傳路徑說明改為相對工作樹的路徑；絕對路徑從未被接受",
+              "ja": "- アップロードパスの説明をワークツリー相対パスに修正（絶対パスは元から受け付けていません）",
+              "ko": "- 업로드 경로 설명을 워크트리 기준 상대 경로로 수정(절대 경로는 원래 허용되지 않음)",
+              "fr": "- Le chemin d'envoi est décrit comme relatif au worktree ; les chemins absolus n'ont jamais été acceptés",
+              "de": "- Upload-Pfad als relativ zum Worktree beschrieben; absolute Pfade wurden nie akzeptiert",
+              "es": "- La ruta de carga se describe como relativa al worktree; las rutas absolutas nunca se aceptaron",
+              "pt-BR": "- O caminho de envio é descrito como relativo ao worktree; caminhos absolutos nunca foram aceitos",
+              "ru": "- Путь загрузки описан как относительный к worktree; абсолютные пути никогда не принимались"
+            }
+          }
+        },
+        {
           "version": "0.1.4",
           "commit": "432aced4d065017cf7cfdfb8d11ff136eba309c7",
           "min_sailry_version": "0.1.6",
@@ -8975,17 +9013,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Use a new plugin icon",
+        "text": "- Describe the upload path as worktree-relative; absolute paths were never accepted",
         "locales": {
-          "zh-CN": "- 更换插件图标",
-          "zh-TW": "- 更換外掛圖示",
-          "ja": "- プラグインのアイコンを変更",
-          "ko": "- 플러그인 아이콘 변경",
-          "fr": "- Nouvelle icône du plugin",
-          "de": "- Neues Plugin-Symbol",
-          "es": "- Nuevo icono del plugin",
-          "pt-BR": "- Novo ícone do plugin",
-          "ru": "- Новый значок плагина"
+          "zh-CN": "- 将上传路径说明改为相对工作树的路径；绝对路径从未被接受",
+          "zh-TW": "- 將上傳路徑說明改為相對工作樹的路徑；絕對路徑從未被接受",
+          "ja": "- アップロードパスの説明をワークツリー相対パスに修正（絶対パスは元から受け付けていません）",
+          "ko": "- 업로드 경로 설명을 워크트리 기준 상대 경로로 수정(절대 경로는 원래 허용되지 않음)",
+          "fr": "- Le chemin d'envoi est décrit comme relatif au worktree ; les chemins absolus n'ont jamais été acceptés",
+          "de": "- Upload-Pfad als relativ zum Worktree beschrieben; absolute Pfade wurden nie akzeptiert",
+          "es": "- La ruta de carga se describe como relativa al worktree; las rutas absolutas nunca se aceptaron",
+          "pt-BR": "- O caminho de envio é descrito como relativo ao worktree; caminhos absolutos nunca foram aceitos",
+          "ru": "- Путь загрузки описан как относительный к worktree; абсолютные пути никогда не принимались"
         }
       }
     },
