@@ -2041,6 +2041,7 @@
             },
             "category": "automation",
             "tint": "amber",
+            "settings_schema": "dev.sailry.platform/settings.json",
             "programs": [
               {
                 "id": "claude",
@@ -2131,7 +2132,7 @@
       "versions": [
         {
           "version": "0.1.0",
-          "commit": "80098e38199b71895f053549af99845ed41a97b3",
+          "commit": "7e85c2115168f5722f57942c83fd9fe94ab76229",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Use Claude models through the installed, signed-in Claude Code",
