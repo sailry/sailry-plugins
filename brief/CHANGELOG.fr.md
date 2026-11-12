@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Le modèle n'est plus informé que les documents prennent en charge les formulaires ; ils n'envoient rien
+
 ## 0.1.11
 
 - Nouvelle icône du plugin

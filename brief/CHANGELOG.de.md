@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Dem Modell wird nicht mehr mitgeteilt, dass Dokumente Formulare unterstützen; sie senden nichts
+
 ## 0.1.11
 
 - Neues Plugin-Symbol

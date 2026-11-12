@@ -45,8 +45,8 @@ in the main session; delegated agents can contribute analysis to their parent,
 but cannot create or revise a brief. Plan mode permits this session-owned
 document, without permitting project writes or execution.
 
-Choose `kind=document` (the default) for structured documents, reports, diagrams
-and optional forms. One template serves these document types. Write only the HTML fragment inside
+Choose `kind=document` (the default) for structured documents, reports and
+diagrams. One template serves these document types. Write only the HTML fragment inside
 `<main>`, without `<html>`, `<head>`, `<body>`, scripts, styles, event handlers,
 external links or external images. The host supplies semantic theme colors,
 fonts, local diagram libraries and interaction code. Do not generate JavaScript
@@ -83,9 +83,9 @@ and navigation with CSP, and denies popups and downloads. This is not an OS-leve
 zero-egress guarantee. Do not depend on CDNs, package imports,
 external images, fetch, WebSockets or persistent browser storage. Use inline
 assets, bounded data images and local JavaScript only. No dependency installation
-or permission change is part of generating a preview. A form is optional; local
-demo controls do not send conversation messages or approve execution. Use
-`ask_user` separately for actual user decisions or missing information.
+or permission change is part of generating a preview. Local demo controls do
+not send conversation messages or approve execution. Use `ask_user` separately
+for actual user decisions or missing information.
 
 Conversation cards may show a still image of a preview, and the side panel runs
 it live. Leave the `html` and `body` backgrounds transparent so the host surface
@@ -159,38 +159,10 @@ is limited to 512 KiB after cleaning.
 
 ## Questions
 
-Forms are optional. When the requested structured document benefits from collecting
-unresolved decisions or information, it may include a `brief-form`. Do not append
-one to every document. Use radio choices for one answer,
-checkboxes for multiple answers, and a textarea for additional context. Include
-only decisions that remain open; preserve confirmed choices when revising.
-
-Use a bounded declaration rather than executable controls. Form and field names
-must start with a Latin letter and contain only letters, digits, `_`, `.` or `-`,
-up to 64 characters. Use unique form and field names. Each form has at most
-32 fieldsets and at most 64 controls per fieldset. Each control's `name` must
-match its containing fieldset's `data-name`. A fieldset may carry `data-required`.
-Radio and checkbox values and labels are at most 512 bytes; free text is at most
-4,096 bytes. Total submitted answers are limited to 16 KiB.
-
-```html
-<form class="brief-form" data-name="decisions">
-  <fieldset data-name="approach" data-required>
-    <legend>Preferred approach</legend>
-    <label><input type="radio" name="approach" value="a"> Approach A</label>
-    <label><input type="radio" name="approach" value="b"> Approach B</label>
-  </fieldset>
-  <fieldset data-name="note">
-    <legend>Additional context</legend><textarea name="note"></textarea>
-  </fieldset>
-  <button type="submit">Submit</button>
-</form>
-```
-
-Answers are ordinary user messages referencing the document and version. While
-a turn is active, they enter the normal message queue. They do not approve or
-start execution, answer another pending question, or change the work mode.
-Use `ask_user` separately when the actual plan review requires it.
+A document or preview cannot collect answers: it has no bridge to the
+conversation, so a form in it submits nothing. Do not add a form or a submit
+button. List the decisions that remain open as ordinary content, and use
+`ask_user` for actual user decisions or missing information.
 
 ## Suggested structure
 

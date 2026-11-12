@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Describe the upload path as worktree-relative; absolute paths were never accepted
+
 ## 0.1.4
 
 - Use a new plugin icon

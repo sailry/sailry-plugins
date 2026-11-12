@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.12
+
+- Stop telling the model that documents support forms; they submit nothing
+
 ## 0.1.11
 
 - Use a new plugin icon

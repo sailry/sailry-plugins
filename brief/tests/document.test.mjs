@@ -5,21 +5,22 @@ import vm from 'node:vm';
 
 const source = readFileSync(new URL('../dev.sailry.platform/document/brief.js',import.meta.url),'utf8');
 
-test('keeps HTML general with optional questions',() => {
+test('keeps HTML general without promising forms',() => {
   const manifest = JSON.parse(readFileSync(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
   const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
   assert.equal(manifest.name,'brief');
-  assert.equal(manifest.version,'0.1.11');
+  assert.equal(manifest.version,'0.1.12');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.display.label,'HTML');
   assert(Object.values(extension.display.locales).every(label => label === 'HTML'));
   assert.match(extension.instructions,/explicit HTML or HTML-preview request authorizes generation directly/);
-  assert.match(extension.instructions,/Forms are optional/);
+  assert.match(extension.instructions,/cannot collect answers; use ask_user/);
+  assert.doesNotMatch(extension.instructions,/Forms? (is|are) (optional|supported)|supported in document mode/);
   assert.match(skill,/kind=document.*default/);
   assert.match(skill,/kind=preview/);
-  assert.match(skill,/Forms are optional/);
-  assert.doesNotMatch(skill,/Always end.*form|Finish with a form/);
+  assert.match(skill,/a form in it submits nothing/);
+  assert.doesNotMatch(skill,/optional forms|Forms? (is|are) optional|class="brief-form"/);
   for (const declaration of [extension.instructions,skill.replace(/\s+/g,' ')]) {
     assert.match(declaration,/full ordinary plan.*conversation first/);
     assert.match(declaration,/exactly one concise offer/);
