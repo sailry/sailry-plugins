@@ -2149,6 +2149,20 @@
                   "kind": "none"
                 },
                 "adapter": "claude",
+                "warning": {
+                  "text": "Sailry runs the Claude Code installed on this computer with its own sign-in. Use counts against that subscription. Anthropic may meter use from other apps differently, limit it or refuse it, and may restrict the account. You use this channel at your own risk.",
+                  "locales": {
+                    "zh-CN": "Sailry 会运行这台电脑上已安装的 Claude Code，并使用它自己的登录状态。用量计入该订阅。Anthropic 可能对来自其他应用的使用另行计量、限制或拒绝，也可能限制该账号。使用此渠道的风险由你自行承担。",
+                    "zh-TW": "Sailry 會執行這台電腦上已安裝的 Claude Code，並使用它自己的登入狀態。用量計入該訂閱。Anthropic 可能對來自其他應用程式的使用另行計量、限制或拒絕，也可能限制該帳號。使用此管道的風險由你自行承擔。",
+                    "de": "Sailry führt das auf diesem Computer installierte Claude Code mit dessen eigener Anmeldung aus. Die Nutzung wird auf dieses Abonnement angerechnet. Anthropic kann die Nutzung aus anderen Apps anders abrechnen, einschränken oder ablehnen und das Konto einschränken. Du nutzt diesen Kanal auf eigenes Risiko.",
+                    "es": "Sailry ejecuta el Claude Code instalado en este equipo con su propio inicio de sesión. El uso cuenta para esa suscripción. Anthropic puede medir de otro modo el uso desde otras aplicaciones, limitarlo o rechazarlo, y puede restringir la cuenta. Usas este canal bajo tu propia responsabilidad.",
+                    "fr": "Sailry exécute le Claude Code installé sur cet ordinateur avec sa propre connexion. L'utilisation est décomptée de cet abonnement. Anthropic peut mesurer autrement l'utilisation depuis d'autres applications, la limiter ou la refuser, et peut restreindre le compte. Vous utilisez ce canal à vos propres risques.",
+                    "ja": "Sailry はこのコンピューターにインストールされた Claude Code を、そのサインイン状態のまま実行します。利用量はそのサブスクリプションに計上されます。Anthropic は他のアプリからの利用を別に計量、制限、拒否することがあり、アカウントを制限することもあります。このチャンネルは自己責任で利用してください。",
+                    "ko": "Sailry는 이 컴퓨터에 설치된 Claude Code를 그 로그인 상태 그대로 실행합니다. 사용량은 해당 구독에 포함됩니다. Anthropic은 다른 앱에서의 사용을 다르게 계량하거나 제한 또는 거부할 수 있으며 계정을 제한할 수도 있습니다. 이 채널은 본인 책임하에 사용합니다.",
+                    "pt-BR": "O Sailry executa o Claude Code instalado neste computador com o login dele. O uso conta para essa assinatura. A Anthropic pode medir de outra forma o uso vindo de outros aplicativos, limitá-lo ou recusá-lo, e pode restringir a conta. Você usa este canal por sua conta e risco.",
+                    "ru": "Sailry запускает Claude Code, установленный на этом компьютере, с его собственным входом. Использование учитывается в этой подписке. Anthropic может иначе учитывать использование из других приложений, ограничивать или отклонять его, а также ограничить аккаунт. Вы используете этот канал на свой риск."
+                  }
+                },
                 "models": {
                   "kind": "discover"
                 }
@@ -2165,7 +2179,7 @@
       "versions": [
         {
           "version": "0.1.0",
-          "commit": "7e85c2115168f5722f57942c83fd9fe94ab76229",
+          "commit": "c20fb5a46fbfffbb4f30afa652de3f2113e4c4fb",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Use Claude models through the installed, signed-in Claude Code",
