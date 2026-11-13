@@ -364,16 +364,14 @@ test('key selection blocks duplicate prompts and save while retaining the captur
   assert.equal(setup.owner.editor,next);assert.deepEqual(setup.errors,[]);
 });
 
-test('database history clicks and native menus retain the displayed profile',async()=>{
-  const copied=[],opened=[];
+test('a double click on a result row neither copies nor runs anything',async()=>{
+  const copied=[];
   const setup=await fixture('databases',{writeClipboard:text=>copied.push(text)}),owner=setup.owner;
-  Object.assign(owner,{opened:'displayed',sqlOpen:false,logs:[{id:'older',sql:'SELECT older',database:'one'},{id:'newer',sql:'SELECT newer',database:'two'}],selectedLog:null,logFocus:{focus(){}}});
-  owner.openSql=(sql,database,cx)=>opened.push([sql,database,cx]);
-  owner.control({id:`db-log:${JSON.stringify({profile:'displayed',id:'newer'})}`,click_count:2},setup.live);
-  assert.equal(owner.selectedLog,'newer');assert.deepEqual(opened,[['SELECT newer','two',setup.live]]);
-  await owner.menu(`log:${JSON.stringify({profile:'displayed',id:'older',edit:false})}`,setup.live);assert.deepEqual(copied,['SELECT older']);
-  owner.opened='other';await owner.menu(`log:${JSON.stringify({profile:'displayed',id:'older',edit:true})}`,setup.live);
-  assert.equal(opened.length,1);
+  const profile={id:'displayed',revision:1,read_only:false,connection:{kind:'sqlite',path:'/fixture.sqlite3'}};
+  Object.assign(owner,{opened:'displayed',profiles:[profile],epoch:3,result:{columns:['id'],rows:[[{kind:'text',value:'1'}]]},origin:{profile:JSON.parse(JSON.stringify(profile)),table:{name:'t',schema:'main'},keys:[],sql:'SELECT 1'}});
+  owner.execute=()=>assert.fail('opening a result row runs nothing');
+  await owner.rowAction({table:'database-results',revision:'3',kind:'open',row:0,column:null,rows:[0]},setup.live);
+  assert.deepEqual(copied,[]);
 });
 
 test('database tab close rejects stale events and preserves pending drafts and history',async()=>{

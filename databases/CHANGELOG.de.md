@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Ausführungsverlauf in derselben Tabelle wie die Ergebnisse zeigen und eine Abfrage per Doppelklick oder Eingabe öffnen
+
 ## 0.1.20
 
 - SQL in einem hervorgehobenen Editor mit Zeilennummern schreiben, mit Befehl-Eingabe ausführen und im Dialogfuß Abbrechen oder Ausführen wählen

@@ -17,28 +17,24 @@ test('distinguishes restored results from new canonical responses and preserves 
 });
 
 
-test('navigation preserves newest-first arrows and selected copy or open',async()=>{
+test('history table events select, open and copy the query of the row shown',async()=>{
   const source=(await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class').replace(/^export /gm,'');
   const copied=[],opened=[];
   const Controller=vm.runInNewContext(`${source}\nDatabases`,{View:class{},writeClipboard:text=>copied.push(text)}),owner=new Controller();
-  let focused=0,stopped=0,notified=0;
-  const cx={notify(){notified++;},stop_propagation(){stopped++;}};
-  Object.assign(owner,{sqlOpen:false,logs:[{id:'older',sql:'SELECT older',database:'first'},{id:'newer',sql:'SELECT newer',database:'second'}],selectedLog:null,logFocus:{focus(){focused++;}}});
+  const cx={notify(){}};
+  Object.assign(owner,{opened:'first',logs:[{id:'older',sql:'SELECT older',database:'one'},{id:'newer',sql:'SELECT newer',database:'two'}],selectedLog:null});
   owner.openSql=(sql,database,context)=>opened.push([sql,database,context]);
-  const key=(key,modifiers={})=>owner.logKey({key,modifiers},cx);
-  key('down');assert.equal(owner.selectedLog,'newer');
-  key('up');assert.equal(owner.selectedLog,'newer');
-  key('down');assert.equal(owner.selectedLog,'older');
-  key('down');assert.equal(owner.selectedLog,'older');
-  key('up');assert.equal(owner.selectedLog,'newer');
-  key('c',{platform:true});assert.deepEqual(copied,['SELECT newer']);
-  key('enter');assert.deepEqual(opened,[['SELECT newer','second',cx]]);
-  owner.selectLog('older',cx);assert.equal(owner.selectedLog,'older');assert.equal(focused,1);
-  owner.selectLog('missing',cx);assert.equal(owner.selectedLog,'older');assert.equal(focused,1);
-  // The SQL dialog over the page takes the keys.
-  owner.sqlOpen=true;key('up');assert.equal(owner.selectedLog,'older');
-  assert.equal(stopped,7);assert.equal(notified,6);
+  const revision='first:2:newer',event=(kind,row,extra={})=>owner.historyEvent({table:'database-history-table',revision,kind,row,...extra},cx);
+  event('selection',0);assert.equal(owner.selectedLog,'newer','row 0 is the newest');
+  event('selection',null);assert.equal(owner.selectedLog,null);
+  event('open',1);assert.deepEqual(opened,[['SELECT older','one',cx]]);
+  event('copy',0);assert.deepEqual(copied,['SELECT newer'],'⌘C copies the query alone');
+  event('action',1,{action:'copy'});event('action',0,{action:'open'});
+  assert.deepEqual(copied,['SELECT newer','SELECT older']);assert.deepEqual(opened.at(-1),['SELECT newer','two',cx]);
+  owner.historyEvent({table:'database-history-table',revision:'first:1:older',kind:'open',row:0},cx);
+  assert.equal(opened.length,2,'a stale revision names another query');
+  owner.opened='other';event('open',0);assert.equal(opened.length,2,'another profile\'s history is not this one');
 });
 
 test('new query opens the SQL dialog over its draft and a query that succeeds closes it',async()=>{

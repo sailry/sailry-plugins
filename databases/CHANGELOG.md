@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Show execution history in the same table as results, opening a query with a double click or Enter
+
 ## 0.1.20
 
 - Write SQL in a highlighted editor with line numbers, run it with Command-Enter and pick Cancel or Run in the dialog footer

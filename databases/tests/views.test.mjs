@@ -39,6 +39,7 @@ async function fixture(packageName) {
     theme:()=>({colors:{muted_foreground:'muted',foreground:'foreground',border:'border'}}),
     window:{viewport_size:()=>({width:1440,height:940})},
     command:(kind,data)=>({kind,data}),cell:value=>String(value.value),readText:value=>value,
+    historyEntries:logs=>[...logs].reverse(),historyRevision:(profile,logs)=>`${profile}:${logs.length}:${logs.at(-1)?.id??''}`,
     parent:path=>path.split('/').slice(0,-1).join('/')||'/',failure:()=>'',format:(text,values)=>`${text}:${JSON.stringify(values)}`,
     editor:()=>element('editor',`${packageName==='databases'?'db':'ssh'}-editor`),
     editorFooter:()=>element('editorFooter',`${packageName==='databases'?'db':'ssh'}-editor-footer`),
@@ -52,7 +53,7 @@ function view(packageName,profiles=[]) {
     picker:false,pickerProfile:null,pickerRevision:0,pending:null,error:null,status:null,editor:null,confirmation:null,
     terminals:[],terminal:null,files:()=>null,commandOpen:false,transfer:null,fileEdit:null,outcome:null,
     opened:null,catalog:{loading:new Set(),names:[],failed:new Set(),items:()=>[],database:null,current:null},
-    result:null,page:0,epoch:0,sqlOpen:false,logs:[],sql:'',logFocus:{},rowMenu:()=>[],
+    result:null,page:0,epoch:0,sqlOpen:false,historyPage:0,logs:[],sql:'',logFocus:{},rowMenu:()=>[],
   };
   owner.connectionLocked=()=>owner.locked();
   owner.profile=()=>profiles.find(profile=>profile.id===owner.opened);
@@ -394,62 +395,37 @@ test('database SQL dialog runs from a code editor with Cancel and one query acti
   }
 });
 
-test('capped database history has native selectable rows and captured copy/open menus',async()=>{
+test('database history is the results table, newest first, with copy and open in its row menu',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';
   owner.logs=Array.from({length:100},(_,index)=>({id:`entry-${index}`,sql:`SELECT '${index} 中文 🙂'`,database:`db-${index}`,timestamp:index,elapsed:0.25,result:{rows:{columns:['value'],rows:[],affected_rows:0}}}));
-  setup.functions.log(owner);setup.layout();assert.equal(setup.buttons.size,0,'history actions belong in the OS-native menu');
-  const row=setup.nodes.get('db-history-entry-99');
-  assert.equal(row.type,'NativeContextMenu');assert.deepEqual(plain(row.props.items.map(item=>JSON.parse(item.id.slice(4)))),[
-    {profile:'first',id:'entry-99',edit:false},{profile:'first',id:'entry-99',edit:true},
-  ]);
-  assert.equal(setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:'entry-99'})}`).props.variant,'list');
-  for(let index=0;index<100;index++) {
-    const entry=`entry-${99-index}`,wrapper=setup.nodes.get(`db-history-row-${entry}`);
-    assert.deepEqual(plain(wrapper.style.h_8),[]);
-    assert.deepEqual(plain(wrapper.style.flex_none),[]);
-    assert.equal(wrapper.nodes[0],setup.nodes.get(`db-history-${entry}`));
-    assert.equal(setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:entry})}`).props.stripe,index%2===1);
-  }
-  assert.equal(setup.nodes.has('database-history-grid'),false,'history has no empty table behind its interactive rows');
-  const heading=setup.nodes.get('database-history-heading');
-  assert.deepEqual(plain(heading.nodes.map(node=>node.nodes[0])),['db_sql_tab','db_log_result','db_log_duration']);
-  for(let index=0;index<100;index++) {
-    const row=setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:`entry-${99-index}`})}`).nodes[0];
-    assert.deepEqual(plain(row.style.px_3),plain(heading.style.px_3),'history headings and cells share their gutter');
-    assert.deepEqual(plain(setup.nodes.get(`db-log-status-${index}`).style.w_40),[]);
-    assert.deepEqual(plain(setup.nodes.get(`db-log-elapsed-${index}`).style.w_16),[]);
-  }
-  assert.deepEqual(plain(heading.nodes[1].style.w_40),[]);
-  assert.deepEqual(plain(heading.nodes[2].style.w_16),[]);
-  assert.equal(setup.nodes.get('database-history-rows').nodes[0].selector,'db-history-row-entry-99');
-  assert.equal(setup.nodes.get('database-history-rows').nodes.length,100);
-});
-
-test('empty database history has no artificial log entries',async()=>{
-  const setup=await fixture('databases'),owner=view('databases',profiles);
-  setup.functions.log(owner);
-  assert.equal(setup.nodes.has('database-history-grid'),false);
-  assert.ok(setup.nodes.has('database-history-heading'));
-  assert.equal(setup.nodes.has('database-history-rows'),false);
-  assert.equal(setup.nodes.get('db-history-empty').nodes[0],'db_history_empty');
-  assert.equal(owner.logs.length,0);
-});
-
-
-test('database history keeps selection keyboard focus and complete error tooltips',async()=>{
-  const setup=await fixture('databases'),owner=view('databases',profiles),events=[];owner.opened='first';
-  owner.logs=[{id:'failed',sql:'SELECT a_complete_query_without_truncation',timestamp:0,elapsed:1.25,result:{error:{message:'Fixture database failure'}}}];
-  owner.selectedLog='failed';owner.logKey=(event,cx)=>events.push([event,cx]);
-  setup.functions.log(owner);
-  const row=setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:'failed'})}`);
-  assert.equal(row.props.selected,true);
-  assert.deepEqual(plain(setup.nodes.get('database-history').style.track_focus),[{}]);
-  setup.nodes.get('database-history').on_key_down({key:'up'},setup.cx);assert.deepEqual(events,[[{key:'up'},setup.cx]]);
-  assert.equal(setup.nodes.get('db-log-tooltip-failed').props.text,`${new Date(0).toLocaleTimeString()}\n${owner.logs[0].sql}\nFixture database failure`);
-  assert.equal(setup.nodes.get('db-log-status-0').nodes[0],'db_failed');
-  assert.equal(setup.nodes.get('db-log-elapsed-0').nodes[0],'1.25s');
+  owner.logs[99].result={error:{message:'Fixture database failure'}};owner.historyPage=1;
+  setup.functions.log(owner);setup.layout();assert.equal(setup.buttons.size,0,'history actions belong in the table menu');
+  const table=setup.nodes.get('database-history-table');
+  assert.equal(table.type,'DataTable');
+  const props=plain(table.props);
+  assert.deepEqual(props.columns,['db_sql_tab','db_log_result','db_log_duration']);
+  assert.equal(props.rows.length,100);assert.deepEqual(props.rows[0],[`SELECT '99 中文 🙂'`,'db_failed','0.25s']);
+  assert.deepEqual(props.rows[1],[`SELECT '98 中文 🙂'`,'db_rows:{"count":0}','0.25s']);
+  assert.equal(props.cells[0][1].primary.text_tone,'warning');assert.equal(props.cells[1][1].primary.text_tone,undefined);
+  assert.equal(props.details[0][0],`${new Date(99).toLocaleTimeString()}\nSELECT '99 中文 🙂'\nFixture database failure`);
+  assert.deepEqual(props.row_ids.slice(0,2),['entry-99','entry-98']);
+  assert.equal(props.revision,'first:100:entry-99');assert.equal(props.page,1);
+  assert.deepEqual({stripe:props.stripe,header:props.header,bordered:props.bordered,alignments:props.alignments},{stripe:true,header:true,bordered:false,alignments:['start','start','end']});
+  assert.deepEqual(props.menu,[{id:'copy',label:'db_copy_query',enabled:true},{id:'open',label:'db_open_sql',enabled:true}]);
   owner.locked=()=>true;setup.functions.log(owner);
-  assert.deepEqual(plain(setup.nodes.get('db-history-failed').props.items.map(item=>item.enabled)),[true,false]);
+  assert.deepEqual(plain(setup.nodes.get('database-history-table').props.menu.map(item=>item.enabled)),[true,false]);
+  for(const removed of ['database-history-heading','database-history-rows','db-history-entry-99'])assert.equal(setup.nodes.has(removed),false);
+  const panel=await fixture('databases');panel.functions.historyPanel(owner);
+  const pages=panel.nodes.get('db-history-pages');assert.deepEqual(plain(pages.style.total_pages),[2]);assert.deepEqual(plain(pages.style.current_page),[2]);
+  pages.on_change(1,panel.cx);assert.equal(owner.historyPage,0);
+});
+
+test('empty database history is an empty table state',async()=>{
+  const setup=await fixture('databases'),owner=view('databases',profiles);owner.historyPage=0;
+  setup.functions.log(owner);
+  const props=plain(setup.nodes.get('database-history-table').props);
+  assert.deepEqual(props.rows,[]);assert.equal(props.empty,'db_history_empty');assert.equal(props.empty_icon,'clock');
+  const panel=await fixture('databases');panel.functions.historyPanel(owner);assert.equal(panel.nodes.has('db-history-pages'),false);
 });
 
 test('database history fills the vertically split lower pane and SQL fills its dialog',async()=>{

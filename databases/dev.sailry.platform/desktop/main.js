@@ -15,12 +15,16 @@ import {render} from './view.js';
 
 export const command=(kind,data)=>({kind,data});
 export const cell=value=>value.kind === 'null' ? 'NULL' : value.kind === 'blob' ? value.value.map(byte=>byte.toString(16).padStart(2,'0')).join('') : String(value.value);
+// The history newest first, as its table shows it; its revision changes
+// whenever a row index would name another query.
+export const historyEntries=logs=>[...logs].reverse();
+export const historyRevision=(profile,logs)=>`${profile}:${logs.length}:${logs.at(-1)?.id??''}`;
 export const rowText=rows=>rows.map(row=>row.map(cell).map(value=>/[\t\n\r"]/.test(value) ? `"${value.replace(/"/g,'""')}"` : value).join('\t')).join('\n');
 
 export default class Databases extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale); this.profiles=[]; this.ssh=[]; this.projects=[]; this.connected=true;
-    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.sqlOpen=false;this.home=false;
+    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.historyPage=0; this.sqlOpen=false;this.home=false;
     this.pending=null; this.error=null; this.status=null; this.editor=null; this.confirmation=null; this.picker=false; this.pickerProfile=null; this.pickerRevision=0; this.dialog=0;
     this.sql=createText('',{multiline:true,rows:[12,12],language:'sql',placeholder:this.text.db_sql});
     this.histories=new Map();
@@ -31,7 +35,7 @@ export default class Databases extends View {
       this.connected=change.connected;
       if(change.connected)this.run(cx=>this.refresh(cx,entered,entered),cx);
     },cx,true);
-    this.watch(nextTableEvent,(event,cx)=>this.run(cx=>this.rowAction(event,cx),cx),cx);
+    this.watch(nextTableEvent,(event,cx)=>{if(event.table==='database-history-table')this.historyEvent(event,cx);else this.run(cx=>this.rowAction(event,cx),cx);},cx);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
     this.watch(nextContextMenuEvent,(event,cx)=>this.run(cx=>this.menu(event.id,cx),cx),cx);
     this.watch(header_action,(id,cx)=>{if(id==='db-refresh-catalog')this.control({id},cx);else if(id==='db-connections-menu')this.connections(cx);else if(id==='db-home')this.showHome(cx);},cx);
@@ -84,7 +88,6 @@ export default class Databases extends View {
     if(event.id==='db-run'){this.runSql(cx);return;}
     if(event.id==='db-stop'){const pending=this.pending;if(pending&&!pending.request.unknown)this.run(()=>pending.request.cancel(),cx);return;}
     if(event.id==='db-inspect'){if(this.pending?.request.unknown)this.run(cx=>this.check(cx),cx);return;}
-    if(event.id?.startsWith('db-log:')){const target=JSON.parse(event.id.slice(7));if(target.profile!==this.opened)return;this.selectLog(target.id,cx);if(event.click_count===2)this.logAction(target.id,true,cx);return;}
     const editor=this.editor;if(!editor||this.locked())return;
     if(event.id===`db-engine-${this.dialog}`&&['sqlite','mysql','postgres'].includes(event.value))this.changeEngine(event.value,cx);
     if(event.id===`db-transport-${this.dialog}`&&['tcp','socket','ssh'].includes(event.value))editor.method=event.value;
@@ -114,7 +117,7 @@ export default class Databases extends View {
     if(this.locked())return;
     this.home=false;
     if(this.opened!==profile.id) {
-      this.opened=profile.id;this.sqlOpen=false;this.logs=[];this.selectedLog=null;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
+      this.opened=profile.id;this.sqlOpen=false;this.logs=[];this.selectedLog=null;this.historyPage=0;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
       const catalog=new Catalog(profile);
       catalog.report=error=>{if(this.catalog===catalog)this.report(error);};
       this.catalog=catalog;
@@ -195,7 +198,7 @@ export default class Databases extends View {
   rowMenu() {const writable=this.origin?.table&&!this.origin.profile.read_only&&!this.locked();return ['cell','row','query','insert','update','delete_sql','edit','delete'].map(action=>({id:action,label:this.text[{cell:'db_copy_cell',row:'db_copy_row',query:'db_copy_query',insert:'db_copy_insert',update:'db_copy_update',delete_sql:'db_copy_delete',edit:'db_edit_row_sql',delete:'db_delete_row'}[action]],enabled:action==='delete'?!!writable:['insert','update','delete_sql','edit'].includes(action)?!!this.origin?.table:true}));}
   async rowAction(event,cx) {
     if(event.table!=='database-results'||event.revision!==String(this.epoch)||!this.valid(this.origin)||!this.result)return;
-    if(event.kind==='selection')return;
+    if(['selection','open'].includes(event.kind))return;
     const action=event.kind==='copy'?'row':event.action,indices=event.rows.length?event.rows:event.row==null?[]:[event.row],rows=indices.map(index=>this.result.rows[index]);
     if(!rows.length||rows.some(row=>!row))return;
     if(action==='cell')return writeClipboard(cell(this.result.rows[event.row][event.column]));
@@ -213,14 +216,17 @@ export default class Databases extends View {
   // The SQL dialog opens over the results with text, or with the draft it
   // last held when text is null.
   openSql(text,database,cx) {if(this.locked())return;if(text!==null)setText(this.sql,text);this.catalog.database=database;if(!this.sqlOpen){this.sqlOpen=true;this.dialog++;}focusText(this.sql);cx.notify();}
-  selectLog(id,cx) {if(!this.logs.some(entry=>entry.id===id))return;this.selectedLog=id;this.logFocus.focus();cx.notify();}
-  logAction(id,edit,cx) {const entry=this.logs.find(entry=>entry.id===id);if(!entry)return;if(edit)this.openSql(entry.sql,entry.database,cx);else writeClipboard(entry.sql);}
-  logKey(event,cx) {if(!this.logs.length||this.sqlOpen)return;
-    const index=this.logs.findIndex(entry=>entry.id===this.selectedLog);
-    if(['up','down'].includes(event.key)){const next=index<0?this.logs.length-1:event.key==='up'?Math.min(index+1,this.logs.length-1):Math.max(index-1,0);this.selectedLog=this.logs[next].id;cx.stop_propagation();cx.notify();return;}
-    const copy=event.key==='c'&&(event.modifiers.platform||event.modifiers.control);
-    if(this.selectedLog&&(copy||event.key==='enter')){this.logAction(this.selectedLog,!copy,cx);cx.stop_propagation();}
+  // The history table's events: a selection keeps its query, open edits it
+  // in the SQL dialog, ⌘C and the menu's Copy copy the query alone.
+  historyEvent(event,cx) {
+    if(event.revision!==historyRevision(this.opened,this.logs))return;
+    const entry=historyEntries(this.logs)[event.row];
+    if(event.kind==='selection'){this.selectedLog=entry?.id??null;cx.notify();return;}
+    if(!entry)return;
+    if(event.kind==='open'||event.kind==='action'&&event.action==='open')return this.logAction(entry.id,true,cx);
+    if(event.kind==='copy'||event.kind==='action'&&event.action==='copy')return this.logAction(entry.id,false,cx);
   }
+  logAction(id,edit,cx) {const entry=this.logs.find(entry=>entry.id===id);if(!entry)return;if(edit)this.openSql(entry.sql,entry.database,cx);else writeClipboard(entry.sql);}
   edit(profile,cx) {
     if(this.locked())return;this.close(cx);const value=draft(profile,newDatabaseId());
     value.inputs=value.fields.map((text,index)=>createText(text,{label:this.text[['settings_name','db_path','db_host','db_port','db_name','db_username'][index]],placeholder:this.text[['form_name_hint','db_path_hint','form_host_hint','form_port_hint','form_database_hint','form_username_hint'][index]]}));

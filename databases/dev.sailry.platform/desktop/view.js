@@ -3,7 +3,7 @@ import {Button,Icon,Pagination,Resizable,ResizablePanel} from 'gpui-component';
 import {Conversation,Header,theme} from 'sailry';
 import {Workspace,EmptyState,Loading,InputSurface,Picker,SelectableRow,IconButton,Tooltip,ResourceTree,DataTable,Modal,NativeContextMenu} from 'sailry/ui';
 import {TextField,readText} from 'sailry/forms';
-import {command,cell} from './main.js';
+import {command,cell,historyEntries,historyRevision} from './main.js';
 import {format} from './locales.js';
 import {editor,editorFooter} from './editor-view.js';
 
@@ -57,28 +57,24 @@ function results(view) {
       .child(div().flex_1())
       .children(pages>1?[new Pagination('db-pages').size('small').current_page(view.page+1).total_pages(pages).visible_pages(3).on_change((page,cx)=>{view.page=page-1;cx.notify();})]:[])]:[]);
 }
+// The history is the results' table: newest first, one row a query, its
+// tooltip the time, the full SQL and any error. Selection, arrows, Enter or
+// a double click (open in SQL), ⌘C (copy the query) and the row menu are
+// the table's own.
 function log(view) {
-  const {text}=view,colors=theme().colors;
-  // DataTable has no retained keyboard target or whole-row tooltip; native rows keep both and their captured context menus.
-  return div().id('database-history').v_flex().flex_1().min_h_0().min_w_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
-    .child(div().id('database-history-heading').h_flex().h_8().flex_none().items_center().px_3().gap_3().text_xs().text_color(colors.muted_foreground)
-      .child(div().flex_1().min_w_0().truncate().child(text.db_sql_tab))
-      .child(div().flex_none().w_40().truncate().child(text.db_log_result))
-      .child(div().flex_none().w_16().text_right().child(text.db_log_duration)))
-    .child(view.logs.length?div().id('database-history-rows').v_flex().flex_1().min_h_0().min_w_0().overflow_y_scrollbar()
-    .children([...view.logs].reverse().map((entry,index)=>{
-      const result=entry.result?.rows??entry.request?.output?.data?.data,error=entry.result?.error??entry.request?.error;
-      const status=entry.request?.unknown?text.db_unknown:error?text.db_failed:result?format(text.db_rows,{count:result.columns.length?result.rows.length:result.affected_rows}):text.db_running;
-      const id=`db-log:${JSON.stringify({profile:view.opened,id:entry.id})}`;
-      const items=[{id:`log:${JSON.stringify({profile:view.opened,id:entry.id,edit:false})}`,label:text.db_copy_query,enabled:true},
-        {id:`log:${JSON.stringify({profile:view.opened,id:entry.id,edit:true})}`,label:text.db_open_sql,enabled:!view.locked()}];
-      return div().id(`db-history-row-${entry.id}`).h_8().flex_none().child(NativeContextMenu.new(`db-history-${entry.id}`,{items}).child(Tooltip.new(`db-log-tooltip-${entry.id}`,{text:`${new Date(entry.timestamp).toLocaleTimeString()}\n${entry.sql}${error?.message?`\n${error.message}`:''}`})
-        .child(SelectableRow.new(id,{variant:'list',selected:view.selectedLog===entry.id,stripe:index%2===1})
-          .child(div().h_flex().w_full().min_w_0().px_3().gap_3().text_sm()
-            .child(div().id(`db-log-sql-${index}`).flex_1().min_w_0().truncate().text_color(colors.foreground).child(entry.sql))
-            .child(div().id(`db-log-status-${index}`).flex_none().w_40().truncate().text_color(error?colors.destructive:colors.muted_foreground).child(status))
-            .child(div().id(`db-log-elapsed-${index}`).flex_none().w_16().text_right().text_color(colors.muted_foreground).child(entry.elapsed==null?'':`${entry.elapsed.toFixed(2)}s`))))));
-    })):div().id('db-history-empty').flex_1().min_h_0().v_flex().items_center().justify_center().text_sm().text_color(colors.muted_foreground).child(text.db_history_empty));
+  const {text}=view,entries=historyEntries(view.logs);
+  const status=entry=>{
+    const result=entry.result?.rows??entry.request?.output?.data?.data,error=entry.result?.error??entry.request?.error;
+    return {error,label:entry.request?.unknown?text.db_unknown:error?text.db_failed:result?format(text.db_rows,{count:result.columns.length?result.rows.length:result.affected_rows}):text.db_running};
+  };
+  const rows=entries.map(entry=>[entry.sql,status(entry).label,entry.elapsed==null?'':`${entry.elapsed.toFixed(2)}s`]);
+  return div().id('database-history').v_flex().flex_1().min_h_0().min_w_0()
+    .child(DataTable.new('database-history-table',{revision:historyRevision(view.opened,view.logs),columns:[text.db_sql_tab,text.db_log_result,text.db_log_duration],rows,
+      cells:entries.map((entry,index)=>{const {error}=status(entry);return rows[index].map((value,column)=>({primary:{text:value,...(column===1&&error?{text_tone:'warning'}:{})}}));}),
+      details:entries.map(entry=>{const {error}=status(entry),tip=`${new Date(entry.timestamp).toLocaleTimeString()}\n${entry.sql}${error?.message?`\n${error.message}`:''}`;return [tip,tip,tip];}),
+      row_ids:entries.map(entry=>entry.id),widths:[200,160,80],alignments:['start','start','end'],fill:0,page:view.historyPage,
+      menu:[{id:'copy',label:text.db_copy_query,enabled:true},{id:'open',label:text.db_open_sql,enabled:!view.locked()}],
+      stripe:true,header:true,bordered:false,empty:text.db_history_empty,empty_icon:'clock'}));
 }
 // The action that runs, stops or checks the query: Run while idle, Stop
 // while it runs, Check result when its outcome is unknown.
@@ -112,6 +108,7 @@ function historyPanel(view) {
   return div().id('database-history-panel').v_flex().size_full().min_h_0().min_w_0().border_t_1().border_color(colors.border)
     .child(div().id('database-history-bar').h_flex().h_10().flex_none().items_center().pl_3().pr_2().gap_1()
       .child(div().flex_1().min_w_0().truncate().text_sm().font_medium().child(text.db_history))
+      .children(view.logs.length>50?[new Pagination('db-history-pages').size('small').current_page(view.historyPage+1).total_pages(Math.ceil(view.logs.length/50)).visible_pages(2).on_change((page,cx)=>{view.historyPage=page-1;cx.notify();})]:[])
       .children(running?[queryButton(view,{size:'small'})]:[])
       .child(IconButton.new('db-new-query',{icon:'plus',label:text.db_new_query,show_label:true,size:'small',disabled:view.locked()})))
     .child(log(view));

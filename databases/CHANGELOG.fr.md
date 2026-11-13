@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Afficher l’historique d’exécution dans le même tableau que les résultats et ouvrir une requête d’un double-clic ou avec Entrée
+
 ## 0.1.20
 
 - Écrire le SQL dans un éditeur coloré avec numéros de ligne, l’exécuter avec Commande-Entrée et choisir Annuler ou Exécuter en pied de dialogue

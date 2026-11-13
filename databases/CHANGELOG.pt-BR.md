@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter
+
 ## 0.1.20
 
 - Escrever SQL em um editor destacado com números de linha, executá-lo com Command-Enter e escolher Cancelar ou Executar no rodapé do diálogo
