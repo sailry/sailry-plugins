@@ -18,7 +18,7 @@ function landing(view){const{text}=view;return EmptyState.new('ssh_workspace_emp
   .child(div().id('ssh-saved-connections').v_flex().w_full().h_auto().max_w_96().min_h_0().max_h(320).flex_initial()
     .child(div().id('ssh-saved-connections-scroll').v_flex().w_full().flex_1().min_h_0().overflow_y_scrollbar().gap_2()
       .children(view.profiles.map(profile=>NativeContextMenu.new(`ssh-connection-${profile.id}`,{fill:false,items:[['edit','connection_action_edit'],['remove','settings_delete']].map(([action,label])=>({id:`connection:${JSON.stringify({id:profile.id,revision:profile.revision,action})}`,label:text[label],enabled:!view.locked()}))})
-        .child(SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.locked(),selected:false})
+        .child(SelectableRow.new(`ssh-open-${profile.id}`,{variant:'card',label:profile.name,disabled:view.connectionLocked(profile),selected:false})
         .child(div().h_flex().w_full().gap_3().child(new Icon('icons/network.svg').size_5())
           .child(div().v_flex().flex_1().min_w_0().gap_0p5().child(div().text_sm().truncate().child(profile.name))
             .child(div().text_sm().truncate().text_color(theme().colors.muted_foreground).child(description(profile))))
@@ -88,10 +88,11 @@ function dialog(view){const{text}=view;if(view.outcome?.kind==='host_key_require
   return {props:{},children:[]};}
 export function render(view){const{text}=view,active=view.home?null:view.terminals.find(info=>info.id===view.terminal),profile=view.home?null:view.activeProfile(),opened=!!view.editor||!!view.confirmation||!!view.fileEdit||!!view.transfer||view.commandOpen||view.outcome?.kind==='host_key_required';
   const modal=opened?dialog(view):{props:{},children:[]};
+  const opening=view.pending?.request.command?.kind==='open_ssh_terminal';
   const connecting=!opened&&!!view.pending&&!view.pending.request.unknown&&['check_ssh','open_ssh_terminal'].includes(view.pending.request.command?.kind);
   const body=div().id(!view.loaded?'ssh-loading':active?'ssh-page':'ssh-landing').relative().v_flex().size_full().min_h_0().min_w_0()
-    .children(!opened&&!connecting&&view.pending?[feedback(view)]:[])
-    .child(!view.loaded?div().flex_1().min_h_0()
+    .children(!opened&&!connecting&&!opening&&view.pending?[feedback(view)]:[])
+    .child(!view.loaded||connecting?div().flex_1().min_h_0()
       :active?div().flex_1().min_h_0().child(view.closingTerminals?.has(active.id)?div():Terminal.new(`ssh-terminal-${active.id}`,{terminal:active.id})):landing(view))
     .children(connecting?[Loading.new('ssh-connecting')]:[]);
   return ActionScope.new('ssh-actions',{close:'ssh-close-current'})

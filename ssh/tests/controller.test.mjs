@@ -361,6 +361,48 @@ test('opening a running connection preserves captured exited tabs',async()=>{
   assert.deepEqual(Array.from(view.terminals,info=>info.id),[exited.id,running.id]);
 });
 
+test('failed openings return home and allow reconnection',async()=>{
+  const {view,cx,host,profile,terminal,reads,notices,focused}=await browsing();
+  const other={...profile,id:'other-host',name:'Other host'};
+  host.profiles=[profile,other];view.profiles=[profile,other];
+  let attempts=0;
+  host.inspect=async value=>{
+    assert.equal(value.kind,'open_ssh_terminal');
+    if(++attempts===1)return {Err:{code:'unavailable',message:'SSH connection could not be established'}};
+    const opened={...terminal,id:'new-terminal',ssh:other.id};host.terminals.push(opened);
+    return {Ok:{kind:'ssh_outcome',data:{kind:'terminal',...opened}}};
+  };
+  await view.open(other,cx);
+  assert.equal(view.home,true);assert.equal(view.pending,null);assert.equal(view.locked(),false);
+  assert.equal(view.terminals[0].id,terminal.id,'a failed open keeps existing terminal tabs');
+  assert.equal(notices.length,1);assert.equal(attempts,1);
+  await view.open(other,cx);
+  assert.equal(view.home,false);assert.equal(view.terminal,'new-terminal');assert.equal(view.pending,null);
+  assert.deepEqual(focused,['new-terminal']);
+  assert.equal(reads.filter(value=>value.kind==='open_ssh_terminal').length,2);
+});
+
+test('unconfirmed openings inspect the original request before reconnecting',async()=>{
+  const {view,cx,host,profile,reads,notices,settle}=await browsing();
+  host.terminals=[];view.terminals=[];view.terminal=null;
+  host.inspect=async()=>({Err:{code:'outcome_unknown',message:'SSH opening could not be confirmed'}});
+  await view.open(profile,cx);
+  const pending=view.pending,id=pending.request.id;
+  assert.equal(view.home,true);assert.equal(view.connectionLocked(profile),false);
+  assert.equal(view.connectionLocked({...profile,id:'another-host'}),true);
+  assert.equal(view.locked(),true);
+  const inspected=[];
+  host.outcome=async value=>{inspected.push(value);return {kind:'admitted'};};
+  view.control({id:`ssh-open-${profile.id}`},cx);await settle();
+  assert.deepEqual(inspected,[id]);assert.equal(view.pending,pending);
+  assert.equal(reads.filter(value=>value.kind==='open_ssh_terminal').length,1);
+  assert.equal(notices.length,2,'each explicit check reports its still-unconfirmed outcome once');
+  host.outcome=async value=>{inspected.push(value);return {kind:'completed',data:{Err:{code:'unavailable',message:'SSH connection could not be established'}}};};
+  await view.open(profile,cx);
+  assert.deepEqual(inspected,[id,id]);assert.equal(view.pending,null);assert.equal(view.locked(),false);
+  assert.equal(reads.filter(value=>value.kind==='open_ssh_terminal').length,1,'checking never sends another opening');
+});
+
 test('closing a browser suppresses its late directory result',async()=>{
   const {view,cx,host,texts}=await browsing(),files=view.files(),wait=deferred();
   texts.length=0;host.browse=async()=>wait.promise;const pending=files.load('/late',cx);files.close();

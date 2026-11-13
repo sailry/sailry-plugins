@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.21
+
+- Show only connection progress while opening an SSH terminal
+- Return failed connections to the saved connection list without recovery buttons
+- Check an unconfirmed opening from its saved connection before starting another shell
+
 ## 0.1.20
 
 - Restore outline icons in navigation and tools

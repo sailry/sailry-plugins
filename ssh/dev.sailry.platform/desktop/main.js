@@ -44,6 +44,7 @@ export default class Ssh extends View {
     }
   }}
   locked(){return !this.connected||!!this.pending;}
+  connectionLocked(profile){const pending=this.pending;return !this.connected||!!pending&&!(pending.target?.id===profile.id&&pending.request.command?.kind==='open_ssh_terminal'&&pending.request.unknown&&!pending.request.running);}
   profile(){return this.profiles.find(profile=>profile.id===this.selected);}
   activeProfile(){const active=this.terminals.find(info=>info.id===this.terminal);return this.profiles.find(profile=>profile.id===active?.ssh);}
   showHome(cx){if(this.locked())return;this.home=true;++this.terminalSelection;this.terminalClose=null;this.picker=false;cx.notify();}
@@ -52,7 +53,7 @@ export default class Ssh extends View {
     if(event.id==='ssh-close-current'){const id=this.terminal;if(id&&!this.home&&!this.locked())this.run(cx=>this.closeTerminal(id,cx),cx);return;}
     if(event.id==='ssh-new'){if(!this.locked())this.edit(null,cx);return;}
     if(event.id===`ssh-worktree-${this.dialog}`){const transfer=this.transfer;if(transfer&&!this.locked()&&this.worktrees.some(tree=>tree.project&&tree.id===event.value)){transfer.worktree=event.value;cx.notify();}return;}
-    if(event.id?.startsWith('ssh-open-')){const profile=this.profiles.find(profile=>event.id===`ssh-open-${profile.id}`);if(profile&&!this.locked())this.run(cx=>this.open(profile,cx),cx);return;}
+    if(event.id?.startsWith('ssh-open-')){const profile=this.profiles.find(profile=>event.id===`ssh-open-${profile.id}`);if(profile&&!this.connectionLocked(profile))this.run(cx=>this.open(profile,cx),cx);return;}
     if(event.id==='ssh-files-parent'){const files=this.files();if(files&&!files.pending&&files.path!=='/')this.run(cx=>files.load(parent(files.path),cx),cx);return;}
     const editor=this.editor;if(!editor||this.locked()||describeSecret(editor.key).picking||event.id!==`ssh-authentication-${this.dialog}`)return;
     if(['password','private_key','key_path'].includes(event.value)){editor.authentication=event.value;cx.notify();}}
@@ -114,9 +115,14 @@ export default class Ssh extends View {
     if(after)await after(output,cx);cx.notify();return output;
   }
   async inspect(cx){if(this.pending){const request=this.pending.request;await request.check(cx);if(request.unknown)this.report(request.uncertainty??{code:'outcome_unknown'});await this.finish(cx);}}
-  async open(profile,cx){if(this.locked())return;this.selected=profile.id;this.resume=true;
+  async open(profile,cx){if(this.connectionLocked(profile))return;
+    // Reopening an unconfirmed connection checks its original request first.
+    // It never starts a second remote shell while that result is unknown.
+    if(this.pending){await this.inspect(cx);return;}
+    this.selected=profile.id;this.resume=true;
     const terminals=await listSshTerminals(profile.id),existing=terminals.find(info=>info.status.kind==='running');
     if(existing){this.terminals=[...new Map([...this.terminals,...terminals].map(info=>[info.id,info])).values()];this.selectTerminal(existing.id,cx,true);this.picker=false;return;}
+    this.home=true;this.picker=false;++this.terminalSelection;this.terminalClose=null;
     await this.execute(command('open_ssh_terminal',{profile:profile.id,expected_revision:profile.revision}),cx,null,prepareSshTerminal(profile.id,profile.revision),profile);
   }
   selectTerminal(id,cx,focus=false){const info=this.terminals.find(info=>info.id===id);if(!info)return;if(focus)this.home=false;this.terminal=id;if(!this.commandOpen)this.selected=info.ssh;const profile=this.profiles.find(profile=>profile.id===info.ssh);if(profile){let files=this.browsers.get(profile.id);if(!files||JSON.stringify(files.profile)!==JSON.stringify(profile)){files?.close();files=new Files(profile,(error,key)=>this.report(error,key),this.text);this.browsers.set(profile.id,files);this.run(cx=>files.load('.',cx),cx);}}else{this.browsers.get(info.ssh)?.close();this.browsers.delete(info.ssh);}if(focus){++this.terminalSelection;this.terminalClose=null;focusTerminal(id);}cx.notify();}

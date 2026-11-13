@@ -31,7 +31,7 @@ function fixture() {
   });
   const view={text:messages('en'),profiles:[],terminals:[],terminal:null,home:false,loaded:false,
     pending:null,error:null,editor:null,confirmation:null,fileEdit:null,transfer:null,commandOpen:false,
-    dialog:0,picker:false,pickerRevision:0,pickerProfile:null,locked:()=>false,activeProfile:()=>null};
+    dialog:0,picker:false,pickerRevision:0,pickerProfile:null,locked:()=>false,connectionLocked:()=>false,activeProfile:()=>null};
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
 
@@ -63,4 +63,27 @@ test('restored terminals and their tabs remain during refresh failures',()=>{
     assert.equal(header.tabs.selected,'terminal');
     assert.equal(header.tabs.items[0].label,'Saved host');
   }
+});
+
+test('opening shows progress without landing or recovery buttons',()=>{
+  const setup=fixture();
+  setup.view.loaded=true;
+  setup.view.profiles=[{id:'profile',name:'Saved host',username:'user',host:'host',port:22}];
+  setup.view.pending={request:{command:{kind:'open_ssh_terminal'},unknown:false}};
+  setup.render();
+  assert.ok(setup.nodes.has('ssh-connecting'));
+  assert.equal(setup.nodes.has('ssh_workspace_empty'),false);
+  assert.equal(setup.nodes.has('ssh-new'),false);
+  assert.equal(setup.nodes.has('ssh-pending'),false);
+  assert.equal(setup.nodes.has('ssh-inspect'),false);
+  assert.equal(setup.nodes.has('ssh-stop'),false);
+
+  setup.view.pending.request.unknown=true;
+  setup.render();
+  assert.equal(setup.nodes.has('ssh-connecting'),false);
+  assert.ok(setup.nodes.has('ssh_workspace_empty'));
+  assert.ok(setup.nodes.has('ssh-open-profile'));
+  assert.equal(setup.nodes.has('ssh-pending'),false);
+  assert.equal(setup.nodes.has('ssh-inspect'),false);
+  assert.equal(setup.nodes.has('ssh-stop'),false);
 });
