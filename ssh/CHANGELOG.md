@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Show remote files with file and folder icons, as the Files package does
+
 ## 0.1.22
 
 - Browse remote files in expandable directory branches with cached listings and pagination

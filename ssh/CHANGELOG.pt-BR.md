@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos
+
 ## 0.1.22
 
 - Navegar por arquivos remotos em diretórios expansíveis com cache e paginação

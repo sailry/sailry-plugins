@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Afficher les fichiers distants avec des icônes de fichier et de dossier, comme le paquet Fichiers
+
 ## 0.1.22
 
 - Parcourir les fichiers distants dans une arborescence dépliable avec cache et pagination

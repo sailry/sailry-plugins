@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Mostrar los archivos remotos con iconos de archivo y carpeta, como el paquete Archivos
+
 ## 0.1.22
 
 - Explorar archivos remotos en un árbol de directorios desplegable con caché y paginación
