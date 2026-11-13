@@ -5655,7 +5655,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6232,6 +6232,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.21",
+          "commit": "ec503ae7ed0c6a32bea28fa0d5d7bf450f5bd439",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show execution history in the same table as results, opening a query with a double click or Enter",
+            "locales": {
+              "zh-CN": "- 执行记录改用和结果相同的表格，双击或回车在 SQL 中打开",
+              "zh-TW": "- 執行紀錄改用與結果相同的表格，雙擊或按 Enter 在 SQL 中開啟",
+              "ja": "- 実行履歴を結果と同じテーブルで表示し、ダブルクリックまたは Enter で SQL に開く",
+              "ko": "- 실행 기록을 결과와 같은 표로 표시하고 두 번 클릭하거나 Enter로 SQL에서 열기",
+              "fr": "- Afficher l’historique d’exécution dans le même tableau que les résultats et ouvrir une requête d’un double-clic ou avec Entrée",
+              "de": "- Ausführungsverlauf in derselben Tabelle wie die Ergebnisse zeigen und eine Abfrage per Doppelklick oder Eingabe öffnen",
+              "es": "- Mostrar el historial de ejecución en la misma tabla que los resultados y abrir una consulta con doble clic o Intro",
+              "pt-BR": "- Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter",
+              "ru": "- Показывать историю выполнения в той же таблице, что и результаты, и открывать запрос двойным щелчком или клавишей Enter"
+            }
+          }
+        },
+        {
           "version": "0.1.20",
           "commit": "32ebfb08c709cd8e5ef7563d53dd17154ba9b6e0",
           "min_sailry_version": "0.1.6",
@@ -6438,17 +6457,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Write SQL in a highlighted editor with line numbers, run it with Command-Enter and pick Cancel or Run in the dialog footer",
+        "text": "- Show execution history in the same table as results, opening a query with a double click or Enter",
         "locales": {
-          "zh-CN": "- SQL 改用带行号和语法高亮的编辑器，⌘↵ 执行，弹窗底部提供取消和执行",
-          "zh-TW": "- SQL 改用帶行號與語法醒目提示的編輯器，⌘↵ 執行，對話框底部提供取消與執行",
-          "ja": "- SQL を行番号と構文ハイライト付きのエディタで書き、⌘↵ で実行、ダイアログ下部にキャンセルと実行を配置",
-          "ko": "- SQL을 줄 번호와 구문 강조가 있는 편집기에서 작성하고 ⌘↵로 실행하며, 대화 상자 하단에 취소와 실행 배치",
-          "fr": "- Écrire le SQL dans un éditeur coloré avec numéros de ligne, l’exécuter avec Commande-Entrée et choisir Annuler ou Exécuter en pied de dialogue",
-          "de": "- SQL in einem hervorgehobenen Editor mit Zeilennummern schreiben, mit Befehl-Eingabe ausführen und im Dialogfuß Abbrechen oder Ausführen wählen",
-          "es": "- Escribir SQL en un editor resaltado con números de línea, ejecutarlo con Comando-Intro y elegir Cancelar o Ejecutar al pie del diálogo",
-          "pt-BR": "- Escrever SQL em um editor destacado com números de linha, executá-lo com Command-Enter e escolher Cancelar ou Executar no rodapé do diálogo",
-          "ru": "- Писать SQL в редакторе с подсветкой и номерами строк, выполнять по Command-Enter и выбирать «Отмена» или «Выполнить» внизу диалога"
+          "zh-CN": "- 执行记录改用和结果相同的表格，双击或回车在 SQL 中打开",
+          "zh-TW": "- 執行紀錄改用與結果相同的表格，雙擊或按 Enter 在 SQL 中開啟",
+          "ja": "- 実行履歴を結果と同じテーブルで表示し、ダブルクリックまたは Enter で SQL に開く",
+          "ko": "- 실행 기록을 결과와 같은 표로 표시하고 두 번 클릭하거나 Enter로 SQL에서 열기",
+          "fr": "- Afficher l’historique d’exécution dans le même tableau que les résultats et ouvrir une requête d’un double-clic ou avec Entrée",
+          "de": "- Ausführungsverlauf in derselben Tabelle wie die Ergebnisse zeigen und eine Abfrage per Doppelklick oder Eingabe öffnen",
+          "es": "- Mostrar el historial de ejecución en la misma tabla que los resultados y abrir una consulta con doble clic o Intro",
+          "pt-BR": "- Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter",
+          "ru": "- Показывать историю выполнения в той же таблице, что и результаты, и открывать запрос двойным щелчком или клавишей Enter"
         }
       }
     },
