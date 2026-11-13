@@ -5655,7 +5655,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6232,6 +6232,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Shorten test labels without changing assertions",
+            "locales": {
+              "zh-CN": "- 缩短测试名称，保持断言不变",
+              "zh-TW": "- 縮短測試名稱，保持斷言不變",
+              "ja": "- アサーションを変更せずにテスト名を短縮",
+              "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
+              "fr": "- Raccourcir les noms des tests sans modifier les assertions",
+              "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
+              "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
+              "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
+              "ru": "- Сократить названия тестов без изменения проверок"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "ec503ae7ed0c6a32bea28fa0d5d7bf450f5bd439",
           "min_sailry_version": "0.1.6",
@@ -6457,17 +6476,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show execution history in the same table as results, opening a query with a double click or Enter",
+        "text": "- Shorten test labels without changing assertions",
         "locales": {
-          "zh-CN": "- 执行记录改用和结果相同的表格，双击或回车在 SQL 中打开",
-          "zh-TW": "- 執行紀錄改用與結果相同的表格，雙擊或按 Enter 在 SQL 中開啟",
-          "ja": "- 実行履歴を結果と同じテーブルで表示し、ダブルクリックまたは Enter で SQL に開く",
-          "ko": "- 실행 기록을 결과와 같은 표로 표시하고 두 번 클릭하거나 Enter로 SQL에서 열기",
-          "fr": "- Afficher l’historique d’exécution dans le même tableau que les résultats et ouvrir une requête d’un double-clic ou avec Entrée",
-          "de": "- Ausführungsverlauf in derselben Tabelle wie die Ergebnisse zeigen und eine Abfrage per Doppelklick oder Eingabe öffnen",
-          "es": "- Mostrar el historial de ejecución en la misma tabla que los resultados y abrir una consulta con doble clic o Intro",
-          "pt-BR": "- Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter",
-          "ru": "- Показывать историю выполнения в той же таблице, что и результаты, и открывать запрос двойным щелчком или клавишей Enter"
+          "zh-CN": "- 缩短测试名称，保持断言不变",
+          "zh-TW": "- 縮短測試名稱，保持斷言不變",
+          "ja": "- アサーションを変更せずにテスト名を短縮",
+          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
+          "fr": "- Raccourcir les noms des tests sans modifier les assertions",
+          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
+          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
+          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
+          "ru": "- Сократить названия тестов без изменения проверок"
         }
       }
     },
@@ -14172,7 +14191,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.2.2",
+        "version": "0.2.3",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14671,6 +14690,25 @@
       ],
       "versions": [
         {
+          "version": "0.2.3",
+          "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Shorten test labels without changing assertions\n- Correct the production SDK history fixture and verify configured goal limits",
+            "locales": {
+              "zh-CN": "- 缩短测试名称，保持断言不变\n- 修正生产 SDK 历史记录测试数据，并验证配置的目标限制",
+              "zh-TW": "- 縮短測試名稱，保持斷言不變\n- 修正正式 SDK 歷史記錄測試資料，並驗證設定的目標限制",
+              "ja": "- アサーションを変更せずにテスト名を短縮\n- 本番 SDK の履歴テストデータを修正し、設定された目標制限を検証",
+              "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축\n- 실제 SDK 기록 테스트 데이터를 수정하고 설정된 목표 제한 검증",
+              "fr": "- Raccourcir les noms des tests sans modifier les assertions\n- Corriger les données de test de l’historique du SDK de production et vérifier les limites configurées",
+              "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern\n- Verlaufstestdaten des Produktions-SDK korrigieren und konfigurierte Ziellimits prüfen",
+              "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones\n- Corregir los datos de prueba del historial del SDK de producción y verificar los límites configurados",
+              "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções\n- Corrigir os dados de teste do histórico do SDK de produção e verificar os limites configurados",
+              "ru": "- Сократить названия тестов без изменения проверок\n- Исправить тестовые данные истории рабочего SDK и проверить заданные ограничения целей"
+            }
+          }
+        },
+        {
           "version": "0.2.2",
           "commit": "750071a108fca2cc4915106dd41ac2d4efddde5a",
           "min_sailry_version": "0.1.6",
@@ -14842,17 +14880,17 @@
         }
       ],
       "release_notes": {
-        "text": "- The Status badge shows the state and the time, or the reason once paused, after its icon; it no longer repeats the word Goal\n- The panel has Pause or Resume and End. Edit is removed: `/goal <new text>` replaces the goal. Clear is now End, `/goal end`, and an ended goal is listed as Ended\n- A goal turn that fails is reported once, by the app's own notification; the goal still shows Paused · Error",
+        "text": "- Shorten test labels without changing assertions\n- Correct the production SDK history fixture and verify configured goal limits",
         "locales": {
-          "zh-CN": "- 状态徽标在图标后显示状态和用时，暂停后显示原因，不再重复“目标”二字\n- 面板只有“暂停”或“继续”以及“结束”。移除“编辑”：用 `/goal <新内容>` 替换目标。“清除”改为“结束”（`/goal end`），已结束的目标在历史中显示为“已结束”\n- 目标轮次失败时只通知一次，由应用自身的通知发出；目标仍显示“已暂停 · 出错”",
-          "zh-TW": "- 狀態徽章在圖示後顯示狀態和用時，暫停後顯示原因，不再重複「目標」二字\n- 面板只有「暫停」或「繼續」以及「結束」。移除「編輯」：用 `/goal <新內容>` 取代目標。「清除」改為「結束」（`/goal end`），已結束的目標在歷史中顯示為「已結束」\n- 目標輪次失敗時只通知一次，由應用程式自身的通知發出；目標仍顯示「已暫停 · 出錯」",
-          "ja": "- ステータスバッジはアイコンの後に状態と経過時間（一時停止後は理由）を表示し、「目標」の語を繰り返しません\n- パネルのボタンは「一時停止」または「再開」と「終了」のみです。「編集」は廃止され、`/goal <新しい内容>` で目標を置き換えます。「クリア」は「終了」（`/goal end`）になり、終了した目標は履歴に「終了」と表示されます\n- 目標のターンが失敗したときの通知は、アプリ自身の通知の 1 件だけになりました。目標には引き続き「一時停止 · エラー」と表示されます",
-          "ko": "- 상태 배지는 아이콘 뒤에 상태와 시간(일시 중지 후에는 이유)을 표시하며 '목표'라는 단어를 반복하지 않습니다\n- 패널에는 일시 중지 또는 재개와 종료만 있습니다. 편집은 제거되었으며 `/goal <새 내용>`으로 목표를 교체합니다. 지우기는 종료(`/goal end`)로 바뀌었고 종료한 목표는 기록에 종료됨으로 표시됩니다\n- 목표 턴이 실패하면 앱 자체 알림으로 한 번만 알립니다. 목표에는 계속 '일시 중지됨 · 오류'가 표시됩니다",
-          "fr": "- Le badge d'état affiche, après son icône, l'état et la durée, ou la raison une fois en pause ; il ne répète plus le mot Objectif\n- Le panneau propose Suspendre ou Reprendre, et Terminer. Modifier est supprimé : `/goal <nouveau texte>` remplace l'objectif. Effacer devient Terminer, `/goal end`, et un objectif terminé apparaît comme Terminé dans l'historique\n- Un tour d'objectif qui échoue est signalé une seule fois, par la notification de l'application ; l'objectif affiche toujours En pause · Erreur",
-          "de": "- Das Statusabzeichen zeigt nach dem Symbol den Zustand und die Zeit, nach einer Pause den Grund; das Wort Ziel wird nicht mehr wiederholt\n- Das Panel hat Pausieren oder Fortsetzen und Beenden. Bearbeiten entfällt: `/goal <neuer Text>` ersetzt das Ziel. Löschen heißt jetzt Beenden, `/goal end`, und ein beendetes Ziel steht im Verlauf als Beendet\n- Ein fehlgeschlagener Ziel-Turn wird nur einmal gemeldet, durch die Benachrichtigung der App; das Ziel zeigt weiterhin Pausiert · Fehler",
-          "es": "- La insignia de estado muestra, tras su icono, el estado y el tiempo, o el motivo una vez en pausa; ya no repite la palabra Objetivo\n- El panel tiene Pausar o Reanudar y Finalizar. Se elimina Editar: `/goal <texto nuevo>` reemplaza el objetivo. Borrar pasa a ser Finalizar, `/goal end`, y un objetivo finalizado aparece como Finalizado en el historial\n- Un turno del objetivo que falla se notifica una sola vez, con la notificación de la aplicación; el objetivo sigue mostrando En pausa · Error",
-          "pt-BR": "- O indicador de status mostra, após o ícone, o estado e o tempo, ou o motivo quando pausada; ele não repete mais a palavra Meta\n- O painel tem Pausar ou Retomar e Encerrar. Editar foi removido: `/goal <novo texto>` substitui a meta. Limpar agora é Encerrar, `/goal end`, e uma meta encerrada aparece como Encerrada no histórico\n- Um turno da meta que falha é notificado uma única vez, pela notificação do próprio aplicativo; a meta continua mostrando Pausada · Erro",
-          "ru": "- Значок состояния показывает после иконки состояние и время, а после паузы — причину; слово «Цель» больше не повторяется\n- В панели остались «Пауза» или «Продолжить» и «Завершить». «Изменить» удалено: `/goal <новый текст>` заменяет цель. «Очистить» теперь «Завершить», `/goal end`, а завершённая так цель отображается в истории как «Завершена»\n- О неудачном ходе цели сообщается один раз — уведомлением самого приложения; цель по-прежнему показывает «Приостановлена · Ошибка»"
+          "zh-CN": "- 缩短测试名称，保持断言不变\n- 修正生产 SDK 历史记录测试数据，并验证配置的目标限制",
+          "zh-TW": "- 縮短測試名稱，保持斷言不變\n- 修正正式 SDK 歷史記錄測試資料，並驗證設定的目標限制",
+          "ja": "- アサーションを変更せずにテスト名を短縮\n- 本番 SDK の履歴テストデータを修正し、設定された目標制限を検証",
+          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축\n- 실제 SDK 기록 테스트 데이터를 수정하고 설정된 목표 제한 검증",
+          "fr": "- Raccourcir les noms des tests sans modifier les assertions\n- Corriger les données de test de l’historique du SDK de production et vérifier les limites configurées",
+          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern\n- Verlaufstestdaten des Produktions-SDK korrigieren und konfigurierte Ziellimits prüfen",
+          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones\n- Corregir los datos de prueba del historial del SDK de producción y verificar los límites configurados",
+          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções\n- Corrigir os dados de teste do histórico do SDK de produção e verificar os limites configurados",
+          "ru": "- Сократить названия тестов без изменения проверок\n- Исправить тестовые данные истории рабочего SDK и проверить заданные ограничения целей"
         }
       }
     },
@@ -18072,7 +18110,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -18101,6 +18139,25 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.18",
+          "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Align runtime guidance and SDK references with moejs and MyGo/Kit",
+            "locales": {
+              "zh-CN": "- 按当前 moejs 与 MyGo/Kit 更新运行时指导和 SDK 参考",
+              "zh-TW": "- 依目前 moejs 與 MyGo/Kit 更新執行環境指引與 SDK 參考",
+              "ja": "- moejs と MyGo/Kit に合わせてランタイムの説明と SDK リファレンスを更新",
+              "ko": "- moejs 및 MyGo/Kit에 맞게 런타임 안내와 SDK 참조 갱신",
+              "fr": "- Aligner la documentation du runtime et les références SDK sur moejs et MyGo/Kit",
+              "de": "- Laufzeithinweise und SDK-Referenzen an moejs und MyGo/Kit anpassen",
+              "es": "- Actualizar la guía de ejecución y las referencias del SDK para moejs y MyGo/Kit",
+              "pt-BR": "- Atualizar as orientações de execução e as referências do SDK para moejs e MyGo/Kit",
+              "ru": "- Обновить описание среды выполнения и справку SDK для moejs и MyGo/Kit"
+            }
+          }
+        },
         {
           "version": "0.1.17",
           "commit": "fc242d802a0ef9c4a5bde6b9b729373c05741e3d",
@@ -18279,17 +18336,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Accept `programs`, `process.run` and model adapters over a declared program in the package check",
+        "text": "- Align runtime guidance and SDK references with moejs and MyGo/Kit",
         "locales": {
-          "zh-CN": "- 包检查接受 `programs`、`process.run` 以及基于已声明程序的模型适配器",
-          "zh-TW": "- 套件檢查接受 `programs`、`process.run` 以及基於已宣告程式的模型轉接器",
-          "ja": "- パッケージ検査で `programs`、`process.run`、宣言済みプログラムを使うモデルアダプターを受け付け",
-          "ko": "- 패키지 검사에서 `programs`, `process.run` 및 선언된 프로그램 기반 모델 어댑터를 허용",
-          "fr": "- La vérification accepte `programs`, `process.run` et les adaptateurs de modèles sur un programme déclaré",
-          "de": "- Die Paketprüfung akzeptiert `programs`, `process.run` und Modelladapter über ein deklariertes Programm",
-          "es": "- La comprobación acepta `programs`, `process.run` y adaptadores de modelos sobre un programa declarado",
-          "pt-BR": "- A verificação aceita `programs`, `process.run` e adaptadores de modelo sobre um programa declarado",
-          "ru": "- Проверка пакета принимает `programs`, `process.run` и адаптеры моделей поверх объявленной программы"
+          "zh-CN": "- 按当前 moejs 与 MyGo/Kit 更新运行时指导和 SDK 参考",
+          "zh-TW": "- 依目前 moejs 與 MyGo/Kit 更新執行環境指引與 SDK 參考",
+          "ja": "- moejs と MyGo/Kit に合わせてランタイムの説明と SDK リファレンスを更新",
+          "ko": "- moejs 및 MyGo/Kit에 맞게 런타임 안내와 SDK 참조 갱신",
+          "fr": "- Aligner la documentation du runtime et les références SDK sur moejs et MyGo/Kit",
+          "de": "- Laufzeithinweise und SDK-Referenzen an moejs und MyGo/Kit anpassen",
+          "es": "- Actualizar la guía de ejecución y las referencias del SDK para moejs y MyGo/Kit",
+          "pt-BR": "- Atualizar as orientações de execução e as referências do SDK para moejs e MyGo/Kit",
+          "ru": "- Обновить описание среды выполнения и справку SDK для moejs и MyGo/Kit"
         }
       }
     },
@@ -21859,7 +21916,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.31",
+        "version": "0.1.32",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22028,6 +22085,25 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.32",
+          "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Shorten test labels without changing assertions",
+            "locales": {
+              "zh-CN": "- 缩短测试名称，保持断言不变",
+              "zh-TW": "- 縮短測試名稱，保持斷言不變",
+              "ja": "- アサーションを変更せずにテスト名を短縮",
+              "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
+              "fr": "- Raccourcir les noms des tests sans modifier les assertions",
+              "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
+              "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
+              "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
+              "ru": "- Сократить названия тестов без изменения проверок"
+            }
+          }
+        },
         {
           "version": "0.1.31",
           "commit": "7e0b4bdeba88e96e50075c588a28bf95d28f8714",
@@ -22378,17 +22454,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show the Usage tables as compact bordered tables with plain model and session names, the cache rate as a percentage and the share beside its bar",
+        "text": "- Shorten test labels without changing assertions",
         "locales": {
-          "zh-CN": "- 用量页表格改为紧凑的带边框样式：模型和会话仅显示名称，缓存显示为百分比，占比在进度条旁显示数值",
-          "zh-TW": "- 用量頁表格改為緊湊的帶邊框樣式：模型和工作階段僅顯示名稱，快取顯示為百分比，占比在進度列旁顯示數值",
-          "ja": "- 使用量の表を枠付きのコンパクトな表示に変更：モデルとセッションは名前のみ、キャッシュ率はパーセント表示、割合はバーの横に数値を表示",
-          "ko": "- 사용량 표를 테두리가 있는 간결한 형태로 변경: 모델과 세션은 이름만, 캐시율은 백분율로, 비중은 막대 옆에 수치로 표시",
-          "fr": "- Tableaux d’utilisation compacts et encadrés : modèle et session par leur seul nom, cache en pourcentage, part affichée à côté de sa barre",
-          "de": "- Nutzungstabellen kompakt und umrahmt: Modell und Sitzung nur mit Namen, Cache-Rate als Prozentwert, Anteil neben seinem Balken",
-          "es": "- Tablas de uso compactas y con borde: modelo y sesión solo con su nombre, caché como porcentaje y la cuota junto a su barra",
-          "pt-BR": "- Tabelas de uso compactas e com borda: modelo e sessão apenas pelo nome, cache como porcentagem e a participação ao lado da barra",
-          "ru": "- Таблицы использования стали компактными и с рамкой: модель и сеанс показаны только названием, кэш — в процентах, доля — рядом с полосой"
+          "zh-CN": "- 缩短测试名称，保持断言不变",
+          "zh-TW": "- 縮短測試名稱，保持斷言不變",
+          "ja": "- アサーションを変更せずにテスト名を短縮",
+          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
+          "fr": "- Raccourcir les noms des tests sans modifier les assertions",
+          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
+          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
+          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
+          "ru": "- Сократить названия тестов без изменения проверок"
         }
       }
     },
