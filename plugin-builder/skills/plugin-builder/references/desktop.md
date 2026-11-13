@@ -1,6 +1,6 @@
 # Desktop surfaces
 
-Desktop code is JavaScript that renders native GPUI Kit components. It runs only in Sailry Desktop; Mobile and Host use the package's skills and tools. Desktop code is trusted application code, not an operating-system sandbox, so keep it small and request only the actions it needs.
+Desktop code runs in moejs and renders native MyGo and Kit components through the `gpui-kit` bindings. It runs only in Sailry Desktop; Mobile and Host use the package's skills and tools. Desktop code is trusted application code, not an operating-system sandbox, so keep it small and request only the actions it needs.
 
 ## Entry points
 

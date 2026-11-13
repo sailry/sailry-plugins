@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.3
+
+- Acortar los nombres de las pruebas sin cambiar las aserciones
+- Corregir los datos de prueba del historial del SDK de producción y verificar los límites configurados
+
 ## 0.2.2
 
 - La insignia de estado muestra, tras su icono, el estado y el tiempo, o el motivo una vez en pausa; ya no repite la palabra Objetivo

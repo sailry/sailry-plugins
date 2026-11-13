@@ -1,3 +1,7 @@
+## 0.1.32
+
+- Testnamen kürzen, ohne die Prüfungen zu ändern
+
 ## 0.1.31
 
 - Nutzungstabellen kompakt und umrahmt: Modell und Sitzung nur mit Namen, Cache-Rate als Prozentwert, Anteil neben seinem Balken

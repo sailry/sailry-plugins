@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.3
+
+- Testnamen kürzen, ohne die Prüfungen zu ändern
+- Verlaufstestdaten des Produktions-SDK korrigieren und konfigurierte Ziellimits prüfen
+
 ## 0.2.2
 
 - Das Statusabzeichen zeigt nach dem Symbol den Zustand und die Zeit, nach einer Pause den Grund; das Wort Ziel wird nicht mehr wiederholt

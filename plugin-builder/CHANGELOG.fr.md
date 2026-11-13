@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Aligner la documentation du runtime et les références SDK sur moejs et MyGo/Kit
+
 ## 0.1.17
 
 - La vérification accepte `programs`, `process.run` et les adaptateurs de modèles sur un programme déclaré

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Raccourcir les noms des tests sans modifier les assertions
+
 ## 0.1.21
 
 - Afficher l’historique d’exécution dans le même tableau que les résultats et ouvrir une requête d’un double-clic ou avec Entrée

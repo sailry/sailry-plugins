@@ -17,7 +17,7 @@ test('distinguishes restored results from new canonical responses and preserves 
 });
 
 
-test('history table events select, open and copy the query of the row shown',async()=>{
+test('table events select, open and copy the displayed query',async()=>{
   const source=(await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class').replace(/^export /gm,'');
   const copied=[],opened=[];
@@ -37,7 +37,7 @@ test('history table events select, open and copy the query of the row shown',asy
   owner.opened='other';event('open',0);assert.equal(opened.length,2,'another profile\'s history is not this one');
 });
 
-test('new query opens the SQL dialog over its draft and a query that succeeds closes it',async()=>{
+test('query dialog preserves its draft and closes after success',async()=>{
   const source=(await readFile(new URL('../dev.sailry.platform/desktop/main.js',import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class').replace(/^export /gm,'');
   const set=[];

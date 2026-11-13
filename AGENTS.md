@@ -13,8 +13,8 @@
   content; ordinary updates increment the patch version. Update detection uses
   strictly newer SemVer precedence, not content differences. Same-version changes,
   build metadata alone and older versions do not offer an update. This does not
-  declare a product release; keep the Sailry extension API at `v1` and numeric
-  format versions at `1`.
+  declare a product release. The current extension API is `v1`; format and
+  capability declarations must match the application contract in use.
 - When a package starts using a new host capability, set
   `extensions."dev.sailry.platform".min_sailry_version` to the first application
   version containing it. This includes new `sailry/*` modules or exports,

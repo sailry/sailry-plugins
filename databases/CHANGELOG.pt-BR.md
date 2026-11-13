@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Encurtar os nomes dos testes sem alterar as asserções
+
 ## 0.1.21
 
 - Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter

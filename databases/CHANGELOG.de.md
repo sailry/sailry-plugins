@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Testnamen kürzen, ohne die Prüfungen zu ändern
+
 ## 0.1.21
 
 - Ausführungsverlauf in derselben Tabelle wie die Ergebnisse zeigen und eine Abfrage per Doppelklick oder Eingabe öffnen

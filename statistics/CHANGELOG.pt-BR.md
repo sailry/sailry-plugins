@@ -1,3 +1,7 @@
+## 0.1.32
+
+- Encurtar os nomes dos testes sem alterar as asserções
+
 ## 0.1.31
 
 - Tabelas de uso compactas e com borda: modelo e sessão apenas pelo nome, cache como porcentagem e a participação ao lado da barra

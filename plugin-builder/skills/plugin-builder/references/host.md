@@ -13,7 +13,7 @@ The `host` section runs JavaScript on the execution Node, without any desktop vi
 - `entry` is an ES module; each name in `handlers` must be a named export.
 - `resources` lists the entry and every module it imports. Relative imports must point to declared resources under `dev.sailry.platform/`.
 - The only host module is `sailry/sdk`. There is no filesystem, process, `fetch` or Node.js global; use SDK requests instead.
-- Callbacks run in a bounded QuickJS VM. Do not rely on module variables between calls; keep state in storage.
+- Callbacks run in a bounded moejs VM. Do not rely on module variables between calls; keep state in storage.
 
 ## SDK in callbacks
 

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Actualizar la guía de ejecución y las referencias del SDK para moejs y MyGo/Kit
+
 ## 0.1.17
 
 - La comprobación acepta `programs`, `process.run` y adaptadores de modelos sobre un programa declarado

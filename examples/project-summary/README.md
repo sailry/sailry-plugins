@@ -1,6 +1,6 @@
 # Project summary
 
-An installable example with a Skill, headless callbacks and a GPUI Kit desktop
+An installable example with a skill, headless callbacks and a native desktop
 panel. It reads the captured execution Node's Git status, previews a Markdown
 report and saves `project-summary.md` only on an explicit save. File notifications
 invalidate the preview; they do not automatically refresh or save it.
@@ -27,7 +27,7 @@ Git reads, not permission to create commits.
 Desktop uses the host-owned `sailry/sdk` module for public settings, `inspectGit()`
 and durable requests. Contracts and request recovery rules are described once in
 [the SDK guide](https://github.com/sailry/sailry-harness/blob/main/sdk/plugins.md); the authoritative types are in the
-[desktop declaration](https://github.com/sailry/sailry-harness/blob/main/apps/desktop/src/plugins/host/sdk/api.d.ts).
+[desktop declaration](https://github.com/sailry/sailry-harness/blob/main/sdk/desktop/api.d.ts).
 
 Keep an unresolved request ID until its outcome is confirmed. A protocol fault
 is different from an adapter exception. Revision conflicts require inspection;
@@ -62,16 +62,16 @@ revision. The callback returns a `plugin_result` containing the write outcome.
 An interrupted unknown outcome needs inspection, not another callback request.
 Multiple callback writes are not an atomic transaction.
 
-The Node-owned QuickJS VM loads digest-verified declared resources and the
-[headless SDK subset](https://github.com/sailry/sailry-harness/blob/main/crates/node-runtime/src/plugins/script/api.d.ts).
+The Node-owned moejs VM loads digest-verified declared resources and the
+[headless SDK subset](https://github.com/sailry/sailry-harness/blob/main/sdk/node/api.d.ts).
 It has no filesystem, process, fetch or Node.js globals. Desktop UI exports are
 not installed in that runtime. Running calls retain admitted package settings
 through updates, disabling or removal.
 
 ## Desktop runtime boundary
 
-The panel uses the repository-pinned GPUI Kit script bindings, native controls
-and semantic theme. Each mounted panel has a separate VM and disposable declared
+The panel uses the `gpui-kit` script bindings, native MyGo and Kit controls,
+and the application semantic theme. Each mounted panel has a separate VM and disposable declared
 resource cache. Project access goes through scoped Node commands, not cache paths.
 
 Closing a panel, losing its Node or changing package revision releases its view

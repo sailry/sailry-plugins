@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- moejs 및 MyGo/Kit에 맞게 런타임 안내와 SDK 참조 갱신
+
 ## 0.1.17
 
 - 패키지 검사에서 `programs`, `process.run` 및 선언된 프로그램 기반 모델 어댑터를 허용

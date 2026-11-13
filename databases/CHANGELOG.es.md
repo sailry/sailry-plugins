@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Acortar los nombres de las pruebas sin cambiar las aserciones
+
 ## 0.1.21
 
 - Mostrar el historial de ejecución en la misma tabla que los resultados y abrir una consulta con doble clic o Intro

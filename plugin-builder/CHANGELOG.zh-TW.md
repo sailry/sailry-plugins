@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- 依目前 moejs 與 MyGo/Kit 更新執行環境指引與 SDK 參考
+
 ## 0.1.17
 
 - 套件檢查接受 `programs`、`process.run` 以及基於已宣告程式的模型轉接器

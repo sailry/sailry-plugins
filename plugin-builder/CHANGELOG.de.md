@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Laufzeithinweise und SDK-Referenzen an moejs und MyGo/Kit anpassen
+
 ## 0.1.17
 
 - Die Paketprüfung akzeptiert `programs`, `process.run` und Modelladapter über ein deklariertes Programm

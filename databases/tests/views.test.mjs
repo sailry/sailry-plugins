@@ -379,7 +379,7 @@ test('database results end in a footer with the row count',async()=>{
   assert.equal(empty.nodes.has('db-results-footer'),false);
 });
 
-test('database SQL dialog runs from a code editor with Cancel and one query action',async()=>{
+test('SQL dialog provides a code editor, Cancel and one query action',async()=>{
   for(const state of ['ready','running','unknown']) {
     const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.sql='SELECT 1';owner.catalog.database='main';
     if(state!=='ready')owner.pending={request:{unknown:state==='unknown'}};
@@ -395,7 +395,7 @@ test('database SQL dialog runs from a code editor with Cancel and one query acti
   }
 });
 
-test('database history is the results table, newest first, with copy and open in its row menu',async()=>{
+test('query history lists newest first with Copy and Open row actions',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';
   owner.logs=Array.from({length:100},(_,index)=>({id:`entry-${index}`,sql:`SELECT '${index} 中文 🙂'`,database:`db-${index}`,timestamp:index,elapsed:0.25,result:{rows:{columns:['value'],rows:[],affected_rows:0}}}));
   owner.logs[99].result={error:{message:'Fixture database failure'}};owner.historyPage=1;
@@ -428,7 +428,7 @@ test('empty database history is an empty table state',async()=>{
   const panel=await fixture('databases');panel.functions.historyPanel(owner);assert.equal(panel.nodes.has('db-history-pages'),false);
 });
 
-test('database history fills the vertically split lower pane and SQL fills its dialog',async()=>{
+test('query history fills the lower pane and SQL fills its dialog',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.sqlOpen=true;
   setup.functions.render(owner);
   const split=setup.nodes.get('db-editor-results');

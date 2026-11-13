@@ -1,3 +1,7 @@
+## 0.1.32
+
+- Acortar los nombres de las pruebas sin cambiar las aserciones
+
 ## 0.1.31
 
 - Tablas de uso compactas y con borde: modelo y sesión solo con su nombre, caché como porcentaje y la cuota junto a su barra

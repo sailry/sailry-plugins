@@ -45,7 +45,7 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 
 | Field | Purpose |
 | --- | --- |
-| `api_version` | Always `"v1"` |
+| `api_version` | Extension API supported by the target application, currently `"v1"` |
 | `min_sailry_version` | Optional exact SemVer floor, such as `"0.1.0-alpha.4"`; omission or `null` imposes no minimum |
 | `scope` | `"host"` (default): runs on the execution Node and works from every controller. `"desktop"`: bound to the desktop's local Node |
 | `actions` | Capabilities the package needs; see below |

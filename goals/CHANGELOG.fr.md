@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.3
+
+- Raccourcir les noms des tests sans modifier les assertions
+- Corriger les données de test de l’historique du SDK de production et vérifier les limites configurées
+
 ## 0.2.2
 
 - Le badge d'état affiche, après son icône, l'état et la durée, ou la raison une fois en pause ; il ne répète plus le mot Objectif

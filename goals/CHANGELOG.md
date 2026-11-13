@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.3
+
+- Shorten test labels without changing assertions
+- Correct the production SDK history fixture and verify configured goal limits
+
 ## 0.2.2
 
 - The Status badge shows the state and the time, or the reason once paused, after its icon; it no longer repeats the word Goal

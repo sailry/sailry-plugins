@@ -17,7 +17,8 @@ runtimeTest('shows a goal whose last turn was lost as paused, through the SDK', 
       response:{Ok:{kind:'conversation_runs',data:{session,revision:1,queue_revision:0,next_before:null,
         runs:[{turn:lost,sequence:40,status:'interrupted',origin:null,error_code:null}]}}}},
     {command:{kind:'read_plugin_settings',data:{package:input.context.package}},
-      response:{Ok:{kind:'plugin_settings',data:{values:{turn_limit:25,token_budget:0,time_limit:0},ready:true}}}},
+      response:{Ok:{kind:'plugin_settings',data:{package:input.context.package,
+        values:{turn_limit:17,token_budget:2,time_limit:3},configured:[],keepable:[],ready:true}}}},
   ];
   const report=execute(input);
   assert.equal(report.result.Err,undefined);
@@ -25,5 +26,11 @@ runtimeTest('shows a goal whose last turn was lost as paused, through the SDK', 
   assert.equal(report.result.Ok.goal.reason,'restart');
   assert.equal(report.result.Ok.goal.objective,objective);
   assert.equal(report.result.Ok.goal.revision,'5');
+  assert.equal(report.result.Ok.goal.turn_limit,17);
+  assert.equal(report.result.Ok.goal.token_budget,2000);
+  assert.equal(report.result.Ok.goal.time_limit_ms,180000);
+  assert.deepEqual(report.calls.map(call=>call.command.kind),[
+    'read_plugin_conversation_value','read_conversation_runs','read_plugin_settings',
+  ]);
   assert.equal(report.calls.some(call=>call.command.kind==='plugin_transaction'),false);
 });

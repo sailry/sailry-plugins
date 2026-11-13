@@ -1,3 +1,7 @@
+## 0.1.32
+
+- Raccourcir les noms des tests sans modifier les assertions
+
 ## 0.1.31
 
 - Tableaux d’utilisation compacts et encadrés : modèle et session par leur seul nom, cache en pourcentage, part affichée à côté de sa barre

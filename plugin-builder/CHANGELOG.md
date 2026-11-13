@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Align runtime guidance and SDK references with moejs and MyGo/Kit
+
 ## 0.1.17
 
 - Accept `programs`, `process.run` and model adapters over a declared program in the package check

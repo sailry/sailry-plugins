@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Shorten test labels without changing assertions
+
 ## 0.1.21
 
 - Show execution history in the same table as results, opening a query with a double click or Enter

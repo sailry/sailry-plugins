@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- 按当前 moejs 与 MyGo/Kit 更新运行时指导和 SDK 参考
+
 ## 0.1.17
 
 - 包检查接受 `programs`、`process.run` 以及基于已声明程序的模型适配器

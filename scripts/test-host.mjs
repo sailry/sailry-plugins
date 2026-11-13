@@ -1,4 +1,4 @@
-/** Optional production QuickJS/SDK bridge; fixture services are not a real Node. */
+/** Optional production moejs/SDK bridge; fixture services are not a real Node. */
 import {execFileSync} from 'node:child_process';
 import {readFile, realpath} from 'node:fs/promises';
 import path from 'node:path';

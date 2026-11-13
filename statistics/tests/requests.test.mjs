@@ -68,7 +68,7 @@ test('rows keep missing values muted and healthy values neutral',()=>{
   assert.deepEqual(bare[4],{primary:{text:'Unknown',text_tone:'muted'}});
 });
 
-test('cells carry no tile, tag or bar while copied rows and tooltips keep the scope and provider',()=>{
+test('plain cells retain scope and provider in copied rows and tooltips',()=>{
   const {rows,cells,details}=formatRows([request()],text,0);
   for(const cell of cells[0])for(const key of ['badge','badge_icon','chip','note','meter'])assert(!(key in cell.primary),key);
   assert.equal(rows[0][1],'Fix login · web');assert.equal(rows[0][2],'gpt-5 · OpenAI');

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.3
+
+- Encurtar os nomes dos testes sem alterar as asserções
+- Corrigir os dados de teste do histórico do SDK de produção e verificar os limites configurados
+
 ## 0.2.2
 
 - O indicador de status mostra, após o ícone, o estado e o tempo, ou o motivo quando pausada; ele não repete mais a palavra Meta

@@ -27,9 +27,9 @@ Start from what the user wants the plugin to do. Pick the first level that is en
 | --- | --- | --- | --- |
 | Reusable instructions or a workflow | `skills/<name>/SKILL.md` | None | `references/manifest.md` |
 | Tools for storage, HTTP, progress or settings | `tools` bound to a host `operation` | None | `references/tools.md` |
-| Tools with custom logic | `tools` with a `handler` and a `host` entry | JavaScript (QuickJS) | `references/tools.md`, `references/host.md` |
+| Tools with custom logic | `tools` with a `handler` and a `host` entry | JavaScript (moejs) | `references/tools.md`, `references/host.md` |
 | An existing command-line or MCP server | `mcp.json` and `tools` with `server` | Any language | `references/tools.md` |
-| A panel, sidebar page, assistant or composer control | `desktop` and `ui` sections | JavaScript (GPUI Kit) | `references/desktop.md` |
+| A panel, sidebar page, assistant or composer control | `desktop` and `ui` sections | JavaScript (MyGo/Kit bindings) | `references/desktop.md` |
 
 Ask only for what you cannot infer: the plugin's purpose, and where the package folder should live. Default to `plugins/<name>/` inside the current worktree. Do not write into Sailry's application or profile directories.
 
@@ -48,7 +48,7 @@ Ask only for what you cannot infer: the plugin's purpose, and where the package 
    Use the absolute `python` and `directory` returned by `load_skill`. If managed Python or command permission is unavailable, report that the check did not run.
 6. Tell the user how to install or update it, using the steps below.
 
-When changing an existing plugin, read its `plugin.json` and the files it loads first, and preserve unrelated declarations. Increment its semantic version for changed content; ordinary updates increment the patch version, such as `0.1.0` to `0.1.1`. Update detection requires a strictly newer version; same-version content changes and build metadata alone do not offer an update. Keep the extension API at `v1`. Content digests still verify immutable resources; installed configuration and historical captures remain preserved.
+When changing an existing plugin, read its `plugin.json` and the files it loads first, and preserve unrelated declarations. Increment its semantic version for changed content; ordinary updates increment the patch version, such as `0.1.0` to `0.1.1`. Update detection requires a strictly newer version; same-version content changes and build metadata alone do not offer an update. Use the extension API supported by the target Sailry application, currently `v1`. Content digests still verify immutable resources; installed configuration and historical captures remain preserved.
 
 ## Install and update
 

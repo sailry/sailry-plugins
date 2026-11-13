@@ -90,7 +90,7 @@ const user={automatic:false,marker:null},loop={automatic:true,marker:null},audit
 test('the manifest declares three tools, both markers and the turn hooks',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.2.2');assert.equal(extension.api_version,'v1');
+  assert.equal(manifest.version,'0.2.3');assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool=>tool.name),['get_goal','create_goal','update_goal']);
   assert.equal(extension.tools[1].handler.approval,true);
   assert.deepEqual(extension.host.turn,{initialize:'initialize',before_model:null,after_turn:'ended'});
@@ -556,7 +556,7 @@ test('restart, fork and rewind leave the goal paused',async t=>{
     live.host.runs=[{turn:'turn-2',sequence:2,status:'completed',origin:null,error_code:null}];
     assert.deepEqual([(await live.api.inspect()).goal.status,(await live.api.inspect()).goal.state],['active','running']);
   });
-  await t.test('a goal waiting on background work that nothing will report is shown paused',async()=>{
+  await t.test('unreported background work leaves a waiting goal paused',async()=>{
     const waiting=async chain=>{
       const f=await fixture();
       await f.started();

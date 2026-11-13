@@ -18,8 +18,9 @@ New packages start at `0.1.0`. Increase the semantic version when package conten
 changes; ordinary updates increment the patch version, such as `0.1.0` to
 `0.1.1`. Update detection requires strictly newer SemVer precedence. Same-version
 content changes, build metadata alone and older versions do not offer an update.
-This package policy does not declare a product release: Sailry's extension API
-remains `v1`, and numeric format versions remain `1`.
+Package versions are independent of the API contract. The application currently
+supports Sailry extension API `v1`; package declarations use the contract supported
+by their target application.
 Immutable content digests still verify installed contents and preserve captured
 resources and sent-turn references. Updates apply to new admission; historical
 captures keep their recorded package. Standalone imported skills retain their
@@ -122,11 +123,18 @@ without executing plugin initialization. Behavior tests include controllers,
 host handlers, games and localized UI contracts; real Node integration remains
 in the application repository.
 
-For production QuickJS and SDK contract cases, select a prebuilt application
-test host explicitly:
+Production moejs and SDK cases use the application's `internal/node/plugins`
+test binary. Its `TestMain` handles fixture requests when the runner sets
+`SAILRY_PLUGIN_TEST_HOST`. Build that host explicitly from the application checkout,
+then pass its absolute path to the package runner:
 
 ```sh
-python3 scripts/test.py --runtime-host /path/to/plugin-test-host
+cd /path/to/sailry-harness
+unset GOROOT
+export GOTOOLCHAIN=go1.27.3 CGO_ENABLED=0
+mkdir -p .runtime/release-review
+go test -c -o .runtime/release-review/plugin-test-host ./internal/node/plugins
+python3 plugins/scripts/test.py --runtime-host "$PWD/.runtime/release-review/plugin-test-host"
 ```
 
 Package tests import `scripts/test-host.mjs` and own their inputs and assertions.
