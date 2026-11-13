@@ -5,7 +5,7 @@ import {listSsh,newSshId,prepareSsh,listSshTerminals,prepareSshTerminal} from 's
 import {createText,readText,releaseText,setText,focusText,nextTextEvent} from 'sailry/forms';
 import {createSecret,releaseSecret,describeSecret,chooseSecretFile} from 'sailry/credentials';
 import {nextTreeEvent,nextContextMenuEvent,nextNavigationTabEvent,nextPickerEvent,nextControlEvent,modal_closed,writeClipboard,toast} from 'sailry/ui';
-import {uploadDropped,selectUpload,selectDownload,nextTransfers,transferAction} from 'sailry/ssh-transfers';
+import {uploadDropped,selectUpload,selectDownload,nextTransfers,transferAction,previewFile} from 'sailry/ssh-transfers';
 import {draft,prepare} from './editor.js';
 import {Request,failure} from './requests.js';
 import {Mutations} from './mutations.js';
@@ -159,6 +159,8 @@ export default class Ssh extends View {
     const placeholder=files.placeholder(event.id);if(placeholder){if(event.kind==='open'&&['retry','more'].includes(placeholder.kind))await files.loadBranch(placeholder.path,cx,placeholder.kind==='more');return;}
     if(event.kind==='expand'){await files.expand(event.id,cx);return;}
     if(event.kind==='collapse'){files.expanded.delete(event.id);cx.notify();return;}
+    // A file opens in the application's preview; a folder's row expands it.
+    if(event.kind==='open'){const entry=files.entry(event.id);if(entry&&entry.kind!=='directory')previewFile(files.profile,event.id);return;}
     if(event.kind==='external_drop'&&event.files){if(this.locked())return;const directory=files.entry(event.id)?.kind==='directory'?event.id:event.id?parent(event.id):files.path;for(const id of uploadDropped(files.profile,directory,event.files))transferAction(id,'start');return;}
     if(event.kind==='select'){files.select(event.id,event);cx.notify();return;}
     if(event.kind==='context'){if(!files.selected.includes(event.id))files.selected=[event.id];files.current=event.id;return;}

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Eine entfernte Datei per Klick in der Vorschau öffnen
+
 ## 0.1.24
 
 - Den entfernten Pfad als Text zeigen und leere Ordner ohne Platzhalterzeile öffnen

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Open a remote file in the preview by clicking it
+
 ## 0.1.24
 
 - Show the remote path as plain text and open empty folders without a placeholder row

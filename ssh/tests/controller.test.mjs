@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 
 async function fixture() {
   const context=vm.createContext({});
-  const opened=[],notices=[],focused=[],released=[],focusedTexts=[],dropped=[],copied=[];
+  const opened=[],notices=[],focused=[],released=[],focusedTexts=[],dropped=[],copied=[],previewed=[];
   const profile={id:'saved-host',revision:3,name:'Saved host'};
   const terminal={id:'existing-terminal',ssh:profile.id,status:{kind:'running'}};
   const host={profiles:[profile],terminals:[terminal],catalog:{projects:[],worktrees:[]},catalogReads:0,inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
@@ -21,7 +21,7 @@ async function fixture() {
     'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),focusText:id=>focusedTexts.push(id),nextTextEvent(){}},
     'sailry/credentials':{createSecret(){},releaseSecret(){},describeSecret(){},chooseSecretFile(){}},
     'sailry/ui':{nextTreeEvent(){},nextContextMenuEvent(){},nextNavigationTabEvent(){},nextPickerEvent(){},nextControlEvent(){},modal_closed(){},writeClipboard:value=>copied.push(value),toast:value=>notices.push(plain(value))},
-    'sailry/ssh-transfers':{uploadDropped:(...args)=>{dropped.push(args);return ['dropped-job'];},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args)},
+    'sailry/ssh-transfers':{uploadDropped:(...args)=>{dropped.push(args);return ['dropped-job'];},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args),previewFile:(...args)=>previewed.push(args)},
     './editor.js':{draft(){},prepare(){}},
     './locales.js':{messages:()=>({}),format(){}},
     './view.js':{render(){}},
@@ -41,7 +41,7 @@ async function fixture() {
   const view=new module.namespace.default();const pending=[];
   view.run=(action,cx)=>pending.push(Promise.resolve().then(()=>action(cx)));
   Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,closingTerminals:new Set(),selected:null,browsers:new Map(),pending:null,connected:true,loaded:false,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
-  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,released,focusedTexts,dropped,copied,cx:{notify(){},stop_propagation(){}},settle:()=>Promise.all(pending)};
+  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,released,focusedTexts,dropped,copied,previewed,cx:{notify(){},stop_propagation(){}},settle:()=>Promise.all(pending)};
 }
 
 async function browsing() {const setup=await fixture();await setup.view.refresh(setup.cx);await setup.settle();return setup;}
@@ -574,6 +574,16 @@ test('tree expansion pagination and retries preserve the workspace root',async()
   const retry=files.items(()=>[],{}).at(0).children.find(item=>item.id.includes('"kind":"retry"')).id;
   host.browse=async({path})=>({kind:'directory',path,entries:[],next:null});await view.tree({tree:'ssh-files',kind:'open',id:retry},cx);
   assert.equal(files.directories.get('/folder').error,null);assert.equal(files.path,'/');
+});
+
+test('opening a file previews it and a folder does not',async()=>{
+  const {view,cx,host,previewed}=await browsing(),files=view.files();
+  host.browse=async({path})=>({kind:'directory',path,entries:path==='/'?[{name:'folder',kind:'directory'},{name:'notes.md',kind:'file'}]:[{name:'inner.go',kind:'file'}],next:null});
+  await files.load('/',cx);await view.tree({tree:'ssh-files',kind:'expand',id:'/folder'},cx);
+  await view.tree({tree:'ssh-files',kind:'open',id:'/notes.md'},cx);
+  await view.tree({tree:'ssh-files',kind:'open',id:'/folder/inner.go'},cx);
+  await view.tree({tree:'ssh-files',kind:'open',id:'/folder'},cx);
+  assert.deepEqual(plain(previewed.map(([profile,path])=>[profile.id,path])),[[files.profile.id,'/notes.md'],[files.profile.id,'/folder/inner.go']]);
 });
 
 test('native file and blank menus retain scoped file actions',async()=>{

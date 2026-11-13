@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Abrir un archivo remoto en la vista previa al hacer clic
+
 ## 0.1.24
 
 - Mostrar la ruta remota como texto y abrir carpetas vacías sin fila de marcador

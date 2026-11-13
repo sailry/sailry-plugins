@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Abrir um arquivo remoto na pré-visualização ao clicar
+
 ## 0.1.24
 
 - Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado

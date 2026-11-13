@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Ouvrir un fichier distant dans l’aperçu d’un clic
+
 ## 0.1.24
 
 - Afficher le chemin distant en texte et ouvrir les dossiers vides sans ligne de substitution
