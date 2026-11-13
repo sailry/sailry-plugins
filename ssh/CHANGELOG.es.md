@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Seleccionar un archivo remoto con un clic y previsualizarlo con doble clic
+
 ## 0.1.25
 
 - Abrir un archivo remoto en la vista previa al hacer clic

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Sélectionner un fichier distant d’un clic et l’afficher d’un double-clic
+
 ## 0.1.25
 
 - Ouvrir un fichier distant dans l’aperçu d’un clic

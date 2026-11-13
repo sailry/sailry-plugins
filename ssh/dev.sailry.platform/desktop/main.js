@@ -156,7 +156,7 @@ export default class Ssh extends View {
   transferFile(direction,cx){const value=this.transfer;if(!value?.worktree||this.locked())return;this.resume=false;const data={profile:value.profile.id,expected_revision:value.profile.revision,transfer:{worktree:value.worktree,path:readText(value.inputs[0]),remote_path:readText(value.inputs[1]),direction},timeout_ms:300000};
     const run=cx=>this.execute(command('transfer_ssh',data),cx,null,null,value.profile);if(direction==='upload'){this.confirmation={label:'ssh_upload',text:format(this.text.ssh_upload_confirm,{path:data.transfer.remote_path}),run};cx.notify();}else this.run(run,cx);}
   async tree(event,cx){const files=this.files();if(!files||event.tree!=='ssh-files')return;
-    const placeholder=files.placeholder(event.id);if(placeholder){if(event.kind==='open'&&['retry','more'].includes(placeholder.kind))await files.loadBranch(placeholder.path,cx,placeholder.kind==='more');return;}
+    const placeholder=files.placeholder(event.id);if(placeholder){if(['open','select'].includes(event.kind)&&['retry','more'].includes(placeholder.kind))await files.loadBranch(placeholder.path,cx,placeholder.kind==='more');return;}
     if(event.kind==='expand'){await files.expand(event.id,cx);return;}
     if(event.kind==='collapse'){files.expanded.delete(event.id);cx.notify();return;}
     // A file opens in the application's preview; a folder's row expands it.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Select a remote file with a click and preview it with a double click
+
 ## 0.1.25
 
 - Open a remote file in the preview by clicking it

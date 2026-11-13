@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Selecionar um arquivo remoto com um clique e pré-visualizá-lo com dois cliques
+
 ## 0.1.25
 
 - Abrir um arquivo remoto na pré-visualização ao clicar

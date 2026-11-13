@@ -37,7 +37,7 @@ function files(view){const files=view.files(),{text}=view;if(!files)return div()
       :PathBar.new('ssh-files-pathbar',{segments:files.segments().map(segment=>segment.label),disabled:files.pending})))
     .children(files.editing?[]:[IconButton.new('ssh-files-edit-path',{icon:'pencil',label:text.ssh_files_edit_path,disabled:files.pending})]))
   .child(div().v_flex().flex_1().min_h_0().min_w_0().p_2().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')})
-    .child(ResourceTree.new('ssh-files',{guides:true,external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path),text)),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
+    .child(ResourceTree.new('ssh-files',{guides:true,open:'double',external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path),text)),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
   .children(view.jobs.filter(job=>job.profile===files.profile.id).map(job=>transferJob(view,job)));}
 function transferJob(view,job){const{text}=view,progress=job.progress?job.progress.size?job.progress.copied/job.progress.size*100:100:null;return div().id(`ssh-transfer-${job.id}`).v_flex().p_2().gap_1().text_xs()
   .child(div().truncate().child(job.source))

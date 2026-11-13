@@ -97,7 +97,7 @@ test('files use breadcrumbs branches and keep transfers at the bottom',()=>{
   assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/','remote'],disabled:false});
   assert.equal(setup.nodes.get('ssh-files-edit-path').props.label,messages('en').ssh_files_edit_path);
   const tree=setup.nodes.get('ssh-files').props;
-  assert.equal(tree.variant,undefined);assert.equal(tree.guides,true);assert.equal(tree.external_files,true);assert.deepEqual(plain(tree.selected),files.selected);
+  assert.equal(tree.variant,undefined);assert.equal(tree.guides,true);assert.equal(tree.open,'double');assert.equal(tree.external_files,true);assert.deepEqual(plain(tree.selected),files.selected);
   assert.deepEqual(JSON.parse(tree.items)[0].menu,[{id:'menu:/remote/a',label:'Menu'}]);
   assert.deepEqual(plain(setup.nodes.get('ssh-files-root').props.items),[{id:'menu:',label:'Menu'}]);
   const panel=setup.nodes.get('ssh-files-panel');assert.equal(panel.items.length,3);assert.equal(panel.items[0].selector,'ssh-files-path');assert.equal(panel.items.at(-1).selector,'ssh-transfer-job');

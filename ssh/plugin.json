@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.6",

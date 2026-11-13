@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Entfernte Datei per Klick auswählen und per Doppelklick in der Vorschau öffnen
+
 ## 0.1.25
 
 - Eine entfernte Datei per Klick in der Vorschau öffnen
