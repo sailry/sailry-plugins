@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Écrire le SQL dans un éditeur coloré avec numéros de ligne, l’exécuter avec Commande-Entrée et choisir Annuler ou Exécuter en pied de dialogue
+
 ## 0.1.19
 
 - Afficher les résultats dans un tableau sans cadre avec le nombre de lignes en pied, ouvrir le SQL dans une boîte de dialogue depuis Nouvelle requête et afficher les icônes des bases et des tables dans le catalogue

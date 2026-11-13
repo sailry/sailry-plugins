@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- SQL in einem hervorgehobenen Editor mit Zeilennummern schreiben, mit Befehl-Eingabe ausführen und im Dialogfuß Abbrechen oder Ausführen wählen
+
 ## 0.1.19
 
 - Ergebnisse in einer rahmenlosen Tabelle mit Zeilenzahl in der Fußzeile, SQL über Neue Abfrage in einem Dialog und Symbole für Datenbanken und Tabellen im Katalog

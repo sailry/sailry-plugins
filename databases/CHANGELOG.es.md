@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Escribir SQL en un editor resaltado con números de línea, ejecutarlo con Comando-Intro y elegir Cancelar o Ejecutar al pie del diálogo
+
 ## 0.1.19
 
 - Mostrar resultados en una tabla sin marco con el número de filas al pie, abrir SQL en un diálogo desde Nueva consulta y mostrar iconos de bases de datos y tablas en el catálogo

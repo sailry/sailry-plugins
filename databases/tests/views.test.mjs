@@ -34,7 +34,7 @@ async function fixture(packageName) {
   const names=['Button','Icon','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
   const constructors=Object.fromEntries(names.map(name=>[name,function(id){return element(name,id);}]))
   const globals=Object.fromEntries(['Workspace','PanelHeader','PathBar','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
-  const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,historyPanel':''}})`,{
+  const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,sqlFooter,historyPanel':''}})`,{
     div:()=>element(),...constructors,...globals,
     theme:()=>({colors:{muted_foreground:'muted',foreground:'foreground',border:'border'}}),
     window:{viewport_size:()=>({width:1440,height:940})},
@@ -378,15 +378,19 @@ test('database results end in a footer with the row count',async()=>{
   assert.equal(empty.nodes.has('db-results-footer'),false);
 });
 
-test('database SQL actions use accessible native icon buttons',async()=>{
+test('database SQL dialog runs from a code editor with Cancel and one query action',async()=>{
   for(const state of ['ready','running','unknown']) {
-    const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.sql='SELECT 1';
+    const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.sql='SELECT 1';owner.catalog.database='main';
     if(state!=='ready')owner.pending={request:{unknown:state==='unknown'}};
-    setup.functions.sqlEditor(owner);
+    setup.functions.sqlEditor(owner);setup.functions.sqlFooter(owner);
+    assert.equal(setup.nodes.get('db-sql').nodes[0].type,'TextField');
+    assert.equal(setup.nodes.has('db-execution-status'),false,'no idle status text');
+    assert.equal(setup.nodes.get('db-execution-target').nodes[1].nodes[0],'main');
     const id=state==='ready'?'db-run':state==='unknown'?'db-inspect':'db-stop';
     assert.deepEqual(plain(setup.nodes.get(id).props),{icon:state==='ready'?'play':state==='unknown'?'rotate-cw':'square',
-      label:state==='ready'?'db_run':state==='unknown'?'db_inspect':'db_stop',variant:'primary',circular:true,size:'medium',disabled:false});
-    assert.equal(setup.buttons.size,0);
+      label:state==='ready'?'db_run':state==='unknown'?'db_inspect':'db_stop',disabled:false,show_label:true,size:'medium',
+      ...(state==='ready'?{variant:'primary',shortcut:'secondary-enter'}:{})});
+    assert.deepEqual([...setup.buttons.keys()],['db-sql-cancel']);
   }
 });
 
@@ -457,7 +461,8 @@ test('database history fills the vertically split lower pane and SQL fills its d
   const panel=lower.nodes[0];
   assert.equal(panel,setup.nodes.get('database-history-panel'));assert.deepEqual(plain(panel.style.size_full),[]);
   const editor=setup.nodes.get('db-sql');
-  assert.deepEqual(plain(editor.style.w_full),[]);assert.equal(editor.nodes[0],setup.nodes.get('db-sql-surface'));
+  assert.deepEqual(plain(editor.style.w_full),[]);assert.equal(editor.nodes[0].type,'TextField');
+  assert.equal(setup.nodes.get('db-dialog-0').nodes[1].selector,'db-sql-footer');
   assert.equal('w' in lower.style,false);assert.equal('w' in panel.style,false);
 });
 

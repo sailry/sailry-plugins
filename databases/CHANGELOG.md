@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Write SQL in a highlighted editor with line numbers, run it with Command-Enter and pick Cancel or Run in the dialog footer
+
 ## 0.1.19
 
 - Show results in a frameless table with a row count footer, open SQL in a dialog from New query, and give the catalog database and table icons

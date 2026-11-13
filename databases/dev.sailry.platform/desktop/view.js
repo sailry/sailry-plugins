@@ -89,16 +89,21 @@ function queryButton(view,props) {
     disabled:!pending&&(view.locked()||!readText(view.sql).trim()),...props,
   });
 }
+// The SQL dialog's body: a SQL editor with line numbers, ⌘↵ running it.
 function sqlEditor(view) {
-  const {text,pending}=view,unknown=pending?.request.unknown;
-  return div().id('db-sql').v_flex().w_full().gap_3()
-    .child(InputSurface.new('db-sql-surface')
-      .child(div().id('db-editor-scroll').min_h_0().overflow_hidden().child(TextField.new(view.sql,{disabled:view.locked(),appearance:false,bordered:false})))
-      .child(div().h_flex().w_full().min_w_0().gap_2()
-        .child(div().id('db-execution-status').pl_3().flex_1().min_w_0().truncate().text_sm().text_color(theme().colors.muted_foreground)
-          .child(pending?unknown?'':text.db_running:text.db_ready))
-        .child(div().id('db-execution-target').max_w('40%').min_w_0().truncate().text_sm().text_color(theme().colors.muted_foreground).child(view.catalog.database??view.profile().name))
-        .child(queryButton(view,{variant:'primary',circular:true,size:'medium'}))));
+  return div().id('db-sql').v_flex().w_full().child(TextField.new(view.sql,{disabled:view.locked()}));
+}
+// The SQL dialog's footer: the database it runs in, then Cancel and Run,
+// Run becoming Stop while the query runs and Check result when its outcome
+// is unknown.
+function sqlFooter(view) {
+  const {text}=view,colors=theme().colors;
+  return div().id('db-sql-footer').h_flex().w_full().min_w_0().gap_2().items_center()
+    .child(div().id('db-execution-target').h_flex().flex_1().min_w_0().gap_2().items_center().text_sm().text_color(colors.muted_foreground)
+      .child(new Icon('icons/database.svg').size_4())
+      .child(div().min_w_0().truncate().child(view.catalog.database??view.profile().name)))
+    .child(new Button('db-sql-cancel').label(text.settings_cancel).on_click((_,cx)=>view.close(cx)))
+    .child(queryButton(view,view.pending?{show_label:true,size:'medium'}:{show_label:true,size:'medium',variant:'primary',shortcut:'secondary-enter'}));
 }
 function historyPanel(view) {
   const {text,pending}=view,colors=theme().colors;
@@ -148,5 +153,5 @@ export function render(view) {
       profile?div().id('db-assistant-panel').size_full().min_h_0().child(Conversation.new(`database-assistant-${view.opened}`,{assistant:'database',resource:{kind:'database',id:view.opened},heading:text.connection_assistant})):div(),
       navigation(view)
     ])).child(picker(view)).child(Modal.new(`db-dialog-${view.dialog}`,{open:opened,...form})
-      .children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[confirmationBody,confirmationFooter]:query?[sqlEditor(view)]:[]));
+      .children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[confirmationBody,confirmationFooter]:query?[sqlEditor(view),sqlFooter(view)]:[]));
 }

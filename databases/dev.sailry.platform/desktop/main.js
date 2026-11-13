@@ -22,7 +22,7 @@ export default class Databases extends View {
     this.text=messages(JSON.parse(context()).locale); this.profiles=[]; this.ssh=[]; this.projects=[]; this.connected=true;
     this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.sqlOpen=false;this.home=false;
     this.pending=null; this.error=null; this.status=null; this.editor=null; this.confirmation=null; this.picker=false; this.pickerProfile=null; this.pickerRevision=0; this.dialog=0;
-    this.sql=createText('',{multiline:true,rows:[8,16],placeholder:this.text.db_sql});
+    this.sql=createText('',{multiline:true,rows:[12,12],language:'sql',placeholder:this.text.db_sql});
     this.histories=new Map();
     this.refreshing=null;this.refreshAgain=false;this.refreshProjects=true;this.refreshCatalog=false;
     let entry=null;
@@ -38,7 +38,7 @@ export default class Databases extends View {
     this.watch(nextNavigationTabEvent,(event,cx)=>this.navigation(event,cx),cx);
     this.watch(nextPickerEvent,(event,cx)=>this.pick(event,cx),cx);
     this.watch(nextControlEvent,(event,cx)=>this.control(event,cx),cx);
-    this.watch(nextTextEvent,(event,cx)=>{if(event.id===this.sql&&event.kind==='enter')cx.notify();},cx);
+    this.watch(nextTextEvent,(event,cx)=>{if(event.id===this.sql&&event.kind==='submit')this.runSql(cx);else if(event.id===this.sql&&event.kind==='change')cx.notify();},cx);
     this.watch(modal_closed,(id,cx)=>{if(id===`db-dialog-${this.dialog}`)this.close(cx);},cx);
     this.watch(nextAssistantTools,(value,cx)=>this.assistant(value.conversations,cx),cx,true);
   }

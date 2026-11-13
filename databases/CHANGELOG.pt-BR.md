@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Escrever SQL em um editor destacado com números de linha, executá-lo com Command-Enter e escolher Cancelar ou Executar no rodapé do diálogo
+
 ## 0.1.19
 
 - Mostrar resultados em uma tabela sem moldura com a contagem de linhas no rodapé, abrir o SQL em uma caixa de diálogo a partir de Nova consulta e mostrar ícones de bancos e tabelas no catálogo
