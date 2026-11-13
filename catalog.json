@@ -20670,7 +20670,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.25",
+        "version": "0.1.26",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21506,6 +21506,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.26",
+          "commit": "f9496312a09f280bfbe3ddddd5fff87bec87f838",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Select a remote file with a click and preview it with a double click",
+            "locales": {
+              "zh-CN": "- 单击选中远程文件，双击打开预览",
+              "zh-TW": "- 單擊選取遠端檔案，雙擊開啟預覽",
+              "ja": "- クリックでリモートファイルを選択し、ダブルクリックでプレビュー",
+              "ko": "- 클릭하면 원격 파일을 선택하고 두 번 클릭하면 미리보기",
+              "fr": "- Sélectionner un fichier distant d’un clic et l’afficher d’un double-clic",
+              "de": "- Entfernte Datei per Klick auswählen und per Doppelklick in der Vorschau öffnen",
+              "es": "- Seleccionar un archivo remoto con un clic y previsualizarlo con doble clic",
+              "pt-BR": "- Selecionar um arquivo remoto com um clique e pré-visualizá-lo com dois cliques",
+              "ru": "- Выбирать удалённый файл щелчком и открывать предпросмотр двойным щелчком"
+            }
+          }
+        },
+        {
           "version": "0.1.25",
           "commit": "bd7283a0e9bf59c9e555685b0c07b8cf4e816411",
           "min_sailry_version": "0.1.6",
@@ -21764,17 +21783,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Open a remote file in the preview by clicking it",
+        "text": "- Select a remote file with a click and preview it with a double click",
         "locales": {
-          "zh-CN": "- 点击远程文件即可在预览中打开",
-          "zh-TW": "- 點擊遠端檔案即可在預覽中開啟",
-          "ja": "- リモートファイルをクリックしてプレビューで開く",
-          "ko": "- 원격 파일을 클릭하면 미리보기로 열기",
-          "fr": "- Ouvrir un fichier distant dans l’aperçu d’un clic",
-          "de": "- Eine entfernte Datei per Klick in der Vorschau öffnen",
-          "es": "- Abrir un archivo remoto en la vista previa al hacer clic",
-          "pt-BR": "- Abrir um arquivo remoto na pré-visualização ao clicar",
-          "ru": "- Открывать удалённый файл в предпросмотре по щелчку"
+          "zh-CN": "- 单击选中远程文件，双击打开预览",
+          "zh-TW": "- 單擊選取遠端檔案，雙擊開啟預覽",
+          "ja": "- クリックでリモートファイルを選択し、ダブルクリックでプレビュー",
+          "ko": "- 클릭하면 원격 파일을 선택하고 두 번 클릭하면 미리보기",
+          "fr": "- Sélectionner un fichier distant d’un clic et l’afficher d’un double-clic",
+          "de": "- Entfernte Datei per Klick auswählen und per Doppelklick in der Vorschau öffnen",
+          "es": "- Seleccionar un archivo remoto con un clic y previsualizarlo con doble clic",
+          "pt-BR": "- Selecionar um arquivo remoto com um clique e pré-visualizá-lo com dois cliques",
+          "ru": "- Выбирать удалённый файл щелчком и открывать предпросмотр двойным щелчком"
         }
       }
     },
