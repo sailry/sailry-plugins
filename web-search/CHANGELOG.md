@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Show colored provider logos and icons for TinyFish and model search
+
 ## 0.1.17
 
 - Restore outline icons in navigation and tools

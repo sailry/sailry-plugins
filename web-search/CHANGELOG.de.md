@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Farbige Anbieterlogos und Symbole für TinyFish und Modellsuche anzeigen
+
 ## 0.1.17
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {available,needsKey,models,providers,binding,contains} from '../dev.sailry.platform/desktop/catalog.js';
+import {available,needsKey,models,providers,binding,contains,icon} from '../dev.sailry.platform/desktop/catalog.js';
+
+test('uses provider marks and service fallbacks',()=>{
+  for(const driver of ['exa','tavily','brave','searxng','bocha','volcengine','deepseek'])assert.equal(icon(driver),`ailogo:${driver}-color`);
+  assert.equal(icon('tinyfish'),'globe');assert.equal(icon('model'),'bot');assert.equal(icon('unknown'),undefined);
+});
 
 test('offers only advertised drivers',()=>{
   assert.deepEqual(available({providers:{model:{},exa:{},volcengine:{},tinyfish:{},unknown:{}}}),

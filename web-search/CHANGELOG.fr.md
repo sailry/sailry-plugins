@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Afficher les logos des fournisseurs en couleur et les icônes de TinyFish et de recherche par modèle
+
 ## 0.1.17
 
 - Icônes au trait rétablies dans la navigation et les outils

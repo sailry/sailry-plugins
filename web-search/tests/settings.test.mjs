@@ -175,8 +175,8 @@ test('moves services and preserves enable choices',async()=>{
   assert.deepEqual(plain(f.view.saved.providers),providers);
   f.view.control({id:'search_providers',value:{from:0,to:3,order:rows('tinyfish','model','searxng','exa')}},f.cx);await f.settle();
   assert.deepEqual(plain(f.view.available()),['tinyfish','model','searxng','exa']);
-  assert.equal(catalog.icon('exa'),'ailogo:exa');assert.equal(catalog.icon('volcengine'),'ailogo:volcengine');
-  assert.equal(catalog.icon('tinyfish'),undefined);assert.equal(catalog.icon('model'),undefined);
+  assert.equal(catalog.icon('exa'),'ailogo:exa-color');assert.equal(catalog.icon('volcengine'),'ailogo:volcengine-color');
+  assert.equal(catalog.icon('tinyfish'),'globe');assert.equal(catalog.icon('model'),'bot');
 });
 
 test('more menu edits and tests services',async()=>{

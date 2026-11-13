@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Exibir logotipos coloridos dos provedores e ícones para TinyFish e pesquisa por modelo
+
 ## 0.1.17
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

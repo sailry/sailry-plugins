@@ -1,13 +1,16 @@
 // Public settings and model choices carry no authorization material.
 export const drivers = ['exa','tinyfish','tavily','brave','searxng','bocha','volcengine','deepseek','model'];
 const native = ['responses','anthropic','gemini'];
-// AI Logo brand marks; a service without one, or a host without the collection, shows no mark.
+// AI Logo brand marks; TinyFish has no mark in the pinned collection and
+// model search is a capability, so those rows use ordinary service icons.
 const logos = {exa:'exa',tavily:'tavily',brave:'brave',searxng:'searxng',bocha:'bocha',volcengine:'volcengine',deepseek:'deepseek'};
 // Row identifiers carry the service; a reorder event lists them in the new order.
 export const row = 'search-driver-';
 
 export function icon(driver) {
-  return Object.hasOwn(logos,driver) ? `ailogo:${logos[driver]}` : undefined;
+  if(Object.hasOwn(logos,driver))return `ailogo:${logos[driver]}-color`;
+  if(driver==='tinyfish')return 'globe';
+  if(driver==='model')return 'bot';
 }
 
 // The saved services in the order a reorder event reports, or null when it is not a permutation of them.
