@@ -20670,7 +20670,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21506,6 +21506,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.25",
+          "commit": "bd7283a0e9bf59c9e555685b0c07b8cf4e816411",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Open a remote file in the preview by clicking it",
+            "locales": {
+              "zh-CN": "- 点击远程文件即可在预览中打开",
+              "zh-TW": "- 點擊遠端檔案即可在預覽中開啟",
+              "ja": "- リモートファイルをクリックしてプレビューで開く",
+              "ko": "- 원격 파일을 클릭하면 미리보기로 열기",
+              "fr": "- Ouvrir un fichier distant dans l’aperçu d’un clic",
+              "de": "- Eine entfernte Datei per Klick in der Vorschau öffnen",
+              "es": "- Abrir un archivo remoto en la vista previa al hacer clic",
+              "pt-BR": "- Abrir um arquivo remoto na pré-visualização ao clicar",
+              "ru": "- Открывать удалённый файл в предпросмотре по щелчку"
+            }
+          }
+        },
+        {
           "version": "0.1.24",
           "commit": "ddc0eeeb11fc9c52b5de3a8108adc7a87068763f",
           "min_sailry_version": "0.1.6",
@@ -21745,17 +21764,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show the remote path as plain text and open empty folders without a placeholder row",
+        "text": "- Open a remote file in the preview by clicking it",
         "locales": {
-          "zh-CN": "- 远程路径改为纯文本样式，空文件夹展开时不再显示占位行",
-          "zh-TW": "- 遠端路徑改為純文字樣式，空資料夾展開時不再顯示佔位列",
-          "ja": "- リモートパスをプレーンテキストで表示し、空のフォルダーはプレースホルダー行なしで開く",
-          "ko": "- 원격 경로를 일반 텍스트로 표시하고 빈 폴더는 자리 표시 행 없이 열기",
-          "fr": "- Afficher le chemin distant en texte et ouvrir les dossiers vides sans ligne de substitution",
-          "de": "- Den entfernten Pfad als Text zeigen und leere Ordner ohne Platzhalterzeile öffnen",
-          "es": "- Mostrar la ruta remota como texto y abrir carpetas vacías sin fila de marcador",
-          "pt-BR": "- Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado",
-          "ru": "- Показывать удалённый путь текстом и открывать пустые папки без строки-заполнителя"
+          "zh-CN": "- 点击远程文件即可在预览中打开",
+          "zh-TW": "- 點擊遠端檔案即可在預覽中開啟",
+          "ja": "- リモートファイルをクリックしてプレビューで開く",
+          "ko": "- 원격 파일을 클릭하면 미리보기로 열기",
+          "fr": "- Ouvrir un fichier distant dans l’aperçu d’un clic",
+          "de": "- Eine entfernte Datei per Klick in der Vorschau öffnen",
+          "es": "- Abrir un archivo remoto en la vista previa al hacer clic",
+          "pt-BR": "- Abrir um arquivo remoto na pré-visualização ao clicar",
+          "ru": "- Открывать удалённый файл в предпросмотре по щелчку"
         }
       }
     },
