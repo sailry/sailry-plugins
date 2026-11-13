@@ -5655,7 +5655,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6232,6 +6232,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "f83a364f90ef0c59398603a09c070ac275edc98b",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show results in a frameless table with a row count footer, open SQL in a dialog from New query, and give the catalog database and table icons",
+            "locales": {
+              "zh-CN": "- 结果表格去掉外框并在底部显示行数，新建查询改为弹窗输入 SQL，库表树显示数据库和表图标",
+              "zh-TW": "- 結果表格移除外框並在底部顯示列數，新增查詢改為對話框輸入 SQL，庫表樹顯示資料庫與資料表圖示",
+              "ja": "- 結果テーブルの枠をなくして下部に行数を表示し、新規クエリはダイアログで SQL を入力、カタログにデータベースとテーブルのアイコンを表示",
+              "ko": "- 결과 표의 테두리를 없애고 하단에 행 수를 표시하며, 새 쿼리는 대화 상자에서 SQL을 입력하고, 카탈로그에 데이터베이스와 테이블 아이콘 표시",
+              "fr": "- Afficher les résultats dans un tableau sans cadre avec le nombre de lignes en pied, ouvrir le SQL dans une boîte de dialogue depuis Nouvelle requête et afficher les icônes des bases et des tables dans le catalogue",
+              "de": "- Ergebnisse in einer rahmenlosen Tabelle mit Zeilenzahl in der Fußzeile, SQL über Neue Abfrage in einem Dialog und Symbole für Datenbanken und Tabellen im Katalog",
+              "es": "- Mostrar resultados en una tabla sin marco con el número de filas al pie, abrir SQL en un diálogo desde Nueva consulta y mostrar iconos de bases de datos y tablas en el catálogo",
+              "pt-BR": "- Mostrar resultados em uma tabela sem moldura com a contagem de linhas no rodapé, abrir o SQL em uma caixa de diálogo a partir de Nova consulta e mostrar ícones de bancos e tabelas no catálogo",
+              "ru": "- Показывать результаты в таблице без рамки со счётчиком строк внизу, открывать SQL в диалоге по кнопке «Новый запрос» и показывать значки баз данных и таблиц в каталоге"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "ef9d822d266351db8141cb2eda740d92e30f7713",
           "min_sailry_version": "0.1.6",
@@ -6400,17 +6419,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Move catalog refresh to the workspace header\n- Show striped query results with localized empty states\n- Align SQL history columns while preserving selection, keyboard navigation and context menus",
+        "text": "- Show results in a frameless table with a row count footer, open SQL in a dialog from New query, and give the catalog database and table icons",
         "locales": {
-          "zh-CN": "- 将库表刷新移到工作区头部\n- 查询结果显示斑马纹和本地化空状态\n- 对齐 SQL 执行记录三列并保留选择、键盘导航和右键菜单",
-          "zh-TW": "- 將資料表重新整理移到工作區頂部\n- 查詢結果顯示交錯列與在地化空狀態\n- 對齊 SQL 執行記錄三欄並保留選取、鍵盤導覽與快顯功能表",
-          "ja": "- カタログの更新をワークスペースのヘッダーに移動\n- クエリ結果に縞模様とローカライズされた空状態を表示\n- SQL 履歴の列を揃え、選択、キーボード操作、コンテキストメニューを維持",
-          "ko": "- 카탈로그 새로 고침을 작업 공간 헤더로 이동\n- 쿼리 결과에 교차 행과 현지화된 빈 상태 표시\n- SQL 기록 열을 정렬하고 선택, 키보드 탐색 및 컨텍스트 메뉴 유지",
-          "fr": "- Déplacer l’actualisation du catalogue dans l’en-tête de l’espace de travail\n- Afficher des résultats alternés avec un état vide traduit\n- Aligner les colonnes de l’historique SQL en conservant sélection, navigation clavier et menus contextuels",
-          "de": "- Katalogaktualisierung in die Kopfzeile des Arbeitsbereichs verschieben\n- Abfrageergebnisse mit abwechselnden Zeilen und lokalisiertem Leerzustand anzeigen\n- SQL-Verlaufsspalten ausrichten und Auswahl, Tastaturnavigation und Kontextmenüs beibehalten",
-          "es": "- Mover la actualización del catálogo al encabezado del espacio de trabajo\n- Mostrar resultados con filas alternas y un estado vacío localizado\n- Alinear las columnas del historial SQL conservando selección, navegación por teclado y menús contextuales",
-          "pt-BR": "- Mover a atualização do catálogo para o cabeçalho do espaço de trabalho\n- Mostrar resultados com linhas alternadas e estado vazio traduzido\n- Alinhar as colunas do histórico SQL preservando seleção, navegação por teclado e menus de contexto",
-          "ru": "- Перенести обновление каталога в заголовок рабочего пространства\n- Показывать результаты с чередующимися строками и переведённым пустым состоянием\n- Выровнять столбцы истории SQL, сохранив выбор, навигацию с клавиатуры и контекстные меню"
+          "zh-CN": "- 结果表格去掉外框并在底部显示行数，新建查询改为弹窗输入 SQL，库表树显示数据库和表图标",
+          "zh-TW": "- 結果表格移除外框並在底部顯示列數，新增查詢改為對話框輸入 SQL，庫表樹顯示資料庫與資料表圖示",
+          "ja": "- 結果テーブルの枠をなくして下部に行数を表示し、新規クエリはダイアログで SQL を入力、カタログにデータベースとテーブルのアイコンを表示",
+          "ko": "- 결과 표의 테두리를 없애고 하단에 행 수를 표시하며, 새 쿼리는 대화 상자에서 SQL을 입력하고, 카탈로그에 데이터베이스와 테이블 아이콘 표시",
+          "fr": "- Afficher les résultats dans un tableau sans cadre avec le nombre de lignes en pied, ouvrir le SQL dans une boîte de dialogue depuis Nouvelle requête et afficher les icônes des bases et des tables dans le catalogue",
+          "de": "- Ergebnisse in einer rahmenlosen Tabelle mit Zeilenzahl in der Fußzeile, SQL über Neue Abfrage in einem Dialog und Symbole für Datenbanken und Tabellen im Katalog",
+          "es": "- Mostrar resultados en una tabla sin marco con el número de filas al pie, abrir SQL en un diálogo desde Nueva consulta y mostrar iconos de bases de datos y tablas en el catálogo",
+          "pt-BR": "- Mostrar resultados em uma tabela sem moldura com a contagem de linhas no rodapé, abrir o SQL em uma caixa de diálogo a partir de Nova consulta e mostrar ícones de bancos e tabelas no catálogo",
+          "ru": "- Показывать результаты в таблице без рамки со счётчиком строк внизу, открывать SQL в диалоге по кнопке «Новый запрос» и показывать значки баз данных и таблиц в каталоге"
         }
       }
     },
