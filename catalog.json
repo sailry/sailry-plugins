@@ -20651,7 +20651,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21487,6 +21487,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.21",
+          "commit": "22edb929c727ec797cfd57cb9c439cf67783c98e",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show only connection progress while opening an SSH terminal\n- Return failed connections to the saved connection list without recovery buttons\n- Check an unconfirmed opening from its saved connection before starting another shell"
+          }
+        },
+        {
           "version": "0.1.20",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "min_sailry_version": "0.1.6",
@@ -21661,18 +21669,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
-        "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
-        }
+        "text": "- Show only connection progress while opening an SSH terminal\n- Return failed connections to the saved connection list without recovery buttons\n- Check an unconfirmed opening from its saved connection before starting another shell"
       }
     },
     {
