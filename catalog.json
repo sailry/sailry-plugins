@@ -20670,7 +20670,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.23",
+        "version": "0.1.24",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21506,6 +21506,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.24",
+          "commit": "ddc0eeeb11fc9c52b5de3a8108adc7a87068763f",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show the remote path as plain text and open empty folders without a placeholder row",
+            "locales": {
+              "zh-CN": "- 远程路径改为纯文本样式，空文件夹展开时不再显示占位行",
+              "zh-TW": "- 遠端路徑改為純文字樣式，空資料夾展開時不再顯示佔位列",
+              "ja": "- リモートパスをプレーンテキストで表示し、空のフォルダーはプレースホルダー行なしで開く",
+              "ko": "- 원격 경로를 일반 텍스트로 표시하고 빈 폴더는 자리 표시 행 없이 열기",
+              "fr": "- Afficher le chemin distant en texte et ouvrir les dossiers vides sans ligne de substitution",
+              "de": "- Den entfernten Pfad als Text zeigen und leere Ordner ohne Platzhalterzeile öffnen",
+              "es": "- Mostrar la ruta remota como texto y abrir carpetas vacías sin fila de marcador",
+              "pt-BR": "- Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado",
+              "ru": "- Показывать удалённый путь текстом и открывать пустые папки без строки-заполнителя"
+            }
+          }
+        },
+        {
           "version": "0.1.23",
           "commit": "757c8bdf47c04d9877fb7fed0fcd4e478e520da1",
           "min_sailry_version": "0.1.6",
@@ -21726,17 +21745,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show remote files with file and folder icons, as the Files package does",
+        "text": "- Show the remote path as plain text and open empty folders without a placeholder row",
         "locales": {
-          "zh-CN": "- 远程文件改用和文件插件一致的文件、文件夹图标样式",
-          "zh-TW": "- 遠端檔案改用與檔案外掛一致的檔案、資料夾圖示樣式",
-          "ja": "- リモートファイルをファイルパッケージと同じファイル・フォルダーアイコンで表示",
-          "ko": "- 원격 파일을 파일 패키지와 같은 파일·폴더 아이콘으로 표시",
-          "fr": "- Afficher les fichiers distants avec des icônes de fichier et de dossier, comme le paquet Fichiers",
-          "de": "- Entfernte Dateien mit Datei- und Ordnersymbolen wie im Dateien-Paket anzeigen",
-          "es": "- Mostrar los archivos remotos con iconos de archivo y carpeta, como el paquete Archivos",
-          "pt-BR": "- Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos",
-          "ru": "- Показывать удалённые файлы со значками файлов и папок, как в пакете «Файлы»"
+          "zh-CN": "- 远程路径改为纯文本样式，空文件夹展开时不再显示占位行",
+          "zh-TW": "- 遠端路徑改為純文字樣式，空資料夾展開時不再顯示佔位列",
+          "ja": "- リモートパスをプレーンテキストで表示し、空のフォルダーはプレースホルダー行なしで開く",
+          "ko": "- 원격 경로를 일반 텍스트로 표시하고 빈 폴더는 자리 표시 행 없이 열기",
+          "fr": "- Afficher le chemin distant en texte et ouvrir les dossiers vides sans ligne de substitution",
+          "de": "- Den entfernten Pfad als Text zeigen und leere Ordner ohne Platzhalterzeile öffnen",
+          "es": "- Mostrar la ruta remota como texto y abrir carpetas vacías sin fila de marcador",
+          "pt-BR": "- Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado",
+          "ru": "- Показывать удалённый путь текстом и открывать пустые папки без строки-заполнителя"
         }
       }
     },
