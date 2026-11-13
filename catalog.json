@@ -5655,7 +5655,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6232,6 +6232,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "ef9d822d266351db8141cb2eda740d92e30f7713",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Move catalog refresh to the workspace header\n- Show striped query results with localized empty states\n- Align SQL history columns while preserving selection, keyboard navigation and context menus",
+            "locales": {
+              "zh-CN": "- 将库表刷新移到工作区头部\n- 查询结果显示斑马纹和本地化空状态\n- 对齐 SQL 执行记录三列并保留选择、键盘导航和右键菜单",
+              "zh-TW": "- 將資料表重新整理移到工作區頂部\n- 查詢結果顯示交錯列與在地化空狀態\n- 對齊 SQL 執行記錄三欄並保留選取、鍵盤導覽與快顯功能表",
+              "ja": "- カタログの更新をワークスペースのヘッダーに移動\n- クエリ結果に縞模様とローカライズされた空状態を表示\n- SQL 履歴の列を揃え、選択、キーボード操作、コンテキストメニューを維持",
+              "ko": "- 카탈로그 새로 고침을 작업 공간 헤더로 이동\n- 쿼리 결과에 교차 행과 현지화된 빈 상태 표시\n- SQL 기록 열을 정렬하고 선택, 키보드 탐색 및 컨텍스트 메뉴 유지",
+              "fr": "- Déplacer l’actualisation du catalogue dans l’en-tête de l’espace de travail\n- Afficher des résultats alternés avec un état vide traduit\n- Aligner les colonnes de l’historique SQL en conservant sélection, navigation clavier et menus contextuels",
+              "de": "- Katalogaktualisierung in die Kopfzeile des Arbeitsbereichs verschieben\n- Abfrageergebnisse mit abwechselnden Zeilen und lokalisiertem Leerzustand anzeigen\n- SQL-Verlaufsspalten ausrichten und Auswahl, Tastaturnavigation und Kontextmenüs beibehalten",
+              "es": "- Mover la actualización del catálogo al encabezado del espacio de trabajo\n- Mostrar resultados con filas alternas y un estado vacío localizado\n- Alinear las columnas del historial SQL conservando selección, navegación por teclado y menús contextuales",
+              "pt-BR": "- Mover a atualização do catálogo para o cabeçalho do espaço de trabalho\n- Mostrar resultados com linhas alternadas e estado vazio traduzido\n- Alinhar as colunas do histórico SQL preservando seleção, navegação por teclado e menus de contexto",
+              "ru": "- Перенести обновление каталога в заголовок рабочего пространства\n- Показывать результаты с чередующимися строками и переведённым пустым состоянием\n- Выровнять столбцы истории SQL, сохранив выбор, навигацию с клавиатуры и контекстные меню"
+            }
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "min_sailry_version": "0.1.6",
@@ -6381,17 +6400,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Move catalog refresh to the workspace header\n- Show striped query results with localized empty states\n- Align SQL history columns while preserving selection, keyboard navigation and context menus",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 将库表刷新移到工作区头部\n- 查询结果显示斑马纹和本地化空状态\n- 对齐 SQL 执行记录三列并保留选择、键盘导航和右键菜单",
+          "zh-TW": "- 將資料表重新整理移到工作區頂部\n- 查詢結果顯示交錯列與在地化空狀態\n- 對齊 SQL 執行記錄三欄並保留選取、鍵盤導覽與快顯功能表",
+          "ja": "- カタログの更新をワークスペースのヘッダーに移動\n- クエリ結果に縞模様とローカライズされた空状態を表示\n- SQL 履歴の列を揃え、選択、キーボード操作、コンテキストメニューを維持",
+          "ko": "- 카탈로그 새로 고침을 작업 공간 헤더로 이동\n- 쿼리 결과에 교차 행과 현지화된 빈 상태 표시\n- SQL 기록 열을 정렬하고 선택, 키보드 탐색 및 컨텍스트 메뉴 유지",
+          "fr": "- Déplacer l’actualisation du catalogue dans l’en-tête de l’espace de travail\n- Afficher des résultats alternés avec un état vide traduit\n- Aligner les colonnes de l’historique SQL en conservant sélection, navigation clavier et menus contextuels",
+          "de": "- Katalogaktualisierung in die Kopfzeile des Arbeitsbereichs verschieben\n- Abfrageergebnisse mit abwechselnden Zeilen und lokalisiertem Leerzustand anzeigen\n- SQL-Verlaufsspalten ausrichten und Auswahl, Tastaturnavigation und Kontextmenüs beibehalten",
+          "es": "- Mover la actualización del catálogo al encabezado del espacio de trabajo\n- Mostrar resultados con filas alternas y un estado vacío localizado\n- Alinear las columnas del historial SQL conservando selección, navegación por teclado y menús contextuales",
+          "pt-BR": "- Mover a atualização do catálogo para o cabeçalho do espaço de trabalho\n- Mostrar resultados com linhas alternadas e estado vazio traduzido\n- Alinhar as colunas do histórico SQL preservando seleção, navegação por teclado e menus de contexto",
+          "ru": "- Перенести обновление каталога в заголовок рабочего пространства\n- Показывать результаты с чередующимися строками и переведённым пустым состоянием\n- Выровнять столбцы истории SQL, сохранив выбор, навигацию с клавиатуры и контекстные меню"
         }
       }
     },
@@ -20651,7 +20670,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21487,6 +21506,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "ef9d822d266351db8141cb2eda740d92e30f7713",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Browse remote files in expandable directory branches with cached listings and pagination\n- Navigate with path breadcrumbs or edit the remote path directly\n- Keep file menus, multiple selection, native uploads and transfer replacement actions",
+            "locales": {
+              "zh-CN": "- 使用可展开的目录树浏览远程文件，保留目录缓存和分页\n- 通过路径面包屑跳转，或直接编辑远程路径\n- 保留文件菜单、多选、系统文件上传和传输替换操作",
+              "zh-TW": "- 使用可展開的目錄樹瀏覽遠端檔案，保留目錄快取和分頁\n- 透過路徑麵包屑跳轉，或直接編輯遠端路徑\n- 保留檔案選單、多選、系統檔案上傳和傳輸取代操作",
+              "ja": "- キャッシュとページ分割を備えた展開可能なディレクトリツリーでリモートファイルを表示\n- パンくずで移動するかリモートパスを直接編集\n- ファイルメニュー、複数選択、システムからのアップロード、転送時の置換操作を維持",
+              "ko": "- 캐시와 페이지 나누기를 지원하는 확장 가능한 디렉터리 트리로 원격 파일 탐색\n- 경로 탐색 표시줄로 이동하거나 원격 경로를 직접 편집\n- 파일 메뉴, 다중 선택, 시스템 파일 업로드와 전송 교체 작업 유지",
+              "fr": "- Parcourir les fichiers distants dans une arborescence dépliable avec cache et pagination\n- Naviguer avec le fil d’Ariane ou modifier directement le chemin distant\n- Conserver les menus, la sélection multiple, les envois natifs et le remplacement des transferts",
+              "de": "- Remotedateien in aufklappbaren Verzeichniszweigen mit Zwischenspeicher und Seitennavigation durchsuchen\n- Über die Pfadnavigation wechseln oder den Remotepfad direkt bearbeiten\n- Dateimenüs, Mehrfachauswahl, native Uploads und Ersetzungsaktionen für Übertragungen beibehalten",
+              "es": "- Explorar archivos remotos en un árbol de directorios desplegable con caché y paginación\n- Navegar con rutas de navegación o editar directamente la ruta remota\n- Mantener menús, selección múltiple, cargas nativas y acciones de reemplazo de transferencias",
+              "pt-BR": "- Navegar por arquivos remotos em diretórios expansíveis com cache e paginação\n- Navegar pelo caminho ou editar o caminho remoto diretamente\n- Manter menus, seleção múltipla, envios nativos e ações de substituição nas transferências",
+              "ru": "- Просмотр удалённых файлов в раскрываемом дереве каталогов с кэшем и постраничной загрузкой\n- Переход по цепочке пути или прямое редактирование удалённого пути\n- Сохранены меню файлов, множественный выбор, загрузка системных файлов и замена при передаче"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "22edb929c727ec797cfd57cb9c439cf67783c98e",
           "min_sailry_version": "0.1.6",
@@ -21669,7 +21707,18 @@
         }
       ],
       "release_notes": {
-        "text": "- Show only connection progress while opening an SSH terminal\n- Return failed connections to the saved connection list without recovery buttons\n- Check an unconfirmed opening from its saved connection before starting another shell"
+        "text": "- Browse remote files in expandable directory branches with cached listings and pagination\n- Navigate with path breadcrumbs or edit the remote path directly\n- Keep file menus, multiple selection, native uploads and transfer replacement actions",
+        "locales": {
+          "zh-CN": "- 使用可展开的目录树浏览远程文件，保留目录缓存和分页\n- 通过路径面包屑跳转，或直接编辑远程路径\n- 保留文件菜单、多选、系统文件上传和传输替换操作",
+          "zh-TW": "- 使用可展開的目錄樹瀏覽遠端檔案，保留目錄快取和分頁\n- 透過路徑麵包屑跳轉，或直接編輯遠端路徑\n- 保留檔案選單、多選、系統檔案上傳和傳輸取代操作",
+          "ja": "- キャッシュとページ分割を備えた展開可能なディレクトリツリーでリモートファイルを表示\n- パンくずで移動するかリモートパスを直接編集\n- ファイルメニュー、複数選択、システムからのアップロード、転送時の置換操作を維持",
+          "ko": "- 캐시와 페이지 나누기를 지원하는 확장 가능한 디렉터리 트리로 원격 파일 탐색\n- 경로 탐색 표시줄로 이동하거나 원격 경로를 직접 편집\n- 파일 메뉴, 다중 선택, 시스템 파일 업로드와 전송 교체 작업 유지",
+          "fr": "- Parcourir les fichiers distants dans une arborescence dépliable avec cache et pagination\n- Naviguer avec le fil d’Ariane ou modifier directement le chemin distant\n- Conserver les menus, la sélection multiple, les envois natifs et le remplacement des transferts",
+          "de": "- Remotedateien in aufklappbaren Verzeichniszweigen mit Zwischenspeicher und Seitennavigation durchsuchen\n- Über die Pfadnavigation wechseln oder den Remotepfad direkt bearbeiten\n- Dateimenüs, Mehrfachauswahl, native Uploads und Ersetzungsaktionen für Übertragungen beibehalten",
+          "es": "- Explorar archivos remotos en un árbol de directorios desplegable con caché y paginación\n- Navegar con rutas de navegación o editar directamente la ruta remota\n- Mantener menús, selección múltiple, cargas nativas y acciones de reemplazo de transferencias",
+          "pt-BR": "- Navegar por arquivos remotos em diretórios expansíveis com cache e paginação\n- Navegar pelo caminho ou editar o caminho remoto diretamente\n- Manter menus, seleção múltipla, envios nativos e ações de substituição nas transferências",
+          "ru": "- Просмотр удалённых файлов в раскрываемом дереве каталогов с кэшем и постраничной загрузкой\n- Переход по цепочке пути или прямое редактирование удалённого пути\n- Сохранены меню файлов, множественный выбор, загрузка системных файлов и замена при передаче"
+        }
       }
     },
     {
