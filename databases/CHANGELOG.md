@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Show results in a frameless table with a row count footer, open SQL in a dialog from New query, and give the catalog database and table icons
+
 ## 0.1.18
 
 - Move catalog refresh to the workspace header

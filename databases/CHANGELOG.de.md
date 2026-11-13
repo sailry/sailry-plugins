@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Ergebnisse in einer rahmenlosen Tabelle mit Zeilenzahl in der Fußzeile, SQL über Neue Abfrage in einem Dialog und Symbole für Datenbanken und Tabellen im Katalog
+
 ## 0.1.18
 
 - Katalogaktualisierung in die Kopfzeile des Arbeitsbereichs verschieben

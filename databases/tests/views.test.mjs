@@ -34,7 +34,7 @@ async function fixture(packageName) {
   const names=['Button','Icon','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
   const constructors=Object.fromEntries(names.map(name=>[name,function(id){return element(name,id);}]))
   const globals=Object.fromEntries(['Workspace','PanelHeader','PathBar','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
-  const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,editorPanel':''}})`,{
+  const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,historyPanel':''}})`,{
     div:()=>element(),...constructors,...globals,
     theme:()=>({colors:{muted_foreground:'muted',foreground:'foreground',border:'border'}}),
     window:{viewport_size:()=>({width:1440,height:940})},
@@ -52,7 +52,7 @@ function view(packageName,profiles=[]) {
     picker:false,pickerProfile:null,pickerRevision:0,pending:null,error:null,status:null,editor:null,confirmation:null,
     terminals:[],terminal:null,files:()=>null,commandOpen:false,transfer:null,fileEdit:null,outcome:null,
     opened:null,catalog:{loading:new Set(),names:[],failed:new Set(),items:()=>[],database:null,current:null},
-    result:null,page:0,epoch:0,tab:0,logs:[],sql:'',logFocus:{},rowMenu:()=>[],
+    result:null,page:0,epoch:0,sqlOpen:false,logs:[],sql:'',logFocus:{},rowMenu:()=>[],
   };
   owner.connectionLocked=()=>owner.locked();
   owner.profile=()=>profiles.find(profile=>profile.id===owner.opened);
@@ -254,7 +254,7 @@ test('SSH Files native context and tree fill navigation height using flex column
   assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
   assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/'],disabled:false});
   assert.equal(setup.nodes.get('ssh-files-edit-path').type,'IconButton');
-  assert.equal(setup.nodes.get('ssh-files').props.variant,'branch');
+  assert.equal(setup.nodes.get('ssh-files').props.guides,true);
   assert.ok(body);
   for(const method of ['v_flex','flex_1','min_h_0','min_w_0','p_2'])assert.deepEqual(plain(body.style[method]),[]);
   assert.equal(body.nodes[0].nodes[0].selector,'ssh-files');
@@ -277,7 +277,7 @@ test('empty SSH directories fill their viewport without cards',async()=>{
     assert.equal(setup.nodes.get('ssh-workspace').nodes[2],panel);
     assert.equal(setup.nodes.has('ssh-files-empty'),false);
     assert.equal(context.nodes[0].selector,'ssh-files');
-    assert.equal(context.nodes[0].props.variant,'branch');
+    assert.equal(context.nodes[0].props.guides,true);
     assert.deepEqual(JSON.parse(context.nodes[0].props.items),items,'directory states stay in the tree viewport');
     assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
   }
@@ -290,11 +290,13 @@ test('database catalogs and assistants use native slots and result tables',async
   assert.equal(setup.nodes.get('database-workspace').nodes[2].selector,'db-catalog');
   assert.equal(setup.nodes.has('database-catalog-header'),false);
   assert.equal(setup.nodes.get('db-catalog').nodes.length,1,'catalog contains only its tree viewport');
-  assert.equal(setup.nodes.get('database-tree').props.variant,'branch');
+  // The resource tree draws each database and table with its icon.
+  assert.equal(setup.nodes.get('database-tree').props.guides,true);
+  assert.equal(setup.nodes.get('database-tree').props.variant,undefined);
   assert.equal(setup.nodes.get('database-tree').props.current,null);
   assert.deepEqual(plain(setup.nodes.get('database-assistant-first').props),{assistant:'database',resource:{kind:'database',id:'first'},heading:'connection_assistant'});
   assert.equal(setup.nodes.has('db_data_empty'),false);
-  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,header:false,empty:'db_data_empty',empty_icon:'hard-drive'});
+  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,header:false,bordered:false,empty:'db_data_empty',empty_icon:'table'});
 });
 
 test('database catalog renders the retained UI selection through the native tree',async()=>{
@@ -334,16 +336,46 @@ test('database zero-row results preserve columns and a localized empty state',as
   assert.deepEqual(plain(table.props.rows),[]);
   assert.equal(table.props.header,true);
   assert.equal(table.props.empty,'db_data_empty');
-  assert.equal(table.props.empty_icon,'hard-drive');
+  assert.equal(table.props.empty_icon,'table');
   assert.equal(setup.nodes.has('db_data_empty'),false);
 });
 
-test('database bottom tabs use the square native tab variant',async()=>{
+test('database history bar opens SQL in a dialog instead of tabs',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';
-  const panel=setup.functions.editorPanel(owner),tabs=panel.nodes[0];
-  assert.deepEqual(plain(tabs.style.variant),['tab']);
-  assert.deepEqual(plain(tabs.style.rounded_none),[]);
-  tabs.on_change(1,setup.cx);assert.equal(owner.tab,1);
+  setup.functions.historyPanel(owner);
+  assert.equal(setup.nodes.has('db-bottom-tabs'),false,'history and SQL are not tabs');
+  assert.deepEqual(plain(setup.nodes.get('db-new-query').props),{icon:'plus',label:'db_new_query',show_label:true,size:'small',disabled:false});
+  assert.equal(setup.nodes.has('db-stop'),false);
+  for(const unknown of [false,true]) {
+    const running=await fixture('databases'),state=view('databases',profiles);state.opened='first';
+    state.pending={request:{unknown,command:{kind:'query_database'}}};state.locked=()=>true;
+    running.functions.historyPanel(state);
+    // A query run from a closed dialog keeps its Stop or Check result in the bar.
+    assert.equal(running.nodes.get(unknown?'db-inspect':'db-stop').props.size,'small');
+    assert.equal(running.nodes.get('db-new-query').props.disabled,true);
+  }
+  for(const sqlOpen of [false,true]) {
+    const page=await fixture('databases'),state=view('databases',profiles);state.opened='first';state.sqlOpen=sqlOpen;
+    page.functions.render(state);
+    const dialog=page.nodes.get('db-dialog-0');
+    assert.equal(dialog.props.open,sqlOpen);
+    if(sqlOpen) {
+      assert.deepEqual(plain({title:dialog.props.title,width:dialog.props.width,form:dialog.props.form}),{title:'db_new_query',width:720,form:true});
+      assert.equal(dialog.nodes[0].selector,'db-sql');
+    } else assert.equal(dialog.nodes.length,0);
+  }
+});
+
+test('database results end in a footer with the row count',async()=>{
+  const setup=await fixture('databases'),owner=view('databases',profiles);
+  owner.result={columns:['value'],rows:[[{kind:'text',value:'a'}]],truncated:true};
+  setup.functions.results(owner);
+  assert.equal(setup.nodes.get('db-results-count').nodes[0],'db_rows:{"count":1}');
+  assert.equal(setup.nodes.get('db-results-truncated').nodes[0],'db_truncated');
+  assert.equal(setup.nodes.has('db-pages'),false);
+  const empty=await fixture('databases'),none=view('databases',profiles);
+  empty.functions.results(none);
+  assert.equal(empty.nodes.has('db-results-footer'),false);
 });
 
 test('database SQL actions use accessible native icon buttons',async()=>{
@@ -394,7 +426,8 @@ test('empty database history has no artificial log entries',async()=>{
   setup.functions.log(owner);
   assert.equal(setup.nodes.has('database-history-grid'),false);
   assert.ok(setup.nodes.has('database-history-heading'));
-  assert.equal(setup.nodes.get('database-history-rows').nodes.length,0);
+  assert.equal(setup.nodes.has('database-history-rows'),false);
+  assert.equal(setup.nodes.get('db-history-empty').nodes[0],'db_history_empty');
   assert.equal(owner.logs.length,0);
 });
 
@@ -415,23 +448,24 @@ test('database history keeps selection keyboard focus and complete error tooltip
   assert.deepEqual(plain(setup.nodes.get('db-history-failed').props.items.map(item=>item.enabled)),[true,false]);
 });
 
-test('database SQL input fills the vertically split lower pane',async()=>{
-  const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.tab=1;
+test('database history fills the vertically split lower pane and SQL fills its dialog',async()=>{
+  const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.sqlOpen=true;
   setup.functions.render(owner);
   const split=setup.nodes.get('db-editor-results');
   assert.deepEqual(plain(split.style.axis),['vertical']);assert.equal(split.nodes.length,2);
   const lower=split.nodes[1];assert.deepEqual(plain(lower.style.size),[200]);assert.deepEqual(plain(lower.style.size_range),[120,480]);
-  const panel=lower.nodes[0],editor=panel.nodes[1].nodes[0];
-  assert.deepEqual(plain(panel.style.size_full),[]);assert.deepEqual(plain(editor.style.size_full),[]);
-  assert.equal(editor.nodes[0],setup.nodes.get('db-sql-surface'));
-  assert.equal('w' in lower.style,false);assert.equal('w' in panel.style,false);assert.equal('w' in editor.style,false);
+  const panel=lower.nodes[0];
+  assert.equal(panel,setup.nodes.get('database-history-panel'));assert.deepEqual(plain(panel.style.size_full),[]);
+  const editor=setup.nodes.get('db-sql');
+  assert.deepEqual(plain(editor.style.w_full),[]);assert.equal(editor.nodes[0],setup.nodes.get('db-sql-surface'));
+  assert.equal('w' in lower.style,false);assert.equal('w' in panel.style,false);
 });
 
 test('database results and history labels are localized in English and Chinese',async()=>{
   const {messages}=await import('../dev.sailry.platform/desktop/locales.js');
   for(const locale of ['en','zh-CN']) {
     const text=messages(locale);
-    for(const key of ['db_data_empty','db_log_result','db_log_duration']) {
+    for(const key of ['db_data_empty','db_log_result','db_log_duration','db_history_empty','db_new_query']) {
       assert.equal(typeof text[key],'string');assert.ok(text[key]);assert.equal(/[.!?。！？]$/.test(text[key]),false);
     }
   }

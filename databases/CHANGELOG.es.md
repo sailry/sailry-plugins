@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Mostrar resultados en una tabla sin marco con el número de filas al pie, abrir SQL en un diálogo desde Nueva consulta y mostrar iconos de bases de datos y tablas en el catálogo
+
 ## 0.1.18
 
 - Mover la actualización del catálogo al encabezado del espacio de trabajo

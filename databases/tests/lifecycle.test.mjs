@@ -367,7 +367,7 @@ test('key selection blocks duplicate prompts and save while retaining the captur
 test('database history clicks and native menus retain the displayed profile',async()=>{
   const copied=[],opened=[];
   const setup=await fixture('databases',{writeClipboard:text=>copied.push(text)}),owner=setup.owner;
-  Object.assign(owner,{opened:'displayed',tab:0,logs:[{id:'older',sql:'SELECT older',database:'one'},{id:'newer',sql:'SELECT newer',database:'two'}],selectedLog:null,logFocus:{focus(){}}});
+  Object.assign(owner,{opened:'displayed',sqlOpen:false,logs:[{id:'older',sql:'SELECT older',database:'one'},{id:'newer',sql:'SELECT newer',database:'two'}],selectedLog:null,logFocus:{focus(){}}});
   owner.openSql=(sql,database,cx)=>opened.push([sql,database,cx]);
   owner.control({id:`db-log:${JSON.stringify({profile:'displayed',id:'newer'})}`,click_count:2},setup.live);
   assert.equal(owner.selectedLog,'newer');assert.deepEqual(opened,[['SELECT newer','two',setup.live]]);

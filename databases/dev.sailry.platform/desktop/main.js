@@ -20,9 +20,9 @@ export const rowText=rows=>rows.map(row=>row.map(cell).map(value=>/[\t\n\r"]/.te
 export default class Databases extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale); this.profiles=[]; this.ssh=[]; this.projects=[]; this.connected=true;
-    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.tab=0;this.home=false;
+    this.opened=null; this.catalog=null; this.result=null; this.origin=null; this.epoch=0; this.page=0; this.logs=[]; this.selectedLog=null; this.logFocus=cx.focus_handle(); this.sqlOpen=false;this.home=false;
     this.pending=null; this.error=null; this.status=null; this.editor=null; this.confirmation=null; this.picker=false; this.pickerProfile=null; this.pickerRevision=0; this.dialog=0;
-    this.sql=createText('',{multiline:true,rows:[2,6],placeholder:this.text.db_sql});
+    this.sql=createText('',{multiline:true,rows:[8,16],placeholder:this.text.db_sql});
     this.histories=new Map();
     this.refreshing=null;this.refreshAgain=false;this.refreshProjects=true;this.refreshCatalog=false;
     let entry=null;
@@ -74,12 +74,13 @@ export default class Databases extends View {
     if(event.bar!=='db-tabs'||event.id!==this.opened||!this.profile()||this.pending)return;
     if(event.kind==='select'){this.home=false;cx.notify();return;}
     if(event.kind!=='close')return;
-    this.opened=null;this.catalog=null;this.result=null;this.origin=null;this.status=null;this.epoch++;this.page=0;cx.notify();
+    this.opened=null;this.catalog=null;this.result=null;this.origin=null;this.status=null;this.sqlOpen=false;this.epoch++;this.page=0;cx.notify();
   }
   control(event,cx) {
     if(event.id==='db-new'){if(!this.locked())this.edit(null,cx);return;}
     if(event.id?.startsWith('db-open-')){const profile=this.profiles.find(profile=>event.id===`db-open-${profile.id}`);if(profile&&!this.locked())this.run(cx=>this.open(profile,cx),cx);return;}
     if(event.id==='db-refresh-catalog'){const catalog=this.catalog;if(catalog&&this.profile()&&!catalog.loading.size)this.run(cx=>catalog.load(null,cx,true),cx);return;}
+    if(event.id==='db-new-query'){if(!this.locked()&&this.profile())this.openSql(null,this.catalog.database,cx);return;}
     if(event.id==='db-run'){this.runSql(cx);return;}
     if(event.id==='db-stop'){const pending=this.pending;if(pending&&!pending.request.unknown)this.run(()=>pending.request.cancel(),cx);return;}
     if(event.id==='db-inspect'){if(this.pending?.request.unknown)this.run(cx=>this.check(cx),cx);return;}
@@ -113,7 +114,7 @@ export default class Databases extends View {
     if(this.locked())return;
     this.home=false;
     if(this.opened!==profile.id) {
-      this.opened=profile.id;this.logs=[];this.selectedLog=null;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
+      this.opened=profile.id;this.sqlOpen=false;this.logs=[];this.selectedLog=null;this.result=null;this.origin=null;this.status=null;this.error=null;this.page=0;this.epoch++;
       const catalog=new Catalog(profile);
       catalog.report=error=>{if(this.catalog===catalog)this.report(error);};
       this.catalog=catalog;
@@ -144,7 +145,7 @@ export default class Databases extends View {
   runSql(cx) {
     const text=readText(this.sql).trim(),profile=this.profile();if(!text||!profile||this.locked())return;
     const origin={profile:JSON.parse(JSON.stringify(profile)),database:this.catalog.database,sql:text,table:null,keys:[]};
-    this.run(cx=>this.execute(this.query(text,origin.database,profile.read_only),cx,origin),cx);
+    this.run(cx=>this.execute(this.query(text,origin.database,profile.read_only),cx,origin,()=>{this.sqlOpen=false;}),cx);
   }
   async readRows(origin,cx) {
     if(!this.valid(origin)||this.locked())return;
@@ -209,10 +210,12 @@ export default class Databases extends View {
     this.confirmation={label:'db_delete_row',text:format(this.text.db_delete_row_confirm,{table:sql.tableName(this.engine(),origin.table),count:rows.length,sql:text}),origin,
       run:cx=>this.execute(this.query(text,origin.database,false,origin.profile),cx,null,()=>this.readRows(origin,cx))};this.dialog++;cx.notify();
   }
-  openSql(text,database,cx) {if(this.locked())return;setText(this.sql,text);this.catalog.database=database;this.tab=1;focusText(this.sql);cx.notify();}
+  // The SQL dialog opens over the results with text, or with the draft it
+  // last held when text is null.
+  openSql(text,database,cx) {if(this.locked())return;if(text!==null)setText(this.sql,text);this.catalog.database=database;if(!this.sqlOpen){this.sqlOpen=true;this.dialog++;}focusText(this.sql);cx.notify();}
   selectLog(id,cx) {if(!this.logs.some(entry=>entry.id===id))return;this.selectedLog=id;this.logFocus.focus();cx.notify();}
   logAction(id,edit,cx) {const entry=this.logs.find(entry=>entry.id===id);if(!entry)return;if(edit)this.openSql(entry.sql,entry.database,cx);else writeClipboard(entry.sql);}
-  logKey(event,cx) {if(!this.logs.length||this.tab!==0)return;
+  logKey(event,cx) {if(!this.logs.length||this.sqlOpen)return;
     const index=this.logs.findIndex(entry=>entry.id===this.selectedLog);
     if(['up','down'].includes(event.key)){const next=index<0?this.logs.length-1:event.key==='up'?Math.min(index+1,this.logs.length-1):Math.max(index-1,0);this.selectedLog=this.logs[next].id;cx.stop_propagation();cx.notify();return;}
     const copy=event.key==='c'&&(event.modifiers.platform||event.modifiers.control);
@@ -229,7 +232,7 @@ export default class Databases extends View {
     this.run(async cx=>{editor.fields=editor.inputs.map(readText);const profile=prepare(editor,this.ssh),id=prepareDatabase({profile,secret:describeSecret(editor.secret).filled?editor.secret:null,testing});
       await this.execute(null,cx,null,async()=>{await this.refresh(cx);if(!testing&&this.editor===editor){this.close(cx);this.notice('db_saved');}},id);},cx);
   }
-  close(cx) {if(this.editor){this.editor.inputs.forEach(releaseText);releaseSecret(this.editor.secret);}this.editor=null;this.confirmation=null;this.picker=false;cx.notify();}
+  close(cx) {if(this.editor){this.editor.inputs.forEach(releaseText);releaseSecret(this.editor.secret);}this.editor=null;this.confirmation=null;this.sqlOpen=false;this.picker=false;cx.notify();}
   remove(profile,cx) {if(this.locked())return;this.confirmation={label:'settings_delete',text:format(this.text.db_remove_confirm,{name:profile.name}),run:cx=>this.execute(command('remove_database',{profile:profile.id,expected_revision:profile.revision}),cx,null,()=>this.refresh(cx))};this.dialog++;this.picker=false;cx.notify();}
   confirm(cx) {const confirmation=this.confirmation;if(!confirmation||this.locked()||confirmation.origin&&!this.valid(confirmation.origin))return;this.confirmation=null;this.run(confirmation.run,cx);}
   assistant(conversations,cx) {

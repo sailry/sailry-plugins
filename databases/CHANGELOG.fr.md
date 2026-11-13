@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Afficher les résultats dans un tableau sans cadre avec le nombre de lignes en pied, ouvrir le SQL dans une boîte de dialogue depuis Nouvelle requête et afficher les icônes des bases et des tables dans le catalogue
+
 ## 0.1.18
 
 - Déplacer l’actualisation du catalogue dans l’en-tête de l’espace de travail

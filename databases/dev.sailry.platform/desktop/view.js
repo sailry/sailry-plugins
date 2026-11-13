@@ -1,5 +1,5 @@
 import {div} from 'gpui-kit';
-import {Button,Icon,Pagination,Tab,TabBar,Resizable,ResizablePanel} from 'gpui-component';
+import {Button,Icon,Pagination,Resizable,ResizablePanel} from 'gpui-component';
 import {Conversation,Header,theme} from 'sailry';
 import {Workspace,EmptyState,Loading,InputSurface,Picker,SelectableRow,IconButton,Tooltip,ResourceTree,DataTable,Modal,NativeContextMenu} from 'sailry/ui';
 import {TextField,readText} from 'sailry/forms';
@@ -46,24 +46,26 @@ function feedback(view,form=false) {
       .children(['query_database','check_database'].includes(pending.request.command?.kind)?[new Button('db-stop').label(text.db_stop).on_click((_,cx)=>view.run(()=>pending.request.cancel(),cx))]:[])]:[]);
 }
 function results(view) {
-  const {result,text}=view;
-  const pages=Math.max(1,Math.ceil((result?.rows.length??0)/50));
+  const {result,text}=view,colors=theme().colors;
+  const count=result?.rows.length??0,pages=Math.max(1,Math.ceil(count/50));
+  // The table fills the page, whose edges bound it, so it draws no frame of its own.
   return div().id('db-results').v_flex().size_full().min_h_0().min_w_0()
-    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,header:!!result?.columns.length,empty:text.db_data_empty,empty_icon:'hard-drive'})))
-    .children(pages>1||result?.truncated?[div().h_flex().p_2().gap_2().items_center().text_sm()
-      .children(result.truncated?[div().text_color(theme().colors.muted_foreground).child(text.db_truncated)]:[])
+    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,header:!!result?.columns.length,bordered:false,empty:text.db_data_empty,empty_icon:'table'})))
+    .children(result?.columns.length?[div().id('db-results-footer').h_flex().h_9().flex_none().px_3().gap_3().items_center().text_sm().text_color(colors.muted_foreground).border_t_1().border_color(colors.border)
+      .child(div().id('db-results-count').flex_none().child(format(text.db_rows,{count})))
+      .children(result.truncated?[div().id('db-results-truncated').flex_none().child(text.db_truncated)]:[])
       .child(div().flex_1())
       .children(pages>1?[new Pagination('db-pages').size('small').current_page(view.page+1).total_pages(pages).visible_pages(3).on_change((page,cx)=>{view.page=page-1;cx.notify();})]:[])]:[]);
 }
 function log(view) {
-  const {text}=view;
+  const {text}=view,colors=theme().colors;
   // DataTable has no retained keyboard target or whole-row tooltip; native rows keep both and their captured context menus.
-  return div().id('database-history').v_flex().size_full().min_h_0().min_w_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
-    .child(div().id('database-history-heading').h_flex().h_8().flex_none().items_center().px_3().gap_3().text_sm().text_color(theme().colors.muted_foreground).border_b_1().border_color(theme().colors.border)
+  return div().id('database-history').v_flex().flex_1().min_h_0().min_w_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
+    .child(div().id('database-history-heading').h_flex().h_8().flex_none().items_center().px_3().gap_3().text_xs().text_color(colors.muted_foreground)
       .child(div().flex_1().min_w_0().truncate().child(text.db_sql_tab))
       .child(div().flex_none().w_40().truncate().child(text.db_log_result))
       .child(div().flex_none().w_16().text_right().child(text.db_log_duration)))
-    .child(div().id('database-history-rows').v_flex().flex_1().min_h_0().min_w_0().overflow_y_scrollbar()
+    .child(view.logs.length?div().id('database-history-rows').v_flex().flex_1().min_h_0().min_w_0().overflow_y_scrollbar()
     .children([...view.logs].reverse().map((entry,index)=>{
       const result=entry.result?.rows??entry.request?.output?.data?.data,error=entry.result?.error??entry.request?.error;
       const status=entry.request?.unknown?text.db_unknown:error?text.db_failed:result?format(text.db_rows,{count:result.columns.length?result.rows.length:result.affected_rows}):text.db_running;
@@ -72,53 +74,61 @@ function log(view) {
         {id:`log:${JSON.stringify({profile:view.opened,id:entry.id,edit:true})}`,label:text.db_open_sql,enabled:!view.locked()}];
       return div().id(`db-history-row-${entry.id}`).h_8().flex_none().child(NativeContextMenu.new(`db-history-${entry.id}`,{items}).child(Tooltip.new(`db-log-tooltip-${entry.id}`,{text:`${new Date(entry.timestamp).toLocaleTimeString()}\n${entry.sql}${error?.message?`\n${error.message}`:''}`})
         .child(SelectableRow.new(id,{variant:'list',selected:view.selectedLog===entry.id,stripe:index%2===1})
-          .child(div().h_flex().w_full().min_w_0().px_3().gap_3()
-            .child(div().id(`db-log-sql-${index}`).flex_1().min_w_0().truncate().text_color(theme().colors.foreground).child(entry.sql))
-            .child(div().id(`db-log-status-${index}`).flex_none().w_40().truncate().child(status))
-            .child(div().id(`db-log-elapsed-${index}`).flex_none().w_16().text_right().child(entry.elapsed==null?'':`${entry.elapsed.toFixed(2)}s`))))));
-    })));
+          .child(div().h_flex().w_full().min_w_0().px_3().gap_3().text_sm()
+            .child(div().id(`db-log-sql-${index}`).flex_1().min_w_0().truncate().text_color(colors.foreground).child(entry.sql))
+            .child(div().id(`db-log-status-${index}`).flex_none().w_40().truncate().text_color(error?colors.destructive:colors.muted_foreground).child(status))
+            .child(div().id(`db-log-elapsed-${index}`).flex_none().w_16().text_right().text_color(colors.muted_foreground).child(entry.elapsed==null?'':`${entry.elapsed.toFixed(2)}s`))))));
+    })):div().id('db-history-empty').flex_1().min_h_0().v_flex().items_center().justify_center().text_sm().text_color(colors.muted_foreground).child(text.db_history_empty));
+}
+// The action that runs, stops or checks the query: Run while idle, Stop
+// while it runs, Check result when its outcome is unknown.
+function queryButton(view,props) {
+  const {text,pending}=view,unknown=pending?.request.unknown;
+  return IconButton.new(pending?unknown?'db-inspect':'db-stop':'db-run',{
+    icon:pending?unknown?'rotate-cw':'square':'play',label:text[pending?unknown?'db_inspect':'db_stop':'db_run'],
+    disabled:!pending&&(view.locked()||!readText(view.sql).trim()),...props,
+  });
 }
 function sqlEditor(view) {
   const {text,pending}=view,unknown=pending?.request.unknown;
-  const button=IconButton.new(pending?unknown?'db-inspect':'db-stop':'db-run',{
-    icon:pending?unknown?'rotate-cw':'square':'play',label:text[pending?unknown?'db_inspect':'db_stop':'db_run'],
-    variant:'primary',circular:true,size:'medium',disabled:!pending&&(view.locked()||!readText(view.sql).trim()),
-  });
-  return div().v_flex().size_full().min_h_0().px_3().pt_2().pb_4().justify_end()
+  return div().id('db-sql').v_flex().w_full().gap_3()
     .child(InputSurface.new('db-sql-surface')
       .child(div().id('db-editor-scroll').min_h_0().overflow_hidden().child(TextField.new(view.sql,{disabled:view.locked(),appearance:false,bordered:false})))
       .child(div().h_flex().w_full().min_w_0().gap_2()
         .child(div().id('db-execution-status').pl_3().flex_1().min_w_0().truncate().text_sm().text_color(theme().colors.muted_foreground)
           .child(pending?unknown?'':text.db_running:text.db_ready))
         .child(div().id('db-execution-target').max_w('40%').min_w_0().truncate().text_sm().text_color(theme().colors.muted_foreground).child(view.catalog.database??view.profile().name))
-        .child(button)));
+        .child(queryButton(view,{variant:'primary',circular:true,size:'medium'}))));
 }
-function editorPanel(view) {
-  const {text}=view;
-  const tabs=new TabBar('db-bottom-tabs').variant('tab').rounded_none().px_3().menu(false).selected_index(view.tab)
-    .children([new Tab().label(text.db_history),new Tab().label(text.db_sql_tab)])
-    .on_change((index,cx)=>{view.tab=index;cx.notify();});
-  return div().v_flex().size_full().min_h_0().min_w_0().child(tabs)
-    .child(div().flex_1().min_h_0().child(view.tab===0?log(view):sqlEditor(view)));
+function historyPanel(view) {
+  const {text,pending}=view,colors=theme().colors;
+  // A query run from the SQL dialog keeps its Stop here once the dialog is closed.
+  const running=pending&&!view.sqlOpen&&pending.request.command?.kind==='query_database';
+  return div().id('database-history-panel').v_flex().size_full().min_h_0().min_w_0().border_t_1().border_color(colors.border)
+    .child(div().id('database-history-bar').h_flex().h_10().flex_none().items_center().pl_3().pr_2().gap_1()
+      .child(div().flex_1().min_w_0().truncate().text_sm().font_medium().child(text.db_history))
+      .children(running?[queryButton(view,{size:'small'})]:[])
+      .child(IconButton.new('db-new-query',{icon:'plus',label:text.db_new_query,show_label:true,size:'small',disabled:view.locked()})))
+    .child(log(view));
 }
 function content(view) {
   if(view.home||!view.profile())return div().id('db-landing').v_flex().size_full().min_h_0().children(view.pending?[feedback(view)]:[]).child(landing(view));
   const panels=new Resizable('db-editor-results').axis('vertical')
     .child(new ResizablePanel().size_range(100,10000).child(results(view)))
-    .child(new ResizablePanel().size(200).size_range(120,480).flex_none().child(editorPanel(view)));
+    .child(new ResizablePanel().size(200).size_range(120,480).flex_none().child(historyPanel(view)));
   return div().id('db-page').v_flex().size_full().min_h_0().min_w_0().child(div().flex_1().min_h_0().overflow_hidden().child(panels));
 }
 function navigation(view) {
   const {text,catalog}=view;
   if(view.home||!view.profile())return div();
   return div().id('db-catalog').v_flex().size_full().min_h_0().min_w_0()
-    .child(div().flex_1().min_h_0().p_1().child(ResourceTree.new('database-tree',{variant:'branch',items:JSON.stringify(catalog.items(text,(table,database)=>view.tableMenu(table,database))),current:catalog.current,selected:[]})));
+    .child(div().flex_1().min_h_0().p_1().child(ResourceTree.new('database-tree',{guides:true,items:JSON.stringify(catalog.items(text,(table,database)=>view.tableMenu(table,database))),current:catalog.current,selected:[]})));
 }
 
 export function render(view) {
-  const {text}=view,current=view.profile(),profile=view.home?null:current,opened=!!view.editor||!!view.confirmation;
+  const {text}=view,current=view.profile(),profile=view.home?null:current,query=view.sqlOpen&&!!profile&&!view.editor&&!view.confirmation,opened=!!view.editor||!!view.confirmation||query;
   const form=view.editor?{form:true,title:text[view.editor.original.revision?'db_edit':'db_new'],width:560}
-    :view.confirmation?{form:true,title:text[view.confirmation.label],width:568}:{};
+    :view.confirmation?{form:true,title:text[view.confirmation.label],width:568}:query?{form:true,title:text.db_new_query,width:720}:{};
   const editorBody=view.editor?div().v_flex().gap_4().child(editor(view))
     .children(view.pending?[feedback(view,true)]:[]):null;
   const confirmationBody=view.confirmation?div().id('db-confirm').v_flex().gap_3()
@@ -138,5 +148,5 @@ export function render(view) {
       profile?div().id('db-assistant-panel').size_full().min_h_0().child(Conversation.new(`database-assistant-${view.opened}`,{assistant:'database',resource:{kind:'database',id:view.opened},heading:text.connection_assistant})):div(),
       navigation(view)
     ])).child(picker(view)).child(Modal.new(`db-dialog-${view.dialog}`,{open:opened,...form})
-      .children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[confirmationBody,confirmationFooter]:[]));
+      .children(view.editor?[editorBody,editorFooter(view)]:view.confirmation?[confirmationBody,confirmationFooter]:query?[sqlEditor(view)]:[]));
 }

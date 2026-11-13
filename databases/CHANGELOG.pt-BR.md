@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Mostrar resultados em uma tabela sem moldura com a contagem de linhas no rodapé, abrir o SQL em uma caixa de diálogo a partir de Nova consulta e mostrar ícones de bancos e tabelas no catálogo
+
 ## 0.1.18
 
 - Mover a atualização do catálogo para o cabeçalho do espaço de trabalho
