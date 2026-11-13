@@ -20670,7 +20670,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21506,6 +21506,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "757c8bdf47c04d9877fb7fed0fcd4e478e520da1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Show remote files with file and folder icons, as the Files package does",
+            "locales": {
+              "zh-CN": "- 远程文件改用和文件插件一致的文件、文件夹图标样式",
+              "zh-TW": "- 遠端檔案改用與檔案外掛一致的檔案、資料夾圖示樣式",
+              "ja": "- リモートファイルをファイルパッケージと同じファイル・フォルダーアイコンで表示",
+              "ko": "- 원격 파일을 파일 패키지와 같은 파일·폴더 아이콘으로 표시",
+              "fr": "- Afficher les fichiers distants avec des icônes de fichier et de dossier, comme le paquet Fichiers",
+              "de": "- Entfernte Dateien mit Datei- und Ordnersymbolen wie im Dateien-Paket anzeigen",
+              "es": "- Mostrar los archivos remotos con iconos de archivo y carpeta, como el paquete Archivos",
+              "pt-BR": "- Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos",
+              "ru": "- Показывать удалённые файлы со значками файлов и папок, как в пакете «Файлы»"
+            }
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "ef9d822d266351db8141cb2eda740d92e30f7713",
           "min_sailry_version": "0.1.6",
@@ -21707,17 +21726,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Browse remote files in expandable directory branches with cached listings and pagination\n- Navigate with path breadcrumbs or edit the remote path directly\n- Keep file menus, multiple selection, native uploads and transfer replacement actions",
+        "text": "- Show remote files with file and folder icons, as the Files package does",
         "locales": {
-          "zh-CN": "- 使用可展开的目录树浏览远程文件，保留目录缓存和分页\n- 通过路径面包屑跳转，或直接编辑远程路径\n- 保留文件菜单、多选、系统文件上传和传输替换操作",
-          "zh-TW": "- 使用可展開的目錄樹瀏覽遠端檔案，保留目錄快取和分頁\n- 透過路徑麵包屑跳轉，或直接編輯遠端路徑\n- 保留檔案選單、多選、系統檔案上傳和傳輸取代操作",
-          "ja": "- キャッシュとページ分割を備えた展開可能なディレクトリツリーでリモートファイルを表示\n- パンくずで移動するかリモートパスを直接編集\n- ファイルメニュー、複数選択、システムからのアップロード、転送時の置換操作を維持",
-          "ko": "- 캐시와 페이지 나누기를 지원하는 확장 가능한 디렉터리 트리로 원격 파일 탐색\n- 경로 탐색 표시줄로 이동하거나 원격 경로를 직접 편집\n- 파일 메뉴, 다중 선택, 시스템 파일 업로드와 전송 교체 작업 유지",
-          "fr": "- Parcourir les fichiers distants dans une arborescence dépliable avec cache et pagination\n- Naviguer avec le fil d’Ariane ou modifier directement le chemin distant\n- Conserver les menus, la sélection multiple, les envois natifs et le remplacement des transferts",
-          "de": "- Remotedateien in aufklappbaren Verzeichniszweigen mit Zwischenspeicher und Seitennavigation durchsuchen\n- Über die Pfadnavigation wechseln oder den Remotepfad direkt bearbeiten\n- Dateimenüs, Mehrfachauswahl, native Uploads und Ersetzungsaktionen für Übertragungen beibehalten",
-          "es": "- Explorar archivos remotos en un árbol de directorios desplegable con caché y paginación\n- Navegar con rutas de navegación o editar directamente la ruta remota\n- Mantener menús, selección múltiple, cargas nativas y acciones de reemplazo de transferencias",
-          "pt-BR": "- Navegar por arquivos remotos em diretórios expansíveis com cache e paginação\n- Navegar pelo caminho ou editar o caminho remoto diretamente\n- Manter menus, seleção múltipla, envios nativos e ações de substituição nas transferências",
-          "ru": "- Просмотр удалённых файлов в раскрываемом дереве каталогов с кэшем и постраничной загрузкой\n- Переход по цепочке пути или прямое редактирование удалённого пути\n- Сохранены меню файлов, множественный выбор, загрузка системных файлов и замена при передаче"
+          "zh-CN": "- 远程文件改用和文件插件一致的文件、文件夹图标样式",
+          "zh-TW": "- 遠端檔案改用與檔案外掛一致的檔案、資料夾圖示樣式",
+          "ja": "- リモートファイルをファイルパッケージと同じファイル・フォルダーアイコンで表示",
+          "ko": "- 원격 파일을 파일 패키지와 같은 파일·폴더 아이콘으로 표시",
+          "fr": "- Afficher les fichiers distants avec des icônes de fichier et de dossier, comme le paquet Fichiers",
+          "de": "- Entfernte Dateien mit Datei- und Ordnersymbolen wie im Dateien-Paket anzeigen",
+          "es": "- Mostrar los archivos remotos con iconos de archivo y carpeta, como el paquete Archivos",
+          "pt-BR": "- Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos",
+          "ru": "- Показывать удалённые файлы со значками файлов и папок, как в пакете «Файлы»"
         }
       }
     },
