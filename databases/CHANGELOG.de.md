@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.18
+
+- Katalogaktualisierung in die Kopfzeile des Arbeitsbereichs verschieben
+- Abfrageergebnisse mit abwechselnden Zeilen und lokalisiertem Leerzustand anzeigen
+- SQL-Verlaufsspalten ausrichten und Auswahl, Tastaturnavigation und Kontextmenüs beibehalten
+
 ## 0.1.17
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

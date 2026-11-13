@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.22
+
+- Navegar por arquivos remotos em diretórios expansíveis com cache e paginação
+- Navegar pelo caminho ou editar o caminho remoto diretamente
+- Manter menus, seleção múltipla, envios nativos e ações de substituição nas transferências
+
 ## 0.1.20
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

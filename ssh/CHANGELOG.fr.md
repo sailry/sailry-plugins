@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.22
+
+- Parcourir les fichiers distants dans une arborescence dépliable avec cache et pagination
+- Naviguer avec le fil d’Ariane ou modifier directement le chemin distant
+- Conserver les menus, la sélection multiple, les envois natifs et le remplacement des transferts
+
 ## 0.1.20
 
 - Icônes au trait rétablies dans la navigation et les outils

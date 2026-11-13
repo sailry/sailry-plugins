@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.22
+
+- Remotedateien in aufklappbaren Verzeichniszweigen mit Zwischenspeicher und Seitennavigation durchsuchen
+- Über die Pfadnavigation wechseln oder den Remotepfad direkt bearbeiten
+- Dateimenüs, Mehrfachauswahl, native Uploads und Ersetzungsaktionen für Übertragungen beibehalten
+
 ## 0.1.20
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

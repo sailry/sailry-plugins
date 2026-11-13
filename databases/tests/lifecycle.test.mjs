@@ -305,11 +305,11 @@ for(const packageName of ['databases','ssh']) {
 
 test('native icon actions retain the captured browser, catalog, and request',async()=>{
   const ssh=await fixture('ssh',{parent:()=>'/parent'}),loaded=[];
-  const files={pending:false,path:'/parent/child',load:(path,cx)=>loaded.push([path,cx])};
+  const files={pending:false,path:'/parent/child',segments:()=>[{label:'/',path:'/'},{label:'parent',path:'/parent'},{label:'child',path:'/parent/child'}],load:(path,cx)=>loaded.push([path,cx])};
   ssh.owner.files=()=>files;
-  ssh.owner.control({id:'ssh-files-parent'},ssh.event);await Promise.all(ssh.tasks);
+  ssh.owner.control({id:'ssh-files-pathbar',value:1},ssh.event);await Promise.all(ssh.tasks);
   assert.deepEqual(loaded,[['/parent',ssh.live]]);
-  files.pending=true;ssh.owner.control({id:'ssh-files-parent'},ssh.live);assert.equal(loaded.length,1);
+  files.pending=true;ssh.owner.control({id:'ssh-files-pathbar',value:1},ssh.live);assert.equal(loaded.length,1);
   const database=await fixture('databases'),calls=[],owner=database.owner;
   const catalog={tables:new Map([['old',[]]]),names:['old'],expanded:new Set(['old']),current:'db:0',loading:new Set(),load:(name,cx,reset)=>calls.push(['catalog',name,cx,reset])};
   owner.catalog=catalog;owner.profile=()=>({id:'saved'});
@@ -499,4 +499,19 @@ test('SSH Transfer worktree events require current draft generation and unlocked
   const replacement={worktree:'first'};owner.transfer=replacement;owner.dialog=5;
   owner.control({id:'ssh-worktree-4',value:'second'},setup.live);assert.equal(replacement.worktree,'first');
   owner.transfer=null;owner.control({id:'ssh-worktree-5',value:'second'},setup.live);assert.equal(owner.transfer,null);
+});
+
+
+test('database header refresh keeps the captured catalog and ignores missing resources',async()=>{
+  const actions=[],header_action=()=>{},globals={header_action,context:()=>'{"locale":"en"}',messages:()=>({db_sql:'SQL'}),createText:()=>({draft:'retained'})};
+  for(const name of ['nextChange','nextTableEvent','nextTreeEvent','nextContextMenuEvent','nextNavigationTabEvent','nextPickerEvent','nextControlEvent','nextTextEvent','modal_closed','nextAssistantTools'])globals[name]=()=>{};
+  const setup=await fixture('databases',globals),owner=setup.owner;let action;
+  setup.live.focus_handle=()=>({});owner.watch=(read,handle)=>{if(read===header_action)action=handle;};owner.init({},setup.live);
+  const catalog={loading:new Set(),load:async(...args)=>actions.push(args)},profile={id:'saved',revision:4};
+  Object.assign(owner,{profiles:[profile],opened:'saved',catalog});
+  action('db-refresh-catalog',setup.event);await Promise.all(setup.tasks);
+  assert.deepEqual(actions,[[null,setup.live,true]]);assert.equal(owner.catalog,catalog);
+  catalog.loading.add('main');action('db-refresh-catalog',setup.event);
+  catalog.loading.clear();owner.opened=null;action('db-refresh-catalog',setup.event);
+  assert.equal(actions.length,1);
 });

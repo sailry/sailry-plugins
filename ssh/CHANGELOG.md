@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.22
+
+- Browse remote files in expandable directory branches with cached listings and pagination
+- Navigate with path breadcrumbs or edit the remote path directly
+- Keep file menus, multiple selection, native uploads and transfer replacement actions
+
 ## 0.1.21
 
 - Show only connection progress while opening an SSH terminal

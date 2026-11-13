@@ -33,7 +33,7 @@ async function fixture(packageName) {
     .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
   const names=['Button','Icon','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
   const constructors=Object.fromEntries(names.map(name=>[name,function(id){return element(name,id);}]))
-  const globals=Object.fromEntries(['Workspace','PanelHeader','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
+  const globals=Object.fromEntries(['Workspace','PanelHeader','PathBar','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
   const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,editorPanel':''}})`,{
     div:()=>element(),...constructors,...globals,
     theme:()=>({colors:{muted_foreground:'muted',foreground:'foreground',border:'border'}}),
@@ -54,6 +54,7 @@ function view(packageName,profiles=[]) {
     opened:null,catalog:{loading:new Set(),names:[],failed:new Set(),items:()=>[],database:null,current:null},
     result:null,page:0,epoch:0,tab:0,logs:[],sql:'',logFocus:{},rowMenu:()=>[],
   };
+  owner.connectionLocked=()=>owner.locked();
   owner.profile=()=>profiles.find(profile=>profile.id===owner.opened);
   owner.activeProfile=()=>profiles.find(profile=>profile.id===owner.terminals.find(info=>info.id===owner.terminal)?.ssh);
   return owner;
@@ -96,10 +97,12 @@ for(const packageName of ['databases','ssh']) {
     assert.equal(setup.nodes.get(`${prefix}-dialog-0`).props.open,false);
     const header=JSON.parse(setup.nodes.get(packageName==='ssh'?'ssh-header':'database-header').props.content);
     assert.equal(header.title,packageName==='ssh'?'ssh':'database');
-    assert.equal(header.actions[0].id,`${prefix}-connections-menu`);
-    assert.deepEqual(header.actions.map(action=>action.icon),[packageName==='ssh'?'icons/network.svg':'icons/hard-drive.svg','icons/house.svg'],
+    const actions=packageName==='databases'?header.actions.slice(1):header.actions;
+    if(packageName==='databases')assert.deepEqual(header.actions[0],{id:'db-refresh-catalog',label:'refresh',icon:'icons/rotate-cw.svg',disabled:true});
+    assert.equal(actions[0].id,`${prefix}-connections-menu`);
+    assert.deepEqual(actions.map(action=>action.icon),[packageName==='ssh'?'icons/network.svg':'icons/hard-drive.svg','icons/house.svg'],
       'Header actions pass complete asset paths to the native Icon');
-    assert.deepEqual(header.actions[1],{id:`${prefix}-home`,label:'home',icon:'icons/house.svg',disabled:true});
+    assert.deepEqual(actions[1],{id:`${prefix}-home`,label:'home',icon:'icons/house.svg',disabled:true});
     const menu=setup.nodes.get(`${prefix}-connection-second`);
     assert.equal(menu.type,'NativeContextMenu');
     assert.deepEqual(plain(menu.props.items),['edit','remove'].map(action=>({id:`connection:${JSON.stringify({id:'second',revision:7,action})}`,label:action==='edit'?'connection_action_edit':'settings_delete',enabled:true})));
@@ -165,7 +168,11 @@ test('database catalog failures retain trees and header refresh without duplicat
   owner.opened='first';owner.catalog.failed.add('');
   setup.functions.render(owner);
   assert.ok(setup.nodes.has('database-tree'));
-  assert.ok(setup.nodes.has('db-refresh-catalog'));
+  const header=JSON.parse(setup.nodes.get('database-header').props.content);
+  assert.deepEqual(header.actions.map(action=>action.id),['db-refresh-catalog','db-connections-menu','db-home']);
+  assert.equal(header.actions[0].disabled,false);
+  assert.equal(setup.nodes.has('database-catalog-header'),false);
+  assert.equal(setup.nodes.has('db-refresh-catalog'),false,'refresh belongs to the shared header');
   assert.equal(setup.nodes.has('db-catalog-retry'),false);
 });
 
@@ -241,10 +248,13 @@ test('SSH assistants use active profiles rather than selected saved connections'
 test('SSH Files native context and tree fill navigation height using flex columns',async()=>{
   const setup=await fixture('ssh'),owner=view('ssh',profiles);
   owner.terminals=[{id:'active',ssh:'first'}];owner.terminal='active';owner.jobs=[];owner.fileMenu=()=>[];
-  owner.files=()=>({input:'path-input',path:'/',pending:false,profile:profiles[0],entries:[{name:'fixture.txt',kind:'file'}],selected:[],current:null,items:()=>[]});
+  owner.files=()=>({input:'path-input',path:'/',segments:()=>[{label:'/',path:'/'}],pending:false,profile:profiles[0],entries:[{name:'fixture.txt',kind:'file'}],selected:[],current:null,items:()=>[]});
   setup.functions.render(owner);
   const panel=setup.nodes.get('ssh-files-panel'),body=panel.nodes.find(node=>node.nodes?.[0]?.selector==='ssh-files-root');
-  assert.deepEqual(plain(setup.nodes.get('ssh-files-header').props),{size:'row',padding:8,draggable:false,bordered:true});
+  assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
+  assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/'],disabled:false});
+  assert.equal(setup.nodes.get('ssh-files-edit-path').type,'IconButton');
+  assert.equal(setup.nodes.get('ssh-files').props.variant,'branch');
   assert.ok(body);
   for(const method of ['v_flex','flex_1','min_h_0','min_w_0','p_2'])assert.deepEqual(plain(body.style[method]),[]);
   assert.equal(body.nodes[0].nodes[0].selector,'ssh-files');
@@ -256,24 +266,20 @@ test('empty SSH directories fill their viewport without cards',async()=>{
     const setup=await fixture('ssh'),owner=view('ssh',profiles);
     owner.terminals=[{id:'active',ssh:'first'}];owner.terminal='active';owner.jobs=[];
     owner.fileMenu=()=>[{id:'refresh',label:'Refresh',enabled:true}];
-    owner.files=()=>({input:'retained-path',path:'/',pending:state==='pending',error:state==='failed'?'ssh_files_failed':null,
-      revision:state==='unloaded'?0:1,profile:profiles[0],entries:[],selected:[],current:null,items:()=>[]});
+    const items=[{id:`placeholder-${state}`,label:state,disabled:true}];
+    owner.files=()=>({input:'retained-path',path:'/',segments:()=>[{label:'/',path:'/'}],pending:state==='pending',error:state==='failed'?'ssh_files_failed':null,
+      revision:state==='unloaded'?0:1,profile:profiles[0],entries:[],selected:[],current:null,items:()=>items});
     setup.functions.render(owner);
     const panel=setup.nodes.get('ssh-files-panel'),context=setup.nodes.get('ssh-files-root');
     const body=panel.nodes.find(node=>node.nodes?.[0]===context);
     assert.ok(body);
     assert.deepEqual(plain(context.props.items),[{id:'refresh',label:'Refresh',enabled:true}]);
     assert.equal(setup.nodes.get('ssh-workspace').nodes[2],panel);
-    if(state==='empty') {
-      const empty=setup.nodes.get('ssh-files-empty');
-      assert.deepEqual(plain(empty.props),{variant:'list',fill_height:true,icon:'folder',label:'files_directory_empty'});
-      assert.equal(context.nodes[0],empty);
-      assert.equal(setup.nodes.has('ssh-files'),false);
-      assert.equal(panel.nodes.includes(empty),false,'the empty state belongs inside the viewport');
-    } else {
-      assert.equal(setup.nodes.has('ssh-files-empty'),false);
-      assert.equal(context.nodes[0].selector,'ssh-files');
-    }
+    assert.equal(setup.nodes.has('ssh-files-empty'),false);
+    assert.equal(context.nodes[0].selector,'ssh-files');
+    assert.equal(context.nodes[0].props.variant,'branch');
+    assert.deepEqual(JSON.parse(context.nodes[0].props.items),items,'directory states stay in the tree viewport');
+    assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
   }
 });
 
@@ -282,12 +288,13 @@ test('database catalogs and assistants use native slots and result tables',async
   setup.functions.render(owner);
   assert.equal(setup.nodes.get('database-workspace').props.navigation,'resource');
   assert.equal(setup.nodes.get('database-workspace').nodes[2].selector,'db-catalog');
-  assert.deepEqual(plain(setup.nodes.get('database-catalog-header').props),{size:'row',draggable:false,bordered:true});
+  assert.equal(setup.nodes.has('database-catalog-header'),false);
+  assert.equal(setup.nodes.get('db-catalog').nodes.length,1,'catalog contains only its tree viewport');
   assert.equal(setup.nodes.get('database-tree').props.variant,'branch');
   assert.equal(setup.nodes.get('database-tree').props.current,null);
   assert.deepEqual(plain(setup.nodes.get('database-assistant-first').props),{assistant:'database',resource:{kind:'database',id:'first'},heading:'connection_assistant'});
   assert.equal(setup.nodes.has('db_data_empty'),false);
-  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,header:false});
+  assert.deepEqual(plain(setup.nodes.get('database-results').props),{revision:'0',columns:[],rows:[],page:0,menu:[],stripe:true,header:false,empty:'db_data_empty',empty_icon:'hard-drive'});
 });
 
 test('database catalog renders the retained UI selection through the native tree',async()=>{
@@ -318,7 +325,7 @@ test('database result pagination uses Kit page numbers',async()=>{
   assert.equal(setup.nodes.get('database-results').props.header,true);
 });
 
-test('database zero-row results preserve real columns without no-data text',async()=>{
+test('database zero-row results preserve columns and a localized empty state',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);
   owner.result={columns:['id','value'],rows:[],truncated:false};
   setup.functions.results(owner);
@@ -326,7 +333,8 @@ test('database zero-row results preserve real columns without no-data text',asyn
   assert.deepEqual(plain(table.props.columns),['id','value']);
   assert.deepEqual(plain(table.props.rows),[]);
   assert.equal(table.props.header,true);
-  assert.equal('empty' in table.props,false);
+  assert.equal(table.props.empty,'db_data_empty');
+  assert.equal(table.props.empty_icon,'hard-drive');
   assert.equal(setup.nodes.has('db_data_empty'),false);
 });
 
@@ -366,14 +374,66 @@ test('capped database history has native selectable rows and captured copy/open 
     assert.equal(wrapper.nodes[0],setup.nodes.get(`db-history-${entry}`));
     assert.equal(setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:entry})}`).props.stripe,index%2===1);
   }
-  assert.deepEqual(plain(setup.nodes.get('database-history-grid').props),{revision:'0',columns:[],rows:[],stripe:true,header:false});
+  assert.equal(setup.nodes.has('database-history-grid'),false,'history has no empty table behind its interactive rows');
+  const heading=setup.nodes.get('database-history-heading');
+  assert.deepEqual(plain(heading.nodes.map(node=>node.nodes[0])),['db_sql_tab','db_log_result','db_log_duration']);
+  for(let index=0;index<100;index++) {
+    const row=setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:`entry-${99-index}`})}`).nodes[0];
+    assert.deepEqual(plain(row.style.px_3),plain(heading.style.px_3),'history headings and cells share their gutter');
+    assert.deepEqual(plain(setup.nodes.get(`db-log-status-${index}`).style.w_40),[]);
+    assert.deepEqual(plain(setup.nodes.get(`db-log-elapsed-${index}`).style.w_16),[]);
+  }
+  assert.deepEqual(plain(heading.nodes[1].style.w_40),[]);
+  assert.deepEqual(plain(heading.nodes[2].style.w_16),[]);
+  assert.equal(setup.nodes.get('database-history-rows').nodes[0].selector,'db-history-row-entry-99');
   assert.equal(setup.nodes.get('database-history-rows').nodes.length,100);
 });
 
 test('empty database history has no artificial log entries',async()=>{
   const setup=await fixture('databases'),owner=view('databases',profiles);
   setup.functions.log(owner);
-  assert.deepEqual(plain(setup.nodes.get('database-history-grid').props.rows),[]);
+  assert.equal(setup.nodes.has('database-history-grid'),false);
+  assert.ok(setup.nodes.has('database-history-heading'));
   assert.equal(setup.nodes.get('database-history-rows').nodes.length,0);
   assert.equal(owner.logs.length,0);
+});
+
+
+test('database history keeps selection keyboard focus and complete error tooltips',async()=>{
+  const setup=await fixture('databases'),owner=view('databases',profiles),events=[];owner.opened='first';
+  owner.logs=[{id:'failed',sql:'SELECT a_complete_query_without_truncation',timestamp:0,elapsed:1.25,result:{error:{message:'Fixture database failure'}}}];
+  owner.selectedLog='failed';owner.logKey=(event,cx)=>events.push([event,cx]);
+  setup.functions.log(owner);
+  const row=setup.nodes.get(`db-log:${JSON.stringify({profile:'first',id:'failed'})}`);
+  assert.equal(row.props.selected,true);
+  assert.deepEqual(plain(setup.nodes.get('database-history').style.track_focus),[{}]);
+  setup.nodes.get('database-history').on_key_down({key:'up'},setup.cx);assert.deepEqual(events,[[{key:'up'},setup.cx]]);
+  assert.equal(setup.nodes.get('db-log-tooltip-failed').props.text,`${new Date(0).toLocaleTimeString()}\n${owner.logs[0].sql}\nFixture database failure`);
+  assert.equal(setup.nodes.get('db-log-status-0').nodes[0],'db_failed');
+  assert.equal(setup.nodes.get('db-log-elapsed-0').nodes[0],'1.25s');
+  owner.locked=()=>true;setup.functions.log(owner);
+  assert.deepEqual(plain(setup.nodes.get('db-history-failed').props.items.map(item=>item.enabled)),[true,false]);
+});
+
+test('database SQL input fills the vertically split lower pane',async()=>{
+  const setup=await fixture('databases'),owner=view('databases',profiles);owner.opened='first';owner.tab=1;
+  setup.functions.render(owner);
+  const split=setup.nodes.get('db-editor-results');
+  assert.deepEqual(plain(split.style.axis),['vertical']);assert.equal(split.nodes.length,2);
+  const lower=split.nodes[1];assert.deepEqual(plain(lower.style.size),[200]);assert.deepEqual(plain(lower.style.size_range),[120,480]);
+  const panel=lower.nodes[0],editor=panel.nodes[1].nodes[0];
+  assert.deepEqual(plain(panel.style.size_full),[]);assert.deepEqual(plain(editor.style.size_full),[]);
+  assert.equal(editor.nodes[0],setup.nodes.get('db-sql-surface'));
+  assert.equal('w' in lower.style,false);assert.equal('w' in panel.style,false);assert.equal('w' in editor.style,false);
+});
+
+test('database results and history labels are localized in English and Chinese',async()=>{
+  const {messages}=await import('../dev.sailry.platform/desktop/locales.js');
+  for(const locale of ['en','zh-CN']) {
+    const text=messages(locale);
+    for(const key of ['db_data_empty','db_log_result','db_log_duration']) {
+      assert.equal(typeof text[key],'string');assert.ok(text[key]);assert.equal(/[.!?。！？]$/.test(text[key]),false);
+    }
+  }
+  assert.notEqual(messages('en').db_log_result,messages('zh-CN').db_log_result);
 });

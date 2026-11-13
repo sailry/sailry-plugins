@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.18
+
+- Move catalog refresh to the workspace header
+- Show striped query results with localized empty states
+- Align SQL history columns while preserving selection, keyboard navigation and context menus
+
 ## 0.1.17
 
 - Restore outline icons in navigation and tools

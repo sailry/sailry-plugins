@@ -2,7 +2,7 @@ import {View} from 'gpui-kit';
 import {context,header_action,focusTerminal,releaseTerminal} from 'sailry';
 import {nextChange,readProjectCatalog,prepareRequest,completeRequest,forgetRequest,faultCode} from 'sailry/sdk';
 import {listSsh,newSshId,prepareSsh,listSshTerminals,prepareSshTerminal} from 'sailry/connections';
-import {createText,readText,releaseText,setText,nextTextEvent} from 'sailry/forms';
+import {createText,readText,releaseText,setText,focusText,nextTextEvent} from 'sailry/forms';
 import {createSecret,releaseSecret,describeSecret,chooseSecretFile} from 'sailry/credentials';
 import {nextTreeEvent,nextContextMenuEvent,nextNavigationTabEvent,nextPickerEvent,nextControlEvent,modal_closed,writeClipboard,toast} from 'sailry/ui';
 import {uploadDropped,selectUpload,selectDownload,nextTransfers,transferAction} from 'sailry/ssh-transfers';
@@ -30,7 +30,7 @@ export default class Ssh extends View {
     this.watch(header_action,(id,cx)=>{if(id==='ssh-connections-menu')this.connections(cx);else if(id==='ssh-home')this.showHome(cx);},cx);
     this.watch(nextPickerEvent,(event,cx)=>this.pick(event,cx),cx);
     this.watch(nextControlEvent,(event,cx)=>this.control(event,cx),cx);
-    this.watch(nextTextEvent,(event,cx)=>{const files=this.files();if(files&&event.id===files.input&&event.kind==='enter')this.run(cx=>files.load(readText(files.input),cx),cx);},cx);
+    this.watch(nextTextEvent,(event,cx)=>this.textEvent(event,cx),cx);
     this.watch(modal_closed,(id,cx)=>{if(id===`ssh-dialog-${this.dialog}`)this.close(cx);},cx);
   }
   watch(read,handle,cx,cursor=false){cx.spawn(async cx=>{let seen='';try{while(true){const value=await read(...(cursor?[seen]:[]));if(cursor)seen=value.cursor;handle(value,cx);cx.notify();}}catch(_){}});}
@@ -54,9 +54,12 @@ export default class Ssh extends View {
     if(event.id==='ssh-new'){if(!this.locked())this.edit(null,cx);return;}
     if(event.id===`ssh-worktree-${this.dialog}`){const transfer=this.transfer;if(transfer&&!this.locked()&&this.worktrees.some(tree=>tree.project&&tree.id===event.value)){transfer.worktree=event.value;cx.notify();}return;}
     if(event.id?.startsWith('ssh-open-')){const profile=this.profiles.find(profile=>event.id===`ssh-open-${profile.id}`);if(profile&&!this.connectionLocked(profile))this.run(cx=>this.open(profile,cx),cx);return;}
-    if(event.id==='ssh-files-parent'){const files=this.files();if(files&&!files.pending&&files.path!=='/')this.run(cx=>files.load(parent(files.path),cx),cx);return;}
+    if(event.id==='ssh-files-edit-path'){const files=this.files();if(files&&!files.pending){files.editing=true;setText(files.input,files.path);focusText(files.input);cx.notify();}return;}
+    if(event.id==='ssh-files-pathbar'){const files=this.files(),segment=files?.segments()[event.value];if(files&&!files.pending&&Number.isInteger(event.value)&&segment)this.run(cx=>files.load(segment.path,cx),cx);return;}
     const editor=this.editor;if(!editor||this.locked()||describeSecret(editor.key).picking||event.id!==`ssh-authentication-${this.dialog}`)return;
     if(['password','private_key','key_path'].includes(event.value)){editor.authentication=event.value;cx.notify();}}
+  textEvent(event,cx){const files=this.files();if(files?.editing&&event.id===files.input&&event.kind==='enter'&&!files.pending){const path=readText(files.input);this.run(cx=>files.load(path,cx),cx);}}
+  pathKey(event,cx){const files=this.files();if(event.key==='escape'&&files?.editing&&!files.pending){files.editing=false;setText(files.input,files.path);cx.stop_propagation();cx.notify();}}
   connections(cx){if(this.locked())return;this.picker=true;this.pickerProfile=null;this.pickerRevision++;cx.notify();}
   pick(event,cx){if(!this.picker||event.picker!==`ssh-picker-${this.pickerRevision}`)return;
     if(event.kind==='close'){this.picker=false;cx.notify();return;}if(this.locked()||event.kind!=='select')return;
@@ -153,13 +156,16 @@ export default class Ssh extends View {
   transferFile(direction,cx){const value=this.transfer;if(!value?.worktree||this.locked())return;this.resume=false;const data={profile:value.profile.id,expected_revision:value.profile.revision,transfer:{worktree:value.worktree,path:readText(value.inputs[0]),remote_path:readText(value.inputs[1]),direction},timeout_ms:300000};
     const run=cx=>this.execute(command('transfer_ssh',data),cx,null,null,value.profile);if(direction==='upload'){this.confirmation={label:'ssh_upload',text:format(this.text.ssh_upload_confirm,{path:data.transfer.remote_path}),run};cx.notify();}else this.run(run,cx);}
   async tree(event,cx){const files=this.files();if(!files||event.tree!=='ssh-files')return;
-    if(event.kind==='external_drop'&&event.files){if(this.locked())return;const directory=files.entry(event.id)?.kind==='directory'?event.id:files.path;for(const id of uploadDropped(files.profile,directory,event.files))transferAction(id,'start');return;}
+    const placeholder=files.placeholder(event.id);if(placeholder){if(event.kind==='open'&&['retry','more'].includes(placeholder.kind))await files.loadBranch(placeholder.path,cx,placeholder.kind==='more');return;}
+    if(event.kind==='expand'){await files.expand(event.id,cx);return;}
+    if(event.kind==='collapse'){files.expanded.delete(event.id);cx.notify();return;}
+    if(event.kind==='external_drop'&&event.files){if(this.locked())return;const directory=files.entry(event.id)?.kind==='directory'?event.id:event.id?parent(event.id):files.path;for(const id of uploadDropped(files.profile,directory,event.files))transferAction(id,'start');return;}
     if(event.kind==='select'){files.select(event.id,event);cx.notify();return;}
     if(event.kind==='context'){if(!files.selected.includes(event.id))files.selected=[event.id];files.current=event.id;return;}
-    if(event.kind==='command'){if(event.action==='select_all'){files.selected=files.entries.map(entry=>join(files.path,entry.name));return;}return this.fileAction(this.fileId(event.action,event.id),cx);}
+    if(event.kind==='command'){if(event.action==='select_all'){files.selected=files.visible();return;}return this.fileAction(this.fileId(event.action,event.id),cx);}
     if(event.kind==='menu')return this.fileAction(event.action,cx);
-    if(event.kind==='open'){const entry=files.entry(event.id);if(entry?.kind==='directory')await files.load(event.id,cx);else if(entry)await this.download([event.id],cx);}
-    if(event.kind==='drop'&&event.source){const destination=files.entry(event.id)?.kind==='directory'?event.id:files.path,paths=files.selected.includes(event.source)?[...files.selected]:[event.source];if(paths.every(path=>path!==destination&&parent(path)!==destination&&!destination.startsWith(`${path}/`)))await this.mutate(this.fileScope(files),paths.map(path=>({path,action:{operation:'move',destination:join(destination,name(path))}})),cx);}
+    if(event.kind==='open'){const entry=files.entry(event.id);if(entry?.kind==='directory')await files.expand(event.id,cx);else if(entry)await this.download([event.id],cx);}
+    if(event.kind==='drop'&&event.source){const destination=files.entry(event.id)?.kind==='directory'?event.id:event.id?parent(event.id):files.path,paths=files.selected.includes(event.source)?[...files.selected]:[event.source];if(paths.every(path=>path!==destination&&parent(path)!==destination&&!destination.startsWith(`${path}/`)))await this.mutate(this.fileScope(files),paths.map(path=>({path,action:{operation:'move',destination:join(destination,name(path))}})),cx);}
   }
   fileScope(files=this.files()){return files?{files,profile:files.profile,revision:files.revision}:null;}
   fileOwner(scope){return !!scope&&this.files()===scope.files&&!scope.files.closed&&this.profiles.some(profile=>profile.id===scope.profile.id&&profile.revision===scope.profile.revision);}
@@ -167,7 +173,7 @@ export default class Ssh extends View {
   fileId(action,path){const files=this.files();return JSON.stringify({action,path,profile:files.profile.id,revision:files.profile.revision,generation:files.revision});}
   fileMenu(path){const files=this.files(),locked=this.locked()||files.pending;return ['new_file','new_directory','upload','download','copy','cut','paste','rename','delete','copy_path','refresh'].map(action=>({id:this.fileId(action,path),label:this.text[{new_file:'files_new_file',new_directory:'files_new_directory',upload:'files_upload',download:'files_download',copy:'files_copy',cut:'files_cut',paste:'files_paste',rename:'files_rename',delete:'settings_delete',copy_path:'files_copy_path',refresh:'refresh'}[action]],enabled:!locked&&(action!=='paste'||!!files.clipboard)&&(action!=='rename'||files.selected.length<=1)}));}
   async fileAction(id,cx){const files=this.files();if(!files||this.locked())return;const value=JSON.parse(id);if(value.profile!==files.profile.id||value.revision!==files.profile.revision||value.generation!==files.revision)return;
-    const scope=this.fileScope(files),path=value.path,paths=files.selected.includes(path)?[...files.selected]:path?[path]:[],directory=files.entry(path)?.kind==='directory'?path:files.path,action=value.action;
+    const scope=this.fileScope(files),path=value.path,paths=files.selected.includes(path)?[...files.selected]:path?[path]:[],directory=files.entry(path)?.kind==='directory'?path:path?parent(path):files.path,action=value.action;
     if(action==='refresh')return files.load(files.path,cx);if(action==='copy_path')return writeClipboard(paths.join('\n'));
     if(['copy','cut'].includes(action)){files.clipboard={paths:[...paths],cut:action==='cut'};return;}
     if(action==='paste'&&files.clipboard){const clipboard=files.clipboard,completed=await this.mutate(scope,clipboard.paths.map(path=>({path,action:{operation:clipboard.cut?'move':'copy',destination:join(directory,name(path))}})),cx);if(clipboard.cut&&completed)files.clipboard=null;return;}

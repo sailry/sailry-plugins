@@ -23,15 +23,15 @@ function fixture() {
     return proxy;
   }
   const adapters=Object.fromEntries(['Workspace','EmptyState','Loading','Picker','SelectableRow','IconButton',
-    'NativeContextMenu','Modal','ActionScope','Loading','Header','Terminal']
+    'NativeContextMenu','Modal','ActionScope','Loading','Header','Conversation','Terminal','PathBar','ResourceTree','TextField']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),...adapters,Icon:function(path){return element('Icon',null,{path});},
+    div:()=>element(),...adapters,Icon:function(path){return element('Icon',null,{path});},Button:function(id){return element('Button',id);},Progress:function(id){return element('Progress',id);},
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:messages('en'),profiles:[],terminals:[],terminal:null,home:false,loaded:false,
     pending:null,error:null,editor:null,confirmation:null,fileEdit:null,transfer:null,commandOpen:false,
-    dialog:0,picker:false,pickerRevision:0,pickerProfile:null,locked:()=>false,connectionLocked:()=>false,activeProfile:()=>null};
+    jobs:[],dialog:0,picker:false,pickerRevision:0,pickerProfile:null,locked:()=>false,connectionLocked:()=>false,activeProfile:()=>null};
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
 
@@ -86,4 +86,30 @@ test('opening shows progress without landing or recovery buttons',()=>{
   assert.equal(setup.nodes.has('ssh-pending'),false);
   assert.equal(setup.nodes.has('ssh-inspect'),false);
   assert.equal(setup.nodes.has('ssh-stop'),false);
+});
+
+test('files use breadcrumbs branches and keep transfers at the bottom',()=>{
+  const setup=fixture(),profile={id:'host',name:'Host'},files={profile,path:'/remote',pending:false,editing:false,selected:['/remote/a','/remote/b'],current:'/remote/a',
+    segments:()=>[{label:'/',path:'/'},{label:'remote',path:'/remote'}],items:menu=>[{id:'/remote/a',label:'a',menu:menu('/remote/a')}],input:'path-field'};
+  Object.assign(setup.view,{loaded:true,profiles:[profile],terminals:[{id:'terminal',ssh:'host'}],terminal:'terminal',activeProfile:()=>profile,files:()=>files,
+    fileMenu:path=>[{id:`menu:${path}`,label:'Menu'}],jobs:[{id:'job',profile:'host',source:'source.txt',can_replace:true,can_cancel:true}]});
+  setup.render();
+  assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/','remote'],disabled:false});
+  assert.equal(setup.nodes.get('ssh-files-edit-path').props.label,messages('en').ssh_files_edit_path);
+  const tree=setup.nodes.get('ssh-files').props;
+  assert.equal(tree.variant,'branch');assert.equal(tree.external_files,true);assert.deepEqual(plain(tree.selected),files.selected);
+  assert.deepEqual(JSON.parse(tree.items)[0].menu,[{id:'menu:/remote/a',label:'Menu'}]);
+  assert.deepEqual(plain(setup.nodes.get('ssh-files-root').props.items),[{id:'menu:',label:'Menu'}]);
+  const panel=setup.nodes.get('ssh-files-panel');assert.equal(panel.items.length,3);assert.equal(panel.items[0].selector,'ssh-files-path');assert.equal(panel.items.at(-1).selector,'ssh-transfer-job');
+  assert.ok(setup.nodes.has('ssh-replace-job'));assert.equal(setup.nodes.get('ssh-replace-job').style.label[0],messages('en').ssh_files_replace);
+  for(const id of ['ssh-files-header','ssh-files-parent','ssh-files-count','ssh-files-more'])assert.equal(setup.nodes.has(id),false,id);
+  assert.equal(panel.items.some(item=>item.items?.includes('%{count} items')),false);
+});
+
+test('path editing keeps the manual input and hides its breadcrumb row controls',()=>{
+  const setup=fixture(),profile={id:'host'},files={profile,pending:false,editing:true,selected:[],current:null,input:'path-field',segments:()=>[],items:()=>[]};
+  Object.assign(setup.view,{loaded:true,terminals:[{id:'terminal',ssh:'host'}],terminal:'terminal',activeProfile:()=>profile,files:()=>files,fileMenu:()=>[]});
+  setup.render();assert.equal(setup.nodes.get('path-field').kind,'TextField');assert.equal(setup.nodes.get('path-field').props.disabled,false);
+  assert.equal(setup.nodes.has('ssh-files-pathbar'),false);assert.equal(setup.nodes.has('ssh-files-edit-path'),false);
+  files.pending=true;setup.render();assert.equal(setup.nodes.get('path-field').props.disabled,true);
 });

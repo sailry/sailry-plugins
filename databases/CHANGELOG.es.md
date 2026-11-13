@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.18
+
+- Mover la actualización del catálogo al encabezado del espacio de trabajo
+- Mostrar resultados con filas alternas y un estado vacío localizado
+- Alinear las columnas del historial SQL conservando selección, navegación por teclado y menús contextuales
+
 ## 0.1.17
 
 - Iconos de contorno restaurados en la navegación y las herramientas

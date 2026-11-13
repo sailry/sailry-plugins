@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,VForm,Field,Progress,Icon} from 'gpui-component';
 import {Conversation,Terminal,Header,theme} from 'sailry';
-import {Workspace,PanelHeader,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope} from 'sailry/ui';
+import {Workspace,PathBar,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope} from 'sailry/ui';
 import {TextField} from 'sailry/forms';
 import {format} from './locales.js';
 import {editor,editorFooter} from './editor-view.js';
@@ -30,15 +30,14 @@ function feedback(view,form=false){const{text,outcome,pending}=view,content=div(
   .children(pending?[div().id('ssh-pending').h_flex().gap_2().items_center().child(div().text_sm().flex_1().child(pending.request.unknown?'':text.ssh_running))
     .children(pending.request.unknown?[new Button('ssh-inspect').label(text.ssh_inspect).disabled(pending.request.running).on_click((_,cx)=>view.run(cx=>view.inspect(cx),cx))]:[])
     .child(new Button('ssh-stop').label(text.ssh_stop).on_click((_,cx)=>view.run(()=>pending.request.cancel(),cx)))]:[]);}
-function files(view){const files=view.files(),{text}=view;if(!files)return div();const empty=!files.pending&&!files.error&&files.revision>0&&!files.entries.length;return div().id('ssh-files-panel').v_flex().size_full().min_h_0().min_w_0()
-  .child(PanelHeader.new('ssh-files-header',{size:'row',padding:8,draggable:false,bordered:true}).child(div().h_flex().w_full().gap_1().items_center()
-    .child(div().flex_1().min_w_0().child(TextField.new(files.input,{disabled:files.pending,size:'small',appearance:false,bordered:false})))
-    .child(IconButton.new('ssh-files-parent',{icon:'arrow-up',label:text.ssh_files_parent,disabled:files.pending||files.path==='/'}))))
-  .child(div().v_flex().flex_1().min_h_0().min_w_0().p_2().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')}).child(empty
-    ? EmptyState.new('ssh-files-empty',{variant:'list',fill_height:true,icon:'folder',label:text.files_directory_empty})
-    : ResourceTree.new('ssh-files',{external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path))),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
-  .children(files.next?[new Button('ssh-files-more').ghost().label(text.files_load_more).disabled(files.pending).on_click((_,cx)=>view.run(cx=>files.load(files.path,cx,true),cx))]:[])
-  .child(div().h_8().h_flex().px_2().gap_2().text_xs().text_color(theme().colors.muted_foreground).child(format(text.ssh_files_count,{count:files.entries.length})))
+function files(view){const files=view.files(),{text}=view;if(!files)return div();return div().id('ssh-files-panel').v_flex().size_full().min_h_0().min_w_0()
+  .child(div().id('ssh-files-path').h_flex().w_full().h_8().px_2().gap_1().items_center()
+    .child(div().flex_1().min_w_0().on_key_down((event,cx)=>view.pathKey(event,cx)).child(files.editing
+      ?TextField.new(files.input,{disabled:files.pending,size:'small',appearance:false,bordered:false})
+      :PathBar.new('ssh-files-pathbar',{segments:files.segments().map(segment=>segment.label),disabled:files.pending})))
+    .children(files.editing?[]:[IconButton.new('ssh-files-edit-path',{icon:'pencil',label:text.ssh_files_edit_path,disabled:files.pending})]))
+  .child(div().v_flex().flex_1().min_h_0().min_w_0().p_2().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')})
+    .child(ResourceTree.new('ssh-files',{variant:'branch',external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path),text)),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
   .children(view.jobs.filter(job=>job.profile===files.profile.id).map(job=>transferJob(view,job)));}
 function transferJob(view,job){const{text}=view,progress=job.progress?job.progress.size?job.progress.copied/job.progress.size*100:100:null;return div().id(`ssh-transfer-${job.id}`).v_flex().p_2().gap_1().text_xs()
   .child(div().truncate().child(job.source))

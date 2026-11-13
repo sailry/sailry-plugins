@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.22
+
+- Explorar archivos remotos en un árbol de directorios desplegable con caché y paginación
+- Navegar con rutas de navegación o editar directamente la ruta remota
+- Mantener menús, selección múltiple, cargas nativas y acciones de reemplazo de transferencias
+
 ## 0.1.20
 
 - Iconos de contorno restaurados en la navegación y las herramientas

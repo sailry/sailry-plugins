@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,Icon,Pagination,Tab,TabBar,Resizable,ResizablePanel} from 'gpui-component';
 import {Conversation,Header,theme} from 'sailry';
-import {Workspace,PanelHeader,EmptyState,Loading,InputSurface,Picker,SelectableRow,IconButton,Tooltip,ResourceTree,DataTable,Modal,NativeContextMenu} from 'sailry/ui';
+import {Workspace,EmptyState,Loading,InputSurface,Picker,SelectableRow,IconButton,Tooltip,ResourceTree,DataTable,Modal,NativeContextMenu} from 'sailry/ui';
 import {TextField,readText} from 'sailry/forms';
 import {command,cell} from './main.js';
 import {format} from './locales.js';
@@ -49,7 +49,7 @@ function results(view) {
   const {result,text}=view;
   const pages=Math.max(1,Math.ceil((result?.rows.length??0)/50));
   return div().id('db-results').v_flex().size_full().min_h_0().min_w_0()
-    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,header:!!result?.columns.length})))
+    .child(div().flex_1().min_h_0().min_w_0().child(DataTable.new('database-results',{revision:String(view.epoch),columns:result?.columns??[],rows:(result?.rows??[]).map(row=>row.map(cell)),page:view.page,menu:view.rowMenu(),stripe:true,header:!!result?.columns.length,empty:text.db_data_empty,empty_icon:'hard-drive'})))
     .children(pages>1||result?.truncated?[div().h_flex().p_2().gap_2().items_center().text_sm()
       .children(result.truncated?[div().text_color(theme().colors.muted_foreground).child(text.db_truncated)]:[])
       .child(div().flex_1())
@@ -57,9 +57,13 @@ function results(view) {
 }
 function log(view) {
   const {text}=view;
-  return div().id('database-history').relative().size_full().min_h_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
-    .child(DataTable.new('database-history-grid',{revision:String(view.epoch),columns:[],rows:[],stripe:true,header:false}))
-    .child(div().id('database-history-rows').absolute().inset_0().v_flex().overflow_y_scrollbar()
+  // DataTable has no retained keyboard target or whole-row tooltip; native rows keep both and their captured context menus.
+  return div().id('database-history').v_flex().size_full().min_h_0().min_w_0().track_focus(view.logFocus).on_key_down((event,cx)=>view.logKey(event,cx))
+    .child(div().id('database-history-heading').h_flex().h_8().flex_none().items_center().px_3().gap_3().text_sm().text_color(theme().colors.muted_foreground).border_b_1().border_color(theme().colors.border)
+      .child(div().flex_1().min_w_0().truncate().child(text.db_sql_tab))
+      .child(div().flex_none().w_40().truncate().child(text.db_log_result))
+      .child(div().flex_none().w_16().text_right().child(text.db_log_duration)))
+    .child(div().id('database-history-rows').v_flex().flex_1().min_h_0().min_w_0().overflow_y_scrollbar()
     .children([...view.logs].reverse().map((entry,index)=>{
       const result=entry.result?.rows??entry.request?.output?.data?.data,error=entry.result?.error??entry.request?.error;
       const status=entry.request?.unknown?text.db_unknown:error?text.db_failed:result?format(text.db_rows,{count:result.columns.length?result.rows.length:result.affected_rows}):text.db_running;
@@ -68,9 +72,9 @@ function log(view) {
         {id:`log:${JSON.stringify({profile:view.opened,id:entry.id,edit:true})}`,label:text.db_open_sql,enabled:!view.locked()}];
       return div().id(`db-history-row-${entry.id}`).h_8().flex_none().child(NativeContextMenu.new(`db-history-${entry.id}`,{items}).child(Tooltip.new(`db-log-tooltip-${entry.id}`,{text:`${new Date(entry.timestamp).toLocaleTimeString()}\n${entry.sql}${error?.message?`\n${error.message}`:''}`})
         .child(SelectableRow.new(id,{variant:'list',selected:view.selectedLog===entry.id,stripe:index%2===1})
-          .child(div().h_flex().w_full().min_w_0().gap_3()
+          .child(div().h_flex().w_full().min_w_0().px_3().gap_3()
             .child(div().id(`db-log-sql-${index}`).flex_1().min_w_0().truncate().text_color(theme().colors.foreground).child(entry.sql))
-            .child(div().id(`db-log-status-${index}`).flex_none().child(status))
+            .child(div().id(`db-log-status-${index}`).flex_none().w_40().truncate().child(status))
             .child(div().id(`db-log-elapsed-${index}`).flex_none().w_16().text_right().child(entry.elapsed==null?'':`${entry.elapsed.toFixed(2)}s`))))));
     })));
 }
@@ -108,8 +112,6 @@ function navigation(view) {
   const {text,catalog}=view;
   if(view.home||!view.profile())return div();
   return div().id('db-catalog').v_flex().size_full().min_h_0().min_w_0()
-    .child(PanelHeader.new('database-catalog-header',{size:'row',draggable:false,bordered:true}).child(div().h_flex().w_full().items_center().justify_end()
-      .child(IconButton.new('db-refresh-catalog',{icon:'rotate-cw',label:text.refresh,disabled:!!catalog.loading.size}))))
     .child(div().flex_1().min_h_0().p_1().child(ResourceTree.new('database-tree',{variant:'branch',items:JSON.stringify(catalog.items(text,(table,database)=>view.tableMenu(table,database))),current:catalog.current,selected:[]})));
 }
 
@@ -128,7 +130,8 @@ export function render(view) {
   return div().size_full().min_h_0()
     .child(Header.new('database-header',{content:JSON.stringify({title:text.database,
       tabs:current?{id:'db-tabs',selected:view.home?null:current.id,max_width:180,close_label:text.close,items:[{id:current.id,label:current.name,icon:'hard-drive',closable:true,close_disabled:!!view.pending}]}:undefined,
-      actions:[{id:'db-connections-menu',label:text.db_connections,icon:'icons/hard-drive.svg',disabled:view.locked()},
+      actions:[{id:'db-refresh-catalog',label:text.refresh,icon:'icons/rotate-cw.svg',disabled:!profile||!!view.catalog?.loading.size||view.locked()},
+        {id:'db-connections-menu',label:text.db_connections,icon:'icons/hard-drive.svg',disabled:view.locked()},
         {id:'db-home',label:text.home,icon:'icons/house.svg',disabled:view.locked()||!profile}]})}))
     .child(Workspace.new('database-workspace',{has_details:!!profile,details_label:text.connection_assistant,min_navigation_width:200,min_details_width:320,navigation:profile?'resource':'none'}).children([
       div().relative().size_full().min_h_0().child(content(view)).children(connecting?[Loading.new('db-connecting')]:[]),

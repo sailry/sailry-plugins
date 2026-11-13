@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 
 async function fixture() {
   const context=vm.createContext({});
-  const opened=[],notices=[],focused=[],released=[];
+  const opened=[],notices=[],focused=[],released=[],focusedTexts=[],dropped=[],copied=[];
   const profile={id:'saved-host',revision:3,name:'Saved host'};
   const terminal={id:'existing-terminal',ssh:profile.id,status:{kind:'running'}};
   const host={profiles:[profile],terminals:[terminal],catalog:{projects:[],worktrees:[]},catalogReads:0,inspect:async()=>({Ok:{kind:'terminal_snapshot',data:{info:terminal}}}),browse:async()=>({kind:'directory',path:'.',entries:[],next:null}),upload:async()=>[],download:async()=>[]};
@@ -18,10 +18,10 @@ async function fixture() {
     sailry:{context:()=>JSON.stringify({locale:'en'}),header_action(){},focusTerminal:id=>focused.push(id),releaseTerminal:id=>released.push(id)},
     'sailry/sdk':{nextChange(){},readProjectCatalog(){host.catalogReads++;return host.readCatalog();},prepareRequest(value){const id=`request-${reads.length}`;reads.push(value);requests.set(id,value);return id;},completeRequest:id=>host.inspect(requests.get(id)),forgetRequest:id=>forgotten.push(id),faultCode(message){try{return JSON.parse(message).code;}catch(_){return 'failed';}}},
     'sailry/connections':{listSsh:()=>host.listProfiles(),newSshId(){},prepareSsh(){},listSshTerminals:id=>host.listTerminals(id),prepareSshTerminal(){},browseSshDirectory:async input=>{opened.push(input);return host.browse(input);},requestOutcome:id=>host.outcome(id)},
-    'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),nextTextEvent(){}},
+    'sailry/forms':{createText:value=>value,readText:value=>value,releaseText:value=>texts.push(['release',value]),setText:(field,value)=>texts.push(['set',field,value]),focusText:id=>focusedTexts.push(id),nextTextEvent(){}},
     'sailry/credentials':{createSecret(){},releaseSecret(){},describeSecret(){},chooseSecretFile(){}},
-    'sailry/ui':{nextTreeEvent(){},nextContextMenuEvent(){},nextNavigationTabEvent(){},nextPickerEvent(){},nextControlEvent(){},modal_closed(){},writeClipboard(){},toast:value=>notices.push(plain(value))},
-    'sailry/ssh-transfers':{uploadDropped(){},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args)},
+    'sailry/ui':{nextTreeEvent(){},nextContextMenuEvent(){},nextNavigationTabEvent(){},nextPickerEvent(){},nextControlEvent(){},modal_closed(){},writeClipboard:value=>copied.push(value),toast:value=>notices.push(plain(value))},
+    'sailry/ssh-transfers':{uploadDropped:(...args)=>{dropped.push(args);return ['dropped-job'];},selectUpload:(...args)=>host.upload(...args),selectDownload:(...args)=>host.download(...args),nextTransfers(){},transferAction:(...args)=>started.push(args)},
     './editor.js':{draft(){},prepare(){}},
     './locales.js':{messages:()=>({}),format(){}},
     './view.js':{render(){}},
@@ -41,7 +41,7 @@ async function fixture() {
   const view=new module.namespace.default();const pending=[];
   view.run=(action,cx)=>pending.push(Promise.resolve().then(()=>action(cx)));
   Object.assign(view,{profiles:[],terminals:[],terminal:null,terminalSelection:0,terminalClose:null,closingTerminals:new Set(),selected:null,browsers:new Map(),pending:null,connected:true,loaded:false,refreshRevision:0,text:{ssh_files_delete_confirm:'Delete files',files_upload:'Upload',files_download:'Download'},dialog:0});
-  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,released,cx:{notify(){}},settle:()=>Promise.all(pending)};
+  return {view,profile,terminal,host,opened,reads,forgotten,started,texts,notices,focused,released,focusedTexts,dropped,copied,cx:{notify(){},stop_propagation(){}},settle:()=>Promise.all(pending)};
 }
 
 async function browsing() {const setup=await fixture();await setup.view.refresh(setup.cx);await setup.settle();return setup;}
@@ -199,7 +199,7 @@ test('restores existing terminal and its file browser without reopening a termin
 test('dragging selected files moves the captured selection and preserves clipboard',async()=>{
   const {view,cx}=await fixture();const calls=[];
   const clipboard={paths:['/remote/copied'],cut:false};
-  const files={path:'/remote',selected:['/remote/a','/remote/b'],clipboard,entry:path=>path==='/remote/target'?{kind:'directory'}:null};
+  const files={placeholder:()=>null,path:'/remote',selected:['/remote/a','/remote/b'],clipboard,entry:path=>path==='/remote/target'?{kind:'directory'}:null};
   view.files=()=>files;view.mutate=async (_scope,actions)=>calls.push(actions);
   await view.tree({tree:'ssh-files',kind:'drop',source:'/remote/a',id:'/remote/target'},cx);
   assert.deepEqual(JSON.parse(JSON.stringify(calls)),[[
@@ -543,4 +543,87 @@ test('overlapping settled closes retain each released terminal',async()=>{
   profiles.resolve([profile]);await Promise.all([first,next]);
   assert.equal(view.closingTerminals.size,0);assert.equal(view.terminal,null);
   assert.equal(reads.filter(value=>value.kind==='close_ssh_terminal').length,2);
+});
+
+test('path editing commits Enter cancels Escape and navigates breadcrumbs',async()=>{
+  const {view,cx,host,opened,focusedTexts,settle}=await browsing(),files=view.files();
+  host.browse=async({path})=>({kind:'directory',path,entries:[],next:null});
+  files.path='/remote/start';view.control({id:'ssh-files-edit-path'},cx);
+  assert.equal(files.editing,true);assert.deepEqual(focusedTexts,[files.input]);
+  files.input='/manual/path';view.textEvent({id:files.input,kind:'enter'},cx);await settle();
+  assert.equal(files.path,'/manual/path');assert.equal(files.editing,false);assert.equal(opened.at(-1).path,'/manual/path');
+  view.control({id:'ssh-files-edit-path'},cx);const count=opened.length;let stopped=false;
+  view.pathKey({key:'escape'},{...cx,stop_propagation(){stopped=true;}});
+  assert.equal(files.editing,false);assert.equal(stopped,true);assert.equal(opened.length,count);
+  view.control({id:'ssh-files-pathbar',value:1},cx);await settle();assert.equal(opened.at(-1).path,'/manual');
+  view.control({id:'ssh-files-pathbar',value:0},cx);await settle();assert.equal(opened.at(-1).path,'/');
+  const before=opened.length;view.control({id:'ssh-files-pathbar',value:12},cx);await settle();assert.equal(opened.length,before);
+});
+
+test('tree expansion pagination and retries preserve the workspace root',async()=>{
+  const {view,cx,host,opened}=await browsing(),files=view.files();
+  host.browse=async({path,after})=>({kind:'directory',path,entries:path==='/'?[{name:'folder',kind:'directory'}]:[{name:after?'second':'first',kind:'file'}],next:path==='/folder'&&!after?'page-2':null});
+  await files.load('/',cx);await view.tree({tree:'ssh-files',kind:'expand',id:'/folder'},cx);
+  assert.equal(files.path,'/');assert.equal(files.expanded.has('/folder'),true);
+  const marker=files.items(()=>[],{}).at(0).children.at(-1).id;
+  await view.tree({tree:'ssh-files',kind:'open',id:marker},cx);
+  assert.equal(opened.at(-1).after,'page-2');assert.deepEqual(plain(files.directories.get('/folder').entries.map(entry=>entry.name)),['first','second']);
+  await view.tree({tree:'ssh-files',kind:'collapse',id:'/folder'},cx);assert.equal(files.expanded.has('/folder'),false);
+  const count=opened.length;await view.tree({tree:'ssh-files',kind:'expand',id:'/folder'},cx);assert.equal(opened.length,count);
+  host.browse=async()=>{throw Error('failed listing');};await files.loadBranch('/folder',cx);
+  const retry=files.items(()=>[],{}).at(0).children.find(item=>item.id.includes('"kind":"retry"')).id;
+  host.browse=async({path})=>({kind:'directory',path,entries:[],next:null});await view.tree({tree:'ssh-files',kind:'open',id:retry},cx);
+  assert.equal(files.directories.get('/folder').error,null);assert.equal(files.path,'/');
+});
+
+test('native file and blank menus retain scoped file actions',async()=>{
+  const {view,cx,copied}=await browsing(),files=view.files();
+  files.path='/remote';files.entries=[{name:'folder',kind:'directory'},{name:'a',kind:'file'}];
+  for(const path of ['', '/remote/a']){
+    const actions=view.fileMenu(path).map(item=>JSON.parse(item.id));
+    assert.deepEqual(plain(actions.map(item=>item.action)),['new_file','new_directory','upload','download','copy','cut','paste','rename','delete','copy_path','refresh']);
+    for(const item of actions){assert.equal(item.path,path);assert.equal(item.profile,files.profile.id);assert.equal(item.generation,files.revision);}
+  }
+  await view.tree({tree:'ssh-files',kind:'context',id:'/remote/a'},cx);
+  assert.deepEqual(Array.from(files.selected),['/remote/a']);assert.equal(files.current,'/remote/a');
+  await view.tree({tree:'ssh-files',kind:'menu',action:view.fileId('copy_path','/remote/a')},cx);
+  assert.deepEqual(copied,['/remote/a']);
+  await view.tree({tree:'ssh-files',kind:'menu',action:view.fileId('copy','/remote/a')},cx);
+  assert.deepEqual(plain(files.clipboard),{paths:['/remote/a'],cut:false});
+});
+
+test('rename and new entries target their nested directory',async()=>{
+  for(const [action,path,operation]of[
+    ['rename','/remote/folder/original',{path:'/remote/folder/original',action:{operation:'move',destination:'/remote/folder/changed'}}],
+    ['new_file','/remote/folder/original',{path:'/remote/folder/changed',action:{operation:'create',directory:false}}],
+    ['new_directory','/remote/folder',{path:'/remote/folder/changed',action:{operation:'create',directory:true}}],
+  ]){const {view,cx,settle}=await browsing(),files=view.files(),changes=[];
+    files.path='/remote';files.entries=[{name:'folder',kind:'directory'}];files.directories.set('/remote/folder',{entries:[{name:'original',kind:'file'}],loaded:true});
+    view.mutate=async(scope,actions)=>{assert.equal(scope.files,files);changes.push(...actions);};
+    await view.fileAction(view.fileId(action,path),cx);assert.equal(view.fileEdit.directory,'/remote/folder');
+    view.fileEdit.input='changed';view.submitFile(cx);await settle();assert.deepEqual(plain(changes),[operation]);
+  }
+});
+
+test('external drops and transfers retain captured nested targets',async()=>{
+  const {view,cx,host,dropped,started}=await browsing(),files=view.files(),downloads=[];
+  files.path='/remote';files.entries=[{name:'folder',kind:'directory'}];files.directories.set('/remote/folder',{entries:[{name:'file',kind:'file'}],loaded:true});
+  await view.tree({tree:'ssh-files',kind:'external_drop',id:'/remote/folder/file',files:['os-file']},cx);
+  assert.deepEqual(plain(dropped),[[files.profile,'/remote/folder',['os-file']]]);assert.deepEqual(started,[['dropped-job','start']]);
+  host.download=async(profile,entries)=>{downloads.push({profile,entries});return ['download-job'];};
+  files.selected=['/remote/folder','/remote/folder/file'];await view.fileAction(view.fileId('download','/remote/folder'),cx);
+  assert.deepEqual(plain(downloads),[{profile:files.profile,entries:[{path:'/remote/folder',directory:true},{path:'/remote/folder/file',directory:false}]}]);
+  assert.deepEqual(started.at(-1),['download-job','start']);
+  view.transferAction({id:'replace-job'},'replace',cx);assert.deepEqual(started.at(-1),['replace-job','replace']);
+  view.connected=false;await view.tree({tree:'ssh-files',kind:'external_drop',id:'/remote/folder',files:['later']},cx);assert.equal(dropped.length,1);
+});
+
+test('upload confirmation retains the target until explicit submission',async()=>{
+  const {view,cx,profile,settle}=await browsing(),commands=[];
+  view.transfer={profile,worktree:'project-tree',inputs:['local.txt','/remote/existing.txt']};
+  view.execute=async value=>commands.push(value);view.transferFile('upload',cx);
+  assert.equal(commands.length,0);assert.equal(view.confirmation.label,'ssh_upload');
+  view.confirm(cx);await settle();
+  assert.deepEqual(plain(commands),[{kind:'transfer_ssh',data:{profile:profile.id,expected_revision:profile.revision,
+    transfer:{worktree:'project-tree',path:'local.txt',remote_path:'/remote/existing.txt',direction:'upload'},timeout_ms:300000}}]);
 });

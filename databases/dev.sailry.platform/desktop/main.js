@@ -34,7 +34,7 @@ export default class Databases extends View {
     this.watch(nextTableEvent,(event,cx)=>this.run(cx=>this.rowAction(event,cx),cx),cx);
     this.watch(nextTreeEvent,(event,cx)=>this.run(cx=>this.tree(event,cx),cx),cx);
     this.watch(nextContextMenuEvent,(event,cx)=>this.run(cx=>this.menu(event.id,cx),cx),cx);
-    this.watch(header_action,(id,cx)=>{if(id==='db-connections-menu')this.connections(cx);else if(id==='db-home')this.showHome(cx);},cx);
+    this.watch(header_action,(id,cx)=>{if(id==='db-refresh-catalog')this.control({id},cx);else if(id==='db-connections-menu')this.connections(cx);else if(id==='db-home')this.showHome(cx);},cx);
     this.watch(nextNavigationTabEvent,(event,cx)=>this.navigation(event,cx),cx);
     this.watch(nextPickerEvent,(event,cx)=>this.pick(event,cx),cx);
     this.watch(nextControlEvent,(event,cx)=>this.control(event,cx),cx);

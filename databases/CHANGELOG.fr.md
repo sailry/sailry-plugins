@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.18
+
+- Déplacer l’actualisation du catalogue dans l’en-tête de l’espace de travail
+- Afficher des résultats alternés avec un état vide traduit
+- Aligner les colonnes de l’historique SQL en conservant sélection, navigation clavier et menus contextuels
+
 ## 0.1.17
 
 - Icônes au trait rétablies dans la navigation et les outils
