@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Mostrar la ruta remota como texto y abrir carpetas vacías sin fila de marcador
+
 ## 0.1.23
 
 - Mostrar los archivos remotos con iconos de archivo y carpeta, como el paquete Archivos

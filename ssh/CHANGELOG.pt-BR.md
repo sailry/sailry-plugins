@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado
+
 ## 0.1.23
 
 - Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos

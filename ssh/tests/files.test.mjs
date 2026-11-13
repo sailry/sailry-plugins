@@ -31,7 +31,7 @@ test('directory branches load on expansion and retain cached children',async()=>
   const initial=setup.items();assert.equal(initial[0].expanded,false);assert.equal(initial[0].children[0].icon,'loader-circle');
   await files.expand('/project',cx);
   assert.equal(files.path,'/');assert.equal(requests.length,2);assert.equal(files.entry('/project/source').name,'source');
-  assert.deepEqual(setup.items()[0].children,[{id:'/project/source',label:'source',icon:'file',menu:[{id:'menu:/project/source'}]}]);
+  assert.deepEqual(setup.items()[0].children,[{id:'/project/source',label:'source',icon:'file',menu:[{id:'menu:/project/source'}]}]);assert.equal(setup.items()[0].folder,true);
   files.expanded.delete('/project');await files.expand('/project',cx);assert.equal(requests.length,2,'reopening a loaded branch uses its own cache');
   assert.deepEqual(requests[1],{profile:'remote',expected_revision:7,path:'/project',after:null});
 });
@@ -42,7 +42,7 @@ test('branch placeholders distinguish loading failure empty and pagination',asyn
   await files.load('/',cx);const loading=files.expand('/folder',cx);
   assert.equal(setup.items()[0].children[0].label,text.ssh_files_loading);
   held.resolve(directory('/folder'));await loading;
-  assert.deepEqual(setup.items()[0].children,[{id:'ssh-files-placeholder:{"path":"/folder","kind":"empty"}',label:text.files_directory_empty,disabled:true}]);
+  assert.deepEqual(setup.items()[0].children,[],'an empty folder opens with no placeholder row');assert.equal(setup.items()[0].folder,true);
   host.read=async()=>{throw Error('read failed');};await files.loadBranch('/folder',cx);
   const failed=setup.items()[0].children[0];assert.equal(failed.label,text.ssh_files_failed);assert.equal(files.placeholder(failed.id).kind,'retry');
   host.read=async()=>directory('/folder',[entry('first')],'page-2');await files.loadBranch('/folder',cx);

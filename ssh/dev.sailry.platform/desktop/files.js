@@ -39,10 +39,9 @@ export class Files {
     else {this.selected=[path];this.anchor=path;}this.current=path;
   }
   items(menu,text={}){const rows=(path,directory)=>{const entries=directory.entries,items=entries.map(entry=>{const id=join(path,entry.name),item={id,label:entry.name,icon:entry.kind==='directory'?'folder':'file',menu:menu(id)};
-      if(entry.kind==='directory'){item.expanded=this.expanded.has(id);item.children=rows(id,this.directories.get(id)??{entries:[],pending:true});}return item;});
+      if(entry.kind==='directory'){item.folder=true;item.expanded=this.expanded.has(id);item.children=rows(id,this.directories.get(id)??{entries:[],pending:true});}return item;});
       if(directory.pending)items.push({id:marker(path,'loading'),label:text.ssh_files_loading??'',icon:'loader-circle',disabled:true});
       else if(directory.error)items.push({id:marker(path,'retry'),label:text[directory.error]??text.refresh,icon:'rotate-cw'});
-      else if(!entries.length)items.push({id:marker(path,'empty'),label:text.files_directory_empty,disabled:true});
       if(directory.next&&!directory.pending)items.push({id:marker(path,'more'),label:text.files_load_more,icon:'chevron-down'});return items;};
     return rows(this.path,this);}
 }

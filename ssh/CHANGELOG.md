@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Show the remote path as plain text and open empty folders without a placeholder row
+
 ## 0.1.23
 
 - Show remote files with file and folder icons, as the Files package does

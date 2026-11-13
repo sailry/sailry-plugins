@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Afficher le chemin distant en texte et ouvrir les dossiers vides sans ligne de substitution
+
 ## 0.1.23
 
 - Afficher les fichiers distants avec des icônes de fichier et de dossier, comme le paquet Fichiers
