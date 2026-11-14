@@ -22846,7 +22846,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22972,6 +22972,25 @@
         "models.read"
       ],
       "versions": [
+        {
+          "version": "0.1.19",
+          "commit": "8c441dfa79ba483435ffecf520ee910b9838fe61",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove the retry bar during service tests and keep settings usable after test failures",
+            "locales": {
+              "zh-CN": "- 移除服务测试时的重试横条，测试失败后仍可继续操作设置",
+              "zh-TW": "- 移除服務測試時的重試橫條，測試失敗後仍可繼續操作設定",
+              "ja": "- サービステスト中の再試行バーを削除し、テスト失敗後も設定を操作可能に",
+              "ko": "- 서비스 테스트 중 재시도 표시줄을 제거하고 테스트 실패 후에도 설정을 사용할 수 있도록 수정",
+              "fr": "- Supprimer la barre de nouvelle tentative pendant les tests de services et garder les paramètres accessibles en cas d’échec",
+              "de": "- Wiederholungsleiste bei Diensttests entfernen und Einstellungen nach fehlgeschlagenen Tests bedienbar halten",
+              "es": "- Quitar la barra de reintento durante las pruebas de servicios y mantener los ajustes disponibles si fallan",
+              "pt-BR": "- Remover a barra de nova tentativa durante os testes de serviços e manter as configurações acessíveis após falhas",
+              "ru": "- Убрана панель повтора при проверке сервисов; настройки остаются доступными после ошибок проверки"
+            }
+          }
+        },
         {
           "version": "0.1.18",
           "commit": "09a5242367b1f1e16e155c759ebd1705c08a9cda",
@@ -23237,17 +23256,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show colored provider logos and icons for TinyFish and model search",
+        "text": "- Remove the retry bar during service tests and keep settings usable after test failures",
         "locales": {
-          "zh-CN": "- 显示服务商彩色标志，补齐 TinyFish 和模型搜索图标",
-          "zh-TW": "- 顯示服務商彩色標誌，補齊 TinyFish 和模型搜尋圖示",
-          "ja": "- プロバイダーのカラーロゴと TinyFish・モデル検索のアイコンを表示",
-          "ko": "- 제공업체 컬러 로고와 TinyFish 및 모델 검색 아이콘 표시",
-          "fr": "- Afficher les logos des fournisseurs en couleur et les icônes de TinyFish et de recherche par modèle",
-          "de": "- Farbige Anbieterlogos und Symbole für TinyFish und Modellsuche anzeigen",
-          "es": "- Mostrar logotipos de proveedores en color e iconos para TinyFish y la búsqueda con modelos",
-          "pt-BR": "- Exibir logotipos coloridos dos provedores e ícones para TinyFish e pesquisa por modelo",
-          "ru": "- Цветные логотипы провайдеров и значки TinyFish и поиска с помощью модели"
+          "zh-CN": "- 移除服务测试时的重试横条，测试失败后仍可继续操作设置",
+          "zh-TW": "- 移除服務測試時的重試橫條，測試失敗後仍可繼續操作設定",
+          "ja": "- サービステスト中の再試行バーを削除し、テスト失敗後も設定を操作可能に",
+          "ko": "- 서비스 테스트 중 재시도 표시줄을 제거하고 테스트 실패 후에도 설정을 사용할 수 있도록 수정",
+          "fr": "- Supprimer la barre de nouvelle tentative pendant les tests de services et garder les paramètres accessibles en cas d’échec",
+          "de": "- Wiederholungsleiste bei Diensttests entfernen und Einstellungen nach fehlgeschlagenen Tests bedienbar halten",
+          "es": "- Quitar la barra de reintento durante las pruebas de servicios y mantener los ajustes disponibles si fallan",
+          "pt-BR": "- Remover a barra de nova tentativa durante os testes de serviços e manter as configurações acessíveis após falhas",
+          "ru": "- Убрана панель повтора при проверке сервисов; настройки остаются доступными после ошибок проверки"
         }
       }
     },
