@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Das Remote-Dateibedienfeld erhält eine Kopfzeile mit Pfad, Bearbeiten und Aktualisieren; Laden, leere und fehlgeschlagene Ordner erscheinen im Bedienfeld
+
 ## 0.1.26
 
 - Entfernte Datei per Klick auswählen und per Doppelklick in der Vorschau öffnen

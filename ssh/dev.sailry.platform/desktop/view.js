@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
-import {Button,VForm,Field,Progress,Icon} from 'gpui-component';
+import {Button,VForm,Field,Progress,Icon,Spinner} from 'gpui-component';
 import {Conversation,Terminal,Header,theme} from 'sailry';
-import {Workspace,PathBar,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope} from 'sailry/ui';
+import {Workspace,PanelHeader,PathBar,EmptyState,Loading,Picker,SelectableRow,IconButton,SelectField,ResourceTree,NativeContextMenu,Modal,ActionScope} from 'sailry/ui';
 import {TextField} from 'sailry/forms';
 import {format} from './locales.js';
 import {editor,editorFooter} from './editor-view.js';
@@ -30,14 +30,28 @@ function feedback(view,form=false){const{text,outcome,pending}=view,content=div(
   .children(pending?[div().id('ssh-pending').h_flex().gap_2().items_center().child(div().text_sm().flex_1().child(pending.request.unknown?'':text.ssh_running))
     .children(pending.request.unknown?[new Button('ssh-inspect').label(text.ssh_inspect).disabled(pending.request.running).on_click((_,cx)=>view.run(cx=>view.inspect(cx),cx))]:[])
     .child(new Button('ssh-stop').label(text.ssh_stop).on_click((_,cx)=>view.run(()=>pending.request.cancel(),cx)))]:[]);}
-function files(view){const files=view.files(),{text}=view;if(!files)return div();return div().id('ssh-files-panel').v_flex().size_full().min_h_0().min_w_0()
-  .child(div().id('ssh-files-path').h_flex().w_full().h_8().px_2().gap_1().items_center()
-    .child(div().flex_1().min_w_0().on_key_down((event,cx)=>view.pathKey(event,cx)).child(files.editing
-      ?TextField.new(files.input,{disabled:files.pending,size:'small',appearance:false,bordered:false})
-      :PathBar.new('ssh-files-pathbar',{segments:files.segments().map(segment=>segment.label),disabled:files.pending})))
-    .children(files.editing?[]:[IconButton.new('ssh-files-edit-path',{icon:'pencil',label:text.ssh_files_edit_path,disabled:files.pending})]))
-  .child(div().v_flex().flex_1().min_h_0().min_w_0().p_2().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')})
-    .child(ResourceTree.new('ssh-files',{guides:true,open:'double',external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path),text)),selected:files.selected,current:files.current,menu:view.fileMenu('')}))))
+// The remote files as the Files package shows its tree: the path and its
+// actions in a PanelHeader, a centered spinner until the first listing, an
+// empty or failed directory said in the panel, and the tree otherwise. A
+// reload keeps the rows while the header's refresh turns into a spinner.
+function files(view){const files=view.files(),{text}=view;if(!files)return div();
+  const busy=files.pending,empty=!files.entries?.length,loaded=files.revision>0;
+  const body=empty&&!loaded&&!files.error?div().id('ssh-files-loading').flex_1().h_flex().items_center().justify_center().child(new Spinner())
+    :empty&&files.error?EmptyState.new('ssh_files_failed',{variant:'list',fill_height:true,icon:'folder',label:text[files.error]??text.ssh_files_failed})
+      .child(new Button('ssh-files-retry').ghost().label(text.refresh).disabled(busy).on_click((_,cx)=>view.run(cx=>files.load(files.path,cx),cx)))
+    :empty&&!busy?EmptyState.new('files_directory_empty',{variant:'list',fill_height:true,icon:'folder',label:text.files_directory_empty})
+    :empty?div().id('ssh-files-loading').flex_1().h_flex().items_center().justify_center().child(new Spinner())
+    :div().flex_1().min_h_0().p_2().child(ResourceTree.new('ssh-files',{guides:true,open:'double',external_files:!view.locked(),items:JSON.stringify(files.items(path=>view.fileMenu(path),text)),selected:files.selected,current:files.current,menu:view.fileMenu('')}));
+  return div().id('ssh-files-panel').v_flex().size_full().min_h_0().min_w_0()
+  .child(PanelHeader.new('ssh-files-path')
+    .child(div().h_flex().w_full().min_w_0().gap_1().items_center()
+      .child(div().flex_1().min_w_0().on_key_down((event,cx)=>view.pathKey(event,cx)).child(files.editing
+        ?TextField.new(files.input,{disabled:busy,size:'small'})
+        :PathBar.new('ssh-files-pathbar',{segments:files.segments().map(segment=>segment.label),disabled:busy})))
+      .children(files.editing?[]:[IconButton.new('ssh-files-edit-path',{icon:'pencil',label:text.ssh_files_edit_path,size:'medium',disabled:busy}),
+        busy?div().id('ssh-files-busy').size_8().h_flex().items_center().justify_center().child(new Spinner())
+          :IconButton.new('ssh-files-refresh',{icon:'rotate-cw',label:text.refresh,size:'medium',disabled:!loaded&&!files.error})])))
+  .child(div().v_flex().flex_1().min_h_0().min_w_0().child(NativeContextMenu.new('ssh-files-root',{items:view.fileMenu('')}).child(body)))
   .children(view.jobs.filter(job=>job.profile===files.profile.id).map(job=>transferJob(view,job)));}
 function transferJob(view,job){const{text}=view,progress=job.progress?job.progress.size?job.progress.copied/job.progress.size*100:100:null;return div().id(`ssh-transfer-${job.id}`).v_flex().p_2().gap_1().text_xs()
   .child(div().truncate().child(job.source))

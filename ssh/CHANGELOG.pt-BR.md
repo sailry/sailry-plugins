@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- O painel de arquivos remotos ganha um cabeçalho com caminho, edição e atualização, e mostra no painel o carregamento, pastas vazias e falhas de leitura
+
 ## 0.1.26
 
 - Selecionar um arquivo remoto com um clique e pré-visualizá-lo com dois cliques

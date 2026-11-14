@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Give the remote file panel a header with its path, edit and refresh, and show loading, empty and failed folders in the panel
+
 ## 0.1.26
 
 - Select a remote file with a click and preview it with a double click

@@ -23,10 +23,10 @@ function fixture() {
     return proxy;
   }
   const adapters=Object.fromEntries(['Workspace','EmptyState','Loading','Picker','SelectableRow','IconButton',
-    'NativeContextMenu','Modal','ActionScope','Loading','Header','Conversation','Terminal','PathBar','ResourceTree','TextField']
+    'NativeContextMenu','Modal','ActionScope','Loading','Header','Conversation','Terminal','PathBar','ResourceTree','TextField','PanelHeader']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const {render}=vm.runInNewContext(`${source}\n({render})`,{
-    div:()=>element(),...adapters,Icon:function(path){return element('Icon',null,{path});},Button:function(id){return element('Button',id);},Progress:function(id){return element('Progress',id);},
+    div:()=>element(),...adapters,Icon:function(path){return element('Icon',null,{path});},Button:function(id){return element('Button',id);},Progress:function(id){return element('Progress',id);},Spinner:function(){return element('Spinner');},
     theme:()=>({colors:{muted_foreground:'muted'}}),
   });
   const view={text:messages('en'),profiles:[],terminals:[],terminal:null,home:false,loaded:false,
@@ -89,7 +89,7 @@ test('opening shows progress without landing or recovery buttons',()=>{
 });
 
 test('files use breadcrumbs branches and keep transfers at the bottom',()=>{
-  const setup=fixture(),profile={id:'host',name:'Host'},files={profile,path:'/remote',pending:false,editing:false,selected:['/remote/a','/remote/b'],current:'/remote/a',
+  const setup=fixture(),profile={id:'host',name:'Host'},files={profile,path:'/remote',pending:false,editing:false,revision:1,entries:[{name:'a',kind:'file'}],selected:['/remote/a','/remote/b'],current:'/remote/a',
     segments:()=>[{label:'/',path:'/'},{label:'remote',path:'/remote'}],items:menu=>[{id:'/remote/a',label:'a',menu:menu('/remote/a')}],input:'path-field'};
   Object.assign(setup.view,{loaded:true,profiles:[profile],terminals:[{id:'terminal',ssh:'host'}],terminal:'terminal',activeProfile:()=>profile,files:()=>files,
     fileMenu:path=>[{id:`menu:${path}`,label:'Menu'}],jobs:[{id:'job',profile:'host',source:'source.txt',can_replace:true,can_cancel:true}]});
@@ -112,4 +112,14 @@ test('path editing keeps the manual input and hides its breadcrumb row controls'
   setup.render();assert.equal(setup.nodes.get('path-field').kind,'TextField');assert.equal(setup.nodes.get('path-field').props.disabled,false);
   assert.equal(setup.nodes.has('ssh-files-pathbar'),false);assert.equal(setup.nodes.has('ssh-files-edit-path'),false);
   files.pending=true;setup.render();assert.equal(setup.nodes.get('path-field').props.disabled,true);
+});
+
+test('file panel replaces its tree while loading, empty or failed',()=>{
+  const setup=fixture(),profile={id:'host'},files={profile,path:'/',pending:true,editing:false,revision:0,entries:[],error:null,selected:[],current:null,input:'path-field',segments:()=>[{label:'/',path:'/'}],items:()=>[]};
+  Object.assign(setup.view,{loaded:true,terminals:[{id:'terminal',ssh:'host'}],terminal:'terminal',activeProfile:()=>profile,files:()=>files,fileMenu:()=>[]});
+  setup.render();assert.ok(setup.nodes.has('ssh-files-loading'));assert.ok(setup.nodes.has('ssh-files-busy'));assert.equal(setup.nodes.has('ssh-files'),false);
+  Object.assign(files,{pending:false,revision:1});setup.render();
+  assert.ok(setup.nodes.has('files_directory_empty'));assert.equal(setup.nodes.has('ssh-files-loading'),false);assert.equal(setup.nodes.get('ssh-files-refresh').props.disabled,false);
+  Object.assign(files,{error:'ssh_files_failed'});setup.render();
+  assert.ok(setup.nodes.has('ssh-files-retry'));assert.equal(setup.nodes.has('files_directory_empty'),false);
 });

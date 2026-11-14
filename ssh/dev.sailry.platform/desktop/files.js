@@ -40,7 +40,9 @@ export class Files {
   }
   items(menu,text={}){const rows=(path,directory)=>{const entries=directory.entries,items=entries.map(entry=>{const id=join(path,entry.name),item={id,label:entry.name,icon:entry.kind==='directory'?'folder':'file',menu:menu(id)};
       if(entry.kind==='directory'){item.folder=true;item.expanded=this.expanded.has(id);item.children=rows(id,this.directories.get(id)??{entries:[],pending:true});}return item;});
-      if(directory.pending)items.push({id:marker(path,'loading'),label:text.ssh_files_loading??'',icon:'loader-circle',disabled:true});
+      // The listing's own load shows in the panel's header; a branch shows
+      // its load only while it has no rows yet.
+      if(directory.pending){if(directory!==this&&!entries.length)items.push({id:marker(path,'loading'),label:text.ssh_files_loading??'',icon:'loader-circle',disabled:true});}
       else if(directory.error)items.push({id:marker(path,'retry'),label:text[directory.error]??text.refresh,icon:'rotate-cw'});
       if(directory.next&&!directory.pending)items.push({id:marker(path,'more'),label:text.files_load_more,icon:'chevron-down'});return items;};
     return rows(this.path,this);}

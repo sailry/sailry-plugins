@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- El panel de archivos remotos tiene un encabezado con la ruta, editar y actualizar, y muestra en el panel la carga, las carpetas vacías y los errores de lectura
+
 ## 0.1.26
 
 - Seleccionar un archivo remoto con un clic y previsualizarlo con doble clic

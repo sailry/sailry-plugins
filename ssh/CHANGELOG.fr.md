@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.27
+
+- Le panneau des fichiers distants a un en-tête avec le chemin, la modification et l’actualisation, et affiche le chargement, les dossiers vides et les échecs de lecture dans le panneau
+
 ## 0.1.26
 
 - Sélectionner un fichier distant d’un clic et l’afficher d’un double-clic
