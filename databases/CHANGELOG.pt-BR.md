@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Manter a busca de chaves primárias pendente para impedir que outra consulta substitua sua solicitação ou seus resultados.
+
 ## 0.1.22
 
 - Encurtar os nomes dos testes sem alterar as asserções

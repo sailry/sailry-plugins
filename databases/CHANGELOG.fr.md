@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Conserver la recherche des clés primaires en attente pour empêcher une autre requête de remplacer sa demande ou ses résultats.
+
 ## 0.1.22
 
 - Raccourcir les noms des tests sans modifier les assertions

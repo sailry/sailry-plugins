@@ -156,9 +156,9 @@ export default class Databases extends View {
       if(!this.valid(origin))return;
       const keys=sql.primaryKeys(this.engine(origin.profile),origin.table);
       if(!keys)return;
-      const request=new Request(this.query(keys,origin.database,true,origin.profile));await request.start(cx);
-      if(request.output?.data?.kind==='query'&&this.origin===origin)origin.keys=request.output.data.data.rows.flatMap(row=>row[0]?.kind==='text'?[row[0].value]:[]);
-      if(request.done)request.release();else {this.pending={request,origin:null,present:false,after:output=>{if(this.origin===origin)origin.keys=output.data.data.rows.flatMap(row=>row[0]?.kind==='text'?[row[0].value]:[]);}};}
+      const request=new Request(this.query(keys,origin.database,true,origin.profile));
+      this.pending={request,origin:null,present:false,after:output=>{if(output.data?.kind==='query'&&this.origin===origin)origin.keys=output.data.data.rows.flatMap(row=>row[0]?.kind==='text'?[row[0].value]:[]);}};
+      await request.start(cx);if(request.unknown)this.report(request.uncertainty??{code:'outcome_unknown'});await this.finish(cx);
     });
   }
   engine(profile=this.profile()) {return profile.connection.kind==='sqlite'?'sqlite':profile.connection.engine;}

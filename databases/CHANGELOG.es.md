@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Mantener pendiente la búsqueda de claves primarias para evitar que otra consulta sustituya su solicitud o sus resultados.
+
 ## 0.1.22
 
 - Acortar los nombres de las pruebas sin cambiar las aserciones

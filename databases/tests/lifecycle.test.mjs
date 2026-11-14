@@ -161,6 +161,50 @@ async function fixture(packageName,globals={}) {
   return {owner,event,live,errors,notices,notifications:()=>notifications,close:()=>{valid=false;},tasks};
 }
 
+for(const outcome of ['success','unknown','failure','replaced']) {
+  test(`database key discovery retains ownership through ${outcome}`,async()=>{
+    const requests=[],released=[],cancelled=[];let resolve;
+    const gate=new Promise(done=>{resolve=done;});
+    const rows={columns:[{name:'id'}],rows:[[{kind:'integer',value:'1'}]]};
+    const keys={kind:'database_outcome',data:{kind:'query',data:{rows:[[{kind:'text',value:'id'}]]}}};
+    const setup=await fixture('databases',{sql:{primaryKeys:()=> 'SELECT keys'},Request:class {
+      constructor(command){this.command=command;this.id=`request-${requests.length}`;this.done=false;requests.push(this);}
+      async start(){
+        if(this.command.data.sql==='SELECT rows'){this.output={kind:'database_outcome',data:{kind:'query',data:rows}};this.done=true;return;}
+        await gate;
+        if(outcome==='unknown'){this.unknown=true;return;}
+        if(outcome==='failure')this.error={code:'unavailable',message:'Key lookup failed'};else this.output=keys;
+        this.done=true;
+      }
+      async check(){this.unknown=false;this.output=keys;this.done=true;}
+      async cancel(){cancelled.push(this.id);}
+      release(){released.push(this.id);}
+    }}),owner=setup.owner;
+    const profile={id:'saved',revision:3,read_only:false,connection:{kind:'sqlite'}};
+    const origin={profile:structuredClone(profile),database:'main',table:'items',sql:'SELECT rows',keys:[]};
+    Object.assign(owner,{connected:true,pending:null,opened:'saved',profiles:[profile],logs:[],epoch:0,page:0,catalog:{database:'main'}});
+    const reading=owner.readRows(origin,setup.live);await settle();
+    assert.equal(requests.length,2);assert.equal(owner.pending?.request,requests[1]);assert.equal(owner.locked(),true);
+    assert.equal(owner.result,rows);assert.equal(owner.origin,origin);assert.equal(owner.logs.length,1,'metadata must not add SQL history');
+    const later={kind:'query_database',data:{sql:'UPDATE later'}};
+    assert.equal(await owner.execute(later,setup.live),null);assert.equal(requests.length,2);
+    owner.control({id:'db-stop'},setup.live);await Promise.all(setup.tasks);assert.deepEqual(cancelled,['request-1']);
+    const replacement={rows:[['newer result']]};
+    if(outcome==='replaced'){owner.origin={};owner.result=replacement;}
+    resolve();await reading;
+    if(outcome==='unknown'){
+      assert.equal(owner.pending?.request,requests[1]);assert.equal(owner.pending.request.unknown,true);
+      assert.equal(await owner.execute(later,setup.live),null);assert.equal(requests.length,2);
+      assert.deepEqual(released,['request-0']);assert.equal(setup.errors[0].code,'outcome_unknown');
+      await owner.check(setup.live);assert.equal(requests.length,2,'inspection must not create another query');
+    }
+    assert.equal(owner.pending,null);assert.equal(owner.locked(),false);assert.deepEqual(released,['request-0','request-1']);
+    assert.deepEqual(Array.from(origin.keys),['failure','replaced'].includes(outcome)?[]:['id']);
+    assert.equal(owner.result,outcome==='replaced'?replacement:rows,'metadata must not replace displayed rows');
+    if(outcome==='failure')assert.deepEqual(setup.errors,[{code:'unavailable',message:'Key lookup failed'}]);
+  });
+}
+
 for(const packageName of ['databases','ssh']) {
   test(`${packageName} failed operations toast once without discarding drafts or previous results`,async()=>{
     const error={code:'invalid_request',message:'Invalid fixture connection'},editor={inputs:['Retained name','Retained address']},result={rows:[['retained']]},origin={},profiles=[{id:'profile',revision:4}];

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Keep primary-key discovery pending so another query cannot replace its request or results.
+
 ## 0.1.22
 
 - Shorten test labels without changing assertions

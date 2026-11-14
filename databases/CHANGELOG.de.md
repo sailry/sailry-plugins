@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Die Primärschlüsselsuche bleibt ausstehend, damit eine andere Abfrage ihre Anfrage oder Ergebnisse nicht überschreibt.
+
 ## 0.1.22
 
 - Testnamen kürzen, ohne die Prüfungen zu ändern
