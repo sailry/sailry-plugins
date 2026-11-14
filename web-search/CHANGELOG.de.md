@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Wiederholungsleiste bei Diensttests entfernen und Einstellungen nach fehlgeschlagenen Tests bedienbar halten
+
 ## 0.1.18
 
 - Farbige Anbieterlogos und Symbole für TinyFish und Modellsuche anzeigen

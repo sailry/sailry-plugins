@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Remove the retry bar during service tests and keep settings usable after test failures
+
 ## 0.1.18
 
 - Show colored provider logos and icons for TinyFish and model search

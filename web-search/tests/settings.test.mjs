@@ -27,7 +27,7 @@ async function fixture() {
     async listModels(){if(modelsFault)throw new Error('catalog unavailable');return plain(choices);},
     prepareSettings(value){prepared.push(plain(value));return prepare({kind:'save_search_settings',data:{settings:value.settings}});},
     async completeRequest(id){calls.push(id);const request=requests.get(id);
-      if(fault){const error=fault;fault=null;return {Err:typeof error==='string'?{code:error}:plain(error)};}
+      if(fault){const error=fault;fault=null;if(error instanceof Error)throw error;return {Err:typeof error==='string'?{code:error}:plain(error)};}
       if(request.kind==='read_search_settings'&&hold) {
         hold=false;const result={Ok:{kind:'search_settings',data:plain(saved)}};
         return new Promise(resolve=>{held=()=>resolve(result);});
@@ -163,6 +163,20 @@ test('search response failures do not blame settings',async()=>{
   assert.equal(f.notices.at(-1).message,messages('en').search_request_failed);
   f.view.fail({code:'invalid_request'},true,false);
   assert.equal(f.notices.at(-1).message,messages('en').search_settings_invalid);
+});
+
+test('failed service tests release their requests without repeating them',async()=>{
+  for(const fault of ['unavailable','outcome_unknown',new Error('transport interrupted')]) {
+    const f=await fixture(),revision=f.view.saved.revision;f.fault(fault);
+    f.view.test('exa',f.cx);const id=f.view.request.id;
+    assert.equal(f.view.busy(),true);await f.settle();
+    assert.equal(f.view.request,null);assert.equal(f.view.busy(),false);
+    assert(f.forgotten.includes(id));assert.equal(f.calls.filter(value=>value===id).length,1);
+    assert.equal([...f.requests.values()].filter(request=>request.kind==='test_search_driver').length,1);
+    assert.equal(f.view.saved.revision,revision);
+    assert.equal(f.notices.at(-1).message,messages('en').search_request_failed);
+    f.view.edit('exa',f.cx);assert.equal(f.view.editor.driver,'exa');
+  }
 });
 
 test('moves services and preserves enable choices',async()=>{

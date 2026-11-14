@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Quitar la barra de reintento durante las pruebas de servicios y mantener los ajustes disponibles si fallan
+
 ## 0.1.18
 
 - Mostrar logotipos de proveedores en color e iconos para TinyFish y la búsqueda con modelos

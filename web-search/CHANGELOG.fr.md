@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Supprimer la barre de nouvelle tentative pendant les tests de services et garder les paramètres accessibles en cas d’échec
+
 ## 0.1.18
 
 - Afficher les logos des fournisseurs en couleur et les icônes de TinyFish et de recherche par modèle

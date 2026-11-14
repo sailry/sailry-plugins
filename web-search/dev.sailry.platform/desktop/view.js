@@ -55,7 +55,7 @@ export function render(view) {
   });
   return div().id('search-settings').v_flex().gap_6()
     .children(!view.saved&&!view.loading?[button('search-reload',text.search_reload,(_,cx)=>view.load(cx))]:[])
-    .children(view.request&&!view.editor?[button('search-retry',text.search_retry,(_,cx)=>view.retry(cx),view.pending)]:[])
+    .children(view.request?.writing&&!view.editor?[button('search-retry',text.search_retry,(_,cx)=>view.retry(cx),view.pending)]:[])
     .child(SettingsGroup.new('search_settings',{title:text.search_settings})
       .child(SettingsRow.new('search-driver-row',{label:text.search_default_driver,wide:true}).child(SelectField.new('search-default-driver',{
         label:text.search_default_driver,disabled:locked,selected,items:['auto',...drivers,'none'].map(id=>({id,label:text[`search_driver_${id}`]}))})))

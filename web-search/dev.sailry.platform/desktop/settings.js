@@ -80,14 +80,15 @@ export default class Settings extends View {
     const request=this.request;this.pending=true;cx.notify();
     cx.spawn(async cx=>{try {
       const result=await completeRequest(request.id);
-      if(result.Err){this.fail(result.Err,request.writing,request.testing);if(result.Err.code==='outcome_unknown')return;}
+      if(result.Err){this.fail(result.Err,request.writing,request.testing);if(result.Err.code==='outcome_unknown'&&request.writing)return;}
       else {
         if(result.Ok.kind==='search_settings')this.saved=result.Ok.data;
         toast({id:'search-operation',message:this.text[request.testing?'search_test_passed':'search_saved'],kind:'info'});
         if(request.editor&&this.editor===request.editor)this.close(cx,true);
       }
       forgetRequest(request.id);this.request=null;
-    } catch(_){this.fail('outcome_unknown',request.writing,request.testing);}
+    } catch(_){this.fail('outcome_unknown',request.writing,request.testing);
+      if(request.testing){forgetRequest(request.id);this.request=null;}}
     finally {this.pending=false;if(!this.request)this.load(cx);cx.notify();}});
   }
   edit(driver,cx) {
