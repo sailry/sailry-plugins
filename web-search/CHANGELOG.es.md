@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Elige el modelo de búsqueda en el selector de modelos común
+
 ## 0.1.19
 
 - Quitar la barra de reintento durante las pruebas de servicios y mantener los ajustes disponibles si fallan

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Suchmodell in der gemeinsamen Modellauswahl wählen
+
 ## 0.1.19
 
 - Wiederholungsleiste bei Diensttests entfernen und Einstellungen nach fehlgeschlagenen Tests bedienbar halten

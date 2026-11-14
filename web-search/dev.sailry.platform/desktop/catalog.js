@@ -39,13 +39,14 @@ export function models(catalog) {
   });
 }
 
-export function providers(choices) {
-  return [...new Map(choices.map(item => [item.provider,{id:item.provider,label:item.provider_name}])).values()];
+// The choices as the model picker's catalog: provider models under their provider's name.
+export function popup(choices) {
+  return choices.map(item => ({kind:'provider',id:`${item.provider}/${item.model}`,provider:item.provider_name,model:item.model}));
 }
 
-export function binding(choices,provider) {
-  const choicesForProvider=choices.filter(item => item.provider === provider);
-  const model=choicesForProvider.find(item => item.default) ?? choicesForProvider[0];
+// The choice a picker's model ID names, or null for one that is not offered.
+export function chosen(choices,id) {
+  const model=choices.find(item => `${item.provider}/${item.model}` === id);
   return model ? {provider:model.provider,model:model.model} : null;
 }
 

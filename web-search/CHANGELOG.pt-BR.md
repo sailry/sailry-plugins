@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Escolha o modelo de busca no seletor de modelos comum
+
 ## 0.1.19
 
 - Remover a barra de nova tentativa durante os testes de serviços e manter as configurações acessíveis após falhas

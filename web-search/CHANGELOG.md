@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Choose the search model in the shared model picker
+
 ## 0.1.19
 
 - Remove the retry bar during service tests and keep settings usable after test failures

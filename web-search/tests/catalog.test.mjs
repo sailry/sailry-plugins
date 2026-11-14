@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {available,needsKey,models,providers,binding,contains,icon} from '../dev.sailry.platform/desktop/catalog.js';
+import {available,needsKey,models,popup,chosen,contains,icon} from '../dev.sailry.platform/desktop/catalog.js';
 
 test('uses provider marks and service fallbacks',()=>{
   for(const driver of ['exa','tavily','brave','searxng','bocha','volcengine','deepseek'])assert.equal(icon(driver),`ailogo:${driver}-color`);
@@ -27,10 +27,11 @@ test('filters unsupported interfaces and login methods',()=>{
     {kind:'provider',id:'copilot/claude',provider:'Copilot',api:'anthropic',authentication:'copilot'},
     {kind:'provider',id:'invalid',provider:'Invalid',api:'responses'},
   ]});
-  assert.deepEqual(providers(choices),[{id:'one',label:'One'},{id:'two',label:'Two'},{id:'three',label:'Three'}]);
-  assert.deepEqual(binding(choices,'one'),{provider:'one',model:'second'});
-  assert.deepEqual(binding(choices,'two'),{provider:'two',model:'vendor/model'});
-  assert.equal(binding(choices,'four'),null);
+  assert.deepEqual(popup(choices).map(item=>[item.kind,item.id,item.provider,item.model]),[
+    ['provider','one/first','One','first'],['provider','one/second','One','second'],
+    ['provider','two/vendor/model','Two','vendor/model'],['provider','three/search','Three','search']]);
+  assert.deepEqual(chosen(choices,'two/vendor/model'),{provider:'two',model:'vendor/model'});
+  assert.equal(chosen(choices,'four/chat'),null);
   assert.equal(contains(choices,{provider:'three',model:'search'}),true);
   assert.equal(contains(choices,{provider:'one',model:'vendor/model'}),false);
   assert.equal(contains(choices,null),false);

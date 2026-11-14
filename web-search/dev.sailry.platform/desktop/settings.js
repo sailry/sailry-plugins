@@ -147,10 +147,7 @@ export default class Settings extends View {
   control(event,cx) {
     const editor=this.editor;
     if(editor?.driver==='model'&&!this.loading&&!this.pending&&!this.request) {
-      if(event.id==='search-model-provider')editor.model=catalog.binding(this.models,event.value);
-      else if(event.id==='search-model-name'&&this.models.some(model=>model.provider===editor.model?.provider&&model.model===event.value)) {
-        editor.model={provider:editor.model.provider,model:event.value};
-      }
+      if(event.id==='search-model')editor.model=catalog.chosen(this.models,event.value?.model) ?? editor.model;
       cx.notify();
     }
     if(event.id==='search-default-driver'&&!this.busy()) {

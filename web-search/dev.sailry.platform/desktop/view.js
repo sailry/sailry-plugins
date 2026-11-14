@@ -2,7 +2,7 @@ import {div} from 'gpui-kit';
 import {Button,Switch,Field,Form} from 'gpui-component';
 import {TextField} from 'sailry/forms';
 import {SecretField} from 'sailry/credentials';
-import {SettingsGroup,SettingsRow,SelectField,Menu,Modal} from 'sailry/ui';
+import {SettingsGroup,SettingsRow,SelectField,Menu,Modal,ModelPopup} from 'sailry/ui';
 import * as catalog from './catalog.js';
 
 function button(id,label,action,disabled=false) {
@@ -18,11 +18,9 @@ function editor(view) {
   if(!owner)return modal;
   const form=new Form().size('large').gap_y(8);
   if(owner.driver==='model') {
-    form.child(new Field().label(text.search_model_provider).child(SelectField.new('search-model-provider',{
-      label:text.search_model_provider,disabled:locked,selected:owner.model?.provider ?? '',items:catalog.providers(view.models)})));
-    form.child(new Field().label(text.search_model_name).child(SelectField.new('search-model-name',{
-      label:text.search_model_name,disabled:locked||!owner.model?.provider,selected:owner.model?.model ?? '',
-      items:view.models.filter(model=>model.provider===owner.model?.provider).map(model=>({id:model.model,label:model.model}))})));
+    form.child(new Field().label(text.search_model_name).child(ModelPopup.new('search-model',{
+      label:text.search_model_name,placeholder:text.search_model_required,disabled:locked,catalog:{models:catalog.popup(view.models)},
+      selected:owner.model ? `${owner.model.provider}/${owner.model.model}` : null})));
   } else {
     if(owner.driver==='searxng')form.child(new Field().label(text.search_endpoint)
       .child(div().id('search-editor-endpoint').child(TextField.new(owner.endpoint,{readonly:locked}))));

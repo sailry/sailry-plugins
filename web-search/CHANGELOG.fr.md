@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Choisir le modèle de recherche dans le sélecteur de modèles commun
+
 ## 0.1.19
 
 - Supprimer la barre de nouvelle tentative pendant les tests de services et garder les paramètres accessibles en cas d’échec

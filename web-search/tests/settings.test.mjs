@@ -96,17 +96,17 @@ test('refresh locks saving and rebasing without discarding drafts',async()=>{
   assert.equal(f.prepared[0].settings.providers.searxng.endpoint,'https://draft.example.com');
 });
 
-test('chooses a provider before its model',async()=>{
+test('chooses a model in one picker',async()=>{
   const f=await fixture();f.view.edit('model',f.cx);
   assert.equal(f.fields.size,0);assert.equal(f.secrets.size,0);
   assert.equal(f.view.models.length,3);assert.equal(f.view.editor.model,null);
-  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);
+  f.view.control({id:'search-model',value:{model:'alpha/default',effort:null}},f.cx);
   assert.deepEqual(plain(f.view.editor.model),{provider:'alpha',model:'default'});
-  f.view.control({id:'search-model-name',value:'vendor/model'},f.cx);
+  f.view.control({id:'search-model',value:{model:'alpha/vendor/model',effort:null}},f.cx);
   assert.equal(f.view.editor.model.model,'default');
-  f.view.control({id:'search-model-name',value:'first'},f.cx);
+  f.view.control({id:'search-model',value:{model:'alpha/first',effort:null}},f.cx);
   assert.equal(f.view.editor.model.model,'first');
-  f.view.control({id:'search-model-provider',value:'beta'},f.cx);
+  f.view.control({id:'search-model',value:{model:'beta/vendor/model',effort:null}},f.cx);
   assert.deepEqual(plain(f.view.editor.model),{provider:'beta',model:'vendor/model'});
   f.view.saveEditor(f.cx);await f.settle();
   const save=[...f.requests.values()].find(request=>request.kind==='save_search_settings');
@@ -123,7 +123,7 @@ test('catalog refresh failures leave search settings usable',async()=>{
 
 test('unavailable models retain the selection draft',async()=>{
   const f=await fixture();f.view.edit('model',f.cx);const editor=f.view.editor;
-  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);
+  f.view.control({id:'search-model',value:{model:'alpha/default',effort:null}},f.cx);
   f.models({models:[]});f.view.load(f.cx);await f.settle();
   f.view.saveEditor(f.cx);await f.settle();
   assert.equal(f.view.editor,editor);assert.equal(editor.model.model,'default');
@@ -133,10 +133,10 @@ test('unavailable models retain the selection draft',async()=>{
 
 test('model edits retain uncertain request identity',async()=>{
   const f=await fixture();f.view.edit('model',f.cx);const editor=f.view.editor;
-  f.view.control({id:'search-model-provider',value:'alpha'},f.cx);f.fault('outcome_unknown');
+  f.view.control({id:'search-model',value:{model:'alpha/default',effort:null}},f.cx);f.fault('outcome_unknown');
   f.view.saveEditor(f.cx);await f.settle();const id=f.view.request.id;
   f.view.close(f.cx);assert.equal(f.view.editor,editor);
-  f.view.control({id:'search-model-provider',value:'beta'},f.cx);
+  f.view.control({id:'search-model',value:{model:'beta/vendor/model',effort:null}},f.cx);
   assert.equal(editor.model.provider,'alpha');assert(!f.forgotten.includes(id));
   f.view.saveEditor(f.cx);await f.settle();
   assert.equal(f.calls.filter(value=>value===id).length,2);assert.equal(f.view.editor,null);
