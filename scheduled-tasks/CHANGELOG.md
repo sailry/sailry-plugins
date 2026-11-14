@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Choose the model and its effort in one picker
+
 ## 0.1.16
 
 - Restore outline icons in navigation and tools

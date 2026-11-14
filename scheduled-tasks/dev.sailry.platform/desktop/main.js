@@ -122,13 +122,7 @@ export default class ScheduledTasks extends View {
       editing.draft.team = team === null ? null : {id:team.id,revision:null}; editing.draft.models = {};
       this.syncLead(cx);
     }
-    else if (event.id === "task-strength") {
-      if (lead(this)) return;
-      const model = this.models.find(model => model.id === editing.model);
-      const effort = model?.efforts.find(effort => effortKey(effort) === event.value);
-      if (effort === undefined) return;
-      return this.selectModel(editing.model,effort,cx);
-    } else return;
+    else return;
     cx.notify();
   }
   // Returns true when the event belongs to the list filter or the details panel.

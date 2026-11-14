@@ -43,7 +43,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
   return {api,view,cx,nodes,texts,created,released,jobs,notices,requests,forgotten,
     render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
 }
-test("new forms use vertical fields, full-width schedules and explicit model strength",()=>{
+test("new forms use vertical fields, full-width schedules and one model and effort picker",()=>{
   const setup=fixture(),{view}=setup;setup.render();
   const form=setup.nodes.get("task-editor").items[0];
   assert.equal(form.kind,"Form");assert.deepEqual(plain(form.style.w_full),[]);
@@ -56,7 +56,7 @@ test("new forms use vertical fields, full-width schedules and explicit model str
   assert.deepEqual(plain(setup.nodes.get("task-timing").props.items),[{id:"once",label:"Once"},{id:"every",label:"Repeat"},{id:"weekly",label:"Weekly"}]);
   assert.equal(setup.nodes.get("task-project").kind,"SelectField");
   assert.equal(setup.nodes.get("task-model").kind,"ModelPopup");assert.equal(setup.nodes.get("task-model").props.selected,null);
-  assert.equal(setup.nodes.get("task-strength").kind,"SelectField");assert.equal(setup.nodes.get("task-strength").props.disabled,true);
+  assert.equal(setup.nodes.get("task-strength"),undefined);
   assert.ok(!form.items.some(field=>field.style.label?.[0]==="Queue"));
   setup.texts.set(view.editing.name,"Review");setup.texts.set(view.editing.prompt,"Read the project");
   assert.throws(()=>setup.api.value(view.editing),/modelRequired/);
@@ -128,7 +128,6 @@ test("fixed leads resolve without a prior manual model selection",async()=>{
   assert.equal(view.editing.draft.config,null);assert.equal(view.editing.modelLoading,true);
   assert.equal(setup.api.lead(view),fixed);
   view.control({id:"task-model",value:{model:"provider/explicit",effort:"high"}},cx);
-  view.control({id:"task-strength",value:"high"},cx);
   view.save(cx);assert.equal(setup.requests.length,0);assert.equal(setup.jobs.length,1);
   await setup.settle();
   assert.deepEqual(calls,[{model:"lead-provider/lead",effort:"low",base:null}]);
@@ -160,7 +159,7 @@ test("fixed lead defaults come from model resolution and preserve policies",asyn
   assert.equal(base.effort,"low");
   view.syncLead(cx);assert.equal(setup.jobs.length,0);
   view.teams[0].model=null;view.syncLead(cx);
-  view.control({id:"task-strength",value:"low"},cx);await setup.settle();
+  view.control({id:"task-model",value:{model:"provider/explicit",effort:"low"}},cx);await setup.settle();
   assert.equal(view.editing.draft.config.effort,"low");
 });
 
@@ -225,17 +224,15 @@ test("timing switches retain drafts and require an explicit timezone",()=>{
   setup.texts.set(view.editing.wallTime,"09:00");view.editing.weekdays=[];
   assert.throws(()=>api.value(view.editing),/weekdaysRequired/);
 });
-test("model changes preserve queues and policies; strength choices update only configuration",async()=>{
+test("model changes preserve queues and policies; effort choices update only configuration",async()=>{
   const calls=[],setup=fixture(async(model,effort,base)=>{calls.push({model,effort,base});return {...config,effort:effort??"high"};});
   const item={...setup.view.editing.draft,id:"saved",revision:"3",name:"Review",prompt:"Keep this",queue:"reviews",config:{...config},project:"removed",worktree:"missing"};
   setup.view.editing=setup.api.editor(item,setup.view.text);setup.render();
   assert.equal(setup.nodes.get("task-project").props.selected,"removed");assert.equal(setup.nodes.get("task-project").props.items.at(-1).label,"Unavailable");
   assert.equal(setup.nodes.get("task-worktree").props.selected,"missing");
-  assert.deepEqual(plain(setup.nodes.get("task-strength").props.items),[{id:"low",label:"low"},{id:"high",label:"high"}]);
-  setup.view.control({id:"task-strength",value:"low"},setup.cx);assert.equal(setup.view.editing.modelLoading,true);
+  setup.view.control({id:"task-model",value:{model:"provider/explicit",effort:"low"}},setup.cx);assert.equal(setup.view.editing.modelLoading,true);
   setup.render();assert.deepEqual(plain(setup.nodes.get("task-save").style.disabled),[false]);
   assert.equal(setup.nodes.get("task-model").props.disabled,false);
-  assert.equal(setup.nodes.get("task-strength").props.disabled,false);
   await setup.settle();const saved=setup.api.value(setup.view.editing);
   assert.equal(saved.queue,"reviews");assert.equal(saved.config.effort,"low");assert.equal(saved.config.mode,"plan");assert.equal(saved.config.permission,"full");
   assert.equal(calls.length,1);assert.equal(calls[0].base,item.config);
@@ -246,7 +243,7 @@ test("model changes preserve queues and policies; strength choices update only c
   setup.view.pending="original";setup.render();assert.equal(setup.nodes.get("task-project").props.disabled,true);
   setup.view.control({id:"task-project",value:"none"},setup.cx);assert.equal(setup.view.editing.draft.project,"project");
 });
-test("strength values retain raw named and numeric keys in every locale",()=>{
+test("the model picker carries raw named and numeric efforts in every locale",()=>{
   for(const locale of ["en","zh-CN"]) {
     const setup=fixture(),values=["none","minimal","low","medium","high","xhigh","max",{budget:-1},{budget:1024}];
     setup.view.text=messages(locale);
@@ -254,10 +251,7 @@ test("strength values retain raw named and numeric keys in every locale",()=>{
     setup.view.editing.model="provider/explicit";
     for(const effort of ["default",...values]) {
       setup.view.editing.draft.config={...config,effort};setup.render();
-      const props=setup.nodes.get("task-strength").props;
-      assert.equal(props.label,setup.view.text.strength);
-      assert.equal(props.selected,setup.api.effortKey(effort));
-      assert.deepEqual(plain(props.items),values.map(value=>({id:setup.api.effortKey(value),label:setup.api.effortKey(value)})));
+      assert.equal(setup.nodes.get("task-strength"),undefined);
       assert.equal(setup.nodes.get("task-model").props.effort,effort);
     }
   }
@@ -277,7 +271,6 @@ test("model choices wait for delayed models and supported effort to resolve toge
   assert.equal(choice.props.selected,"provider/explicit");
   assert.equal(choice.props.effort,"high");
   assert.equal(choice.props.disabled,false);
-  assert.equal(setup.nodes.get("task-strength").props.disabled,false);
   assert.equal(setup.view.editing.draft.config,item.config);
   assert.equal(calls.length,1);assert.equal(calls[0].model,"provider/other");assert.equal(calls[0].effort,"low");
   reply({...calls[0].base,model:"other",effort:"low"});await pending;

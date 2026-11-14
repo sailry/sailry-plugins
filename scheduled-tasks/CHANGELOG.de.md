@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Modell und Stufe in einer Auswahl wählen
+
 ## 0.1.16
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

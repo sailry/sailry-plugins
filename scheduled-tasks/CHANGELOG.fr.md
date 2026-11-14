@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Choisir le modèle et son niveau dans un seul sélecteur
+
 ## 0.1.16
 
 - Icônes au trait rétablies dans la navigation et les outils

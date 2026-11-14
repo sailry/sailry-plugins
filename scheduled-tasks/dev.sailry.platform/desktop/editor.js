@@ -106,19 +106,6 @@ function leadEffort(editing, fixed) {
   return fixed.effort ?? (editing.model === `${fixed.provider}/${fixed.model}` && !editing.modelLoading && !editing.leadError
     ? editing.draft.config?.effort ?? "default" : "default");
 }
-function strength(view, disabled) {
-  const {text,editing} = view;
-  const fixed = lead(view), selected = fixed ? `${fixed.provider}/${fixed.model}` : editing.model;
-  const model = view.models.find(model => model.id === selected);
-  const choices = (model?.efforts ?? []).filter(effort => effort !== "default");
-  const effort = fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort;
-  if (fixed && !choices.some(choice => effortKey(choice) === effortKey(effort))) choices.push(effort);
-  return SelectField.new("task-strength",{label:text.strength,
-    placeholder:model && !choices.length ? text.noStrength : text.strengthPlaceholder,
-    selected:effort === undefined ? null : effortKey(effort),
-    items:choices.map(effort => ({id:effortKey(effort),label:effortKey(effort)})),
-    disabled:disabled || !!fixed || !choices.length});
-}
 function teams(view, disabled) {
   const {text,editing} = view;
   const items = [{id:"default",label:text.defaultTeam},...view.teams.map(({id,name}) => ({id,label:name}))];
@@ -155,8 +142,7 @@ export function render(view) {
         selected:fixed ? `${fixed.provider}/${fixed.model}` : editing.model,
         effort:fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort ?? "default",disabled:disabled || !!fixed}))
         .children(view.modelsError || editing.leadError ? [new Button("task-models-retry").label(text.retry).disabled(view.loading)
-          .on_click((_,cx) => view.refresh(cx))] : []))
-      .child(new Field().label(text.strength).child(strength(view,disabled)))),
+          .on_click((_,cx) => view.refresh(cx))] : []))),
     div().h_flex().flex_shrink(0).justify_end().gap_2()
       .child(new Button("task-cancel").label(text.cancel).disabled(view.busy).on_click((_,cx) => view.close(cx)))
       .child(new Button("task-save").primary().label(view.pending ? text.retry : text.save)

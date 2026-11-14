@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Escolha o modelo e o nível em um só seletor
+
 ## 0.1.16
 
 - Ícones de contorno restaurados na navegação e nas ferramentas
