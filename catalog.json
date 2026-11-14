@@ -18985,7 +18985,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.12",
+        "version": "0.1.13",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19098,10 +19098,11 @@
               {
                 "name": "reminders",
                 "contexts": [
-                  "workspace"
+                  "workspace",
+                  "plugin"
                 ],
                 "presentation": "summary",
-                "description": "List, create, update or delete saved reminders in the current project. These reminders are separate from conversation progress and update_plan. List optionally filters by completed and returns IDs, revisions and an after cursor; pass the latest revision for update or delete. Create requires a title; notes, completion and due_ms (UTC milliseconds or null) are optional. Update changes only supplied fields. Project scope is fixed by the session.",
+                "description": "List, create, update or delete saved reminders. Project sessions use their current project; conversations without a project use unassigned reminders. These reminders are separate from conversation progress, update_plan and scheduled agent tasks. List optionally filters by completed and returns IDs, revisions and an after cursor; pass the latest revision for update or delete. Create requires a title; notes, completion and due_ms (UTC milliseconds or null) are optional. Update changes only supplied fields. Project scope is fixed by the session.",
                 "handler": {
                   "name": "reminders",
                   "flow": {
@@ -19404,6 +19405,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.13",
+          "commit": "133100a16cf395fef02447b0f1b9b5a42e52f248",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Allow conversations without a project to manage unassigned reminders\n- Preserve project isolation when listing or changing reminders"
+          }
+        },
+        {
           "version": "0.1.12",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "min_sailry_version": "0.1.6",
@@ -19527,18 +19536,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
-        "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
-        }
+        "text": "- Allow conversations without a project to manage unassigned reminders\n- Preserve project isolation when listing or changing reminders"
       }
     },
     {
