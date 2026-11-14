@@ -309,18 +309,18 @@ test("uncertain actions retain retry and dismiss controls without enabling write
   assert.equal(setup.view.pending, "original-request");
 });
 
-test("desktop navigation and project tool share the host package without contract changes", async () => {
+test("desktop and conversation tools share the host package", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.12");
+  assert.equal(manifest.version, "0.1.13");
   assert.equal(extension.desktop.navigation_options.details, true);
   assert.ok(extension.host.handlers.includes("history"));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);
   assert.equal(extension.tools.length, 1);
-  assert.deepEqual(extension.tools[0].contexts, ["workspace"]);
+  assert.deepEqual(extension.tools[0].contexts, ["workspace", "plugin"]);
   assert.deepEqual(extension.tools[0].handler.flow.operations, ["storage.transaction"]);
   assert.equal("project" in extension.tools[0].handler.parameters.properties, false);
   assert.equal(extension.host.turn.initialize, "initialize");

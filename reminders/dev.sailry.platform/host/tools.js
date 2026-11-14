@@ -5,7 +5,7 @@ import {saveOperations, removeOperations, transactionResult} from "./mutations.j
 export function initialize({project:scope, tools}) {
   project(scope);
   stageTurnState({project:scope});
-  return {instruction:"", tools:scope === null ? [] : tools};
+  return {instruction:"", tools};
 }
 function argumentsFor(value) {
   const fields = {list:["after","completed"], create:["title","message","completed","due_ms"],
@@ -31,7 +31,6 @@ export async function reminders({arguments:input, step, state, outcome}) {
     }
     if (step !== 0) throw fault("invalid_request", "Invalid reminder continuation");
     const args = argumentsFor(input), scope = project(readTurnState()?.project);
-    if (scope === null) throw fault("permission_denied", "Reminders require a current project");
     if (args.action === "list") return {result:await page(args, scope)};
     let pending;
     if (args.action === "create") {

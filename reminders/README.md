@@ -24,6 +24,11 @@ closing the draft does not cancel or replay Node work.
 
 ## Callbacks
 
+The `reminders` conversation tool uses the session's project scope. Conversations
+without a project list and manage unassigned reminders; project conversations
+only access reminders in their own project. Tool arguments cannot change this
+scope. Scheduled reminders publish notifications and do not run an agent task.
+
 Use `call_plugin` with the installed package context. `list`, `save` and `remove`
 return `{Ok: value}` or `{Err: {code, message}}` inside `plugin_result`. Retain the
 original request ID for uncertain outcomes. A new request is a new operation.

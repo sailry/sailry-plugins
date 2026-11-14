@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reminders",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "To-dos and scheduled reminders",
   "extensions": {
     "dev.sailry.platform": {
@@ -114,10 +114,11 @@
         {
           "name": "reminders",
           "contexts": [
-            "workspace"
+            "workspace",
+            "plugin"
           ],
           "presentation": "summary",
-          "description": "List, create, update or delete saved reminders in the current project. These reminders are separate from conversation progress and update_plan. List optionally filters by completed and returns IDs, revisions and an after cursor; pass the latest revision for update or delete. Create requires a title; notes, completion and due_ms (UTC milliseconds or null) are optional. Update changes only supplied fields. Project scope is fixed by the session.",
+          "description": "List, create, update or delete saved reminders. Project sessions use their current project; conversations without a project use unassigned reminders. These reminders are separate from conversation progress, update_plan and scheduled agent tasks. List optionally filters by completed and returns IDs, revisions and an after cursor; pass the latest revision for update or delete. Create requires a title; notes, completion and due_ms (UTC milliseconds or null) are optional. Update changes only supplied fields. Project scope is fixed by the session.",
           "handler": {
             "name": "reminders",
             "flow": {

@@ -90,12 +90,52 @@ test("missing project associations remain intact until management explicitly cha
   assert.equal(changed.Ok.project,null);
 });
 
-test("captures the execution project without contributing reminder data to model instructions", async () => {
+test("captures scope without contributing reminder data to model instructions", async () => {
   const setup = await fixture();
   assert.deepEqual(clone(await start(setup)),{instruction:"",tools:["reminders"]});
   assert.deepEqual(setup.state,{project});
-  assert.deepEqual(clone(await setup.main.initialize({project:null,tools:["reminders"]})),{instruction:"",tools:[]});
-  assert.equal((await call(setup,{action:"list"})).result.error.code,"permission_denied");
+  assert.deepEqual(clone(await setup.main.initialize({project:null,tools:["reminders"]})),{instruction:"",tools:["reminders"]});
+  assert.deepEqual(setup.state,{project:null});
+  assert.deepEqual(clone((await call(setup,{action:"list"})).result),{items:[],after:null});
+});
+
+test("unassigned conversations create, update and delete their reminders", async () => {
+  const setup = await fixture();
+  await setup.main.initialize({project:null,tools:["reminders"]});
+  setup.seed(item(1));
+  const created = await call(setup,{action:"create",title:"Follow up",due_ms:Date.now()+300000});
+  const result = (await finish(setup,created,setup.apply(created.call.arguments.operations))).result;
+  assert.equal(result.project,null);
+  assert.equal(result.revision,"1");
+  assert.equal(setup.schedules.get(result.id).enabled,true);
+  const listed = (await call(setup,{action:"list"})).result;
+  assert.deepEqual(Array.from(listed.items,value=>value.id),[result.id]);
+  const changed = await call(setup,{action:"update",id:result.id,revision:"1",completed:true});
+  const updated = (await finish(setup,changed,setup.apply(changed.call.arguments.operations))).result;
+  assert.equal(updated.project,null);
+  assert.equal(updated.completed,true);
+  assert.equal(updated.revision,"2");
+  const removed = await call(setup,{action:"delete",id:result.id,revision:"2"});
+  assert.deepEqual(clone((await finish(setup,removed,setup.apply(removed.call.arguments.operations))).result),
+    {id:result.id,revision:"3",removed:true});
+  assert.equal(setup.get(`reminder/${result.id}`).present,false);
+  assert.equal(setup.schedules.size,0);
+  assert.equal(setup.handlers.size,0);
+  assert.equal(setup.catalogReads.length,0);
+});
+
+test("unassigned conversations cannot mutate project reminders", async () => {
+  const setup = await fixture();
+  await setup.main.initialize({project:null,tools:["reminders"]});
+  setup.seed(item(1)); setup.seed(item(2,{project:foreign}));
+  for (const action of ["update","delete"]) for (const number of [1,2]) {
+    const result = await call(setup,{action,id:id(number),revision:"1",...(action==="update" ? {title:"Changed"} : {})});
+    assert.equal(result.result.error.code,"permission_denied");
+  }
+  assert.equal(setup.queries.length,0);
+  assert.equal(setup.prepared.length,0);
+  assert.equal(setup.get(`reminder/${id(1)}`).revision,"1");
+  assert.equal(setup.get(`reminder/${id(2)}`).revision,"1");
 });
 
 test("lists only current project reminders with bounded matching pagination", async () => {

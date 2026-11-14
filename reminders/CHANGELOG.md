@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.13
+
+- Allow conversations without a project to manage unassigned reminders
+- Preserve project isolation when listing or changing reminders
+
 ## 0.1.12
 
 - Restore outline icons in navigation and tools
