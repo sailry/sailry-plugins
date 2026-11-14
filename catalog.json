@@ -5655,7 +5655,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -6232,6 +6232,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "56e9c90a371044f52b36907e5f236f4419cbea4b",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Keep primary-key discovery pending so another query cannot replace its request or results.",
+            "locales": {
+              "zh-CN": "- 主键查询期间保留待处理状态，防止其他查询覆盖其请求或结果。",
+              "zh-TW": "- 主鍵查詢期間保留待處理狀態，避免其他查詢覆蓋其請求或結果。",
+              "ja": "- 主キーの取得中は処理中の状態を維持し、別のクエリによるリクエストや結果の上書きを防止。",
+              "ko": "- 기본 키를 조회하는 동안 처리 중 상태를 유지하여 다른 쿼리가 요청이나 결과를 덮어쓰지 않도록 수정했습니다.",
+              "fr": "- Conserver la recherche des clés primaires en attente pour empêcher une autre requête de remplacer sa demande ou ses résultats.",
+              "de": "- Die Primärschlüsselsuche bleibt ausstehend, damit eine andere Abfrage ihre Anfrage oder Ergebnisse nicht überschreibt.",
+              "es": "- Mantener pendiente la búsqueda de claves primarias para evitar que otra consulta sustituya su solicitud o sus resultados.",
+              "pt-BR": "- Manter a busca de chaves primárias pendente para impedir que outra consulta substitua sua solicitação ou seus resultados.",
+              "ru": "- Поиск первичных ключей остаётся в состоянии ожидания, чтобы другой запрос не заменил его запрос или результаты."
+            }
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
           "min_sailry_version": "0.1.6",
@@ -6476,17 +6495,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Shorten test labels without changing assertions",
+        "text": "- Keep primary-key discovery pending so another query cannot replace its request or results.",
         "locales": {
-          "zh-CN": "- 缩短测试名称，保持断言不变",
-          "zh-TW": "- 縮短測試名稱，保持斷言不變",
-          "ja": "- アサーションを変更せずにテスト名を短縮",
-          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
-          "fr": "- Raccourcir les noms des tests sans modifier les assertions",
-          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
-          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
-          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
-          "ru": "- Сократить названия тестов без изменения проверок"
+          "zh-CN": "- 主键查询期间保留待处理状态，防止其他查询覆盖其请求或结果。",
+          "zh-TW": "- 主鍵查詢期間保留待處理狀態，避免其他查詢覆蓋其請求或結果。",
+          "ja": "- 主キーの取得中は処理中の状態を維持し、別のクエリによるリクエストや結果の上書きを防止。",
+          "ko": "- 기본 키를 조회하는 동안 처리 중 상태를 유지하여 다른 쿼리가 요청이나 결과를 덮어쓰지 않도록 수정했습니다.",
+          "fr": "- Conserver la recherche des clés primaires en attente pour empêcher une autre requête de remplacer sa demande ou ses résultats.",
+          "de": "- Die Primärschlüsselsuche bleibt ausstehend, damit eine andere Abfrage ihre Anfrage oder Ergebnisse nicht überschreibt.",
+          "es": "- Mantener pendiente la búsqueda de claves primarias para evitar que otra consulta sustituya su solicitud o sus resultados.",
+          "pt-BR": "- Manter a busca de chaves primárias pendente para impedir que outra consulta substitua sua solicitação ou seus resultados.",
+          "ru": "- Поиск первичных ключей остаётся в состоянии ожидания, чтобы другой запрос не заменил его запрос или результаты."
         }
       }
     },
