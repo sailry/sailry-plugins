@@ -19004,7 +19004,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19424,6 +19424,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.14",
+          "commit": "742617407a21f20e9b031e2dab94d28cc9a431af",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Preserve the originating conversation scope when scheduling reminders\n- Register notification handlers before their schedules in the same transaction"
+          }
+        },
+        {
           "version": "0.1.13",
           "commit": "133100a16cf395fef02447b0f1b9b5a42e52f248",
           "min_sailry_version": "0.1.6",
@@ -19555,7 +19563,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Allow conversations without a project to manage unassigned reminders\n- Preserve project isolation when listing or changing reminders"
+        "text": "- Preserve the originating conversation scope when scheduling reminders\n- Register notification handlers before their schedules in the same transaction"
       }
     },
     {
@@ -19711,7 +19719,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20433,6 +20441,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "3137fb8cf72ae3ceb18ca2a33f5533e99ed247bd",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Keep scheduled callbacks within their originating conversation's resource and permission scope"
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "edd7dbe019027eb52789f36d00e3e01b3d752e09",
           "min_sailry_version": "0.1.6",
@@ -20602,18 +20618,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Choose the model and its effort in one picker",
-        "locales": {
-          "zh-CN": "- 在同一个选择器中选择模型及其强度",
-          "zh-TW": "- 在同一個選擇器中選擇模型及其強度",
-          "ja": "- モデルと推論強度を1つのピッカーで選択",
-          "ko": "- 하나의 선택기에서 모델과 강도 선택",
-          "fr": "- Choisir le modèle et son niveau dans un seul sélecteur",
-          "de": "- Modell und Stufe in einer Auswahl wählen",
-          "es": "- Elige el modelo y su nivel en un solo selector",
-          "pt-BR": "- Escolha o modelo e o nível em um só seletor",
-          "ru": "- Модель и уровень выбираются в одном списке"
-        }
+        "text": "- Keep scheduled callbacks within their originating conversation's resource and permission scope"
       }
     },
     {
