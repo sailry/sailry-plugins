@@ -8,7 +8,7 @@ export const foreign = "33333333-3333-4333-8333-333333333333";
 export const item = (number, changes = {}) => ({id:id(number),project,title:"Review",message:"",completed:false,
   due_ms:null,notified_ms:null,...changes});
 
-export async function fixture() {
+export async function fixture(scope = {}) {
   const records = new Map(), requests = new Map(), receipts = new Map();
   const schedules = new Map(), handlers = new Map();
   const prepared = [], queries = [], catalogReads = [], scans = [];
@@ -54,7 +54,7 @@ export async function fixture() {
     }
   }
   const sdk = {
-    context:() => ({invocation:id(999),package:{name:"reminders",digest:"fixture",config_revision:1}}),
+    context:() => ({invocation:id(999),package:{name:"reminders",digest:"fixture",config_revision:1},...scope}),
     getValue:async key => get(key),
     listKeys:async(prefix,after,limit) => {
       scans.push({prefix,after,limit});

@@ -15,6 +15,7 @@ function exact(value) {
   return String(value);
 }
 export async function changes(item, nextRevision) {
+  const source = context();
   const [schedules,handlers] = await Promise.all([query("list_schedules"),query("list_handlers")]);
   const operations = [];
   let schedule = schedules.find(schedule => schedule.id === item.id);
@@ -24,15 +25,15 @@ export async function changes(item, nextRevision) {
     operations.push(dispatch("remove_schedule", {id:item.id, expected_revision:exact(schedule.revision)}));
     schedule = null;
   }
-  operations.push(dispatch("save_schedule", {
-    id:item.id,revision:schedule ? exact(schedule.revision) : "0",enabled,topic:item.id,
-    payload:{id:item.id, revision:nextRevision},timing:{kind:"once",data:{at_ms:item.due_ms ?? 0}},next_ms:null,
-  }));
   operations.push(dispatch("save_handler", {
     name:item.id,revision:handler ? exact(handler.revision) : "0",enabled:true,
     source:{package:context().package.name,topic:item.id},queue:"reminders",
-    callback:{scope:{worktree:null,session:null},completion:"command",
+    callback:{scope:{worktree:source.worktree ?? null,session:source.session ?? null},completion:"command",
       command:{kind:"call_plugin",data:{handler:"notify",input:null}},bindings:{"/data/input":"/payload"}},
+  }));
+  operations.push(dispatch("save_schedule", {
+    id:item.id,revision:schedule ? exact(schedule.revision) : "0",enabled,topic:item.id,
+    payload:{id:item.id, revision:nextRevision},timing:{kind:"once",data:{at_ms:item.due_ms ?? 0}},next_ms:null,
   }));
   return operations;
 }

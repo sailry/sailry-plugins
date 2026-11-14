@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.14
+
+- Preserve the originating conversation scope when scheduling reminders
+- Register notification handlers before their schedules in the same transaction
+
 ## 0.1.13
 
 - Allow conversations without a project to manage unassigned reminders

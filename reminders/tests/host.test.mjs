@@ -222,14 +222,35 @@ test("create uses a stable canonical call ID and one atomic scheduled transactio
   const operations = first.call.arguments.operations;
   assert.equal(operations[0].data.value.id,id(1000)); assert.equal(operations[0].data.value.project,project);
   assert.equal(operations[0].data.expected_revision,"0");
-  assert.deepEqual(Array.from(operations.slice(1),value => value.data.kind),["save_schedule","save_handler"]);
-  assert.equal(operations[1].data.data.payload.revision,"1");
+  assert.deepEqual(Array.from(operations.slice(1),value => value.data.kind),["save_handler","save_schedule"]);
+  assert.equal(operations[2].data.data.payload.revision,"1");
   assert.equal(setup.prepared.length,0); assert.equal(setup.catalogReads.length,0);
   const outcome = setup.apply(operations), result = await finish(setup,first,outcome);
   assert.equal(result.result.id,id(1000)); assert.equal(result.result.revision,"1");
   assert.equal(setup.schedules.get(id(1000)).enabled,true);
   assert.equal((await call(setup,args)).result.error.code,"revision_conflict");
   assert.equal(setup.entries.size,1);
+});
+
+test("scheduled callbacks retain conversation bounds and update handlers before schedules", async () => {
+  for (const scope of [{worktree:id(700),session:id(701)},{worktree:null,session:null}]) {
+    const setup = await fixture(scope); await start(setup);
+    const created = await call(setup,{action:"create",title:"Follow up",due_ms:Date.now()+300000});
+    const operations = created.call.arguments.operations;
+    assert.deepEqual(Array.from(operations.slice(1),value=>value.data.kind),["save_handler","save_schedule"]);
+    assert.deepEqual(clone(operations[1].data.data.callback.scope),scope);
+    const saved = (await finish(setup,created,setup.apply(operations))).result;
+    // Rescheduling an already-fired occurrence removes the expired schedule first.
+    setup.schedules.get(saved.id).next_ms = null;
+    const changed = await call(setup,{action:"update",id:saved.id,revision:saved.revision,due_ms:Date.now()+600000});
+    const updates = changed.call.arguments.operations;
+    assert.deepEqual(Array.from(updates.slice(1),value=>value.data.kind),["remove_schedule","save_handler","save_schedule"]);
+    assert.deepEqual(clone(updates[2].data.data.callback.scope),scope);
+    const result = (await finish(setup,changed,setup.apply(updates))).result;
+    assert.equal(result.revision,"2");
+    assert.equal(setup.handlers.get(saved.id).revision,2);
+    assert.equal(setup.schedules.get(saved.id).revision,1);
+  }
 });
 
 test("mutations require revisions and reject foreign or unassigned records before schedule reads", async () => {
