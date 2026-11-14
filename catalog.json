@@ -23015,7 +23015,7 @@
       "versions": [
         {
           "version": "0.1.20",
-          "commit": "fb6be8b65893fc7bc46edba5073586882463fb15",
+          "commit": "135c94b30d335ea869f0621357c8b377262d3274",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Choose the search model in the shared model picker",
