@@ -43,7 +43,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
   return {api,view,cx,nodes,texts,created,released,jobs,notices,requests,forgotten,
     render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
 }
-test("new forms use vertical fields, full-width schedules and one model and effort picker",()=>{
+test("forms use vertical fields, full-width schedules and one model picker",()=>{
   const setup=fixture(),{view}=setup;setup.render();
   const form=setup.nodes.get("task-editor").items[0];
   assert.equal(form.kind,"Form");assert.deepEqual(plain(form.style.w_full),[]);

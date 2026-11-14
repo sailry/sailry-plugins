@@ -33,9 +33,10 @@ export function exact(value) {
   return String(value);
 }
 export function registration(task, revision) {
+  const source = context();
   return operation("save_handler",{name:task.id,revision,enabled:true,
-    source:{package:context().package.name,topic:task.id},queue:task.queue,
-    callback:{scope:{worktree:null,session:null},completion:"turn",bindings:{},
+    source:{package:source.package.name,topic:task.id},queue:task.queue,
+    callback:{scope:{worktree:source.worktree ?? null,session:source.session ?? null},completion:"turn",bindings:{},
       command:{kind:"start_session",data:{project:task.project,worktree:task.worktree,config:task.config,
         ...execution(task),association:{namespace:context().package.name,kind:"task",id:task.id},
         title:task.name,message:{text:task.prompt,attachments:[],references:[]}}}}});
@@ -46,9 +47,9 @@ export async function changes(task) {
   const schedule = schedules.find(item => item.id === task.id);
   const handler = handlers.find(item => item.name === task.id);
   return [
+    registration(task,handler ? exact(handler.revision) : "0"),
     operation("save_schedule",{id:task.id,revision:schedule ? exact(schedule.revision) : "0",
       enabled:task.enabled,topic:task.id,payload:{name:task.name},timing:task.timing,next_ms:null}),
-    registration(task,handler ? exact(handler.revision) : "0"),
   ];
 }
 export async function removal(id) {

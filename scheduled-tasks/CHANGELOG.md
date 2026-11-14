@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Keep scheduled callbacks within their originating conversation's resource and permission scope
+
 ## 0.1.17
 
 - Choose the model and its effort in one picker

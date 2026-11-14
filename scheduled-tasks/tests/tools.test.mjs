@@ -19,9 +19,10 @@ test("creation uses one admitted storage and dispatch transaction",async()=>{
   assert.equal(reply.call.operation,"storage.transaction");assert.equal(reply.result,undefined);
   assert.equal(setup.values.size,0);assert.equal(setup.transactions.length,0);
   assert.deepEqual(plain(reply.call.arguments.operations).map(operation=>operation.kind==="dispatch"?operation.data.kind:operation.kind),
-    ["write","save_schedule","save_handler"]);
+    ["write","save_handler","save_schedule"]);
   const callback=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
   assert.equal(callback.command.kind,"start_session");assert.equal(callback.completion,"turn");
+  assert.deepEqual(plain(callback.scope),{worktree:id(2),session:id(5)});
   assert.equal(callback.command.data.project,id(1));assert.equal(callback.command.data.worktree,id(2));
   assert.equal(reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.queue,"default");
   assert.ok(setup.requests.every(request=>request.data?.action?.kind!=="list_queues"));
@@ -99,6 +100,7 @@ test("stored team metadata permits reads and task updates",async()=>{
   assert.deepEqual(plain(operation.data.value.team),{id:id(20),revision:null});
   const callback=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
   assert.deepEqual(plain(callback.command.data.team),{id:id(20),revision:null});
+  assert.deepEqual(plain(callback.scope),{worktree:id(2),session:id(5)});
 });
 
 test("captured display uses shared summary and localized action-target approval templates",async()=>{
@@ -153,8 +155,19 @@ test("project and unassigned tools do not list or mutate another scope",async()=
   assert.equal(setup.turn().worktree,null);
   assert.deepEqual(plain((await setup.plan({action:"list"})).result.items).map(item=>item.id),[global.id]);
   const reply=await setup.plan({action:"create",name:"Global",prompt:"Review",enabled:false,timing:{kind:"once",data:{at_ms:Date.now()+3_600_000}}});
+  const callback=reply.call.arguments.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
+  assert.deepEqual(plain(callback.scope),{worktree:id(2),session:id(5)});
+  assert.equal(callback.command.data.project,null);assert.equal(callback.command.data.worktree,null);
   const saved=(await setup.commit(reply)).result;
   assert.equal(saved.project,null);assert.equal(saved.worktree,null);
+});
+
+test("Node-wide management retains its unscoped callback authority",async()=>{
+  const setup=await fixture();
+  setup.worktree=null;setup.contextSession=null;
+  const pending=await setup.api.saveOperations({...setup.task(11),project:null,worktree:null,revision:"0"});
+  const callback=pending.operations.find(operation=>operation.data.kind==="save_handler").data.data.callback;
+  assert.deepEqual(plain(callback.scope),{worktree:null,session:null});
 });
 
 test("strict arguments and stale revisions fail before a mutation is prepared",async()=>{

@@ -12,8 +12,8 @@ export async function fixture(project=id(1)) {
   let turn=null, call=id(10);
   const setup={config,session:{config},execution:{execution:"team",team:null,models:{}},teams:[{id:id(20),name:"Reviewers",revision:"7"}],
     values,schedules,handlers,requests,transactions,
-    project,worktree:id(2),nextCall(value){call=value;},turn(){return turn;}};
-  const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,worktree:setup.worktree}),
+    project,worktree:id(2),contextSession:id(5),nextCall(value){call=value;},turn(){return turn;}};
+  const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,worktree:setup.worktree,session:setup.contextSession}),
     callId:()=>call,readSession:async()=>plain(setup.session),readTurnState:()=>turn,stageTurnState:value=>{turn=plain(value);},
     getValue:async key=>plain(values.get(key)??{revision:"0",present:false,value:null}),
     listKeys:async(prefix,after,limit)=>{
