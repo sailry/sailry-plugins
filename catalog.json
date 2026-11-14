@@ -19692,7 +19692,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20414,6 +20414,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "edd7dbe019027eb52789f36d00e3e01b3d752e09",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Choose the model and its effort in one picker",
+            "locales": {
+              "zh-CN": "- 在同一个选择器中选择模型及其强度",
+              "zh-TW": "- 在同一個選擇器中選擇模型及其強度",
+              "ja": "- モデルと推論強度を1つのピッカーで選択",
+              "ko": "- 하나의 선택기에서 모델과 강도 선택",
+              "fr": "- Choisir le modèle et son niveau dans un seul sélecteur",
+              "de": "- Modell und Stufe in einer Auswahl wählen",
+              "es": "- Elige el modelo y su nivel en un solo selector",
+              "pt-BR": "- Escolha o modelo e o nível em um só seletor",
+              "ru": "- Модель и уровень выбираются в одном списке"
+            }
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "min_sailry_version": "0.1.6",
@@ -20564,17 +20583,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Choose the model and its effort in one picker",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 在同一个选择器中选择模型及其强度",
+          "zh-TW": "- 在同一個選擇器中選擇模型及其強度",
+          "ja": "- モデルと推論強度を1つのピッカーで選択",
+          "ko": "- 하나의 선택기에서 모델과 강도 선택",
+          "fr": "- Choisir le modèle et son niveau dans un seul sélecteur",
+          "de": "- Modell und Stufe in einer Auswahl wählen",
+          "es": "- Elige el modelo y su nivel en un solo selector",
+          "pt-BR": "- Escolha o modelo e o nível em um só seletor",
+          "ru": "- Модель и уровень выбираются в одном списке"
         }
       }
     },
@@ -22844,7 +22863,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "web-search",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22970,6 +22989,25 @@
         "models.read"
       ],
       "versions": [
+        {
+          "version": "0.1.20",
+          "commit": "fb6be8b65893fc7bc46edba5073586882463fb15",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Choose the search model in the shared model picker",
+            "locales": {
+              "zh-CN": "- 使用统一的模型选择器选择搜索模型",
+              "zh-TW": "- 使用統一的模型選擇器選擇搜尋模型",
+              "ja": "- 共通のモデルピッカーで検索モデルを選択",
+              "ko": "- 공용 모델 선택기로 검색 모델 선택",
+              "fr": "- Choisir le modèle de recherche dans le sélecteur de modèles commun",
+              "de": "- Suchmodell in der gemeinsamen Modellauswahl wählen",
+              "es": "- Elige el modelo de búsqueda en el selector de modelos común",
+              "pt-BR": "- Escolha o modelo de busca no seletor de modelos comum",
+              "ru": "- Модель поиска выбирается в общем списке моделей"
+            }
+          }
+        },
         {
           "version": "0.1.19",
           "commit": "8c441dfa79ba483435ffecf520ee910b9838fe61",
@@ -23254,17 +23292,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove the retry bar during service tests and keep settings usable after test failures",
+        "text": "- Choose the search model in the shared model picker",
         "locales": {
-          "zh-CN": "- 移除服务测试时的重试横条，测试失败后仍可继续操作设置",
-          "zh-TW": "- 移除服務測試時的重試橫條，測試失敗後仍可繼續操作設定",
-          "ja": "- サービステスト中の再試行バーを削除し、テスト失敗後も設定を操作可能に",
-          "ko": "- 서비스 테스트 중 재시도 표시줄을 제거하고 테스트 실패 후에도 설정을 사용할 수 있도록 수정",
-          "fr": "- Supprimer la barre de nouvelle tentative pendant les tests de services et garder les paramètres accessibles en cas d’échec",
-          "de": "- Wiederholungsleiste bei Diensttests entfernen und Einstellungen nach fehlgeschlagenen Tests bedienbar halten",
-          "es": "- Quitar la barra de reintento durante las pruebas de servicios y mantener los ajustes disponibles si fallan",
-          "pt-BR": "- Remover a barra de nova tentativa durante os testes de serviços e manter as configurações acessíveis após falhas",
-          "ru": "- Убрана панель повтора при проверке сервисов; настройки остаются доступными после ошибок проверки"
+          "zh-CN": "- 使用统一的模型选择器选择搜索模型",
+          "zh-TW": "- 使用統一的模型選擇器選擇搜尋模型",
+          "ja": "- 共通のモデルピッカーで検索モデルを選択",
+          "ko": "- 공용 모델 선택기로 검색 모델 선택",
+          "fr": "- Choisir le modèle de recherche dans le sélecteur de modèles commun",
+          "de": "- Suchmodell in der gemeinsamen Modellauswahl wählen",
+          "es": "- Elige el modelo de búsqueda en el selector de modelos común",
+          "pt-BR": "- Escolha o modelo de busca no seletor de modelos comum",
+          "ru": "- Модель поиска выбирается в общем списке моделей"
         }
       }
     },
