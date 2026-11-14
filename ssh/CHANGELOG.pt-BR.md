@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas
+
 ## 0.1.27
 
 - O painel de arquivos remotos ganha um cabeçalho com caminho, edição e atualização, e mostra no painel o carregamento, pastas vazias e falhas de leitura

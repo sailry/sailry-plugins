@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Den primären SSH-Host als Standard verwenden und weitere gespeicherte Verbindungen nutzen, erstellen und bearbeiten
+
 ## 0.1.27
 
 - Das Remote-Dateibedienfeld erhält eine Kopfzeile mit Pfad, Bearbeiten und Aktualisieren; Laden, leere und fehlgeschlagene Ordner erscheinen im Bedienfeld

@@ -4,10 +4,13 @@ export {connections,save,saved} from './connections.js';
 
 export function initialize({tools,connections,resources}) {
   const profiles = connections.ssh;
+  const primary = connections.bound?.kind === 'ssh' && profiles.some(profile=>profile.id === connections.bound.id)
+    ? connections.bound.id : null;
   stageTurnState({connections:profiles.map(profile=>profile.id),names:Object.fromEntries(profiles.map(profile=>[profile.id,profile.name]))});
   const selected = tools;
-  return {tools:selected,instruction:'',
-    parameters:Object.fromEntries(selected.map(name=>[name,parameters(name,profiles)]))};
+  return {tools:selected,instruction:primary
+    ? `The primary SSH connection is ${primary}. Use it by default unless the user requests another saved connection; it does not restrict other SSH operations.` : '',
+    parameters:Object.fromEntries(selected.map(name=>[name,parameters(name,profiles,primary)]))};
 }
 const invalid = () => ({isError:true,error:{code:'invalid_request',message:'Invalid SSH tool arguments'}});
 function target(args,fields) {

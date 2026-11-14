@@ -27,11 +27,35 @@ test('binds the saved target and package workspace guidance',async()=>{
   assert.equal(result.parameters.ssh_run.properties.connection.enum,undefined);
   assert.match(created,new RegExp(result.parameters.ssh_run.properties.connection.pattern));
   assert.equal(result.parameters.ssh_run.properties.connection.description,'[["a","Work host"]]');
-  assert.equal(result.instruction,'');
+  assert.equal(result.parameters.ssh_run.properties.connection.default,'a');
+  assert.match(result.instruction,/primary SSH connection is a/);
+  assert.match(result.instruction,/does not restrict other SSH operations/);
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   assert.ok(manifest.extensions['dev.sailry.platform'].desktop.conversations[0].context.includes('SSH workspace assistant'));
-  assert.equal(api.initialize({tools,resources:false,connections}).instruction,'');
+  assert.match(api.initialize({tools,resources:false,connections}).instruction,/primary SSH connection is a/);
   assert.equal(api.initialize({tools,resources:true,connections:{...connections,bound:null}}).instruction,'');
+});
+
+test('primary defaults retain every captured SSH target',async()=>{
+  const api=await fixture();
+  const profiles=[{id:created,name:'Primary host'},{id:other,name:'Other private host'}];
+  const initialized=api.initialize({tools:[...tools,...management],connections:{bound:{kind:'ssh',id:created},ssh:profiles,databases:[]}});
+  for(const name of tools) {
+    assert.equal(initialized.parameters[name].properties.connection.default,created);
+    assert.equal(initialized.parameters[name].properties.connection.description,JSON.stringify(profiles.map(profile=>[profile.id,profile.name])));
+  }
+  assert.equal(initialized.parameters.ssh_save_connection.properties.connection.default,undefined);
+  assert.equal(api.run({connection:other,command:'uname -a'}).connection,other);
+  assert.equal(api.transfer({connection:other,path:'local.txt',remote_path:'/tmp/remote.txt',direction:'upload'}).connection,other);
+  assert.deepEqual(plain(api.save({connection:other,expected_revision:1,name:'Renamed'})),{connection:other,expected_revision:1,name:'Renamed'});
+  assert.equal(api.save({name:'Third',host:'third.example',port:22,username:'user',authentication:'agent'}).isError,undefined);
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const context=manifest.extensions['dev.sailry.platform'].desktop.conversations[0].context;
+  assert.match(context,/default target and conversation association/);
+  assert.match(context,/inspect, use, create and edit/);
+  assert.doesNotMatch(context,/Work only on the saved SSH connection|Never bypass host-key verification, access another connection/);
+  const preview=manifest.extensions['dev.sailry.platform'].tools.find(tool=>tool.name==='ssh_save_connection').display.output.preview;
+  for(const part of preview.parts) assert.deepEqual(part.when,{all:[{value:{source:'result',path:'/kind'},equals:'ssh_profile'}]});
 });
 
 test('keeps command text, enforces target and timeout, and never accepts caller credentials',async()=>{

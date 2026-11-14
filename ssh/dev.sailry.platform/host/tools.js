@@ -1,9 +1,10 @@
 // Dynamic schemas retain captured connection choices; declarations live in plugin.json.
-export function parameters(name,profiles) {
+export function parameters(name,profiles,primary) {
   if (name === 'ssh_connections') return {type:'object',properties:{},required:[],additionalProperties:false};
   if (name === 'ssh_save_connection') return saveParameters();
   const choices = profiles.map(profile=>[profile.id,profile.name]);
   const properties = {connection:{type:'string',pattern:uuid,description:JSON.stringify(choices)}};
+  if (primary) properties.connection.default = primary;
   const required = ['connection'];
   if (name === 'ssh_run') {
     properties.command={type:'string'};

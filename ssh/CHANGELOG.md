@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Treat the primary SSH host as the default while allowing the assistant to use, create and edit other saved connections
+
 ## 0.1.27
 
 - Give the remote file panel a header with its path, edit and refresh, and show loading, empty and failed folders in the panel

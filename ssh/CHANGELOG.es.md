@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Usar el host SSH principal por defecto y permitir usar, crear y editar otras conexiones guardadas
+
 ## 0.1.27
 
 - El panel de archivos remotos tiene un encabezado con la ruta, editar y actualizar, y muestra en el panel la carga, las carpetas vacías y los errores de lectura

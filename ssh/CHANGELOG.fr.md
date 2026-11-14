@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.28
+
+- Utiliser la connexion SSH principale par défaut et autoriser les autres connexions enregistrées, leur création et leur modification
+
 ## 0.1.27
 
 - Le panneau des fichiers distants a un en-tête avec le chemin, la modification et l’actualisation, et affiche le chargement, les dossiers vides et les échecs de lecture dans le panneau

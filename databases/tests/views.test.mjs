@@ -31,7 +31,7 @@ async function fixture(packageName) {
   const native=type=>({new:(id,props)=>element(type,id,props)});
   const source=(await readFile(new URL(`../../${packageName}/dev.sailry.platform/desktop/view.js`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
-  const names=['Button','Icon','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
+  const names=['Button','Icon','Spinner','Pagination','Tab','TabBar','Resizable','ResizablePanel','DropdownMenu','VForm','Field','Progress'];
   const constructors=Object.fromEntries(names.map(name=>[name,function(id){return element(name,id);}]))
   const globals=Object.fromEntries(['Workspace','PanelHeader','PathBar','Header','EmptyState','Loading','InputSurface','Picker','SelectableRow','IconButton','SelectField','Tooltip','ResourceTree','DataTable','Modal','NativeContextMenu','Conversation','Terminal','TextField','ActionScope'].map(name=>[name,native(name)]));
   const functions=vm.runInNewContext(`${source}\n({picker,landing,render${packageName==='databases'?',log,results,sqlEditor,sqlFooter,historyPanel':''}})`,{
@@ -257,12 +257,16 @@ test('SSH Files native context and tree fill navigation height using flex column
   assert.equal(setup.nodes.get('ssh-files-edit-path').type,'IconButton');
   assert.equal(setup.nodes.get('ssh-files').props.guides,true);
   assert.ok(body);
-  for(const method of ['v_flex','flex_1','min_h_0','min_w_0','p_2'])assert.deepEqual(plain(body.style[method]),[]);
-  assert.equal(body.nodes[0].nodes[0].selector,'ssh-files');
+  for(const method of ['v_flex','flex_1','min_h_0','min_w_0'])assert.deepEqual(plain(body.style[method]),[]);
+  const tree=body.nodes[0].nodes[0];
+  for(const method of ['flex_1','min_h_0','p_2'])assert.deepEqual(plain(tree.style[method]),[]);
+  assert.equal(tree.nodes[0].selector,'ssh-files');
+  assert.equal(panel.nodes[0].selector,'ssh-files-path');
+  assert.equal(panel.nodes[0].type,'PanelHeader');
   assert.equal(setup.nodes.get('ssh-workspace').nodes[2],panel);
 });
 
-test('empty SSH directories fill their viewport without cards',async()=>{
+test('SSH directory states fill their viewport without cards',async()=>{
   for(const state of ['empty','pending','failed','unloaded']) {
     const setup=await fixture('ssh'),owner=view('ssh',profiles);
     owner.terminals=[{id:'active',ssh:'first'}];owner.terminal='active';owner.jobs=[];
@@ -277,9 +281,19 @@ test('empty SSH directories fill their viewport without cards',async()=>{
     assert.deepEqual(plain(context.props.items),[{id:'refresh',label:'Refresh',enabled:true}]);
     assert.equal(setup.nodes.get('ssh-workspace').nodes[2],panel);
     assert.equal(setup.nodes.has('ssh-files-empty'),false);
-    assert.equal(context.nodes[0].selector,'ssh-files');
-    assert.equal(context.nodes[0].props.guides,true);
-    assert.deepEqual(JSON.parse(context.nodes[0].props.items),items,'directory states stay in the tree viewport');
+    const expected=state==='empty'?'files_directory_empty':state==='failed'?'ssh_files_failed':'ssh-files-loading';
+    assert.equal(context.nodes[0].selector,expected);
+    assert.equal(setup.nodes.has('ssh-files'),false,'empty and unavailable states replace the tree');
+    if(state==='empty'||state==='failed')assert.deepEqual(plain(context.nodes[0].props),{
+      variant:'list',fill_height:true,icon:'folder',label:expected,
+    });
+    else {
+      for(const method of ['flex_1','h_flex','items_center','justify_center'])assert.deepEqual(plain(context.nodes[0].style[method]),[]);
+      assert.equal(context.nodes[0].nodes[0].type,'Spinner');
+    }
+    assert.equal(setup.nodes.has('ssh-files-retry'),state==='failed');
+    assert.equal(setup.nodes.has('ssh-files-busy'),state==='pending');
+    assert.equal(panel.nodes[0].selector,'ssh-files-path');
     assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
   }
 });
