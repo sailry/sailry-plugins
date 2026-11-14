@@ -6233,7 +6233,7 @@
       "versions": [
         {
           "version": "0.1.23",
-          "commit": "56e9c90a371044f52b36907e5f236f4419cbea4b",
+          "commit": "6effb7c61aa04f53eac989d6f28bf8181c1c1b67",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Keep primary-key discovery pending so another query cannot replace its request or results.",
@@ -20825,7 +20825,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.27",
+        "version": "0.1.28",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21549,42 +21549,141 @@
                           "value": {
                             "source": "result",
                             "path": "/data/name"
+                          },
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
                           }
                         },
                         {
-                          "text": "\n"
+                          "text": "\n",
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
+                          }
                         },
                         {
                           "value": {
                             "source": "result",
                             "path": "/data/username"
+                          },
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
                           }
                         },
                         {
-                          "text": "@"
+                          "text": "@",
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
+                          }
                         },
                         {
                           "value": {
                             "source": "result",
                             "path": "/data/host"
+                          },
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
                           }
                         },
                         {
-                          "text": ":"
+                          "text": ":",
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
+                          }
                         },
                         {
                           "value": {
                             "source": "result",
                             "path": "/data/port"
+                          },
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
                           }
                         },
                         {
-                          "text": "\n"
+                          "text": "\n",
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
+                          }
                         },
                         {
                           "value": {
                             "source": "result",
                             "path": "/data/authentication"
+                          },
+                          "when": {
+                            "all": [
+                              {
+                                "value": {
+                                  "source": "result",
+                                  "path": "/kind"
+                                },
+                                "equals": "ssh_profile"
+                              }
+                            ]
                           }
                         }
                       ]
@@ -21640,11 +21739,11 @@
                       "name": "ssh_save_connection"
                     }
                   ],
-                  "context": "You are the SSH workspace assistant. Work only on the saved SSH connection exposed by your tools. Help inspect the remote system, diagnose issues, run requested commands, and transfer files. Establish the remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never bypass host-key verification, access another connection, or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context. Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
+                  "context": "You are the SSH workspace assistant. The primary SSH connection is the default target and conversation association; it does not restrict other SSH operations. Use it unless the user requests another connection. You may inspect, use, create and edit the saved SSH connections available on the execution Node. Help inspect remote systems, diagnose issues, run requested commands, and transfer files. Establish the selected host's remote OS, working directory, and relevant state before choosing commands; do not assume they match the desktop or another host. Use ssh_run for commands and ssh_transfer for transfers. Local transfer paths are relative to this session's project worktree, while remote paths belong to the selected SSH host. The runtime applies the session permission policy to each command and transfer: invoke the actual tool without asking for redundant permission in chat. Keep commands focused, bound output, and prefer inspection before changes. Clarify ambiguous targets with ask_user. Never bypass host-key verification or claim a transfer succeeded without tool evidence. Do not automatically repeat interrupted or uncertain commands. Explain results concisely in the user's language. Use compact only to manage conversation context. Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key."
                 }
               ]
             },
-            "instructions": "Use ssh_connections to inspect saved public profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key.",
+            "instructions": "Use ssh_connections to inspect saved profiles and their revisions. When asked to add or edit a connection, use ssh_save_connection with the chosen authentication and explicitly supplied credentials. Omit credentials to retain them; never read or echo saved credentials. Use the returned ID in this turn; the user must confirm the exact first host fingerprint through the runtime approval. Never provide or auto-trust a host key.",
             "category": "development",
             "tint": "blue"
           }
@@ -21660,6 +21759,25 @@
         "projects.read"
       ],
       "versions": [
+        {
+          "version": "0.1.28",
+          "commit": "6effb7c61aa04f53eac989d6f28bf8181c1c1b67",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Treat the primary SSH host as the default while allowing the assistant to use, create and edit other saved connections",
+            "locales": {
+              "zh-CN": "- 主 SSH 仅作为默认主机，助手可使用、创建和编辑其他已保存连接",
+              "zh-TW": "- 主要 SSH 僅作為預設主機，助理可使用、建立和編輯其他已儲存連線",
+              "ja": "- 主な SSH 接続を既定の接続として扱い、ほかの保存済み接続の使用、作成、編集にも対応",
+              "ko": "- 기본 SSH 호스트를 유지하면서 다른 저장된 연결의 사용, 생성 및 편집 지원",
+              "fr": "- Utiliser la connexion SSH principale par défaut et autoriser les autres connexions enregistrées, leur création et leur modification",
+              "de": "- Den primären SSH-Host als Standard verwenden und weitere gespeicherte Verbindungen nutzen, erstellen und bearbeiten",
+              "es": "- Usar el host SSH principal por defecto y permitir usar, crear y editar otras conexiones guardadas",
+              "pt-BR": "- Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas",
+              "ru": "- Использовать основной SSH-хост по умолчанию и разрешить работу с другими сохранёнными подключениями, их создание и изменение"
+            }
+          }
+        },
         {
           "version": "0.1.27",
           "commit": "4ca21f7a8d6923b57a582886b5f133a5817616f4",
@@ -21957,17 +22075,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Give the remote file panel a header with its path, edit and refresh, and show loading, empty and failed folders in the panel",
+        "text": "- Treat the primary SSH host as the default while allowing the assistant to use, create and edit other saved connections",
         "locales": {
-          "zh-CN": "- 远程文件面板使用统一标题栏，含路径、编辑和刷新；加载、空文件夹和读取失败直接显示在面板中",
-          "zh-TW": "- 遠端檔案面板使用統一標題列，含路徑、編輯和重新整理；載入、空資料夾和讀取失敗直接顯示在面板中",
-          "ja": "- リモートファイルパネルにパス、編集、更新を備えたヘッダーを追加し、読み込み中・空のフォルダー・読み込み失敗をパネル内に表示",
-          "ko": "- 원격 파일 패널에 경로, 편집, 새로 고침이 있는 헤더를 추가하고 로딩, 빈 폴더, 읽기 실패를 패널에 표시",
-          "fr": "- Le panneau des fichiers distants a un en-tête avec le chemin, la modification et l’actualisation, et affiche le chargement, les dossiers vides et les échecs de lecture dans le panneau",
-          "de": "- Das Remote-Dateibedienfeld erhält eine Kopfzeile mit Pfad, Bearbeiten und Aktualisieren; Laden, leere und fehlgeschlagene Ordner erscheinen im Bedienfeld",
-          "es": "- El panel de archivos remotos tiene un encabezado con la ruta, editar y actualizar, y muestra en el panel la carga, las carpetas vacías y los errores de lectura",
-          "pt-BR": "- O painel de arquivos remotos ganha um cabeçalho com caminho, edição e atualização, e mostra no painel o carregamento, pastas vazias e falhas de leitura",
-          "ru": "- Панель удалённых файлов получает заголовок с путём, правкой и обновлением, а загрузка, пустые папки и ошибки чтения показываются в панели"
+          "zh-CN": "- 主 SSH 仅作为默认主机，助手可使用、创建和编辑其他已保存连接",
+          "zh-TW": "- 主要 SSH 僅作為預設主機，助理可使用、建立和編輯其他已儲存連線",
+          "ja": "- 主な SSH 接続を既定の接続として扱い、ほかの保存済み接続の使用、作成、編集にも対応",
+          "ko": "- 기본 SSH 호스트를 유지하면서 다른 저장된 연결의 사용, 생성 및 편집 지원",
+          "fr": "- Utiliser la connexion SSH principale par défaut et autoriser les autres connexions enregistrées, leur création et leur modification",
+          "de": "- Den primären SSH-Host als Standard verwenden und weitere gespeicherte Verbindungen nutzen, erstellen und bearbeiten",
+          "es": "- Usar el host SSH principal por defecto y permitir usar, crear y editar otras conexiones guardadas",
+          "pt-BR": "- Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas",
+          "ru": "- Использовать основной SSH-хост по умолчанию и разрешить работу с другими сохранёнными подключениями, их создание и изменение"
         }
       }
     },
