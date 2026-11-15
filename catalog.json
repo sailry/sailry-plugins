@@ -19004,7 +19004,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.14",
+        "version": "0.1.15",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19424,6 +19424,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.15",
+          "commit": "9513f99d228b8519773326699d633ef0619b536f",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Keep the card border on rows that are not open in the details panel"
+          }
+        },
+        {
           "version": "0.1.14",
           "commit": "742617407a21f20e9b031e2dab94d28cc9a431af",
           "min_sailry_version": "0.1.6",
@@ -19563,7 +19571,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Preserve the originating conversation scope when scheduling reminders\n- Register notification handlers before their schedules in the same transaction"
+        "text": "- Keep the card border on rows that are not open in the details panel"
       }
     },
     {
@@ -19719,7 +19727,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20441,6 +20449,14 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "9513f99d228b8519773326699d633ef0619b536f",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Keep the card border on rows that are not open in the details panel"
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "3137fb8cf72ae3ceb18ca2a33f5533e99ed247bd",
           "min_sailry_version": "0.1.6",
@@ -20618,7 +20634,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep scheduled callbacks within their originating conversation's resource and permission scope"
+        "text": "- Keep the card border on rows that are not open in the details panel"
       }
     },
     {
