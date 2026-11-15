@@ -22113,7 +22113,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.32",
+        "version": "0.1.33",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22195,35 +22195,6 @@
                 },
                 "icon": "messages-square",
                 "order": 40
-              },
-              {
-                "id": "context_panel",
-                "slot": "header",
-                "kind": "popover",
-                "label": {
-                  "label": "Context",
-                  "locales": {
-                    "zh-CN": "上下文"
-                  }
-                },
-                "icon": "chart-pie",
-                "order": 20,
-                "handler": "context",
-                "width": 380,
-                "align": "end"
-              },
-              {
-                "id": "context",
-                "slot": "composer",
-                "kind": "indicator",
-                "label": {
-                  "label": "Context",
-                  "locales": {
-                    "zh-CN": "上下文"
-                  }
-                },
-                "align": "end",
-                "order": 90
               }
             ],
             "display": {
@@ -22247,9 +22218,6 @@
                 "dev.sailry.platform/desktop/breakdown.js",
                 "dev.sailry.platform/desktop/charts.js",
                 "dev.sailry.platform/desktop/composer.js",
-                "dev.sailry.platform/desktop/context.js",
-                "dev.sailry.platform/desktop/context_locales.js",
-                "dev.sailry.platform/desktop/context_view.js",
                 "dev.sailry.platform/desktop/format.js",
                 "dev.sailry.platform/desktop/locales.js",
                 "dev.sailry.platform/desktop/metrics.js",
@@ -22282,6 +22250,25 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.33",
+          "commit": "3461941977a8a21adcce2912daf62860722ac639",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Leave the context ring and its panel to the application, which now shows them in the composer",
+            "locales": {
+              "zh-CN": "- 上下文圆环及其面板改由应用在输入框中提供，本插件不再显示",
+              "zh-TW": "- 上下文圓環及其面板改由應用程式在輸入框中提供，本外掛不再顯示",
+              "ja": "- コンテキストのリングとパネルはアプリが入力欄に表示するため、本プラグインからは削除",
+              "ko": "- 컨텍스트 링과 패널은 이제 앱이 입력창에 표시하므로 이 플러그인에서 제거",
+              "fr": "- Retirer l'anneau et le panneau de contexte, désormais affichés par l'application dans la zone de saisie",
+              "de": "- Kontextring und -panel entfernt; die Anwendung zeigt sie nun im Eingabefeld",
+              "es": "- Quitar el anillo y el panel de contexto; ahora la aplicación los muestra en el editor",
+              "pt-BR": "- Remover o anel e o painel de contexto; agora o aplicativo os mostra no editor",
+              "ru": "- Убрать кольцо и панель контекста: теперь их показывает приложение в поле ввода"
+            }
+          }
+        },
         {
           "version": "0.1.32",
           "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
@@ -22651,17 +22638,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Shorten test labels without changing assertions",
+        "text": "- Leave the context ring and its panel to the application, which now shows them in the composer",
         "locales": {
-          "zh-CN": "- 缩短测试名称，保持断言不变",
-          "zh-TW": "- 縮短測試名稱，保持斷言不變",
-          "ja": "- アサーションを変更せずにテスト名を短縮",
-          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축",
-          "fr": "- Raccourcir les noms des tests sans modifier les assertions",
-          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern",
-          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones",
-          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
-          "ru": "- Сократить названия тестов без изменения проверок"
+          "zh-CN": "- 上下文圆环及其面板改由应用在输入框中提供，本插件不再显示",
+          "zh-TW": "- 上下文圓環及其面板改由應用程式在輸入框中提供，本外掛不再顯示",
+          "ja": "- コンテキストのリングとパネルはアプリが入力欄に表示するため、本プラグインからは削除",
+          "ko": "- 컨텍스트 링과 패널은 이제 앱이 입력창에 표시하므로 이 플러그인에서 제거",
+          "fr": "- Retirer l'anneau et le panneau de contexte, désormais affichés par l'application dans la zone de saisie",
+          "de": "- Kontextring und -panel entfernt; die Anwendung zeigt sie nun im Eingabefeld",
+          "es": "- Quitar el anillo y el panel de contexto; ahora la aplicación los muestra en el editor",
+          "pt-BR": "- Remover o anel e o painel de contexto; agora o aplicativo os mostra no editor",
+          "ru": "- Убрать кольцо и панель контекста: теперь их показывает приложение в поле ввода"
         }
       }
     },
