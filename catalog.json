@@ -20825,7 +20825,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.28",
+        "version": "0.1.29",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -21760,6 +21760,25 @@
       ],
       "versions": [
         {
+          "version": "0.1.29",
+          "commit": "268d1d0b6257a74de3cb464d603ff20e6d80bd0b",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Tidy the remote file header: click its blank space to edit the path, leave the field to cancel",
+            "locales": {
+              "zh-CN": "- 整理远程文件标题栏：点击空白处编辑路径，离开输入框即取消",
+              "zh-TW": "- 整理遠端檔案標題列：點擊空白處編輯路徑，離開輸入框即取消",
+              "ja": "- リモートファイルのヘッダーを整理：空白部分のクリックでパスを編集し、入力欄から離れると取り消し",
+              "ko": "- 원격 파일 헤더 정리: 빈 곳을 클릭하면 경로를 편집하고, 입력란을 벗어나면 취소",
+              "fr": "- En-tête des fichiers distants épuré : un clic dans l'espace vide modifie le chemin, quitter le champ annule",
+              "de": "- Kopfzeile der entfernten Dateien aufgeräumt: Klick auf freie Fläche bearbeitet den Pfad, Verlassen des Felds bricht ab",
+              "es": "- Encabezado de archivos remotos ordenado: un clic en el espacio libre edita la ruta y salir del campo cancela",
+              "pt-BR": "- Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela",
+              "ru": "- Заголовок удалённых файлов упрощён: щелчок по пустому месту открывает правку пути, уход из поля отменяет её"
+            }
+          }
+        },
+        {
           "version": "0.1.28",
           "commit": "6effb7c61aa04f53eac989d6f28bf8181c1c1b67",
           "min_sailry_version": "0.1.6",
@@ -22075,17 +22094,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Treat the primary SSH host as the default while allowing the assistant to use, create and edit other saved connections",
+        "text": "- Tidy the remote file header: click its blank space to edit the path, leave the field to cancel",
         "locales": {
-          "zh-CN": "- 主 SSH 仅作为默认主机，助手可使用、创建和编辑其他已保存连接",
-          "zh-TW": "- 主要 SSH 僅作為預設主機，助理可使用、建立和編輯其他已儲存連線",
-          "ja": "- 主な SSH 接続を既定の接続として扱い、ほかの保存済み接続の使用、作成、編集にも対応",
-          "ko": "- 기본 SSH 호스트를 유지하면서 다른 저장된 연결의 사용, 생성 및 편집 지원",
-          "fr": "- Utiliser la connexion SSH principale par défaut et autoriser les autres connexions enregistrées, leur création et leur modification",
-          "de": "- Den primären SSH-Host als Standard verwenden und weitere gespeicherte Verbindungen nutzen, erstellen und bearbeiten",
-          "es": "- Usar el host SSH principal por defecto y permitir usar, crear y editar otras conexiones guardadas",
-          "pt-BR": "- Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas",
-          "ru": "- Использовать основной SSH-хост по умолчанию и разрешить работу с другими сохранёнными подключениями, их создание и изменение"
+          "zh-CN": "- 整理远程文件标题栏：点击空白处编辑路径，离开输入框即取消",
+          "zh-TW": "- 整理遠端檔案標題列：點擊空白處編輯路徑，離開輸入框即取消",
+          "ja": "- リモートファイルのヘッダーを整理：空白部分のクリックでパスを編集し、入力欄から離れると取り消し",
+          "ko": "- 원격 파일 헤더 정리: 빈 곳을 클릭하면 경로를 편집하고, 입력란을 벗어나면 취소",
+          "fr": "- En-tête des fichiers distants épuré : un clic dans l'espace vide modifie le chemin, quitter le champ annule",
+          "de": "- Kopfzeile der entfernten Dateien aufgeräumt: Klick auf freie Fläche bearbeitet den Pfad, Verlassen des Felds bricht ab",
+          "es": "- Encabezado de archivos remotos ordenado: un clic en el espacio libre edita la ruta y salir del campo cancela",
+          "pt-BR": "- Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela",
+          "ru": "- Заголовок удалённых файлов упрощён: щелчок по пустому месту открывает правку пути, уход из поля отменяет её"
         }
       }
     },
