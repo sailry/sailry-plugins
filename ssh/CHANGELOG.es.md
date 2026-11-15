@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Encabezado de archivos remotos ordenado: un clic en el espacio libre edita la ruta y salir del campo cancela
+
 ## 0.1.28
 
 - Usar el host SSH principal por defecto y permitir usar, crear y editar otras conexiones guardadas

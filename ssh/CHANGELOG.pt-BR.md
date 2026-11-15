@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela
+
 ## 0.1.28
 
 - Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas

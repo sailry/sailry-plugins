@@ -95,7 +95,11 @@ test('files use breadcrumbs branches and keep transfers at the bottom',()=>{
     fileMenu:path=>[{id:`menu:${path}`,label:'Menu'}],jobs:[{id:'job',profile:'host',source:'source.txt',can_replace:true,can_cancel:true}]});
   setup.render();
   assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/','remote'],disabled:false});
-  assert.equal(setup.nodes.get('ssh-files-edit-path').props.label,messages('en').ssh_files_edit_path);
+  assert.equal(setup.nodes.has('ssh-files-edit-path'),false);
+  const row=setup.nodes.get('ssh-files-path-row');
+  assert.equal(setup.nodes.get('ssh-files-path').items[0],row,'the divider is the inner row border, inset by the header padding');
+  assert.deepEqual(plain(row.style.border_b_1),[]);assert.ok('border_color' in row.style);
+  let edits=0;setup.view.editPath=()=>edits++;row.style.on_click[0](null,{});assert.equal(edits,1,'a blank header click edits the path');
   const tree=setup.nodes.get('ssh-files').props;
   assert.equal(tree.variant,undefined);assert.equal(tree.guides,true);assert.equal(tree.open,'double');assert.equal(tree.external_files,true);assert.deepEqual(plain(tree.selected),files.selected);
   assert.deepEqual(JSON.parse(tree.items)[0].menu,[{id:'menu:/remote/a',label:'Menu'}]);
@@ -110,7 +114,8 @@ test('path editing keeps the manual input and hides its breadcrumb row controls'
   const setup=fixture(),profile={id:'host'},files={profile,pending:false,editing:true,selected:[],current:null,input:'path-field',segments:()=>[],items:()=>[]};
   Object.assign(setup.view,{loaded:true,terminals:[{id:'terminal',ssh:'host'}],terminal:'terminal',activeProfile:()=>profile,files:()=>files,fileMenu:()=>[]});
   setup.render();assert.equal(setup.nodes.get('path-field').kind,'TextField');assert.equal(setup.nodes.get('path-field').props.disabled,false);
-  assert.equal(setup.nodes.has('ssh-files-pathbar'),false);assert.equal(setup.nodes.has('ssh-files-edit-path'),false);
+  assert.equal(setup.nodes.has('ssh-files-pathbar'),false);assert.equal(setup.nodes.has('ssh-files-refresh'),false);
+  assert.equal('on_click' in setup.nodes.get('ssh-files-path-row').style,false,'clicks inside the editor stay with the field');
   files.pending=true;setup.render();assert.equal(setup.nodes.get('path-field').props.disabled,true);
 });
 

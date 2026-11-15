@@ -54,13 +54,17 @@ export default class Ssh extends View {
     if(event.id==='ssh-new'){if(!this.locked())this.edit(null,cx);return;}
     if(event.id===`ssh-worktree-${this.dialog}`){const transfer=this.transfer;if(transfer&&!this.locked()&&this.worktrees.some(tree=>tree.project&&tree.id===event.value)){transfer.worktree=event.value;cx.notify();}return;}
     if(event.id?.startsWith('ssh-open-')){const profile=this.profiles.find(profile=>event.id===`ssh-open-${profile.id}`);if(profile&&!this.connectionLocked(profile))this.run(cx=>this.open(profile,cx),cx);return;}
-    if(event.id==='ssh-files-edit-path'){const files=this.files();if(files&&!files.pending){files.editing=true;setText(files.input,files.path);focusText(files.input);cx.notify();}return;}
     if(event.id==='ssh-files-refresh'){const files=this.files();if(files&&!files.pending)this.run(cx=>files.load(files.path,cx),cx);return;}
     if(event.id==='ssh-files-pathbar'){const files=this.files(),segment=files?.segments()[event.value];if(files&&!files.pending&&Number.isInteger(event.value)&&segment)this.run(cx=>files.load(segment.path,cx),cx);return;}
     const editor=this.editor;if(!editor||this.locked()||describeSecret(editor.key).picking||event.id!==`ssh-authentication-${this.dialog}`)return;
     if(['password','private_key','key_path'].includes(event.value)){editor.authentication=event.value;cx.notify();}}
-  textEvent(event,cx){const files=this.files();if(files?.editing&&event.id===files.input&&event.kind==='enter'&&!files.pending){const path=readText(files.input);files.editing=false;this.run(cx=>files.load(path,cx),cx);}}
-  pathKey(event,cx){const files=this.files();if(event.key==='escape'&&files?.editing&&!files.pending){files.editing=false;setText(files.input,files.path);cx.stop_propagation();cx.notify();}}
+  editPath(cx){const files=this.files();if(files&&!files.editing&&!files.pending){files.editing=true;setText(files.input,files.path);focusText(files.input);cx.notify();}}
+  // Escape and leaving the field discard the typed path; only Enter loads it.
+  cancelPath(cx){const files=this.files();if(!files?.editing||files.pending)return false;files.editing=false;setText(files.input,files.path);cx.notify();return true;}
+  textEvent(event,cx){const files=this.files();if(!files?.editing||event.id!==files.input)return;
+    if(event.kind==='blur'){this.cancelPath(cx);return;}
+    if(event.kind==='enter'&&!files.pending){const path=readText(files.input);files.editing=false;this.run(cx=>files.load(path,cx),cx);}}
+  pathKey(event,cx){if(event.key==='escape'&&this.cancelPath(cx))cx.stop_propagation();}
   connections(cx){if(this.locked())return;this.picker=true;this.pickerProfile=null;this.pickerRevision++;cx.notify();}
   pick(event,cx){if(!this.picker||event.picker!==`ssh-picker-${this.pickerRevision}`)return;
     if(event.kind==='close'){this.picker=false;cx.notify();return;}if(this.locked()||event.kind!=='select')return;

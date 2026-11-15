@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Tidy the remote file header: click its blank space to edit the path, leave the field to cancel
+
 ## 0.1.28
 
 - Treat the primary SSH host as the default while allowing the assistant to use, create and edit other saved connections

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- Kopfzeile der entfernten Dateien aufgeräumt: Klick auf freie Fläche bearbeitet den Pfad, Verlassen des Felds bricht ab
+
 ## 0.1.28
 
 - Den primären SSH-Host als Standard verwenden und weitere gespeicherte Verbindungen nutzen, erstellen und bearbeiten

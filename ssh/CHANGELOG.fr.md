@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.29
+
+- En-tête des fichiers distants épuré : un clic dans l'espace vide modifie le chemin, quitter le champ annule
+
 ## 0.1.28
 
 - Utiliser la connexion SSH principale par défaut et autoriser les autres connexions enregistrées, leur création et leur modification

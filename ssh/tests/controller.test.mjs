@@ -548,16 +548,33 @@ test('overlapping settled closes retain each released terminal',async()=>{
 test('path editing commits Enter cancels Escape and navigates breadcrumbs',async()=>{
   const {view,cx,host,opened,focusedTexts,settle}=await browsing(),files=view.files();
   host.browse=async({path})=>({kind:'directory',path,entries:[],next:null});
-  files.path='/remote/start';view.control({id:'ssh-files-edit-path'},cx);
+  files.path='/remote/start';view.editPath(cx);
   assert.equal(files.editing,true);assert.deepEqual(focusedTexts,[files.input]);
   files.input='/manual/path';view.textEvent({id:files.input,kind:'enter'},cx);await settle();
   assert.equal(files.path,'/manual/path');assert.equal(files.editing,false);assert.equal(opened.at(-1).path,'/manual/path');
-  view.control({id:'ssh-files-edit-path'},cx);const count=opened.length;let stopped=false;
+  view.editPath(cx);const count=opened.length;let stopped=false;
   view.pathKey({key:'escape'},{...cx,stop_propagation(){stopped=true;}});
   assert.equal(files.editing,false);assert.equal(stopped,true);assert.equal(opened.length,count);
+  stopped=false;view.pathKey({key:'escape'},{...cx,stop_propagation(){stopped=true;}});assert.equal(stopped,false,'Escape outside editing passes on');
   view.control({id:'ssh-files-pathbar',value:1},cx);await settle();assert.equal(opened.at(-1).path,'/manual');
   view.control({id:'ssh-files-pathbar',value:0},cx);await settle();assert.equal(opened.at(-1).path,'/');
   const before=opened.length;view.control({id:'ssh-files-pathbar',value:12},cx);await settle();assert.equal(opened.length,before);
+  assert.equal(files.editing,false,'segment clicks do not open the editor');
+});
+
+test('blank header clicks edit the path and blur cancels it',async()=>{
+  const {view,cx,host,opened,texts,focusedTexts,settle}=await browsing(),files=view.files();
+  host.browse=async({path})=>({kind:'directory',path,entries:[],next:null});
+  files.path='/remote/start';view.editPath(cx);
+  assert.equal(files.editing,true);assert.deepEqual(focusedTexts,[files.input]);
+  assert.deepEqual(texts.at(-1),['set',files.input,'/remote/start']);
+  const count=opened.length;
+  view.textEvent({id:'other-field',kind:'blur'},cx);assert.equal(files.editing,true,'another field blurring keeps editing');
+  view.textEvent({id:files.input,kind:'blur'},cx);await settle();
+  assert.equal(files.editing,false);assert.equal(opened.length,count,'blur loads nothing');
+  assert.deepEqual(texts.at(-1),['set',files.input,'/remote/start']);
+  view.textEvent({id:files.input,kind:'enter'},cx);await settle();assert.equal(opened.length,count,'Enter after cancelling loads nothing');
+  files.pending=true;view.editPath(cx);assert.equal(files.editing,false,'a pending load keeps the breadcrumb');
 });
 
 test('tree expansion pagination and retries preserve the workspace root',async()=>{
