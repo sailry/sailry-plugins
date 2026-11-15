@@ -249,12 +249,15 @@ test('SSH assistants use active profiles rather than selected saved connections'
 test('SSH Files native context and tree fill navigation height using flex columns',async()=>{
   const setup=await fixture('ssh'),owner=view('ssh',profiles);
   owner.terminals=[{id:'active',ssh:'first'}];owner.terminal='active';owner.jobs=[];owner.fileMenu=()=>[];
+  const edits=[];owner.editPath=cx=>edits.push(cx);
   owner.files=()=>({input:'path-input',path:'/',segments:()=>[{label:'/',path:'/'}],pending:false,profile:profiles[0],entries:[{name:'fixture.txt',kind:'file'}],selected:[],current:null,items:()=>[]});
   setup.functions.render(owner);
   const panel=setup.nodes.get('ssh-files-panel'),body=panel.nodes.find(node=>node.nodes?.[0]?.selector==='ssh-files-root');
   assert.equal(setup.nodes.has('ssh-files-header'),false);assert.equal(setup.nodes.has('ssh-files-parent'),false);
-  assert.deepEqual(plain(setup.nodes.get('ssh-files-pathbar').props),{segments:['/'],disabled:false});
-  assert.equal(setup.nodes.get('ssh-files-edit-path').type,'IconButton');
+  const pathbar=setup.nodes.get('ssh-files-pathbar');
+  assert.equal(pathbar.type,'PathBar');
+  assert.deepEqual(plain(pathbar.props),{segments:['/'],disabled:false});
+  assert.equal(setup.nodes.has('ssh-files-edit-path'),false);
   assert.equal(setup.nodes.get('ssh-files').props.guides,true);
   assert.ok(body);
   for(const method of ['v_flex','flex_1','min_h_0','min_w_0'])assert.deepEqual(plain(body.style[method]),[]);
@@ -264,6 +267,9 @@ test('SSH Files native context and tree fill navigation height using flex column
   assert.equal(panel.nodes[0].selector,'ssh-files-path');
   assert.equal(panel.nodes[0].type,'PanelHeader');
   assert.equal(setup.nodes.get('ssh-workspace').nodes[2],panel);
+  setup.layout();setup.click('ssh-files-path-row');
+  assert.equal(edits.length,1,'the path header opens its editor once');
+  assert.equal(edits[0],setup.cx,'the path editor receives the event context');
 });
 
 test('SSH directory states fill their viewport without cards',async()=>{
