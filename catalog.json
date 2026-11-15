@@ -6233,7 +6233,7 @@
       "versions": [
         {
           "version": "0.1.23",
-          "commit": "6effb7c61aa04f53eac989d6f28bf8181c1c1b67",
+          "commit": "b1628e27da83ed70a84d92c7fe2383aee321a0bd",
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Keep primary-key discovery pending so another query cannot replace its request or results.",
