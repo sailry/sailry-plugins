@@ -1,18 +1,15 @@
-import {View} from 'gpui-kit';
+import {View,div} from 'gpui-kit';
 import {context} from 'sailry';
 import {publishContributions} from 'sailry/sdk';
-import {readComposer,nextComposerChange,revealComposerEntry,toast} from 'sailry/ui';
+import {readComposer,nextComposerChange} from 'sailry/ui';
 import {messages} from './locales.js';
 import {metrics} from './metrics.js';
-import {history} from './context.js';
-import {render} from './context_view.js';
 
+/** Publishes the composer's figures; the context meter is the application's. */
 export default class Composer extends View {
   init(_props,cx) {
     this.text=messages(JSON.parse(context()).locale);
     this.state=readComposer();
-    this.expanded=new Set();
-    this.selected=null;
     this.publish();
     cx.spawn(async cx=>{
       try {while(true) {
@@ -21,21 +18,6 @@ export default class Composer extends View {
       }} catch (_) { /* The captured composer owns the observation lifetime. */ }
     });
   }
-  toggle(id) {
-    if(this.expanded.has(id)) this.expanded.delete(id);
-    else this.expanded.add(id);
-  }
-  select(id) {
-    this.selected=this.selected===id || !history(this.state.statistics).some(item=>item.id===id)?null:id;
-    this.expanded.add('occupancy');
-  }
-  publish() {
-    if(this.selected!=null && !history(this.state.statistics).some(item=>item.id===this.selected))this.selected=null;
-    publishContributions(metrics(this.state,this.text));
-  }
-  reveal(target) {
-    try {revealComposerEntry(target);}
-    catch (_) {toast({id:'context-reveal',kind:'error',message:this.text.context_reveal_failed});}
-  }
-  render() {return render(this);}
+  publish() {publishContributions(metrics(this.state,this.text));}
+  render() {return div();}
 }

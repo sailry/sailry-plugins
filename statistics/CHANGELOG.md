@@ -1,3 +1,7 @@
+## 0.1.33
+
+- Leave the context ring and its panel to the application, which now shows them in the composer
+
 ## 0.1.32
 
 - Shorten test labels without changing assertions

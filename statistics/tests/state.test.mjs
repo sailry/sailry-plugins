@@ -5,21 +5,6 @@ import {State,query,choices,nodeId,unit,offset} from '../dev.sailry.platform/des
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('context pairs each observation with its captured limit',()=>{
-  const state={has_messages:true,context_limit:1_000,statistics:{context_tokens:'100',context_limit:200}};
-  const measured=()=>metrics(state,text).find(value=>value.id==='context').value;
-  const before=structuredClone(state);
-  assert.equal(measured().percent,50);
-  assert.equal(measured().hint,text.composer_context_usage.replace('%{used}','100').replace('%{limit}','200'));
-  state.context_limit=2_000;
-  assert.equal(measured().percent,50);
-  delete state.statistics.context_limit;
-  assert.equal(measured().percent,null);
-  assert.equal(measured().hint,'0');
-  state.statistics={context_tokens:'500',context_limit:1_000};
-  assert.equal(measured().percent,50);
-  assert.deepEqual(before.statistics,{context_tokens:'100',context_limit:200});
-});
 test('speed details use latest own time to first token',()=>{
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
@@ -97,15 +82,15 @@ test('filter reads retain prior reports until current data arrives',()=>{
     assert.equal(state.data(),replacement);assert(state.ready());
   }
 });
-test('composer preserves unknown measurements and context thresholds',()=>{
+test('composer preserves unknown measurements',()=>{
   const state={has_messages:true},before=structuredClone(state),unknown=metrics(state,text);
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.details.map(detail=>detail.value)),
     [2,3,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
-  assert.equal(unknown.at(-1).value.percent,null);assert.equal(unknown.at(-1).value.hint,'0');
+  assert.equal(unknown.length,5);
   assert.deepEqual(state,before);
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
-  assert.equal(zero[0].value,'0');assert.equal(zero.at(-1).value.tone,'danger');assert(zero.at(-1).value.loading);
+  assert.equal(zero[0].value,'0');
 });
 test('footer keeps units counts and unknown prices',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
@@ -152,8 +137,7 @@ test('composer combines child totals and preserves own metrics',()=>{
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
     assert.equal(metric('composer_turns').value,'7');
     assert.equal(metric('composer_turns').details[0].value,'2');
-    assert.equal(metric('context').value.percent,60);
-    assert.equal(metric('context').value.hint,'60 / 100');
+    assert(!values.some(value=>value.id==='context' || value.id==='context_panel'));
     assert.ok(text.composer_this_session && text.composer_subagents);
   }
   assert.equal(messages('en').composer_this_session,'This session');
@@ -245,20 +229,13 @@ test('breakdown switches regroup only for projects and keep the request page',()
   assert(state.group('model'));assert.equal(state.query.dimension,'model');
 });
 
-test('summary estimates replace stale context without resetting totals',()=>{
+test('summary estimates keep session totals',()=>{
   for(const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
     const statistics={context_tokens:null,context_estimate:'120',context_limit:1000,
       usage:{input:'880',output:'10',cached_input:'100',reasoning:'0'},cost:{usd_micros:'300',responses:'1'},responses:'1'};
-    const state={has_messages:true,statistics},before=structuredClone(statistics);
-    const values=metrics(state,text),context=values.find(value=>value.id==='context').value;
-    assert.equal(context.percent,12);
-    assert.equal(context.hint,text.composer_context_estimate.replace('%{used}','120').replace('%{limit}','1.0k'));
-    assert.equal(values.find(value=>value.id==='composer_tokens').value,'890');
+    const before=structuredClone(statistics);
+    assert.equal(metrics({has_messages:true,statistics},text).find(value=>value.id==='composer_tokens').value,'890');
     assert.deepEqual(statistics,before);
-    statistics.context_tokens='200';
-    assert.equal(metrics(state,text).find(value=>value.id==='context').value.percent,20);
-    statistics.context_tokens=null;statistics.context_limit=null;
-    assert.equal(metrics(state,text).find(value=>value.id==='context').value.percent,null);
   }
 });

@@ -1,3 +1,7 @@
+## 0.1.33
+
+- Kontextring und -panel entfernt; die Anwendung zeigt sie nun im Eingabefeld
+
 ## 0.1.32
 
 - Testnamen kürzen, ohne die Prüfungen zu ändern

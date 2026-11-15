@@ -1,3 +1,7 @@
+## 0.1.33
+
+- Quitar el anillo y el panel de contexto; ahora la aplicación los muestra en el editor
+
 ## 0.1.32
 
 - Acortar los nombres de las pruebas sin cambiar las aserciones

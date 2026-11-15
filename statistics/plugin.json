@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -83,35 +83,6 @@
           },
           "icon": "messages-square",
           "order": 40
-        },
-        {
-          "id": "context_panel",
-          "slot": "header",
-          "kind": "popover",
-          "label": {
-            "label": "Context",
-            "locales": {
-              "zh-CN": "上下文"
-            }
-          },
-          "icon": "chart-pie",
-          "order": 20,
-          "handler": "context",
-          "width": 380,
-          "align": "end"
-        },
-        {
-          "id": "context",
-          "slot": "composer",
-          "kind": "indicator",
-          "label": {
-            "label": "Context",
-            "locales": {
-              "zh-CN": "上下文"
-            }
-          },
-          "align": "end",
-          "order": 90
         }
       ],
       "display": {
@@ -135,9 +106,6 @@
           "dev.sailry.platform/desktop/breakdown.js",
           "dev.sailry.platform/desktop/charts.js",
           "dev.sailry.platform/desktop/composer.js",
-          "dev.sailry.platform/desktop/context.js",
-          "dev.sailry.platform/desktop/context_locales.js",
-          "dev.sailry.platform/desktop/context_view.js",
           "dev.sailry.platform/desktop/format.js",
           "dev.sailry.platform/desktop/locales.js",
           "dev.sailry.platform/desktop/metrics.js",

@@ -1,3 +1,7 @@
+## 0.1.33
+
+- Remover o anel e o painel de contexto; agora o aplicativo os mostra no editor
+
 ## 0.1.32
 
 - Encurtar os nomes dos testes sem alterar as asserções

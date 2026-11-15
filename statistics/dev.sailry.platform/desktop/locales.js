@@ -1,4 +1,3 @@
-import {contextLocales} from './context_locales.js';
 const locales = {
   "en": {
     "composer_context_estimate": "Estimated context %{used} / %{limit}",
@@ -381,4 +380,4 @@ const locales = {
     "context_no_data": "暫無資料"
   }
 };
-export function messages(locale) { return {...locales.en,...locales[locale],...contextLocales.en,...contextLocales[locale]}; }
+export function messages(locale) { return {...locales.en,...locales[locale]}; }

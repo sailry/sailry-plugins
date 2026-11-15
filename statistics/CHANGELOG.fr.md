@@ -1,3 +1,7 @@
+## 0.1.33
+
+- Retirer l'anneau et le panneau de contexte, désormais affichés par l'application dans la zone de saisie
+
 ## 0.1.32
 
 - Raccourcir les noms des tests sans modifier les assertions
