@@ -16,9 +16,9 @@ function timeText(view, item, now) {
 function card(view, item, now) {
   const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
   const open = panel?.task === item.id ? panel.tab : null, time = timeText(view, item, now);
-  // CardRow has no selected state; a ring border marks the task shown in the details panel.
+  // CardRow has no selected state; a ring border, in place of its own, marks the task shown in the details panel.
   return CardRow.new(`task-card-${item.id}`,{row_id:`task-row-${item.id}`})
-    .rounded_lg().border_1().border_color(open ? colors.ring : "#00000000")
+    .rounded_lg().border_1().border_color(open ? colors.ring : colors.border)
     .child(CardSummary.new(`task-summary-${item.id}`,{title:item.name,subtitle:view.projectName(item.project),icon:"icons/folder.svg"}))
     .child(CardColumn.new(`task-status-${item.id}`,{variant:"wide_metadata"})
       .child(div().h_flex().w_full().min_w_0().items_center().justify_end().gap_2()

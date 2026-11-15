@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Keep the card border on rows that are not open in the details panel
+
 ## 0.1.18
 
 - Keep scheduled callbacks within their originating conversation's resource and permission scope

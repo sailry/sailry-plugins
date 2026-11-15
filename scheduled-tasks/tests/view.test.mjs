@@ -210,7 +210,7 @@ test("details and records buttons open the side panel on that tab", () => {
   assert.equal(setup.nodes.get("task-details-a").props.selected, true);
   assert.equal(setup.nodes.get("task-records-a").props.selected, false);
   assert.deepEqual(setup.nodes.get("task-card-a").style.border_color, ["#4080f0ff"]);
-  assert.deepEqual(setup.nodes.get("task-card-b").style.border_color, ["#00000000"]);
+  assert.deepEqual(setup.nodes.get("task-card-b").style.border_color, ["#303030ff"]);
   assert.ok(setup.nodes.has("task-overview")); assert.equal(setup.nodes.has("task-records"), false);
   setup.view.control({id:"task-panel-tabs", value:"records"}, setup.cx); setup.render();
   assert.equal(setup.view.panel.tab, "records");
@@ -385,7 +385,7 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.18");
+  assert.equal(manifest.version, "0.1.19");
   assert.equal(extension.min_sailry_version, "0.1.6");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));

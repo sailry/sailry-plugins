@@ -14,9 +14,9 @@ export function order(items) {
 function card(view, item, now) {
   const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
   const open = panel?.reminder === item.id ? panel.tab : null, late = overdue(item, now);
-  // CardRow has no selected state; a ring border marks the reminder shown in the details panel.
+  // CardRow has no selected state; a ring border, in place of its own, marks the reminder shown in the details panel.
   const row = CardRow.new(`reminder-card-${item.id}`, {row_id:`reminder-row-${item.id}`})
-    .rounded_lg().border_1().border_color(open ? colors.ring : "#00000000");
+    .rounded_lg().border_1().border_color(open ? colors.ring : colors.border);
   if (item.completed) row.line_through();
   return row
     .child(CardSummary.new(`reminder-summary-${item.id}`, {title:item.title,subtitle:view.projectName(item.project),icon:"icons/folder.svg"})

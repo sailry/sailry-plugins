@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.15
+
+- Keep the card border on rows that are not open in the details panel
+
 ## 0.1.14
 
 - Preserve the originating conversation scope when scheduling reminders

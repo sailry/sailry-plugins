@@ -315,7 +315,7 @@ test("desktop and conversation tools share the host package", async () => {
   assert.equal(extension.scope, undefined);
   assert.equal(extension.desktop.navigation_options.target, undefined);
   assert.equal(extension.api_version, "v1");
-  assert.equal(manifest.version, "0.1.14");
+  assert.equal(manifest.version, "0.1.15");
   assert.equal(extension.desktop.navigation_options.details, true);
   assert.ok(extension.host.handlers.includes("history"));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "notifications.publish", "projects.read"]);
@@ -404,7 +404,7 @@ test("details and records buttons open the side panel on that tab", () => {
   assert.equal(setup.nodes.get("reminder-panel-tabs").props.selected, "details");
   assert.ok(setup.nodes.has("reminder-overview"));
   assert.deepEqual(plain(setup.nodes.get("reminder-card-a").style.border_color), ["#4080f0ff"]);
-  assert.deepEqual(plain(setup.nodes.get("reminder-card-b").style.border_color), ["#00000000"]);
+  assert.deepEqual(plain(setup.nodes.get("reminder-card-b").style.border_color), ["#303030ff"]);
   assert.equal(setup.nodes.get("reminder-details-a").props.selected, true);
   setup.view.control({id:"reminder-panel-tabs", value:"records"}, setup.cx); setup.render();
   assert.equal(setup.view.panel.tab, "records");
