@@ -19053,7 +19053,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19492,6 +19492,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.20",
+          "commit": "ad21461a0f1bbb4b67eec9c1325a6961a32d0a27",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Compare original reminder content across hosts before using the execution Node's local revision\n- Preserve edits and reject concurrent content changes without recreating schedules\n- Keep pending notifications valid across acknowledgement-only revision changes",
+            "locales": {
+              "zh-CN": "- 跨主机操作先核对提醒原内容，再使用执行主机的本地版本提交\n- 保留编辑草稿，拒绝并发内容变更，不重复创建定时计划\n- 同步确认仅改变版本号时，待执行通知仍可正常送达"
+            }
+          }
+        },
+        {
           "version": "0.1.19",
           "commit": "72ef4187c103dab62c7d32dd3322fa987b5ec543",
           "min_sailry_version": "0.2.0-alpha.2",
@@ -19677,7 +19688,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Retain the original request when a nested operation has an uncertain outcome."
+        "text": "- Compare original reminder content across hosts before using the execution Node's local revision\n- Preserve edits and reject concurrent content changes without recreating schedules\n- Keep pending notifications valid across acknowledgement-only revision changes",
+        "locales": {
+          "zh-CN": "- 跨主机操作先核对提醒原内容，再使用执行主机的本地版本提交\n- 保留编辑草稿，拒绝并发内容变更，不重复创建定时计划\n- 同步确认仅改变版本号时，待执行通知仍可正常送达"
+        }
       }
     },
     {
@@ -19833,7 +19847,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20583,8 +20597,19 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "ad21461a0f1bbb4b67eec9c1325a6961a32d0a27",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Compare original task content before editing or running a task on another host\n- Use the execution Node's local revision and retain stale drafts without overwriting newer changes\n- Fence manual queue admission against concurrent personal-data synchronization",
+            "locales": {
+              "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
+            }
+          }
+        },
+        {
           "version": "0.1.22",
-          "commit": "72ef4187c103dab62c7d32dd3322fa987b5ec543",
+          "commit": "4319f29f0f380f17cf271c7cb1b95781dca4b8df",
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Retain the original request when a nested operation has an uncertain outcome."
@@ -20795,7 +20820,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Retain the original request when a nested operation has an uncertain outcome."
+        "text": "- Compare original task content before editing or running a task on another host\n- Use the execution Node's local revision and retain stale drafts without overwriting newer changes\n- Fence manual queue admission against concurrent personal-data synchronization",
+        "locales": {
+          "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
+        }
       }
     },
     {
