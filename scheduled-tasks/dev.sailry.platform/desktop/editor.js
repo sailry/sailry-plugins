@@ -1,6 +1,7 @@
 import {div} from "gpui-kit";
 import {Button, Field, VForm} from "gpui-component";
 import {ModelPopup, SegmentedTabs, SelectField, Toggle} from "sailry/ui";
+import {sameNode} from "../host/records.js";
 import {TextField, createText, readText, releaseText,
   DateTimeField, createDateTime, readDateTime, releaseDateTime} from "sailry/forms";
 
@@ -79,7 +80,8 @@ export function value(editor) {
 }
 function projects(view, disabled) {
   const {text,editing} = view;
-  const items = [{id:"none",label:text.noProject},...view.catalog.projects.map(({id,name}) => ({id,label:name}))];
+  const items = [{id:"none",label:text.noProject},...view.catalog.projects
+    .filter(project=>sameNode(project.node,editing.draft.execution_node)).map(({id,name}) => ({id,label:name}))];
   if (editing.draft.project && !items.some(item => item.id === editing.draft.project)) {
     items.push({id:editing.draft.project,label:text.unavailable});
   }
@@ -88,13 +90,20 @@ function projects(view, disabled) {
 }
 function worktrees(view, disabled) {
   const {text,editing} = view;
-  const trees = view.catalog.worktrees.filter(tree => tree.project === editing.draft.project);
+  const trees = view.catalog.worktrees.filter(tree => tree.project === editing.draft.project && sameNode(tree.node,editing.draft.execution_node));
   const items = [{id:"main",label:text.mainWorktree},...trees.map(({id,path}) => ({id,label:path}))];
   if (editing.draft.worktree && !items.some(item => item.id === editing.draft.worktree)) {
     items.push({id:editing.draft.worktree,label:text.unavailable});
   }
   return SelectField.new("task-worktree",{label:text.worktree,placeholder:text.worktreePlaceholder,
     selected:editing.draft.worktree ?? "main",items,disabled});
+}
+function hosts(view, disabled) {
+  const selected=JSON.stringify(view.editing.draft.execution_node ?? null);
+  const items=view.hosts.map(source=>({id:JSON.stringify(source.node),
+    label:source.fault?`${source.name} (${view.text.executionUnavailable})`:source.name}));
+  if(!items.some(item=>item.id===selected))items.push({id:selected,label:view.text.executionUnavailable});
+  return SelectField.new("task-host",{label:view.text.executionHost,selected,items,disabled:disabled || !!view.editing.draft.id});
 }
 export function effortKey(value) { return typeof value === "string" ? value : String(value.budget); }
 export function lead(view) {
@@ -120,6 +129,7 @@ export function render(view) {
     .child(new VForm().size('large').gap_y(8).w_full().gap_3()
       .child(new Field().label(text.name).child(TextField.new(editing.name,{disabled})))
       .child(new Field().label(text.prompt).child(TextField.new(editing.prompt,{disabled})))
+      .child(new Field().label(text.executionHost).child(hosts(view,disabled)))
       .child(new Field().label(text.schedule).child(SegmentedTabs.new("task-timing",{selected:editing.kind,
         items:[{id:"once",label:text.once},{id:"every",label:text.every},{id:"weekly",label:text.weekly}],disabled,fill:true})))
       .children(editing.kind === "weekly" ? [
@@ -140,7 +150,7 @@ export function render(view) {
       .child(new Field().label(text.model).child(ModelPopup.new("task-model",{label:text.model,
         placeholder:fixed?.model ?? editing.draft.config?.model ?? text.modelPlaceholder,catalog:{models:view.models},
         selected:fixed ? `${fixed.provider}/${fixed.model}` : editing.model,
-        effort:fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort ?? "default",disabled:disabled || !!fixed}))
+        effort:fixed ? leadEffort(editing,fixed) : editing.draft.config?.effort ?? "default",disabled:disabled || !!fixed || view.modelsError}))
         .children(view.modelsError || editing.leadError ? [new Button("task-models-retry").label(text.retry).disabled(view.loading)
           .on_click((_,cx) => view.refresh(cx))] : []))),
     div().h_flex().flex_shrink(0).justify_end().gap_2()

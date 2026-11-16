@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import vm from "node:vm";
-import {id,plain} from "./store.mjs";
+import {id,plain,executionNode,otherNode} from "./store.mjs";
 
 async function fixture() {
   const records=(await readFile(new URL("../dev.sailry.platform/host/records.js",import.meta.url),"utf8"))
@@ -13,14 +13,17 @@ async function fixture() {
     .replace(/^import .*;\n/gm,"").replace(/^export /gm,"");
   const main=(await readFile(new URL("../dev.sailry.platform/host/management.js",import.meta.url),"utf8"))
     .replace(/^import .*;\n/gm,"").replace(/^export \{.*;\n/gm,"").replace(/^export /gm,"");
+  const hostCalls=[];
   const requests=[],transactions=[],values=new Map(),pages=new Map(),config={provider:"provider",model:"selected",effort:"high",mode:"code",permission:"ask"};
-  const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null};
-  const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001"}),
+  const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null,host:async()=>({Err:{code:"unavailable",message:"Offline"}})};
+  const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001",execution_node:executionNode}),
     getValue:async key=>{reads.push(key);return values.get(key)??{revision:"0",present:false,value:null};},listKeys:async()=>({keys:[],after:null}),
     readProjectCatalog:async()=>({projects:[],worktrees:[]}),
+    prepareHostCall:(node,handler,input,readOnly=false)=>{const value={node,handler,input,readOnly};hostCalls.push(value);return {host:value};},
     prepareRequest:command=>{requests.push(command);return String(requests.length-1);},
     prepareTransaction:operations=>{transactions.push(operations);return "transaction";},
     completeRequest:async id=>{
+      if(id?.host)return control.host(id.host);
       const command=requests[Number(id)];
       if(id==="transaction"&&transactions.at(-1)?.at(-1)?.data.kind==="enqueue") {
         if(control.failure)return {Err:control.failure};
@@ -35,10 +38,10 @@ async function fixture() {
       return {Ok:{data:[{data:{revision:"1"}}]}};
     },forgetRequest(){},
   };
-  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,run,states,history})`,runtime);
-  const input={id:"00000000-0000-0000-0000-000000000002",revision:"0",name:"Review",prompt:"Read the project",
+  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,remove,run,cancel,stop,states,history})`,runtime);
+  const input={execution_node:executionNode,id:"00000000-0000-0000-0000-000000000002",revision:"0",name:"Review",prompt:"Read the project",
     queue:"default",enabled:false,project:null,worktree:null,config:null,timing:{kind:"once",data:{at_ms:Date.now()+300000}}};
-  return {api,input,config,teams,handlers,reads,control,values,pages,requests,transactions};
+  return {api,input,config,teams,handlers,reads,control,values,pages,requests,transactions,hostCalls};
 }
 test("current host entry points reject missing models before dispatch or storage mutation",async()=>{
   const setup=await fixture(),{api,input}=setup;
@@ -47,7 +50,7 @@ test("current host entry points reject missing models before dispatch or storage
   const entry={revision:"4",present:true,value:input};setup.values.set(`task/${input.id}`,entry);
   assert.equal((await api.run({id:input.id})).Err.code,"not_configured");
   assert.equal(setup.values.get(`task/${input.id}`),entry);
-  assert.deepEqual(setup.requests.map(command=>command.data.action.kind),["list_handlers"]);
+  assert.deepEqual(setup.requests.map(command=>command.data.action.kind),[]);
   assert.equal(setup.transactions.length,0);
 });
 
@@ -173,7 +176,7 @@ test("manual runs refresh handlers and enqueue atomically without changing sched
   setup.handlers.push({name:item.id,revision:7});
   const reply=await setup.api.run({id:item.id});
   assert.deepEqual(plain(reply),{Ok:{id:"new-job",handler:item.id}});
-  assert.deepEqual(setup.reads,["handlers",`task/${item.id}`]);
+  assert.deepEqual(setup.reads,[`task/${item.id}`,"handlers",`task/${item.id}`]);
   assert.deepEqual(setup.requests.map(command=>command.kind),["dispatch","resolve_plugin_model"]);
   assert.equal(setup.transactions.length,1);
   const operations=plain(setup.transactions[0]);
@@ -195,4 +198,33 @@ test("handler conflicts and uncertain runs do not enqueue a separate retry",asyn
     assert.equal(setup.transactions.length,1);
     assert.ok(setup.requests.every(command=>command.data?.action?.kind!=="enqueue"));
   }
+});
+
+test("foreign task controls stay on the recorded host",async()=>{
+  const setup=await fixture();
+  Object.assign(setup.input,{config:setup.config,execution_node:otherNode,revision:"1"});
+  setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
+  setup.control.host=async call=>({Ok:{data:{Ok:{handler:call.handler}}}});
+  assert.equal((await setup.api.save({...setup.input,name:"Edited"})).Ok.handler,"save");
+  assert.equal((await setup.api.remove({id:setup.input.id,revision:"1"})).Ok.handler,"remove");
+  assert.equal((await setup.api.run({id:setup.input.id})).Ok.handler,"run");
+  assert.equal((await setup.api.history({handler:setup.input.id})).Ok.handler,"history");
+  assert.equal((await setup.api.cancel({id:"job",execution_node:otherNode})).Ok.handler,"cancel");
+  assert.equal((await setup.api.stop({id:"job",execution_node:otherNode})).Ok.handler,"stop");
+  assert.deepEqual(setup.hostCalls.map(call=>call.handler),["save","remove","run","history","cancel","stop"]);
+  assert.ok(setup.hostCalls.every(call=>JSON.stringify(call.node)===JSON.stringify(otherNode)));
+  assert.equal(setup.transactions.length,0);
+  assert.equal(setup.requests.length,0);
+});
+
+test("offline tasks and unknown ownership never enqueue locally",async()=>{
+  const setup=await fixture();
+  Object.assign(setup.input,{config:setup.config,execution_node:otherNode,revision:"1"});
+  setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
+  assert.equal((await setup.api.run({id:setup.input.id})).Err.code,"unavailable");
+  assert.equal((await setup.api.save({...setup.input,execution_node:executionNode})).Err.code,"conflict");
+  delete setup.input.execution_node;
+  setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
+  assert.equal((await setup.api.save(setup.input)).Err.code,"unavailable");
+  assert.equal(setup.transactions.length,0);
 });

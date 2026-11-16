@@ -2,6 +2,8 @@ import {readFile} from "node:fs/promises";
 import vm from "node:vm";
 
 export const id = index => `00000000-0000-0000-0000-${String(index).padStart(12,"0")}`;
+export const executionNode=[1,...Array(31).fill(0)];
+export const otherNode=[2,...Array(31).fill(0)];
 export const plain = value => JSON.parse(JSON.stringify(value));
 export async function fixture(project=id(1)) {
   const sources=await Promise.all(["records","dispatch","mutations","tools","management"].map(async name =>
@@ -13,7 +15,7 @@ export async function fixture(project=id(1)) {
   const setup={config,session:{config},execution:{execution:"team",team:null,models:{}},teams:[{id:id(20),name:"Reviewers",revision:"7"}],
     values,schedules,handlers,requests,transactions,
     project,worktree:id(2),contextSession:id(5),nextCall(value){call=value;},turn(){return turn;}};
-  const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,worktree:setup.worktree,session:setup.contextSession}),
+  const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,execution_node:executionNode,worktree:setup.worktree,session:setup.contextSession}),
     callId:()=>call,readSession:async()=>plain(setup.session),readTurnState:()=>turn,stageTurnState:value=>{turn=plain(value);},
     getValue:async key=>plain(values.get(key)??{revision:"0",present:false,value:null}),
     listKeys:async(prefix,after,limit)=>{
@@ -64,7 +66,7 @@ export async function fixture(project=id(1)) {
     }
     return setup.finish(reply,{kind:"plugin_transaction",data:output});
   };
-  setup.task=(index,project=setup.project)=>({id:id(index),name:"Review",prompt:"Read the project",project,
+  setup.task=(index,project=setup.project)=>({id:id(index),execution_node:executionNode,name:"Review",prompt:"Read the project",project,
     worktree:project===null?null:setup.worktree,config:plain(config),enabled:false,queue:"default",
     timing:{kind:"once",data:{at_ms:Date.now()+3_600_000}}});
   setup.seed=item=>values.set(`task/${item.id}`,{present:true,revision:"1",value:plain(item)});

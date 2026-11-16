@@ -1,9 +1,26 @@
-import {context, readProjectCatalog, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
-import {key, read, commit, result, fault} from "./records.js";
-import {query, configuration, registration, operation, exact} from "./dispatch.js";
+import {context, readProjectCatalog, listTeams, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
+import {key, read, commit, result, fault, node, sameNode, hostCall} from "./records.js";
+import {query, configuration, registration, operation, exact, executor, resolve} from "./dispatch.js";
 import {listing, saveOperations, removeOperations} from "./mutations.js";
 
 export async function projects() { return result(() => readProjectCatalog()); }
+export async function options() {
+  return result(async () => {
+    const modelsRequest = prepareRequest({kind:"list_plugin_models"});
+    const [outcome, teams] = await Promise.all([completeRequest(modelsRequest), listTeams()]);
+    forgetRequest(modelsRequest);
+    if (outcome.Err) throw fault(outcome.Err.code,outcome.Err.message);
+    const models = outcome.Ok.data;
+    return {models:models.models.filter(model => model.kind === "provider"), teams};
+  });
+}
+export async function model(input) { return result(() => resolve(input.model, input.effort, input.config)); }
+export async function runtime() {
+  return result(async () => {
+    const [status, schedules] = await Promise.all([states(), query("list_schedules")]);
+    return {status, schedules};
+  });
+}
 export async function list(input) {
   return result(() => listing(input));
 }
@@ -25,6 +42,18 @@ export async function states() {
 }
 export async function save(input) {
   return result(async () => {
+    if (input.id != null) {
+      const old = await read(input.id);
+      if (old.present) {
+        const target = await executor(old.value);
+        if (input.execution_node != null && !sameNode(input.execution_node, target)) {
+          throw fault("conflict", "Task remains on its original execution Node");
+        }
+        input = {...input,execution_node:target};
+      }
+    }
+    const target = node(input.execution_node ?? context().execution_node);
+    if (!sameNode(target, context().execution_node)) return hostCall(target, "save", input);
     const pending = await saveOperations(input);
     const outputs = await commit(pending.operations);
     return {...pending.item,revision:outputs[0].data.revision};
@@ -32,6 +61,11 @@ export async function save(input) {
 }
 export async function remove(input) {
   return result(async () => {
+    const old = await read(input.id);
+    if (old.present) {
+      const target = await executor(old.value);
+      if (!sameNode(target, context().execution_node)) return hostCall(target, "remove", input);
+    }
     const pending = await removeOperations(input);
     await commit(pending.operations);
     return {removed:true};
@@ -40,6 +74,10 @@ export async function remove(input) {
 export async function run(input) {
   return result(async () => {
     key(input.id);
+    const record = await read(input.id);
+    if (!record.present) throw fault("not_found", "Task is unavailable");
+    const target = await executor(record.value);
+    if (!sameNode(target, context().execution_node)) return hostCall(target, "run", input);
     // Task edits change their handler in the same transaction. Read its revision
     // first so a concurrent edit either supplies current task data or fails CAS.
     const handler = (await query("list_handlers")).find(handler => handler.name === input.id);
@@ -56,9 +94,19 @@ export async function run(input) {
     return output.data.data;
   });
 }
-export async function cancel(input) { return result(() => query("cancel_job",{id:input.id})); }
+export async function cancel(input) {
+  return result(async () => {
+    if (input.execution_node != null && !sameNode(input.execution_node, context().execution_node)) {
+      return hostCall(node(input.execution_node), "cancel", input);
+    }
+    return query("cancel_job",{id:input.id});
+  });
+}
 export async function stop(input) {
   return result(async () => {
+    if (input.execution_node != null && !sameNode(input.execution_node, context().execution_node)) {
+      return hostCall(node(input.execution_node), "stop", input);
+    }
     const id = prepareRequest({kind:"stop_dispatch_turn",data:{package:context().package,job:input.id}});
     const receipt = await completeRequest(id);
     forgetRequest(id);
@@ -70,6 +118,16 @@ export async function stop(input) {
 export async function history(input = {}) {
   return result(async () => {
     const limit = input.limit ?? 32, handler = input.handler ?? null;
+    if (input.execution_node != null && !sameNode(input.execution_node, context().execution_node)) {
+      return hostCall(node(input.execution_node), "history", input, true);
+    }
+    if (handler !== null) {
+      const old = await read(handler);
+      if (old.present) {
+        const target = await executor(old.value);
+        if (!sameNode(target, context().execution_node)) return hostCall(target, "history", {...input,execution_node:target}, true);
+      }
+    }
     const items = [];
     let before = input.before ?? null;
     do {
@@ -78,7 +136,7 @@ export async function history(input = {}) {
         const receipt = await query("read_result",{id:job.id});
         const output = receipt.kind === "completed" ? receipt.data.Ok : null;
         const turn = output?.kind === "queued_turn" ? output.data : null;
-        return {job,name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null};
+        return {job,execution_node:node(context().execution_node),name:job.event.payload?.name ?? job.handler,session:turn?.session ?? null,turn:turn?.id ?? null};
       }));
       items.push(...entries);
       before = page.next_before;

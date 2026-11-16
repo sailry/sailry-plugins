@@ -1,6 +1,6 @@
-import {readProjectCatalog} from "sailry/sdk";
-import {key, read, revision, draft, checked, page, fault} from "./records.js";
-import {query, changes, removal, configuration} from "./dispatch.js";
+import {context, readProjectCatalog} from "sailry/sdk";
+import {key, read, revision, draft, checked, page, fault, sameNode} from "./records.js";
+import {query, changes, removal, configuration, executor} from "./dispatch.js";
 
 function owned(item, project) {
   if (project !== undefined && item.project !== project) throw fault("permission_denied", "Task belongs to another project");
@@ -13,6 +13,11 @@ export async function saveOperations(input, project) {
   const item = draft(input), old = await checked({...input,id:item.id});
   owned(item, project);
   if (old.present) owned(old.value, project);
+  const target = old.present ? await executor(old.value) : item.execution_node;
+  if (!sameNode(target, context().execution_node) || !sameNode(item.execution_node, target)) {
+    throw fault("conflict", "Task remains on its original execution Node");
+  }
+  item.execution_node = target;
   item.config = await configuration(item.config,item.team);
   // Management has a Node-wide catalog; tools retain their admitted resource scope.
   // The Node validates resources again when admitting the callback's session.
@@ -30,6 +35,9 @@ export async function removeOperations(input, project) {
   if (!old.present) throw fault("not_found", "Task is unavailable");
   owned(old.value, project);
   if (old.revision !== revision(input.revision)) throw fault("revision_conflict", "Task changed");
+  if (!sameNode(await executor(old.value), context().execution_node)) {
+    throw fault("conflict", "Task remains on its original execution Node");
+  }
   return {item:old.value,operations:[{kind:"remove",data:{key:key(input.id),expected_revision:old.revision}},...await removal(input.id)]};
 }
 export function transactionResult(output, id, removed) {

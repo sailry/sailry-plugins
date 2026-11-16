@@ -1,12 +1,20 @@
 import {context, listTeams, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
-import {execution, fault, requireConfig} from "./records.js";
+import {execution, fault, requireConfig, node} from "./records.js";
 
-async function resolve(model, effort, config) {
+export async function resolve(model, effort, config) {
   const id = prepareRequest({kind:"resolve_plugin_model",data:{model,effort,config}});
   const result = await completeRequest(id);
   forgetRequest(id);
   if (result.Err) throw fault(result.Err.code, result.Err.message);
   return result.Ok.data;
+}
+export async function executor(item) {
+  if (item.execution_node != null) return node(item.execution_node);
+  const [schedules, handlers] = await Promise.all([query("list_schedules"), query("list_handlers")]);
+  if (!schedules.some(schedule => schedule.id === item.id) && !handlers.some(handler => handler.name === item.id)) {
+    throw fault("unavailable", "Task execution Node is unknown");
+  }
+  return node(context().execution_node);
 }
 export async function configuration(config, team = null) {
   requireConfig(config);

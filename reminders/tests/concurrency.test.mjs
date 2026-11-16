@@ -31,7 +31,7 @@ for(const name of ['reminders','scheduled-tasks']) {
       ?vm.runInNewContext(`${await source(name,'records')}\n({execution,requireConfig})`)
       :{requireConfig(){}};
     const changes=vm.runInNewContext(`${await source(name,file)}\nchanges`,{
-      context:()=>({package:{name}}),...records,
+      context:()=>({package:{name},execution_node:[1,...Array(31).fill(0)]}),...records,
       prepareRequest:command=>command.data.action.kind,
       completeRequest:id=>new Promise(resolve=>held.push({id,resolve})),forgetRequest(){},
     });
@@ -45,9 +45,10 @@ for(const name of ['reminders','scheduled-tasks']) {
     const held=[],jobs=Array.from({length:6},(_,index)=>({id:`job-${index}`,handler:'saved',status:'completed',event:{payload:{}}}));
     const query=async(kind,data)=>kind==='list_jobs'?{jobs,next_before:null}:
       new Promise(resolve=>held.push({id:data.id,resolve}));
-    const runtime={key:value=>value,result:async action=>({Ok:await action()}),query};
+    const runtime={node:value=>value,read:async()=>({present:false}),key:value=>value,result:async action=>({Ok:await action()}),query};
+    Object.assign(runtime,{context:()=>({package:{name},execution_node:[1,...Array(31).fill(0)]})});
     if(name==='reminders')Object.assign(runtime,{
-      context:()=>({package:{name}}),prepareRequest:command=>command,
+      context:()=>({package:{name},execution_node:[1,...Array(31).fill(0)]}),prepareRequest:command=>command,
       completeRequest:async command=>({Ok:{data:{data:await query(command.data.action.kind,command.data.action.data)}}}),forgetRequest(){},
     });
     const history=vm.runInNewContext(`${await source(name,name==='reminders'?'schedules':'management')}\nhistory`,runtime);

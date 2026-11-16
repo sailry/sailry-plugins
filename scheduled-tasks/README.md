@@ -11,6 +11,19 @@ approvals. Closing the plugin page does not stop execution. Removing a task
 cancels its unstarted deliveries, not running conversations. History reads the
 original admission receipt; unknown effects are never automatically replayed.
 
+New schedules choose their execution host from the controller resource catalog.
+Projects, worktrees, model choices and teams are read for that host. Every new
+record stores `execution_node`; editing, pausing, manual runs, deletion, history
+and queue cancellation or stopping return to that same Node. Schedule and queue
+state stays in its local dispatcher, even when personal task records are visible
+through another controller or execution host. Opening a run uses its recorded
+Node as well as its session ID.
+
+Changing a host is available only while creating a task. An unavailable host
+does not create a local replacement. Legacy records without an owner require
+an existing dispatch handler or schedule on the local Node before their next
+write can claim ownership.
+
 Handlers: `list`, `save`, `remove`, `run`, `history`, `queue`, `cancel`, `stop`, `projects`.
 Task and queue revisions are decimal strings. New task IDs may be omitted; the
 host invocation ID provides a stable identity. Every task stores an explicit

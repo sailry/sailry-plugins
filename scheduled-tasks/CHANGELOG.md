@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.20
+
+- Choose an execution host for new schedules from the controller directory
+- Keep task edits, execution, queue controls and history on the original host
+- Read model and team choices from the selected execution host
+
 ## 0.1.19
 
 - Keep the card border on rows that are not open in the details panel

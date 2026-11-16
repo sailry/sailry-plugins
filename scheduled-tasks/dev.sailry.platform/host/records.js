@@ -1,4 +1,4 @@
-import {context, getValue, listKeys, prepareTransaction, completeRequest, forgetRequest} from "sailry/sdk";
+import {context, getValue, listKeys, prepareHostCall, prepareTransaction, completeRequest, forgetRequest} from "sailry/sdk";
 
 export function fault(code, message) { return Object.assign(new Error(message), {code}); }
 export function key(id) {
@@ -12,6 +12,22 @@ export function revision(value) {
     throw fault("invalid_request", "Invalid task revision");
   }
   return value;
+}
+export function node(value) {
+  if (!Array.isArray(value) || value.length !== 32 || !value.some(byte => byte !== 0)
+      || value.some(byte => !Number.isInteger(byte) || byte < 0 || byte > 255)) {
+    throw fault("invalid_request", "Invalid execution Node");
+  }
+  return [...value];
+}
+export function sameNode(a, b) { return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((byte, index) => byte === b[index]); }
+export async function hostCall(target, handler, input, readOnly = false) {
+  const id = prepareHostCall(node(target), handler, input, readOnly);
+  const result = await completeRequest(id);
+  if (result.Err) throw fault(result.Err.code, result.Err.message);
+  forgetRequest(id);
+  if (result.Ok.data.Err) throw fault(result.Ok.data.Err.code, result.Ok.data.Err.message);
+  return result.Ok.data.Ok;
 }
 export function execution(input, strict = false) {
   const mode = input.execution === undefined ? "team" : input.execution;
@@ -69,7 +85,7 @@ export function timing(input, strict = false) {
   }
   return input;
 }
-export function draft(input) {
+export function draft(input, capture = true) {
   const id = input.id ?? context().invocation;
   key(id);
   if (typeof input.name !== "string" || !input.name.trim() || bytes(input.name) > 256
@@ -86,7 +102,8 @@ export function draft(input) {
     throw fault("invalid_request", "Task requires a project or unassigned scope");
   }
   const schedule = timing(input.timing);
-  return {id, name:input.name.trim(), prompt:input.prompt, project, worktree,
+  const executionNode = input.execution_node == null ? capture ? node(context().execution_node) : null : node(input.execution_node);
+  return {id, execution_node:executionNode, name:input.name.trim(), prompt:input.prompt, project, worktree,
     config:input.config, ...execution(input), timing:schedule, enabled:input.enabled, queue:input.queue};
 }
 export function requireConfig(config) {
@@ -102,7 +119,7 @@ export async function read(id) {
   const old = await getValue(key(id));
   if (old.present) {
     if (old.value?.id !== id) throw fault("invalid_request", "Invalid stored task");
-    return {...old,value:draft(old.value)};
+    return {...old,value:draft(old.value, false)};
   }
   return old;
 }

@@ -8,6 +8,8 @@ const source=(await readFile(new URL("../dev.sailry.platform/desktop/editor.js",
   .replace(/^import[\s\S]*?;\n/gm,"").replace(/^export /gm,"");
 const main=(await readFile(new URL("../dev.sailry.platform/desktop/main.js",import.meta.url),"utf8"))
   .replace(/^import .*;\n/gm,"").replace("export default class","class");
+const node=[1,...Array(31).fill(0)],otherNode=[2,...Array(31).fill(0)];
+const sameNode=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const plain=value=>JSON.parse(JSON.stringify(value));
 const config={assistant:null,resource:null,provider:"provider",model:"explicit",effort:"high",mode:"plan",permission:"full",credential:null};
 function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}}) {
@@ -24,7 +26,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     if(id)nodes.set(id,proxy);return proxy;
   }
   const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey,setTiming,lead,leadEffort})`,{
-    div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
+    sameNode,div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
     ...Object.fromEntries(["TextField","DateTimeField","SelectField","ModelPopup","SegmentedTabs","Toggle"]
       .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}])),
     createText:(value,props)=>{const id=`text-${texts.size}`;texts.set(id,value);created.push(props);return id;},
@@ -32,13 +34,16 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     releaseDateTime:value=>released.push(value),
   });
   const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,value:api.value,
-    editor:api.editor,lead:api.lead,
-    resolveSessionModel:resolve,prepareRequest:command=>{requests.push(plain(command));return "original-request";},
+    editor:api.editor,lead:api.lead,sameNode,
+    resolveSessionModel:resolve,hostCall:async(_node,handler,input)=>handler==="model"?resolve(input.model,input.effort,input.config):{models:[],teams:[]},
+    prepareHostCall:(node,handler,input)=>{requests.push({node,data:{handler,input}});return "original-request";},
     completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),toast:value=>notices.push(value)});
   const view=new Controller();Object.assign(view,{text:messages("en"),items:[],busy:false,pending:null,loading:false,modelsError:false,teamsError:false,teams:[{id:"reviewers",name:"Reviewers",revision:"7"}],
-    catalog:{projects:[{id:"project",name:"Project"},{id:"other",name:"Other"}],worktrees:[{id:"tree",project:"project",path:"Branch"},{id:"foreign",project:"other",path:"Other"}]},
+    executionNode:node,hosts:[{node,name:"Current",projects:[]},{node:otherNode,name:"Other",projects:[]}],
+    catalog:{projects:[{id:"project",name:"Project",node},{id:"other",name:"Other",node}],worktrees:[{id:"tree",project:"project",path:"Branch",node},{id:"foreign",project:"other",path:"Other",node}]},
     models:[{id:"provider/explicit",kind:"provider",model:"explicit",efforts:["low","high"]}],editing:api.editor(null,messages("en")),
     close(){},refresh(){}});
+  view.editing.draft.execution_node=node;
   const cx={notify(){},spawn:job=>jobs.push(job)};
   return {api,view,cx,nodes,texts,created,released,jobs,notices,requests,forgotten,
     render(){nodes.clear();return api.render(view);},async settle(){await Promise.all(jobs.splice(0).map(job=>job(cx)));}};
@@ -66,7 +71,7 @@ test("weekly drafts preserve timezone days and time on rename",()=>{
   const setup=fixture(),{api,view}=setup;
   api.release(view.editing);
   const timing={kind:"weekly",data:{timezone:"Asia/Shanghai",weekdays:[1,2,3,4,5],hour:9,minute:0}};
-  const item={id:"saved",revision:"2",name:"Review",prompt:"Keep this task",queue:"default",project:"project",worktree:"tree",enabled:true,config:{...config},timing};
+  const item={execution_node:node,id:"saved",revision:"2",name:"Review",prompt:"Keep this task",queue:"default",project:"project",worktree:"tree",enabled:true,config:{...config},timing};
   view.editing=api.editor(item,view.text);setup.render();
   assert.equal(view.editing.time,null);assert.equal(view.editing.interval,null);
   assert.equal(setup.nodes.get("task-timing").props.selected,"weekly");
@@ -351,4 +356,17 @@ test("repeat editors preserve representable millisecond intervals",()=>{
     setup.texts.set(view.editing.interval,seconds);
     assert.throws(()=>api.value(view.editing),/invalidInterval/);
   }
+});
+
+test("host changes clear foreign project and model choices",async()=>{
+  const setup=fixture(),{view}=setup;
+  view.editing.draft.project="project";view.editing.draft.worktree="tree";view.editing.draft.config={...config};
+  view.control({id:"task-host",value:JSON.stringify(otherNode)},setup.cx);
+  assert.deepEqual(plain(view.editing.draft.execution_node),otherNode);
+  assert.equal(view.editing.draft.project,null);assert.equal(view.editing.draft.worktree,null);
+  assert.equal(view.editing.draft.config,null);assert.equal(view.editing.model,null);
+  await setup.settle();
+  view.editing.draft.id="existing";view.control({id:"task-host",value:JSON.stringify(node)},setup.cx);
+  assert.deepEqual(plain(view.editing.draft.execution_node),otherNode);
+  setup.render();assert.equal(setup.nodes.get("task-host").props.disabled,true);
 });

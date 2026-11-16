@@ -1,11 +1,12 @@
 import {View} from "gpui-kit";
 import {context} from "sailry";
-import {prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog, listModels, listTeams, resolveSessionModel} from "sailry/sdk";
+import {context as sdkContext, prepareHostCall, completeRequest, forgetRequest, nextChange, readResourceCatalog, listModels, listTeams, resolveSessionModel} from "sailry/sdk";
 import {modal_closed,nextControlEvent,openSession,showWorkspaceDetails,toast,writeClipboard} from "sailry/ui";
 import {list, history, states} from "../host/management.js";
 import {messages} from "./locales.js";
 import {editor, release, value, effortKey, setTiming, lead} from "./editor.js";
 import {render} from "./view.js";
+import {sameNode, hostCall} from "../host/records.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
 function unwrap(result) { if (result.Err) throw result.Err; return result.Ok; }
@@ -15,6 +16,7 @@ export default class ScheduledTasks extends View {
     this.items = []; this.history = []; this.pages = 1; this.more = false; this.projectFilter = "all";
     this.panel = null; this.historyTask = null; this.historyLoaded = false;
     this.catalog = {projects:[],worktrees:[]}; this.loading = false; this.loaded = false; this.dirty = false;
+    this.executionNode = sdkContext().execution_node; this.hosts = [];
     this.models = []; this.modelsError = false;
     this.teams = []; this.teamsError = false;
     this.busy = false; this.pending = null; this.error = null;
@@ -44,30 +46,52 @@ export default class ScheduledTasks extends View {
         this.dirty = false;
         // Records belong to the task open in the details panel only.
         const task = this.panel?.task ?? null,pages=this.pages;
-        const [items,records,status,catalog,models,teams] = await Promise.all([
+        const [items,records,status,directory,models,teams] = await Promise.all([
           (async()=>{const items=[];let after=null;do {
             const page=unwrap(await list({after}));items.push(...page.items);after=page.after;
           }while(after!==null);return items;})(),
           (async()=>{const runs=[];let before=null;if(task!==null)for(let index=0;index<pages;index++){
-            const page=unwrap(await history({before,handler:task}));runs.push(...page.items);before=page.next_before;
+            const selected=this.items.find(item=>item.id===task);
+            const input={before,handler:task};
+            const page=selected?.execution_node ? await hostCall(selected.execution_node,"history",input,true)
+              : unwrap(await history(input));
+            runs.push(...page.items);before=page.next_before;
             if(before===null)break;
-          }return {runs,before};})(),
-          states(),readProjectCatalog(),
+          }return {runs,before};})().catch(()=>({runs:[],before:null,unavailable:true})),
+          states(),readResourceCatalog(),
           listModels().then(catalog=>catalog.models.filter(model=>model.kind==='provider')).catch(()=>null),
           listTeams().catch(()=>null),
         ]);
-        this.catalog = catalog;
+        this.hosts = directory.sources;
+        this.catalog = {projects:directory.sources.flatMap(source=>source.projects.map(project=>({...project,node:source.node}))),
+          worktrees:directory.sources.flatMap(source=>source.worktrees.map(tree=>({...tree,node:source.node})))};
         this.items = items.map(item => ({...item,status:status[item.id]?.status ?? null,started_ms:status[item.id]?.started_ms ?? null}));
+        const remoteNodes = new Map(this.items.filter(item => item.execution_node && !sameNode(item.execution_node,this.executionNode))
+          .map(item=>[JSON.stringify(item.execution_node),item.execution_node]));
+        const projections = await Promise.all([...remoteNodes.values()].map(async target=>{
+          try{return {target,value:await hostCall(target,"runtime",{},true)};}
+          catch(_){return {target,value:null};}
+        }));
+        this.items = this.items.map(item=>{
+          const remote=projections.find(value=>sameNode(value.target,item.execution_node));
+          if(!remote)return item;
+          return {...item,next_ms:remote.value?.schedules.find(schedule=>schedule.id===item.id)?.next_ms ?? null,
+            status:remote.value?.status[item.id]?.status ?? null,started_ms:remote.value?.status[item.id]?.started_ms ?? null,
+            unavailable:remote.value===null};
+        });
         if (this.panel && !this.items.some(item => item.id === this.panel.task)) this.panel = null;
         if (task === (this.panel?.task ?? null)) {
-          this.history = records.runs; this.historyTask = task; this.historyLoaded = task !== null; this.more = records.before !== null;
+          this.history = records.runs; this.historyTask = task; this.historyLoaded = task !== null && !records.unavailable; this.more = records.before !== null;
+          if(records.unavailable)this.report("executionUnavailable");
         }
         this.loaded = true;
         if (this.error === "loadFailed") this.error = null;
         this.modelsError = models === null;
         if(models===null)this.report("modelsFailed");else this.models=models;
         this.teamsError = teams === null;
-        if(teams===null)this.report("teamsFailed");else { this.teams=teams; this.syncLead(cx); }
+        const remoteEditing=this.editing?.draft.execution_node && !sameNode(this.editing.draft.execution_node,this.executionNode);
+        if(teams===null)this.report("teamsFailed");else if(!remoteEditing) { this.teams=teams; this.syncLead(cx); }
+        if(remoteEditing) this.loadOptions(cx);
         cx.notify();
       } while (this.dirty); }
       catch (_) { this.report("loadFailed"); }
@@ -99,17 +123,26 @@ export default class ScheduledTasks extends View {
       if (event.value) editing.weekdays.push(day);
       editing.weekdays.sort((left,right) => left-right);
     }
+    else if (event.id === "task-host" && !editing.draft.id) {
+      const selected=this.hosts.find(source=>JSON.stringify(source.node)===event.value);
+      if(!selected || selected.fault)return;
+      editing.draft.execution_node=selected.node;
+      editing.draft.project=null;editing.draft.worktree=null;editing.draft.config=null;
+      editing.draft.team=null;editing.draft.models={};editing.model=null;
+      this.loadOptions(cx);
+    }
     else if (event.id === "task-project") {
-      const project = event.value === "none" ? null : this.catalog.projects.find(project => project.id === event.value)?.id;
+      const project = event.value === "none" ? null : this.catalog.projects.find(project => project.id === event.value &&
+        sameNode(project.node,editing.draft.execution_node))?.id;
       if (project === undefined) return;
       editing.draft.project = project; editing.draft.worktree = null;
     } else if (event.id === "task-worktree") {
       const worktree = event.value === "main" ? null : this.catalog.worktrees
-        .find(tree => tree.id === event.value && tree.project === editing.draft.project)?.id;
+        .find(tree => tree.id === event.value && tree.project === editing.draft.project && sameNode(tree.node,editing.draft.execution_node))?.id;
       if (worktree === undefined || !editing.draft.project) return;
       editing.draft.worktree = worktree;
     } else if (event.id === "task-model") {
-      if (!lead(this)) return this.selectModel(event.value?.model,event.value?.effort,cx);
+      if (!this.modelsError && !lead(this)) return this.selectModel(event.value?.model,event.value?.effort,cx);
     }
     else if (event.id === "task-execution") {
       if (!["model","team"].includes(event.value) || event.value === editing.draft.execution) return;
@@ -146,9 +179,10 @@ export default class ScheduledTasks extends View {
     } else {
       const run = this.history.find(run => event.id === `task-open-${run.job.id}` || event.id === `task-stop-${run.job.id}`);
       if (!run) return false;
-      if (event.id === `task-open-${run.job.id}`) { if (run.session) openSession(run.session); }
+      if (event.id === `task-open-${run.job.id}`) { if (run.session) openSession(run.session,run.execution_node ?? task.execution_node); }
       else if (!this.busy && !this.pending && (run.job.status === "queued" || (run.job.status === "running" && run.turn))) {
-        this.perform(run.job.status === "queued" ? "cancel" : "stop",{id:run.job.id},cx);
+        this.perform(run.job.status === "queued" ? "cancel" : "stop",
+          {id:run.job.id,execution_node:run.execution_node ?? task.execution_node},cx);
       }
     }
     return true;
@@ -170,10 +204,13 @@ export default class ScheduledTasks extends View {
     editing.modelLoading = true; editing.leadError = false; cx.notify();
     cx.spawn(async cx => {
       try {
-        const defaults = fixed && fixed.effort == null ? await resolveSessionModel(model,null,null) : null;
+        const resolve = (model,effort,config) => sameNode(editing.draft.execution_node,this.executionNode)
+          ? resolveSessionModel(model,effort,config)
+          : hostCall(editing.draft.execution_node,"model",{model,effort,config},true);
+        const defaults = fixed && fixed.effort == null ? await resolve(model,null,null) : null;
         if (this.editing !== editing || editing.modelVersion !== version) return;
         const config = defaults && !editing.draft.config ? defaults
-          : await resolveSessionModel(model,defaults?.effort ?? effort,editing.draft.config);
+          : await resolve(model,defaults?.effort ?? effort,editing.draft.config);
         if (this.editing !== editing || editing.modelVersion !== version) return;
         editing.draft.config = config; editing.model = `${config.provider}/${config.model}`;
       } catch (_) {
@@ -183,6 +220,25 @@ export default class ScheduledTasks extends View {
       } finally {
         if (this.editing === editing && editing.modelVersion === version) { editing.modelLoading = false; cx.notify(); }
       }
+    });
+  }
+  loadOptions(cx) {
+    const editing=this.editing;if(!editing)return;
+    const target=editing.draft.execution_node,version=++editing.modelVersion;
+    editing.modelLoading=true;this.modelsError=true;this.teamsError=true;cx.notify();
+    cx.spawn(async cx=>{
+      try {
+        const options=sameNode(target,this.executionNode)
+          ? await Promise.all([listModels(),listTeams()]).then(([models,teams])=>({models:models.models.filter(model=>model.kind==="provider"),teams}))
+          : await hostCall(target,"options",{},true);
+        if(this.editing!==editing || editing.modelVersion!==version)return;
+        this.models=options.models;this.teams=options.teams;this.modelsError=false;this.teamsError=false;
+        editing.modelLoading=false;this.syncLead(cx);
+      } catch (_) {
+        if(this.editing===editing && editing.modelVersion===version) {
+          this.models=[];this.teams=[];this.modelsError=true;this.teamsError=true;this.report("executionUnavailable");
+        }
+      } finally {if(this.editing===editing && editing.modelVersion===version){editing.modelLoading=false;cx.notify();}}
     });
   }
   syncLead(cx) {
@@ -199,6 +255,8 @@ export default class ScheduledTasks extends View {
   edit(item, cx) {
     if (this.busy || this.pending) return;
     this.close(cx); this.editing = editor(item, this.text); this.dialogId++; this.syncLead(cx); cx.notify();
+    this.editing.draft.execution_node = item?.execution_node ?? this.executionNode;
+    this.loadOptions(cx);
   }
   close(cx) {
     if (this.busy) return;
@@ -221,12 +279,17 @@ export default class ScheduledTasks extends View {
     this.busy = true; this.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
-        if (!this.pending) this.pending = prepareRequest({kind:"call_plugin",data:{handler,input}});
+        if (!this.pending) {
+          const item=input?.id && this.items.find(item=>item.id===input.id);
+          const target=input?.execution_node ?? item?.execution_node ?? this.executionNode;
+          if(this.hosts.find(source=>sameNode(source.node,target))?.fault){this.error="executionUnavailable";return;}
+          this.pending = prepareHostCall(target,handler,input);
+        }
         const receipt = await completeRequest(this.pending);
-        if (receipt.Err && uncertain(receipt.Err.code)) { this.error = "unknown"; return; }
+        if (receipt.Err && uncertain(receipt.Err.code)) { this.error = receipt.Err.code==="unavailable"?"executionUnavailable":"unknown"; return; }
         const fault = receipt.Err ?? receipt.Ok?.data?.Err;
         if (fault) this.error = fault.code === "revision_conflict" ? "conflict"
-          : fault.code === "not_configured" ? "notConfigured" : "failed";
+          : fault.code === "not_configured" ? "notConfigured" : fault.code==="unavailable"?"executionUnavailable":"failed";
         forgetRequest(this.pending); this.pending = null; this.busy = false;
         if (!this.error) this.close(cx);
         this.refresh(cx);

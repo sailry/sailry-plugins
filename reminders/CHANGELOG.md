@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.17
+
+- Require the first Sailry version with execution-Node callback routing
+
 ## 0.1.16
 
 - Keep edits, deletion and delivery history on each reminder's original execution Node

@@ -8,10 +8,10 @@ async function fixture(packageName,outcome,validation=null) {
     .replace(/^import[\s\S]*?;\n/gm,'').replace('export default class','class');
   const notices=[],requests=[],forgotten=[],tasks=[],name=packageName==='reminders'?'Reminders':'ScheduledTasks';
   const Controller=vm.runInNewContext(`${source}\n${name}`,{View:class{},lead:()=>null,toast:value=>notices.push(value),
-    prepareRequest:value=>{requests.push(value);return 'original-request';},completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),
+    prepareHostCall:(node,handler,input)=>{requests.push({node,handler,input});return 'original-request';},completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),
     value:editor=>{if(validation)throw new Error(validation);return editor.draft;}});
-  const owner=new Controller(),draft={title:'Retained reminder',name:'Retained task'},editing={draft},items=[{id:'saved'}];
-  Object.assign(owner,{text:new Proxy({},{get:(_,key)=>key}),editing,items,busy:false,pending:null,error:null});
+  const owner=new Controller(),draft={execution_node:[1,...Array(31).fill(0)],title:'Retained reminder',name:'Retained task'},editing={draft},items=[{id:'saved'}];
+  Object.assign(owner,{text:new Proxy({},{get:(_,key)=>key}),editing,items,hosts:[],executionNode:[1,...Array(31).fill(0)],busy:false,pending:null,error:null});
   owner.refresh=()=>{};owner.close=()=>assert.fail('failed operations must keep their editor');
   const cx={notify(){},spawn:work=>tasks.push(work(cx))};
   return {owner,draft,editing,items,notices,requests,forgotten,cx,settle:()=>Promise.all(tasks)};

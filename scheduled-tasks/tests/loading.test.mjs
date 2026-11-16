@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 
+const node=[1,...Array(31).fill(0)];
+const sameNode=(a,b)=>JSON.stringify(a??node)===JSON.stringify(b??node);
 const editor=(await readFile(new URL('../dev.sailry.platform/desktop/editor.js',import.meta.url),'utf8'))
   .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'');
 const {lead,effortKey}=vm.runInNewContext(`${editor}\n({lead,effortKey})`);
@@ -19,10 +21,10 @@ async function fixture(packageName,overrides={}) {
   };
   const name=packageName==='reminders'?'Reminders':'ScheduledTasks';
   const Controller=vm.runInNewContext(`${source}\n${name}`,{
-    View:class{},lead,effortKey,context:()=>JSON.stringify({locale:'en'}),messages:()=>new Proxy({},{get:(_,key)=>key}),
+    View:class{},lead,effortKey,sameNode,sdkContext:()=>({execution_node:node}),context:()=>JSON.stringify({locale:'en'}),messages:()=>new Proxy({},{get:(_,key)=>key}),
     list:async()=>({Ok:await read()}),page:read,
     history:async()=>({Ok:{items:[],next_before:null}}),states:async()=>({}),
-    readProjectCatalog:async()=>({projects:[{id:'project',name:'Project'}],worktrees:[]}),
+    readResourceCatalog:async()=>({sources:[{node,projects:[{id:'project',name:'Project'}],worktrees:[]}]}),
     listModels:async()=>({models:[]}),listTeams:async()=>[],toast:notice=>notices.push(notice),
     ...overrides,
   });
@@ -43,13 +45,13 @@ for(const packageName of ['scheduled-tasks','reminders']) {
     const hold=(kind,value)=>()=>{calls.push(kind);return new Promise(resolve=>held.push(()=>resolve(value)));};
     const overrides={page:hold('records',{items:[{id:'saved'}],after:null}),list:hold('records',{Ok:{items:[{id:'saved'}],after:null}}),
       history:hold('history',{Ok:{items:[],next_before:null}}),states:hold('states',{}),
-      readProjectCatalog:hold('projects',{projects:[],worktrees:[]}),listModels:hold('models',{models:[]}),listTeams:hold('teams',[])};
+      readResourceCatalog:hold('projects',{sources:[{node,projects:[],worktrees:[]}]}),listModels:hold('models',{models:[]}),listTeams:hold('teams',[])};
     const setup=await fixture(packageName,overrides);
     setup.view.panel=packageName==='reminders'?{reminder:'saved'}:{task:'saved'};
     const loading=setup.read();
-    assert.deepEqual(calls,packageName==='reminders'?['records','history','projects']:['records','history','states','projects','models','teams']);
+    assert.deepEqual(calls,packageName==='reminders'?['records','projects']:['records','history','states','projects','models','teams']);
     assert.equal(setup.view.loaded,false);assert.equal(setup.view.loading,true);
-    held.forEach(resolve=>resolve());await loading;
+    for(let pass=0;pass<20;pass++){held.splice(0).forEach(resolve=>resolve());await Promise.resolve();}await loading;
     assert.equal(setup.view.loaded,true);assert.equal(setup.view.items[0].id,'saved');
     assert.equal(setup.view.historyLoaded,true);assert.deepEqual(setup.notices,[]);
   });

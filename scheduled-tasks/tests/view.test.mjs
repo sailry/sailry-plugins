@@ -364,11 +364,11 @@ test("consecutive failures count only the newest failed runs", () => {
 test("a data refresh loads only the open task's records", async () => {
   const requests = [];
   const ScheduledTasks = vm.runInNewContext(`${controller}\nScheduledTasks`, {
-    View:class {}, lead:() => null, context:() => JSON.stringify({locale:"en"}), messages,
+    View:class {}, lead:() => null, context:() => JSON.stringify({locale:"en"}),sdkContext:() => ({execution_node:[1,...Array(31).fill(0)]}), messages,
     list:async() => ({Ok:{items:[{id:"fresh"}], after:null}}),
     history:async input => { requests.push(input); return {Ok:{items:[{job:{id:"run", handler:"fresh"}}], next_before:null}}; },
     states:async() => ({fresh:{status:"running", started_ms:5}}),
-    readProjectCatalog:async() => ({projects:[], worktrees:[]}),
+    readResourceCatalog:async() => ({sources:[{node:[1,...Array(31).fill(0)],projects:[],worktrees:[]}]}),
     listModels:async() => ({models:[]}), listTeams:async() => [], showWorkspaceDetails() {},
   });
   const view = new ScheduledTasks(), jobs = [], cx = {notify() {}, spawn:job => jobs.push(job)};
@@ -385,8 +385,8 @@ test("a data refresh loads only the open task's records", async () => {
 test("manifest enables the details column and localized panel copy", async () => {
   const manifest = JSON.parse(await readFile(new URL("../plugin.json", import.meta.url), "utf8"));
   const extension = manifest.extensions["dev.sailry.platform"];
-  assert.equal(manifest.version, "0.1.19");
-  assert.equal(extension.min_sailry_version, "0.1.6");
+  assert.equal(manifest.version, "0.1.20");
+  assert.equal(extension.min_sailry_version, "0.2.0-alpha.2");
   assert.equal(extension.desktop.navigation_options.details, true);
   for (const file of ["details.js", "schedule.js"]) assert.ok(extension.desktop.resources.includes(`dev.sailry.platform/desktop/${file}`));
   assert.deepEqual(extension.actions, ["storage.read", "storage.write", "dispatch.manage", "sessions.start", "projects.read", "models.read", "teams.read", "conversation.read"]);
