@@ -35,9 +35,8 @@ function session(event, state, now) {
   if (!answered(event) || !text(event.body.token) || !Number.isSafeInteger(event.body.expires_at) || !Number.isSafeInteger(event.body.expires_at * 1000)) return reject('invalid_request');
   const expiry = event.body.expires_at * 1000;
   if (expiry <= now) return reject('expired');
-  // Renew five minutes early while the session still has that long to live.
   // The service endpoint is fixed: this version serves github.com accounts only.
-  return {kind: 'finish', grant: {kind: 'copilot', access: event.body.token, github: state.github, expires_at_ms: expiry - 300000 > now ? expiry - 300000 : expiry, endpoint: ENDPOINT, renewal_pending: false}};
+  return {kind: 'finish', grant: {kind: 'copilot', access: event.body.token, github: state.github, expires_at_ms: expiry, endpoint: ENDPOINT, renewal_pending: false}};
 }
 
 export function authorize({event, context, state, now_ms: now}) {

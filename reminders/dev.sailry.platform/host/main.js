@@ -1,12 +1,26 @@
-import { key, read, revision, commit, page, result } from "./records.js";
+import {context} from "sailry/sdk";
+import { key, read, revision, commit, page, result, node, sameNode, hostCall } from "./records.js";
 import {saveOperations, removeOperations} from "./mutations.js";
 import {presentation} from "./locales.js";
+import {execution} from "./schedules.js";
 export {initialize, reminders} from "./tools.js";
 export {history} from "./schedules.js";
 
 export async function list(input) { return result(() => page(input ?? {})); }
 export async function save(input) {
   return result(async () => {
+    if (input.id != null) {
+      const old = await read(input.id);
+      if (old.present) {
+        const target = await execution(old.value);
+        if (input.execution_node != null && !sameNode(target, input.execution_node)) {
+          throw Object.assign(new Error("Reminder remains on its original execution Node"), {code:"conflict"});
+        }
+        input = {...input, execution_node:target};
+      }
+    }
+    const target = node(input.execution_node ?? context().execution_node);
+    if (!sameNode(target, context().execution_node)) return hostCall(target, "save", input);
     const {item, operations} = await saveOperations(input);
     const outputs = await commit(operations);
     return {...item,revision:outputs[0].data.revision};
@@ -14,6 +28,11 @@ export async function save(input) {
 }
 export async function remove(input) {
   return result(async () => {
+    const old = await read(input.id);
+    if (old.present) {
+      const target = await execution(old.value);
+      if (!sameNode(target, context().execution_node)) return hostCall(target, "remove", input);
+    }
     await commit((await removeOperations(input)).operations);
     return {removed:true};
   });
@@ -26,7 +45,9 @@ export async function notify(input) {
       || old.value.notified_ms !== null || old.value.due_ms === null || old.value.due_ms > now) {
     return {skipped:true};
   }
-  const item = {...old.value,notified_ms:now};
+  const target = await execution(old.value);
+  if (!sameNode(target, context().execution_node)) return {skipped:true};
+  const item = {...old.value,execution_node:target,notified_ms:now};
   try {
     await commit([
       {kind:"write",data:{key:key(input.id),value:item,expected_revision:expected}},

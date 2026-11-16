@@ -1,3 +1,7 @@
+## 0.1.6
+
+- Normalize SIWC refresh timestamps to milliseconds without changing token lifetimes
+
 ## 0.1.5
 
 - Use a new plugin icon

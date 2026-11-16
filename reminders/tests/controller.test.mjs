@@ -4,6 +4,7 @@ import {readFile} from "node:fs/promises";
 import vm from "node:vm";
 import {messages} from "../dev.sailry.platform/desktop/locales.js";
 
+const node = [1,...Array(31).fill(0)];
 const plain = value => JSON.parse(JSON.stringify(value));
 const read = async path => (await readFile(new URL(path, import.meta.url), "utf8"))
   .replace(/^import .*;\n/gm, "").replace(/^export default /gm, "").replace(/^export /gm, "");
@@ -20,6 +21,7 @@ test("all loads pending and completed records across real page continuations", a
     }});
   }
   const page = vm.runInNewContext(`${records}\npage`, {
+    context:() => ({execution_node:node}),
     getValue:async key => plain(entries.get(key)),
     listKeys:async(prefix,after,limit) => {
       scans.push({prefix,after,limit});
@@ -29,9 +31,9 @@ test("all loads pending and completed records across real page continuations", a
     },
   });
   const Reminders = vm.runInNewContext(`${source}\nReminders`, {
-    View:class {},messages,context:() => JSON.stringify({locale:"en"}),
+    View:class {},messages,context:() => JSON.stringify({locale:"en"}),sdkContext:() => ({execution_node:node}),
     page:async input => {pages.push(plain(input));return page(input);},
-    readProjectCatalog:async() => ({projects:[],worktrees:[]}),
+    readResourceCatalog:async() => ({sources:[{node,name:"Current",projects:[],worktrees:[]}]}),
   });
   const view = new Reminders(), cx = {notify() {},spawn:task=>tasks.push(task)};
   view.init({},cx);
@@ -60,10 +62,10 @@ test("a data refresh loads deliveries only for the open reminder", async () => {
     {id:"b",project:null,title:"B",message:"",completed:false,due_ms:null,notified_ms:null,revision:"1"}];
   const requests = [], tasks = [];
   const Reminders = vm.runInNewContext(`${source}\nReminders`, {
-    View:class {},messages,context:() => JSON.stringify({locale:"en"}),showWorkspaceDetails() {},
+    View:class {},messages,context:() => JSON.stringify({locale:"en"}),sdkContext:() => ({execution_node:node}),showWorkspaceDetails() {},
     page:async () => ({items:plain(items),after:null}),
     history:async input => { requests.push(plain(input)); return {Ok:{items:[{id:"j1",handler:input.handler,status:"completed"}]}}; },
-    readProjectCatalog:async() => ({projects:[],worktrees:[]}),
+    readResourceCatalog:async() => ({sources:[{node,name:"Current",projects:[],worktrees:[]}]}),
   });
   const view = new Reminders(), cx = {notify() {},spawn:task=>tasks.push(task)};
   view.init({},cx);

@@ -16,7 +16,7 @@ function codexTokens(body=token,overrides={}) {
 
 test('keeps the two account protocols distinct',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
-  assert.equal(manifest.version,'0.1.5');
+  assert.equal(manifest.version,'0.1.6');
   const declarations=manifest.extensions['dev.sailry.platform'].model_auth;
   assert.deepEqual(declarations.map(item=>[item.id,item.authentication]),[['siwc','chat_gpt'],['codex','chat_gpt_oauth']]);
   assert.equal(declarations[0].flow.callback.path,'/auth/callback');
@@ -100,7 +100,15 @@ test('retains SIWC registration scopes and refresh hints',()=>{
   assert.equal(exchange.fields.client_id,previous.client_id);
   const grant=step(siwc,{kind:'response',status:200,body:{access_token:'new-access',refresh_token:'new-refresh',token_type:'Bearer',expires_in:3600,earliest_refresh_at:1790036100}},exchange.state,{previous}).grant;
   assert.equal(grant.client_id,previous.client_id);assert.equal(grant.id_token,previous.id_token);assert.deepEqual(grant.scopes,previous.scopes);
-  assert.equal(grant.account_id,previous.account_id);assert.equal(grant.earliest_refresh_at,1790036100);
+  assert.equal(grant.account_id,previous.account_id);assert.equal(grant.earliest_refresh_at,1790036100000);
+  for (const earliest of [1790036100,1790036100000]) {
+    const result=step(siwc,{kind:'response',status:200,body:{access_token:'new-access',refresh_token:'new-refresh',token_type:'Bearer',expires_in:3600,earliest_refresh_at:earliest}},exchange.state,{previous});
+    assert.equal(result.grant.earliest_refresh_at,1790036100000);
+  }
+  for (const earliest of [-1,1.5,'1790036100']) {
+    const result=step(siwc,{kind:'response',status:200,body:{access_token:'new-access',refresh_token:'new-refresh',token_type:'Bearer',expires_in:3600,earliest_refresh_at:earliest}},exchange.state,{previous});
+    assert.equal(result.kind,'reject');
+  }
   assert.equal(step(siwc,{kind:'response',status:200,body:{access_token:'new-access',token_type:'Bearer',expires_in:3600}},exchange.state,{previous}).kind,'reject');
 });
 for(const handler of ['codex','siwc'])runtimeTest(`${handler} uses production private translation`,async()=>{

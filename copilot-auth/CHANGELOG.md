@@ -1,3 +1,7 @@
+## 0.1.2
+
+- Preserve the provider token's real expiration time; the host controls refresh timing
+
 ## 0.1.1
 
 - Ask to accept the account risk before each sign-in

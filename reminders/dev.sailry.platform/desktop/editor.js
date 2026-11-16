@@ -1,6 +1,7 @@
 import { div } from "gpui-kit";
 import { Button, Checkbox, Field, VForm } from "gpui-component";
 import { SelectField } from "sailry/ui";
+import {sameNode} from "../host/records.js";
 import { TextField, createText, readText, releaseText,
   DateTimeField, createDateTime, readDateTime, releaseDateTime } from "sailry/forms";
 
@@ -26,18 +27,29 @@ export function value(editor) {
 }
 function projects(view, disabled) {
   const {text, editing} = view;
-  const items = [{id:"none",label:text.noProject}, ...view.catalog.projects.map(({id,name}) => ({id,label:name}))];
+  const items = [{id:"none",label:text.noProject}, ...view.catalog.projects
+    .filter(project => sameNode(project.node, editing.draft.execution_node)).map(({id,name}) => ({id,label:name}))];
   if (editing.draft.project !== null && !items.some(item => item.id === editing.draft.project)) {
     items.push({id:editing.draft.project,label:text.unavailableProject});
   }
   return SelectField.new("reminder-project", {label:text.project, placeholder:text.projectPlaceholder,
     selected:editing.draft.project ?? "none", items, disabled});
 }
+function hosts(view, disabled) {
+  const {text, editing} = view;
+  const items = view.hosts.map(source => ({id:JSON.stringify(source.node),
+    label:source.fault ? `${source.name} (${text.executionUnavailable})` : source.name}));
+  const selected = JSON.stringify(editing.draft.execution_node ?? null);
+  if (!items.some(item => item.id === selected)) items.push({id:selected,label:text.executionUnavailable});
+  return SelectField.new("reminder-host", {label:text.executionHost, selected, items,
+    disabled:disabled || !!editing.draft.id});
+}
 export function render(view) {
   const {text, editing} = view, disabled = view.busy || !!view.pending;
   const fields = new VForm().size('large').gap_y(8).w_full().gap_3()
     .child(new Field().label(text.title).child(TextField.new(editing.title, {disabled})))
     .child(new Field().label(text.message).child(TextField.new(editing.message, {disabled})))
+    .child(new Field().label(text.executionHost).child(hosts(view, disabled)))
     .child(new Field().label(text.project).child(projects(view, disabled)))
     .child(new Field().child(new Checkbox("reminder-timed").label(text.timed).checked(editing.timed).disabled(disabled)
       .on_change((checked, cx) => { editing.timed = checked; cx.notify(); })))

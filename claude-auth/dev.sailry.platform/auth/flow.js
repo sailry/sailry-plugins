@@ -43,7 +43,7 @@ export function authorize({event,context,state,now_ms:now}) {
       const body=event.body;
       if(!text(body?.access_token)||!text(body?.refresh_token)||!Number.isSafeInteger(body?.expires_in)||body.expires_in<0||!Number.isSafeInteger(now+body.expires_in*1000))return invalid();
       const refreshing=state.refreshing===true;
-      const grant={kind:'claude_oauth',access:body.access_token,refresh:body.refresh_token,expires_at_ms:Math.max(0,now+body.expires_in*1000-300000),renewal_pending:false,installation_id:context.previous?.installation_id??context.host_id,...identity(body,refreshing?context.previous:null,refreshing)};
+      const grant={kind:'claude_oauth',access:body.access_token,refresh:body.refresh_token,expires_at_ms:now+body.expires_in*1000,renewal_pending:false,installation_id:context.previous?.installation_id??context.host_id,...identity(body,refreshing?context.previous:null,refreshing)};
       if(grant.account_id&&grant.email&&(refreshing||grant.org_id))return finish(grant);
       return {...request('identity',{access:grant.access,bootstrap_agent:bootstrapAgent(context)},{phase:'identity',grant,refreshing}),optional:true};
     }

@@ -8,7 +8,7 @@ const context={previous:null,fields:{client_id:'9d1c250a-e61b-44d9-88ed-5944d196
 const step=(event,state=null,overrides={})=>authorize({event,state,context:{...context,...overrides},now_ms:now});
 test('declares the existing callback and token contracts',async()=>{
  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
- assert.equal(manifest.version,'0.1.4');
+ assert.equal(manifest.version,'0.1.5');
  const declaration=manifest.extensions['dev.sailry.platform'].model_auth[0];
  assert.match(declaration.warning.text,/Anthropic's terms/);
  assert.deepEqual(Object.keys(declaration.warning.locales).sort(),['de','es','fr','ja','ko','pt-BR','ru','zh-CN','zh-TW']);
@@ -33,7 +33,7 @@ test('keeps PKCE proof private and supports pasted codes',()=>{
 test('keeps rotation and expiry semantics',()=>{
  const pending=step({kind:'response',status:200,body:{access_token:'access',refresh_token:'refresh',expires_in:3600}},{phase:'tokens'});
  const result=step({kind:'response',status:503,body:null},pending.state);
- assert.deepEqual(result,{kind:'finish',grant:{kind:'claude_oauth',access:'access',refresh:'refresh',expires_at_ms:now+3300000,renewal_pending:false,installation_id:'install',account_id:null,email:null,org_id:null,org_name:null}});
+ assert.deepEqual(result,{kind:'finish',grant:{kind:'claude_oauth',access:'access',refresh:'refresh',expires_at_ms:now+3600000,renewal_pending:false,installation_id:'install',account_id:null,email:null,org_id:null,org_name:null}});
  assert.equal(step({kind:'refresh'},null,{previous:result.grant}).name,'refresh');
  for(const missing of ['access_token','refresh_token','expires_in']){
    const body={access_token:'access',refresh_token:'refresh',expires_in:3600};delete body[missing];

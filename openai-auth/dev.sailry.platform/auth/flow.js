@@ -11,6 +11,12 @@ function error(event) {
   if (event.kind !== 'response' || event.status >= 200 && event.status < 300) return null;
   return event.status === 410 ? {kind:'reject',code:'expired'} : [400,401,403].includes(event.status) ? denied() : invalid();
 }
+function refreshHint(value) {
+  if (value == null) return null;
+  if (!Number.isSafeInteger(value) || value < 0) return undefined;
+  const milliseconds = value < 100000000000 ? value * 1000 : value;
+  return Number.isSafeInteger(milliseconds) ? milliseconds : undefined;
+}
 function finish(kind,tokens,claims,context,now,selectedClient,refreshing=false) {
   const previous=refreshing ? context.previous : null;
   const expiry=expires(now,tokens.expires_in);
@@ -32,7 +38,9 @@ function finish(kind,tokens,claims,context,now,selectedClient,refreshing=false) 
     if (tokens.scope != null && typeof tokens.scope !== 'string') return invalid();
     const scopes=typeof tokens.scope === 'string' ? [...new Set(tokens.scope.split(/[\t\n\f\r ]+/).filter(Boolean))].sort() : previous?.scopes;
     if (!Array.isArray(scopes)) return invalid();
-    Object.assign(grant,{client_id:selectedClient,scopes,earliest_refresh_at:tokens.earliest_refresh_at ?? null});
+    const earliest=refreshHint(tokens.earliest_refresh_at);
+    if (earliest === undefined) return invalid();
+    Object.assign(grant,{client_id:selectedClient,scopes,earliest_refresh_at:earliest});
     if (account !== null || previous?.account_id != null) grant.account_id=account ?? previous.account_id;
     if (previous && previous.subject !== grant.subject) return denied();
   }

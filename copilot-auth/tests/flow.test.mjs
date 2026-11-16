@@ -30,11 +30,11 @@ function run(answers, overrides = {}) {
   }
 }
 const waits = effects => effects.filter(effect => effect.kind === 'wait').map(effect => effect.delay_ms);
-const grant = {kind: 'copilot', access: 'session-token', github: 'github-token', expires_at_ms: now + 1200000, endpoint: 'https://api.githubcopilot.com', renewal_pending: false};
+const grant = {kind: 'copilot', access: 'session-token', github: 'github-token', expires_at_ms: now + 1500000, endpoint: 'https://api.githubcopilot.com', renewal_pending: false};
 
 test('declares the device flow and the native credential', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json', import.meta.url), 'utf8'));
-  assert.equal(manifest.version, '0.1.1');
+  assert.equal(manifest.version, '0.1.2');
   const [declaration] = manifest.extensions['dev.sailry.platform'].model_auth;
   assert.match(declaration.warning.text, /GitHub's terms/);
   assert.deepEqual(Object.keys(declaration.warning.locales).sort(), ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN', 'zh-TW']);
@@ -131,9 +131,9 @@ test('rejects an invalid session answer', () => {
   assert.deepEqual(step(answer({...exchanged, expires_at: now / 1000}), state), {kind: 'reject', code: 'expired'});
 });
 
-test('renews early and pins the service endpoint', () => {
+test('retains true expiry and pins the service endpoint', () => {
   const state = {phase: 'session', github: 'github-token'};
-  assert.equal(step(answer(exchanged), state).grant.expires_at_ms, now + 1200000);
+  assert.equal(step(answer(exchanged), state).grant.expires_at_ms, now + 1500000);
   assert.equal(step(answer({...exchanged, expires_at: now / 1000 + 120}), state).grant.expires_at_ms, now + 120000);
   for (const endpoints of [undefined, {}, {api: 'https://api.business.githubcopilot.com'}, {api: 'https://copilot.example'}]) {
     assert.equal(step(answer({...exchanged, endpoints}), state).grant.endpoint, 'https://api.githubcopilot.com');
@@ -145,7 +145,7 @@ test('refreshes with the stored GitHub sign-in', () => {
   assert.deepEqual(effects.map(effect => effect.kind), ['request', 'finish']);
   assert.equal(effects[0].name, 'session');
   assert.deepEqual(effects[0].fields, {github: 'github-token'});
-  assert.deepEqual(effects[1].grant, {...grant, access: 'renewed-token', expires_at_ms: now + 1500000});
+  assert.deepEqual(effects[1].grant, {...grant, access: 'renewed-token', expires_at_ms: now + 1800000});
   assert.deepEqual(run([answer(null, 401)], {previous: grant}).at(-1), {kind: 'reject', code: 'permission_denied'});
   assert.deepEqual(step({kind: 'refresh'}, null, {previous: {...grant, github: undefined}}), {kind: 'reject', code: 'permission_denied'});
 });

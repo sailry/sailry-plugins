@@ -22,6 +22,19 @@ changes. Reads still use the package-scoped KV API, not a copied session or
 subscription state machine. Unknown saves retain their original request ID;
 closing the draft does not cancel or replay Node work.
 
+New reminders choose an execution host from the controller's resource directory.
+Project choices belong to that host. Each record retains `execution_node`; edits,
+deletion and delivery history call the same package handler on that Node, and
+cannot move an existing schedule. The host commits its personal record and local
+dispatch changes in one transaction. Personal record synchronization transfers
+data to the controller without creating another schedule.
+
+Offline execution hosts return an explicit failure. Missing legacy ownership is
+never inferred from a visible personal record: only an existing local dispatch
+handler or schedule proves its original host. Editing such a record on that host
+adds the owner field; other hosts preserve the record and refuse to create a
+replacement. Scheduled notifications also verify ownership before delivery.
+
 ## Callbacks
 
 The `reminders` conversation tool uses the session's project scope. Conversations

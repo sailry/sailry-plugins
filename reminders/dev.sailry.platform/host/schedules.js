@@ -1,5 +1,5 @@
 import { context, prepareRequest, completeRequest, forgetRequest } from "sailry/sdk";
-import { fault, key, result } from "./records.js";
+import { fault, key, result, read, node, sameNode, hostCall } from "./records.js";
 
 async function query(kind, data) {
   const action = data === undefined ? {kind} : {kind, data};
@@ -46,12 +46,27 @@ export async function removal(id) {
     ...(handler ? [dispatch("remove_handler", {name:id,expected_revision:exact(handler.revision)})] : []),
   ];
 }
+// Legacy records have no owner field. Only dispatch records on this Node prove
+// ownership; seeing a personal KV copy never authorizes a replacement schedule.
+export async function execution(item) {
+  if (item.execution_node != null) return node(item.execution_node);
+  const [schedules, handlers] = await Promise.all([query("list_schedules"), query("list_handlers")]);
+  if (!schedules.some(schedule => schedule.id === item.id) && !handlers.some(handler => handler.name === item.id)) {
+    throw fault("unavailable", "Reminder execution Node is unknown");
+  }
+  return node(context().execution_node);
+}
 // Native notification jobs for one reminder, newest first. Callbacks that skipped a
 // stale schedule delivered nothing and are omitted.
 export async function history(input = {}) {
   return result(async () => {
     const handler = input.handler;
     key(handler);
+    const record = await read(handler);
+    if (record.present) {
+      const target = await execution(record.value);
+      if (!sameNode(target, context().execution_node)) return hostCall(target, "history", {handler}, true);
+    }
     const items = [];
     let before = null;
     do {

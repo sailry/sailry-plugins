@@ -1,4 +1,4 @@
-import { context, getValue, listKeys, prepareTransaction, completeRequest, forgetRequest } from "sailry/sdk";
+import { context, getValue, listKeys, prepareHostCall, prepareTransaction, completeRequest, forgetRequest } from "sailry/sdk";
 
 export function fault(code, message) { return Object.assign(new Error(message), {code}); }
 export function key(id) {
@@ -10,6 +10,23 @@ export function key(id) {
 export function project(value) {
   if (value !== null) key(value);
   return value;
+}
+export function node(value) {
+  if (!Array.isArray(value) || value.length !== 32 || !value.some(byte => byte !== 0)
+      || value.some(byte => !Number.isInteger(byte) || byte < 0 || byte > 255)) {
+    throw fault("invalid_request", "Invalid execution Node");
+  }
+  return [...value];
+}
+export function sameNode(a, b) { return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((byte, index) => byte === b[index]); }
+export async function hostCall(target, handler, input, readOnly = false) {
+  const id = prepareHostCall(node(target), handler, input, readOnly);
+  const outcome = await completeRequest(id);
+  if (outcome.Err) throw fault(outcome.Err.code, outcome.Err.message);
+  forgetRequest(id);
+  const result = outcome.Ok.data;
+  if (result.Err) throw fault(result.Err.code, result.Err.message);
+  return result.Ok;
 }
 export async function read(id) {
   const entry = await getValue(key(id));
@@ -30,7 +47,7 @@ export function bytes(text) {
   }
   return length;
 }
-export function draft(input) {
+export function draft(input, capture = true) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw fault("invalid_request", "Invalid reminder");
   const id = input.id ?? context().invocation;
   key(id);
@@ -41,16 +58,18 @@ export function draft(input) {
       || (input.due_ms !== null && (!Number.isSafeInteger(input.due_ms) || input.due_ms < 0))) {
     throw fault("invalid_request", "Invalid reminder content or time");
   }
-  return {id, project:input.project, title:input.title.trim(), message:input.message, completed:input.completed, due_ms:input.due_ms};
+  const execution = input.execution_node == null ? capture ? node(context().execution_node) : null : node(input.execution_node);
+  return {id, execution_node:execution, project:input.project,
+    title:input.title.trim(), message:input.message, completed:input.completed, due_ms:input.due_ms};
 }
 export function stored(value, id) {
   try {
-    const item = draft(value);
+    const item = draft(value, false);
     if (item.id !== id || item.title !== value.title
         || (value.notified_ms !== null && (!Number.isSafeInteger(value.notified_ms) || value.notified_ms < 0))) {
       throw new Error("invalid record");
     }
-    return {...item, notified_ms:value.notified_ms};
+    return {...item, execution_node:value.execution_node == null ? null : node(value.execution_node), notified_ms:value.notified_ms};
   } catch (_) { throw fault("invalid_request", "Reminder storage is incompatible"); }
 }
 export async function commit(operations) {

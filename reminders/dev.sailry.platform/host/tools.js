@@ -1,6 +1,7 @@
-import {callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {project, page, read, fault} from "./records.js";
+import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
+import {project, page, read, fault, sameNode, hostCall} from "./records.js";
 import {saveOperations, removeOperations, transactionResult} from "./mutations.js";
+import {execution} from "./schedules.js";
 
 export function initialize({project:scope, tools}) {
   project(scope);
@@ -44,8 +45,19 @@ export async function reminders({arguments:input, step, state, outcome}) {
       if (old.value.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
       const changes = Object.fromEntries(["title","message","completed","due_ms"]
         .filter(key => Object.hasOwn(args,key)).map(key => [key,args[key]]));
+      const target = await execution(old.value);
+      if (!sameNode(target, context().execution_node)) {
+        return {result:await hostCall(target, "save", {...old.value,...changes,execution_node:target,revision:args.revision})};
+      }
       pending = await saveOperations({...old.value,...changes,revision:args.revision}, scope);
-    } else pending = await removeOperations(args, scope);
+    } else {
+      const old = await read(args.id);
+      if (!old.present) throw fault("not_found", "Reminder is unavailable");
+      if (old.value.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
+      const target = await execution(old.value);
+      if (!sameNode(target, context().execution_node)) return {result:await hostCall(target, "remove", args)};
+      pending = await removeOperations(args, scope);
+    }
     return {call:{operation:"storage.transaction",arguments:{operations:pending.operations}},
       state:{id:pending.item.id,removed:args.action === "delete"}};
   } catch (error) { return {result:{isError:true,error:{code:error.code ?? "invalid_request",message:error.message}}}; }

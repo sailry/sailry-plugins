@@ -1,11 +1,11 @@
 import { View } from "gpui-kit";
 import { context } from "sailry";
-import { prepareRequest, completeRequest, forgetRequest, nextChange, readProjectCatalog } from "sailry/sdk";
+import { context as sdkContext, prepareHostCall, completeRequest, forgetRequest, nextChange, readResourceCatalog } from "sailry/sdk";
 import { modal_closed,nextControlEvent,showWorkspaceDetails,toast } from "sailry/ui";
 import { messages } from "./locales.js";
 import { editor, release, value } from "./editor.js";
 import { render } from "./view.js";
-import {page} from "../host/records.js";
+import {page, sameNode} from "../host/records.js";
 import {history} from "../host/schedules.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
@@ -15,6 +15,7 @@ export default class Reminders extends View {
     this.text = messages(JSON.parse(context()).locale);
     this.items = []; this.showCompleted = true; this.loading = false; this.loaded = false; this.dirty = false;
     this.catalog = {projects:[],worktrees:[]}; this.projectFilter = "all";
+    this.executionNode = sdkContext().execution_node; this.hosts = [];
     this.panel = null; this.history = []; this.historyId = null; this.historyLoaded = false;
     this.busy = false; this.pending = null; this.error = null;
     this.editing = null; this.deleting = null; this.dialogId = 0;
@@ -48,17 +49,31 @@ export default class Reminders extends View {
           this.dirty = false;
           // Deliveries belong to the reminder open in the details panel only.
           const reminder = this.panel?.reminder ?? null;
-          const [items,jobs,catalog] = await Promise.all([
+          const [items,directory] = await Promise.all([
             (async()=>{const items=[];let after=null;do {
               const batch=await page({after});items.push(...batch.items);after=batch.after;
             }while(after!==null);return items;})(),
-            (async()=>reminder===null?[]:unwrap(await history({handler:reminder})).items)(),
-            readProjectCatalog(),
+            readResourceCatalog(),
           ]);
-          this.catalog = catalog; this.items = items; this.loaded = true;
+          this.hosts = directory.sources;
+          this.catalog = {projects:directory.sources.flatMap(source => source.projects.map(project => ({...project,node:source.node}))),
+            worktrees:directory.sources.flatMap(source => source.worktrees)};
+          this.items = items; this.loaded = true;
+          const selected = items.find(item => item.id === reminder);
+          let jobs = [], historyFailure = false;
+          if (selected) {
+            try {
+              if (selected.execution_node == null) jobs = unwrap(await history({handler:reminder})).items;
+              else {
+                const id = prepareHostCall(selected.execution_node, "history", {handler:reminder}, true);
+                try { jobs = unwrap(unwrap(await completeRequest(id)).data).items; }
+                finally { forgetRequest(id); }
+              }
+            } catch (_) { historyFailure = true; this.report("executionUnavailable"); }
+          }
           if (this.panel && !items.some(item => item.id === this.panel.reminder)) this.panel = null;
           if (reminder === (this.panel?.reminder ?? null)) {
-            this.history = jobs; this.historyId = reminder; this.historyLoaded = reminder !== null;
+            this.history = jobs; this.historyId = reminder; this.historyLoaded = reminder !== null && !historyFailure;
           }
           if (this.error === "loadFailed") this.error = null;
           cx.notify();
@@ -94,9 +109,15 @@ export default class Reminders extends View {
       else if (this.catalog.projects.some(project => project.id === event.value)
           || this.items.some(item => item.project === event.value)) this.projectFilter = event.value;
       else return;
+    } else if (event.id === "reminder-host" && this.editing && !this.editing.draft.id && !this.busy && !this.pending) {
+      const host = this.hosts.find(source => JSON.stringify(source.node) === event.value);
+      if (!host || host.fault) return;
+      this.editing.draft.execution_node = host.node;
+      if (!host.projects.some(project => project.id === this.editing.draft.project)) this.editing.draft.project = null;
     } else if (event.id === "reminder-project" && this.editing && !this.busy && !this.pending) {
       if (event.value === "none") this.editing.draft.project = null;
-      else if (this.catalog.projects.some(project => project.id === event.value)) this.editing.draft.project = event.value;
+      else if (this.catalog.projects.some(project => project.id === event.value &&
+          sameNode(project.node, this.editing.draft.execution_node))) this.editing.draft.project = event.value;
       else return;
     } else return;
     cx.notify();
@@ -120,6 +141,7 @@ export default class Reminders extends View {
   edit(item, cx) {
     if (this.busy || this.pending) return;
     this.close(cx); this.editing = editor(item, this.text); this.dialogId++; cx.notify();
+    if (!item) this.editing.draft.execution_node = this.executionNode;
   }
   close(cx) {
     if (this.busy) return;
@@ -138,15 +160,26 @@ export default class Reminders extends View {
     this.busy = true; this.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
-        if (!this.pending) this.pending = prepareRequest({kind:"call_plugin",data:{handler,input}});
+        if (!this.pending) {
+          const item = input?.id && this.items.find(item => item.id === input.id);
+          const target = item ? item.execution_node ?? this.executionNode : input?.execution_node;
+          if (target == null) { this.error = "executionUnknown"; return; }
+          if (this.hosts.find(source => sameNode(source.node, target))?.fault) {
+            this.error = "executionUnavailable"; return;
+          }
+          this.pending = prepareHostCall(target, handler, input);
+        }
         const receipt = await completeRequest(this.pending);
         if (receipt.Err) {
-          if (uncertain(receipt.Err.code)) { this.error = "unknown"; return; }
-          this.error = "failed";
+          if (uncertain(receipt.Err.code)) {
+            this.error = receipt.Err.code === "unavailable" ? "executionUnavailable" : "unknown"; return;
+          }
+          this.error = receipt.Err.code === "unavailable" ? "executionUnavailable" : "failed";
         } else {
           const result = receipt.Ok.data;
           if (result.Err) this.error = result.Err.code === "revision_conflict" ? "conflict"
-            : result.Err.code === "not_found" ? "projectUnavailable" : "failed";
+            : result.Err.code === "not_found" ? "projectUnavailable"
+            : result.Err.code === "unavailable" ? "executionUnavailable" : "failed";
         }
         forgetRequest(this.pending); this.pending = null;
         this.busy = false;

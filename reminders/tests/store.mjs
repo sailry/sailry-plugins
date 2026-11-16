@@ -5,13 +5,16 @@ export const clone = value => JSON.parse(JSON.stringify(value));
 export const id = number => `11111111-1111-4111-8111-${String(number).padStart(12,"0")}`;
 export const project = "22222222-2222-4222-8222-222222222222";
 export const foreign = "33333333-3333-4333-8333-333333333333";
-export const item = (number, changes = {}) => ({id:id(number),project,title:"Review",message:"",completed:false,
+export const executionNode = [1,...Array(31).fill(0)];
+export const otherNode = [2,...Array(31).fill(0)];
+export const item = (number, changes = {}) => ({id:id(number),execution_node:executionNode,project,title:"Review",message:"",completed:false,
   due_ms:null,notified_ms:null,...changes});
 
 export async function fixture(scope = {}) {
   const records = new Map(), requests = new Map(), receipts = new Map();
   const schedules = new Map(), handlers = new Map();
-  const prepared = [], queries = [], catalogReads = [], scans = [];
+  const prepared = [], queries = [], catalogReads = [], scans = [], hostCalls = [];
+  let host = async () => ({Err:{code:"unavailable",message:"Execution host unavailable"}});
   const notifications = [], jobs = [], results = new Map();
   let state = null, catalog = {projects:[{id:project,name:"Current"},{id:foreign,name:"Other"}],worktrees:[]};
   const get = key => clone(records.get(key) ?? {key,present:false,value:null,revision:"0"});
@@ -54,7 +57,7 @@ export async function fixture(scope = {}) {
     }
   }
   const sdk = {
-    context:() => ({invocation:id(999),package:{name:"reminders",digest:"fixture",config_revision:1},...scope}),
+    context:() => ({invocation:id(999),package:{name:"reminders",digest:"fixture",config_revision:1},execution_node:executionNode,...scope}),
     getValue:async key => get(key),
     listKeys:async(prefix,after,limit) => {
       scans.push({prefix,after,limit});
@@ -71,10 +74,15 @@ export async function fixture(scope = {}) {
     prepareTransaction:operations => {
       const request = `transaction-${prepared.length}`; prepared.push(clone(operations)); requests.set(request,operations); return request;
     },
+    prepareHostCall:(node,handler,input,readOnly=false) => {
+      const request = `host-${hostCalls.length}`, call = {node,handler,input,readOnly};
+      hostCalls.push(clone(call)); requests.set(request,{host:call}); return request;
+    },
     completeRequest:async request => {
       if (!receipts.has(request)) {
         const command = requests.get(request);
-        if (Array.isArray(command)) {
+        if (command.host) receipts.set(request, await host(command.host));
+        else if (Array.isArray(command)) {
           try { receipts.set(request,{Ok:{data:apply(command).data}}); }
           catch (error) { receipts.set(request,{Err:{code:error.code,message:error.message}}); }
         } else {
@@ -114,6 +122,7 @@ export async function fixture(scope = {}) {
   await main.evaluate();
   const namespace = name => cache.get(new URL(name,new URL("../dev.sailry.platform/host/",import.meta.url)).href).namespace;
   return {main:main.namespace,records:namespace("records.js"),mutations:namespace("mutations.js"),
-    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,notifications,jobs,results,
+    entries:records,prepared,queries,catalogReads,scans,seed,get,apply,schedules,handlers,notifications,jobs,results,hostCalls,
+    set host(value) {host=value;},
     get catalog() { return clone(catalog); },set catalog(value) {catalog=clone(value);},get state() {return clone(state);} };
 }

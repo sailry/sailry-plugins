@@ -6,10 +6,12 @@ import {messages} from "../dev.sailry.platform/desktop/locales.js";
 
 const source = (await readFile(new URL("../dev.sailry.platform/desktop/editor.js",import.meta.url),"utf8"))
   .replace(/^import[\s\S]*?;\n/gm,"").replace(/^export /gm,"");
+const node=[1,...Array(31).fill(0)],otherNode=[2,...Array(31).fill(0)];
+const sameNode=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const plain = value => JSON.parse(JSON.stringify(value));
 const controller = (await readFile(new URL("../dev.sailry.platform/desktop/main.js", import.meta.url), "utf8"))
   .replace(/^import .*;\n/gm, "").replace(/^export default /gm, "");
-const control = vm.runInNewContext(`${controller}\nReminders.prototype.control`, {View:class {}});
+const control = vm.runInNewContext(`${controller}\nReminders.prototype.control`, {View:class {},sameNode});
 function fixture() {
   const nodes = new Map(), texts = new Map(), dates = new Map(), released = [], created = [];
   function element(kind="div",id=null,props={}) {
@@ -26,7 +28,7 @@ function fixture() {
   }
   const constructors=Object.fromEntries(["Button","Checkbox","Field"]
     .map(kind=>[kind,function(id,label){return element(kind,id,{label});}]));
-  const api=vm.runInNewContext(`${source}\n({editor,release,value,render})`,{div:()=>element(),...constructors,
+  const api=vm.runInNewContext(`${source}\n({editor,release,value,render})`,{div:()=>element(),...constructors,sameNode,
     VForm:function(){return element("Form");},SelectField:{new:(id,props)=>element("SelectField",id,props)},
     theme:()=>({colors:{destructive:"danger"}}),window:{viewport_size:()=>({width:1200,height:900})},
     createText:(value,props)=>{const id=`text-${texts.size}`;texts.set(id,value);created.push({id,props});return id;},
@@ -34,7 +36,7 @@ function fixture() {
     createDateTime:value=>{const id="time";dates.set(id,value);return id;},readDateTime:id=>dates.get(id),releaseDateTime:id=>released.push(id),
     TextField:{new:(id,props)=>element("TextField",id,props)},DateTimeField:{new:(id,props)=>element("DateTimeField",id,props)},
   });
-  const text=messages("en"),cx={notify(){}},view={text,items:[],catalog:{projects:[{id:"current",name:"Current"}]},
+  const text=messages("en"),cx={notify(){}},view={text,items:[],catalog:{projects:[{id:"current",name:"Current",node}]},hosts:[{node,name:"Current",projects:[{id:"current",name:"Current"}]},{node:otherNode,name:"Other",projects:[]}],
     busy:false,pending:null,error:null,projectFilter:"current",close(){},save(){},
     control,
     projectName(id){return id===null ? text.noProject : this.catalog.projects.find(project=>project.id===id)?.name ?? text.unavailableProject;}};
@@ -42,7 +44,7 @@ function fixture() {
 }
 
 test("new drafts ignore project filters and preserve text field order", () => {
-  const setup=fixture(); setup.view.editing=setup.api.editor(null,setup.view.text); setup.render();
+  const setup=fixture(); setup.view.editing=setup.api.editor(null,setup.view.text); setup.view.editing.draft.execution_node=node; setup.render();
   assert.equal(setup.view.editing.draft.project,null);
   assert.deepEqual(setup.created.map(value=>value.props.label),["Title","Notes"]);
   assert.deepEqual(setup.created.map(value=>value.props.placeholder),["What needs doing?","Add a note"]);
@@ -62,7 +64,7 @@ test("new drafts ignore project filters and preserve text field order", () => {
 });
 
 test("unavailable associations keep their ID and change only after explicit selection", () => {
-  const setup=fixture(),item={id:"saved",project:"removed",revision:"3",title:"Saved",message:"",due_ms:null,completed:false};
+  const setup=fixture(),item={execution_node:node,id:"saved",project:"removed",revision:"3",title:"Saved",message:"",due_ms:null,completed:false};
   setup.view.editing=setup.api.editor(item,setup.view.text); setup.render();
   assert.equal(setup.nodes.get("reminder-project").props.selected,"removed");
   assert.equal(setup.nodes.get("reminder-project").props.items.at(-1).label,"Unavailable project");
@@ -81,4 +83,21 @@ test("unavailable associations keep their ID and change only after explicit sele
   setup.view.busy=false;
   setup.view.control({id:"reminder-project",value:"not-a-choice"},setup.cx);
   assert.equal(setup.api.value(setup.view.editing).project,"current");
+});
+
+test("new host selection confines project choices and stays fixed afterward", () => {
+  const setup=fixture();
+  setup.view.editing=setup.api.editor(null,setup.view.text);
+  setup.view.editing.draft.execution_node=node;
+  setup.view.editing.draft.project="current";
+  setup.view.control({id:"reminder-host",value:JSON.stringify(otherNode)},setup.cx);
+  assert.deepEqual(plain(setup.view.editing.draft.execution_node),otherNode);
+  assert.equal(setup.view.editing.draft.project,null);
+  setup.render();
+  assert.deepEqual(plain(setup.nodes.get("reminder-project").props.items),[{id:"none",label:"No project"}]);
+  setup.view.editing.draft.id="existing";
+  setup.view.control({id:"reminder-host",value:JSON.stringify(node)},setup.cx);
+  assert.deepEqual(plain(setup.view.editing.draft.execution_node),otherNode);
+  setup.render();
+  assert.equal(setup.nodes.get("reminder-host").props.disabled,true);
 });

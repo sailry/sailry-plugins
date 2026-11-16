@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.16
+
+- Keep edits, deletion and delivery history on each reminder's original execution Node
+- Select an execution host for new reminders from the controller resource directory
+- Preserve unknown legacy ownership without creating replacement schedules
+
 ## 0.1.15
 
 - Keep the card border on rows that are not open in the details panel

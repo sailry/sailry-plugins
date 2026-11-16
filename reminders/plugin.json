@@ -1,12 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "reminders",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "To-dos and scheduled reminders",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.0-alpha.1",
       "storage": {
         "collections": [
           {
@@ -61,6 +61,19 @@
                   ],
                   "default": null,
                   "minimum": 0
+                },
+                "execution_node": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "minItems": 32,
+                  "maxItems": 32,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
                 }
               }
             }
@@ -108,7 +121,11 @@
         ],
         "turn": {
           "initialize": "initialize"
-        }
+        },
+        "read_only": [
+          "list",
+          "history"
+        ]
       },
       "tools": [
         {

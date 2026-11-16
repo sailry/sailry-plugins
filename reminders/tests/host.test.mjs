@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {fixture, item, id, project, foreign, clone} from "./store.mjs";
+import {fixture, item, id, project, foreign, clone, executionNode, otherNode} from "./store.mjs";
 
 const start = setup => setup.main.initialize({project,tools:["reminders"]});
 const call = (setup, args) => setup.main.reminders({arguments:args,step:0,state:null,outcome:null});
@@ -330,4 +330,51 @@ test("history scans job pages for one reminder and omits skipped callbacks", asy
   assert.deepEqual(actions.filter(action => action.kind === "read_result").map(action => action.data.id), ["delivered", "skipped"]);
   assert.equal(setup.prepared.length, 0);
   assert.equal(clone(await setup.main.history({handler:"not-an-id"})).Err.code, "invalid_request");
+});
+
+test("foreign edits route once without local schedules", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{execution_node:otherNode}));
+  setup.host = async call => ({Ok:{data:{Ok:call.handler === "remove" ? {removed:true} :
+    call.handler === "history" ? {items:[]} : {...call.input,revision:"2"}}}});
+  const saved = await setup.main.save({...item(1,{execution_node:otherNode,title:"Changed"}),revision:"1"});
+  assert.equal(saved.Ok.revision,"2");
+  assert.equal((await setup.main.remove({id:id(1),revision:"1"})).Ok.removed,true);
+  assert.deepEqual(clone(await setup.main.history({handler:id(1)})),{Ok:{items:[]}});
+  assert.deepEqual(setup.hostCalls.map(call => call.handler),["save","remove","history"]);
+  assert.ok(setup.hostCalls.every(call => JSON.stringify(call.node) === JSON.stringify(otherNode)));
+  assert.equal(setup.hostCalls.at(-1).readOnly,true);
+  assert.equal(setup.prepared.length,0);
+  assert.equal(setup.schedules.size,0);
+});
+
+test("offline owners and ownership changes never create replacements", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{execution_node:otherNode}));
+  const offline = await setup.main.save({...item(1,{execution_node:otherNode}),revision:"1"});
+  assert.equal(offline.Err.code,"unavailable");
+  const moved = await setup.main.save({...item(1,{execution_node:executionNode}),revision:"1"});
+  assert.equal(moved.Err.code,"conflict");
+  assert.equal(setup.hostCalls.length,1);
+  assert.equal(setup.prepared.length,0);
+  assert.equal(setup.schedules.size,0);
+});
+
+test("legacy ownership needs local dispatch evidence", async () => {
+  const setup = await fixture();
+  const legacy = item(1); delete legacy.execution_node; setup.seed(legacy);
+  assert.equal((await setup.main.save({...legacy,revision:"1"})).Err.code,"unavailable");
+  assert.equal(setup.prepared.length,0);
+  setup.handlers.set(id(1),{name:id(1),revision:1});
+  const saved = await setup.main.save({...legacy,revision:"1"});
+  assert.deepEqual(clone(saved.Ok.execution_node),executionNode);
+  assert.equal(setup.schedules.size,1);
+});
+
+test("foreign notification copies never deliver locally", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{execution_node:otherNode,due_ms:Date.now()-1000}));
+  assert.deepEqual(clone(await setup.main.notify({id:id(1),revision:"1"})),{skipped:true});
+  assert.equal(setup.notifications.length,0);
+  assert.equal(setup.prepared.length,0);
 });
