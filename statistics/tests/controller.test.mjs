@@ -114,7 +114,7 @@ test('failed inventories retain peers and retry through refresh',async()=>{
   assert.equal(setup.calls.filter(call=>call[0]==='watch').length,2);
 });
 
-test('provider choices route only to their Node and keep resource IDs bare',async()=>{
+test('provider choices retain their Node and bare resource IDs',async()=>{
   const reports=[],setup=fixture({readUsageChoices:async(query,target)=>{reports.push([plain(query),target]);return {resources:[]};}});
   const first=setup.tasks.length;
   setup.view.filter('provider',`${remote}:same-provider`,setup.cx);
