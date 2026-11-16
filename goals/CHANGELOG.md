@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.4
+
+- Keep replies completed during a manual pause out of goal totals when their callbacks arrive after Resume
+- Preserve continuation admission when a paused reply's completion callback arrives late
+
 ## 0.2.3
 
 - Shorten test labels without changing assertions

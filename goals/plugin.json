@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "goals",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -67,6 +67,10 @@
                   ]
                 },
                 "seq": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "held_through": {
                   "type": "integer",
                   "minimum": 0
                 },

@@ -42,7 +42,7 @@ function argumentsOf(args,required,optional=[]) {
     || Object.keys(args).some(name=>!required.includes(name) && !optional.includes(name))) fail('Invalid goal arguments');
 }
 
-const blank=(id,text,t)=>({id,objective:text,version:1,status:'active',reason:null,detail:null,seq:0,waiting:false,claim:null,
+const blank=(id,text,t)=>({id,objective:text,version:1,status:'active',reason:null,detail:null,seq:0,held_through:0,waiting:false,claim:null,
   evidence:null,edited:false,wrap:null,idle:0,notice:null,turns:0,chain:0,tokens:0,window_tokens:0,elapsed_ms:0,window_ms:0,
   since_ms:t,created_ms:t,finished_ms:null});
 function stored(entry) {
@@ -252,6 +252,9 @@ async function advanceGoal(args) {
   // A turn older than one already handled must not write: any write would
   // withdraw the continuation the newer turn's callback queued.
   if (!goal || args.sequence<=goal.seq) return {};
+  // A reply that finished during a sticky pause stays outside the goal,
+  // even when its callback arrives after Resume made the goal active.
+  if (!args.automatic && args.sequence<=(goal.held_through ?? 0)) return {};
   if (entry.restored) {
     // Restored history carries the goal but not the right to run it.
     const restored=await shown(entry,false);
@@ -348,10 +351,14 @@ export async function control(args) {
     break;
   case 'resume': {
     if (goal.status==='active') fail('The goal is already active','conflict');
-    const next=resumed(base);
+    let next=resumed(base);
     // A goal does not run in Plan mode; it starts when a turn runs outside it.
     if ((await readSession()).config.mode==='plan') {await commit([write(entry,timed(paused(next,'plan'),t))]);break;}
     const page=await recent(),lim=await limits();
+    if (goal.status==='paused' && sticky(goal.reason)) {
+      const finished=page.runs.filter(run=>['completed','continued','cancelled','interrupted','failed'].includes(run.status));
+      next={...next,held_through:finished.reduce((latest,run)=>Math.max(latest,run.sequence),goal.held_through ?? 0)};
+    }
     const unpause={kind:'queue_pause',data:{session:context().session,expected_revision:page.queue,paused:false}};
     const facts={count:0,limit:lim.turns,tokens:next.window_tokens,token_budget:lim.tokens,elapsed:Math.floor(next.window_ms/60000),
       minutes:lim.minutes,resumed:true,wrap:null};

@@ -90,7 +90,7 @@ const user={automatic:false,marker:null},loop={automatic:true,marker:null},audit
 test('the manifest declares three tools, both markers and the turn hooks',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.2.3');assert.equal(extension.api_version,'v1');
+  assert.equal(manifest.version,'0.2.4');assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool=>tool.name),['get_goal','create_goal','update_goal']);
   assert.equal(extension.tools[1].handler.approval,true);
   assert.deepEqual(extension.host.turn,{initialize:'initialize',before_model:null,after_turn:'ended'});
@@ -348,6 +348,41 @@ test('Stop pauses and a reply resumes; Pause holds until Resume',async t=>{
     f.host.refuse='running';
     await f.api.control({kind:'resume',goal_id:f.goal().id});
     assert.deepEqual([f.goal().status,f.goal().waiting,f.host.continued.length,f.host.unpaused],['active',true,1,1]);
+  });
+  await t.test('Resume preserves paused reply accounting in either callback order',async()=>{
+    for (const callbackFirst of [true,false]) {
+      const f=await fixture();
+      await f.started();
+      await f.api.control({kind:'pause',goal_id:f.goal().id});
+      await f.api.ended(f.automatic(1,{status:'cancelled'}));
+      const reply=f.turn(),before=f.goal();
+      f.host.runs=[{turn:reply.turn,sequence:reply.sequence,status:'completed',origin:null,error_code:null}];
+      if (callbackFirst) await f.api.ended(reply);
+      await f.api.control({kind:'resume',goal_id:f.goal().id});
+      const revision=f.entry('goal').revision;
+      if (!callbackFirst) await f.api.ended(reply);
+      assert.equal(f.entry('goal').revision,revision,'a held reply must not withdraw the resumed continuation');
+      assert.deepEqual([f.goal().turns,f.goal().tokens,f.goal().window_tokens],[before.turns,before.tokens,before.window_tokens]);
+      assert.equal(f.goal().held_through,reply.sequence);
+      assert.equal(f.host.continued.at(-1).user,true);
+      await f.api.ended(f.automatic(1));
+      assert.deepEqual([f.goal().turns,f.goal().tokens],[before.turns+1,before.tokens+120]);
+    }
+  });
+  await t.test('Resume still counts a reply that remains in flight',async()=>{
+    const f=await fixture();
+    await f.started();
+    await f.api.control({kind:'pause',goal_id:f.goal().id});
+    await f.api.ended(f.automatic(1,{status:'cancelled'}));
+    const reply=f.turn(),before=f.goal();
+    f.host.runs=[{turn:reply.turn,sequence:reply.sequence,status:'running',origin:null,error_code:null}];
+    f.host.refuse='running';
+    await f.api.control({kind:'resume',goal_id:f.goal().id});
+    assert.equal(f.goal().waiting,true);
+    f.host.refuse=null;
+    await f.api.ended(reply);
+    assert.deepEqual([f.goal().turns,f.goal().tokens,f.goal().waiting],[before.turns+1,before.tokens+120,false]);
+    assert.equal(f.host.continued.length,2);
   });
 });
 
