@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {State,query,choices,nodeId,unit,offset} from '../dev.sailry.platform/desktop/state.js';
+import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.platform/desktop/state.js';
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
@@ -36,12 +36,55 @@ test('cursor pagination retains prior geometry and rejects stale or incomplete o
   assert(!state.accept({cursor:'9',all:false,view:null},next));assert(state.ready());
   assert(state.turn(1));assert.equal(state.query.before,null);
 });
-test('bound pages reject aggregate reports and page-level host retargeting',()=>{
+test('aggregate pages retain source identity without host controls',()=>{
   const state=new State('a'),generation=state.start();
   assert(!state.select('host','all'));assert(!state.select('host','b'));assert.equal(state.node,'a');
-  assert(!state.accept({cursor:'1',all:true,view:{summary:report,complete:true}},generation));
-  assert.equal(state.data(),null);assert(!state.turn(2));
-  assert(state.accept({cursor:'2',all:false,view:{report,connected:true,refreshing:false}},generation));assert(state.turn(2));
+  const summary={...report,groups:[{node:'b',group:{key:{kind:'project',data:'same'}}}]};
+  assert(state.all);
+  assert(state.accept({cursor:'1',all:true,view:{sources:[{node:'b',view:{report:{cursor:'9'},connected:true,refreshing:false}}],summary,complete:true}},generation));
+  assert.equal(state.data().groups[0].node,'b');assert.equal(state.resourceCursor(),'b:9');assert(state.turn(2));
+  assert.equal(state.query.before.node,'node-a');assert.equal(state.query.before.sequence,position.sequence);
+});
+test('project and provider filters route their owning nodes',()=>{
+  const state=new State('local');
+  assert(state.select('project',resourceId('host-b','same-project')));
+  assert.equal(state.node,'host-b');assert.equal(state.all,false);assert.deepEqual(state.query.projects,['same-project']);
+  assert(state.select('provider',resourceId('host-b','same-provider')));
+  assert.deepEqual(state.query.providers,['same-provider']);assert.equal(state.selected('provider'),'host-b:same-provider');
+  assert(!state.select('provider',resourceId('host-a','same-provider')));assert.equal(state.node,'host-b');
+  assert(state.select('provider',''));assert.equal(state.node,'host-b');assert.equal(state.all,false);
+  assert(state.select('project',''));assert.equal(state.all,true);assert.equal(state.node,'local');
+  assert(state.select('provider','host-a:same-provider'));assert.equal(state.node,'host-a');assert.equal(state.all,false);
+  assert(state.select('model','model-name'));assert.deepEqual(state.query.models,['model-name']);
+  assert(state.select('provider',''));assert.equal(state.all,true);
+  assert(state.select('model','model-name'));assert.equal(state.all,true);assert.deepEqual(state.query.models,['model-name']);
+});
+test('project choices match inventories even without usage',()=>{
+  const state=new State('host-a'),inventory=[
+    {node:'host-a',label:'Laptop',projects:[{id:'same',name:'App'}],providers:[{id:'p',name:'Local',models:['one']}]},
+    {node:'host-b',label:'Server',projects:[{id:'same',name:'App'}],providers:[{id:'p',name:'Remote',models:['two']}]},
+  ];
+  let options=choices(state,inventory,[{node:'host-a',kind:'project',data:'removed'}],text);
+  assert.deepEqual(options.project.map(item=>item.id),['','host-a:same','host-b:same']);
+  assert.deepEqual(options.project.map(item=>item.label),['All projects','App · Laptop','App · Server']);
+  assert.deepEqual(options.provider.map(item=>item.id),['','host-a:p','host-b:p']);
+  assert(state.select('provider','host-b:p'));options=choices(state,inventory,[],text);
+  assert.deepEqual(options.model.map(item=>item.id),['','two']);
+  assert(state.select('project','host-b:same'));options=choices(state,inventory,[],text);
+  assert.deepEqual(options.provider.map(item=>item.id),['','host-b:p']);
+  assert.deepEqual(options.model.map(item=>item.id),['','two']);
+  assert(state.select('provider','host-b:p'));options=choices(state,inventory,[],text);
+  assert.deepEqual(options.model.map(item=>item.id),['','two']);
+});
+test('partial overview keeps honest data and source failures',()=>{
+  const state=new State('a'),generation=state.start();
+  state.accept({cursor:'1',all:true,view:{summary:{...report,groups:[]},complete:false,sources:[
+    {node:'a',view:{report:{cursor:'1'},connected:true,refreshing:false}},
+    {node:'b',view:{connected:false,refreshing:false,error:{code:'unavailable'}}},
+  ]}},generation);
+  assert.equal(state.data().requests,report.requests);assert.equal(state.view.partial,true);
+  assert.equal(state.view.error,null);assert.equal(state.overview.sources[1].view.error.code,'unavailable');
+  assert.equal(state.ready(),false);assert.equal(state.turn(2),false);
 });
 test('revoked access clears retained pagination data while transient errors preserve it',()=>{
   for(const code of ['not_configured','not_found','permission_denied','revision_conflict']) {

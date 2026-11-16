@@ -54,6 +54,19 @@ test('initial reads keep filters without fabricated usage',()=>{
   }
 });
 
+test('partial host failure stays visible beside available totals',()=>{
+  const setup=fixture(),{state}=setup.view;
+  const report={totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
+  setup.view.sources=[{node:'local',label:'Laptop'},{node:'remote',label:'Server'}];
+  state.accept({cursor:'1',all:true,view:{summary:report,complete:false,sources:[
+    {node:'local',view:{connected:true,refreshing:false,report:{cursor:'1'}}},
+    {node:'remote',view:{connected:false,refreshing:false,error:{code:'unavailable'}}},
+  ]}},state.start());
+  setup.render();
+  assert.equal(setup.nodes.get('usage-partial').items[0],'Some hosts are out of date · Server');
+  assert.ok(setup.nodes.has('usage-summary'));assert.ok(setup.nodes.has('usage-requests'));
+});
+
 test('filter refreshes retain report sections and avoid flow changes',()=>{
   const setup=fixture(),{state}=setup.view;
   const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};

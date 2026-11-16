@@ -1,3 +1,8 @@
+## 0.1.34
+
+- List projects from all execution hosts, including projects without usage, and route project and provider filters to their owning host
+- Combine all-project usage across hosts, retain model filtering and show partial host failures
+
 ## 0.1.33
 
 - Leave the context ring and its panel to the application, which now shows them in the composer

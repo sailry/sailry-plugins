@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.0-alpha.1",
       "actions": [
         "usage.read",
         "conversation.read"

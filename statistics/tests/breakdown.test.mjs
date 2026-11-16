@@ -45,3 +45,14 @@ test('ties sort by name and the first rows stay visible',()=>{
   assert.equal(VISIBLE,6);
   assert.deepEqual(rows.slice(0,VISIBLE).map(row=>row.name),['m0','m1','m2','m3','m4','m5']);
 });
+
+test('same resource UUIDs stay separate across Nodes',()=>{
+  const catalog={providers:new Map([['a:p','Laptop model'],['b:p','Host model']]),
+    projects:new Map([['a:proj','Local project'],['b:proj','Remote project']]),hosts:new Map([['a','Laptop'],['b','Server']])};
+  const groups=[{node:'a',...model('p','same',metrics('10','0'))},{node:'b',...model('p','same',metrics('20','0'))}];
+  assert.deepEqual(breakdown(groups,'provider',catalog,text).map(row=>[row.id,row.name,row.total]),
+    [['b:p','Host model',20n],['a:p','Laptop model',10n]]);
+  assert.deepEqual(breakdown(groups,'model',catalog,text).map(row=>row.note),['Host model · Server','Laptop model · Laptop']);
+  const projects=breakdown(['a','b'].map(node=>({node,key:{kind:'project',data:'proj'},metrics:metrics('1','0')})),'project',catalog,text);
+  assert.deepEqual(projects.map(row=>row.id),['a:project:proj','b:project:proj']);
+});

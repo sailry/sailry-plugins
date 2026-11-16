@@ -19,11 +19,18 @@ const swatches = text => div().h_flex().flex_wrap().gap_3().children(SERIES.map(
 const missing = text => ({text:text.composer_metric_unknown,text_tone:'muted'});
 /** Table row and header heights; a table showing every row adds FRAME for its header divider and border. */
 const ROW=36,HEADER=32,FRAME=3;
-/** Inventory names for the report's Node. */
+/** Resource labels retain the Node identity even when UUIDs coincide. */
 function catalog(view,data) {
-  const inventory=view.inventory?.node===data.node ? view.inventory : null;
-  return {providers:new Map((inventory?.providers ?? []).map(item=>[item.id,item.name])),
-    projects:new Map((inventory?.projects ?? []).map(item=>[item.id,item.name]))};
+  const inventories=Array.isArray(view.inventory) ? view.inventory : view.inventory ? [view.inventory] : [];
+  const providers=new Map(),projects=new Map(),hosts=new Map();
+  for(const source of inventories) {
+    hosts.set(source.node,source.label ?? source.node.slice(0,8));
+    for(const [key,items] of [[providers,source.providers],[projects,source.projects]])for(const item of items ?? []) {
+      key.set(`${source.node}:${item.id}`,item.name);
+      if(source.node===data.node)key.set(item.id,item.name);
+    }
+  }
+  return {providers,projects,hosts};
 }
 
 function composition(parts,sum) {
@@ -154,6 +161,12 @@ export function render(view) {
   const {state}=view,data=state.data();
   const body=column().id('usage-content').relative().w_full().max_w(1040).mx_auto().p_6().gap_4()
     .child(filters(view));
+  if(state.view?.partial || view.inventoryErrors?.length) {
+    const failed=new Set([...(view.inventoryErrors ?? []),...(state.overview?.sources ?? [])
+      .filter(source=>source.view?.error || !source.view?.connected).map(source=>source.node)]);
+    const names=[...failed].map(node=>view.sources?.find(source=>source.node===node)?.label ?? node.slice(0,8));
+    body.child(muted([view.text.usage_partial,...names].join(' · ')).id('usage-partial'));
+  }
   if(data)body.child(card('usage-summary',summary(view,data.totals)))
     .child(card('usage-trend-card',activity(view,data)))
     .child(card('usage-breakdown-card',distribution(view,data)))

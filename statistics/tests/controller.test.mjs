@@ -20,7 +20,7 @@ test('shared timing format preserves request display units',()=>{
   assert.equal(duration('1000000',text),'1.00 s');
 });
 
-function fixture() {
+function fixture(overrides={}) {
   const tasks = [], events = [], controls = [], calls = [], notices=[],cx = {spawn:task => tasks.push(task), notify() {}};
   const {Usage} = vm.runInNewContext(`${source}\n({Usage})`, {
     View:class {}, context:() => JSON.stringify({node,locale:'en'}), State, RANGES, query, choices, messages,
@@ -28,10 +28,15 @@ function fixture() {
     header_action:async () => { if (!events.length) throw new Error('closed'); return events.shift(); },
     nextControlEvent:async () => { if (!controls.length) throw new Error('closed'); return controls.shift(); },
     selectHost:() => assert.fail('Usage filters must not navigate'),
+    usageSources:()=>[{node,label:'Local'},{node:remote,label:'Remote'}],
+    nextUsageSources:async()=>{throw new Error('closed');},
+    readUsageInventory:async target=>{calls.push(['inventory',target]);return {node:target,projects:[{id:'project-a',name:'Project'}],providers:[]};},
+    readUsageChoices:async (_query,target)=>{calls.push(['choices',target]);return {resources:[]};},
     watchUsage:(query,all,target=node) => calls.push(['watch',plain(query),all,target]),
     nextUsageChange:async () => { throw new Error('closed'); },
     refreshUsage:() => calls.push(['refresh']),
     toast:value=>notices.push(value),
+    ...overrides,
   });
   const view = new Usage();
   view.init({},cx);
@@ -52,7 +57,7 @@ test('declares one independent Host-owned workspace page', async () => {
   assert.equal(extension.api_version, 'v1');
 });
 
-test('uses the bound Shell host and rejects page-level host changes', async () => {
+test('routes project filters without adding a host selector', async () => {
   const setup = fixture();
   assert.deepEqual(plain(setup.view.filters().selects.map(select => select.id)), ['usage-filter-project','usage-filter-provider','usage-filter-model']);
   setup.select('host',remote);
@@ -64,10 +69,10 @@ test('uses the bound Shell host and rejects page-level host changes', async () =
   const {range,selects} = setup.view.filters();
   assert.deepEqual(plain(range.items.map(item => item.label)), ['24 hours','7 days','30 days','90 days','1 year']);
   assert.equal(range.selected, '30d');
-  assert.equal(selects[0].selected, `${setup.view.state.generation}:project-a`);
+  assert.equal(selects[0].selected, `${setup.view.state.generation}:${node}:project-a`);
   assert.equal(selects[0].label, 'All projects');
   assert(selects.every(select => select.items.every(item => item.id.startsWith(`${setup.view.state.generation}:`))));
-  assert.deepEqual(setup.calls.filter(call => call[0] === 'watch').map(call => call.slice(2)), [[false,node],[false,node],[false,node]]);
+  assert.deepEqual(setup.calls.filter(call => call[0] === 'watch').map(call => call.slice(2)), [[true,node],[false,node],[false,node]]);
   assert.equal(setup.view.state.node, node);
   assert.deepEqual(setup.view.state.query.providers, []);
   assert.deepEqual(setup.view.state.query.projects, ['project-a']);
@@ -80,9 +85,72 @@ test('header keeps only the title and refresh action', () => {
   assert.deepEqual(plain(header.actions.map(action => action.id)), ['usage-refresh']);
 });
 
+test('loads projects before the first usage report',async()=>{
+  const setup=fixture();
+  assert.equal(setup.view.state.data(),null);
+  await setup.tasks[0](setup.cx);await setup.tasks[2](setup.cx);
+  const options=setup.view.filters().selects[0].items;
+  assert.deepEqual(plain(options.map(item=>item.id)),[`1:`,`1:${node}:project-a`,`1:${remote}:project-a`]);
+  assert.equal(setup.view.state.data(),null);
+  setup.view.filter('project',`${remote}:project-a`,setup.cx);
+  const selected=setup.calls.filter(call=>call[0]==='watch').at(-1);
+  assert.equal(selected[2],false);assert.equal(selected[3],remote);assert.deepEqual(selected[1].projects,['project-a']);
+  setup.view.filter('provider',`${remote}:provider-a`,setup.cx);
+  assert.deepEqual(setup.calls.filter(call=>call[0]==='watch').at(-1)[1].providers,['provider-a']);
+  setup.view.filter('project','',setup.cx);setup.view.filter('model','shared-model',setup.cx);
+  const all=setup.calls.filter(call=>call[0]==='watch').at(-1);
+  assert.equal(all[2],true);assert.deepEqual(all[1].models,['shared-model']);
+});
+
+test('failed inventories retain peers and retry through refresh',async()=>{
+  const setup=fixture({readUsageInventory:async target=>{
+    if(target===remote)throw new Error('offline');
+    return {node:target,projects:[{id:'empty',name:'No usage'}],providers:[]};
+  }});
+  await setup.tasks[0](setup.cx);await setup.tasks[2](setup.cx);
+  assert.deepEqual(plain(setup.view.inventoryErrors),[remote]);
+  assert(setup.view.filters().selects[0].items.some(item=>item.id===`1:${node}:empty`));
+  setup.view.refresh(setup.cx);
+  assert.equal(setup.calls.filter(call=>call[0]==='watch').length,2);
+});
+
+test('provider choices route only to their Node and keep resource IDs bare',async()=>{
+  const reports=[],setup=fixture({readUsageChoices:async(query,target)=>{reports.push([plain(query),target]);return {resources:[]};}});
+  const first=setup.tasks.length;
+  setup.view.filter('provider',`${remote}:same-provider`,setup.cx);
+  await setup.tasks[first](setup.cx);await setup.tasks[first+1](setup.cx);await setup.tasks[first+2](setup.cx);
+  assert.equal(reports.length,1);assert.equal(reports[0][1],remote);
+  assert.deepEqual(reports[0][0].projects,[]);assert.deepEqual(reports[0][0].providers,[]);
+  const watched=setup.calls.filter(call=>call[0]==='watch').at(-1);
+  assert.deepEqual(watched[1].providers,['same-provider']);assert.equal(watched[2],false);assert.equal(watched[3],remote);
+});
+
+test('stale inventories cannot restore removed sources',async()=>{
+  let release,changes=0;
+  const setup=fixture({readUsageInventory:target=>target===remote ? new Promise(resolve=>{release=resolve;}) : Promise.resolve({node:target,projects:[],providers:[]}),
+    nextUsageSources:async()=>{if(changes++)throw new Error('closed');return [{node,label:'Local'}];}});
+  const pending=setup.tasks[2](setup.cx);
+  await setup.tasks[5](setup.cx);
+  release({node:remote,projects:[{id:'stale',name:'Removed host'}],providers:[]});await pending;
+  assert.equal(setup.view.inventory.some(source=>source.node===remote),false);
+  assert.equal(setup.view.filters().selects[0].items.some(item=>item.id.includes('stale')),false);
+});
+
+test('new sources restart aggregate observation automatically',async()=>{
+  let changes=0;
+  const setup=fixture({nextUsageSources:async()=>{
+    if(changes++)throw new Error('closed');
+    return [{node,label:'Local'},{node:remote,label:'New host'}];
+  }});
+  await setup.tasks[5](setup.cx);
+  assert.equal(setup.view.sources[1].label,'New host');
+  assert.equal(setup.calls.filter(call=>call[0]==='watch').length,2);
+  assert.equal(setup.calls.filter(call=>call[0]==='watch').at(-1)[2],true);
+});
+
 test('failed observers retain honest feedback and retry the current query', async () => {
   const setup = fixture();
-  await setup.tasks[0](setup.cx);
+  await setup.tasks[4](setup.cx);
   assert.equal(setup.view.error, 'usage_read_failed');
   assert.equal(setup.notices.length,1);assert.equal(setup.notices[0].kind,'error');
   setup.events.push('usage-refresh');

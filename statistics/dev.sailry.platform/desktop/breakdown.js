@@ -29,18 +29,20 @@ function add(row, metrics) {
 
 function identity(group, mode, names, text) {
   const {kind, data} = group.key;
-  const provider = id => group.name ?? names.providers.get(id) ?? id.slice(0, 8);
+  const prefix=group.node ? `${group.node}:` : '';
+  const provider = id => group.name ?? names.providers.get(`${prefix}${id}`) ?? names.providers.get(id) ?? id.slice(0, 8);
   if (kind === 'model') {
-    if (mode === 'model') return {id:`${data.provider}:${data.model}`, name:data.model, note:provider(data.provider), provider:data.provider};
-    if (mode === 'provider') return {id:data.provider, name:provider(data.provider), note:null, provider:data.provider};
+    const host=group.node ? names.hosts?.get(group.node) : null;
+    if (mode === 'model') return {id:`${prefix}${data.provider}:${data.model}`, name:data.model, note:[provider(data.provider),host].filter(Boolean).join(' · '), provider:data.provider};
+    if (mode === 'provider') return {id:`${prefix}${data.provider}`, name:provider(data.provider), note:host, provider:data.provider};
     return null;
   }
   if (mode !== 'project') return null;
   // Conversations without a project, connection or assistant share one unassigned row.
   if (kind === 'session') return {id:'session', name:text.usage_unassigned, note:null};
-  if (kind === 'project') return {id:`project:${data}`, name:group.name ?? names.projects.get(data) ?? data.slice(0, 8), note:null};
+  if (kind === 'project') return {id:`${prefix}project:${data}`, name:group.name ?? names.projects.get(`${prefix}${data}`) ?? names.projects.get(data) ?? data.slice(0, 8), note:group.node ? names.hosts?.get(group.node) : null};
   if (kind === 'connection' || kind === 'assistant')
-    return {id:`${kind}:${JSON.stringify(data)}`, name:group.name ?? text.usage_unassigned, note:null};
+    return {id:`${prefix}${kind}:${JSON.stringify(data)}`, name:group.name ?? text.usage_unassigned, note:group.node ? names.hosts?.get(group.node) : null};
   return null;
 }
 
