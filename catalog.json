@@ -19053,7 +19053,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19490,6 +19490,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.18",
+          "commit": "8277f4d29ef1af43574c6e97459a6d6c7bdab61d",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Compare original reminder content across hosts before using the execution Node's local revision\n- Preserve edits and reject concurrent content changes without recreating schedules\n- Keep pending notifications valid across acknowledgement-only revision changes",
+            "locales": {
+              "zh-CN": "- 跨主机操作先核对提醒原内容，再使用执行主机的本地版本提交\n- 保留编辑草稿，拒绝并发内容变更，不重复创建定时计划\n- 同步确认仅改变版本号时，待执行通知仍可正常送达"
+            }
+          }
+        },
+        {
           "version": "0.1.17",
           "commit": "02cbd44e241783ad3843ff55585f48f1f843761e",
           "min_sailry_version": "0.2.0-alpha.2",
@@ -19659,9 +19670,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Require the first Sailry version with execution-Node callback routing",
+        "text": "- Compare original reminder content across hosts before using the execution Node's local revision\n- Preserve edits and reject concurrent content changes without recreating schedules\n- Keep pending notifications valid across acknowledgement-only revision changes",
         "locales": {
-          "zh-CN": "- 要求支持执行主机回调路由的 Sailry 版本"
+          "zh-CN": "- 跨主机操作先核对提醒原内容，再使用执行主机的本地版本提交\n- 保留编辑草稿，拒绝并发内容变更，不重复创建定时计划\n- 同步确认仅改变版本号时，待执行通知仍可正常送达"
         }
       }
     },
@@ -19818,7 +19829,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20566,8 +20577,19 @@
       ],
       "versions": [
         {
+          "version": "0.1.21",
+          "commit": "8277f4d29ef1af43574c6e97459a6d6c7bdab61d",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Compare original task content before editing or running a task on another host\n- Use the execution Node's local revision and retain stale drafts without overwriting newer changes\n- Fence manual queue admission against concurrent personal-data synchronization",
+            "locales": {
+              "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
+            }
+          }
+        },
+        {
           "version": "0.1.20",
-          "commit": "02cbd44e241783ad3843ff55585f48f1f843761e",
+          "commit": "3f4cea8bea99169c4dc32f0bf4c97e2990ccbc9c",
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Choose an execution host for new schedules from the controller directory\n- Keep task edits, execution, queue controls and history on the original host\n- Read model and team choices from the selected execution host",
@@ -20762,9 +20784,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Choose an execution host for new schedules from the controller directory\n- Keep task edits, execution, queue controls and history on the original host\n- Read model and team choices from the selected execution host",
+        "text": "- Compare original task content before editing or running a task on another host\n- Use the execution Node's local revision and retain stale drafts without overwriting newer changes\n- Fence manual queue admission against concurrent personal-data synchronization",
         "locales": {
-          "zh-CN": "- 新建定时任务可从主控目录选择执行主机\n- 编辑、运行、队列控制与记录始终由原主机处理\n- 从所选执行主机读取模型和团队选项"
+          "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
         }
       }
     },
@@ -22399,7 +22421,7 @@
       "versions": [
         {
           "version": "0.1.34",
-          "commit": "28a43dd9b0b9715c13eaa52ab2586101d95d5c57",
+          "commit": "8cb14a13a3c45519e5d3dac9fac2b2da4dad3a6b",
           "min_sailry_version": "0.2.0-alpha.1",
           "release_notes": {
             "text": "- List projects from all execution hosts, including projects without usage, and route project and provider filters to their owning host\n- Combine all-project usage across hosts, retain model filtering and show partial host failures",
