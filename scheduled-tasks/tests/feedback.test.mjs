@@ -25,11 +25,13 @@ for(const packageName of ['reminders','scheduled-tasks']) {
   });
 
   test(`${packageName} conflict and uncertainty preserve drafts and recovery ownership`,async()=>{
-    for(const code of ['revision_conflict','outcome_unknown']) {
-      const setup=await fixture(packageName,{Err:{code}});setup.owner.save(setup.cx);await setup.settle();
+    for(const code of ['revision_conflict','outcome_unknown'])for(const nested of [false,true]) {
+      const outcome=nested?{Ok:{data:{Err:{code}}}}:{Err:{code}};
+      const setup=await fixture(packageName,outcome);setup.owner.save(setup.cx);await setup.settle();
       assert.equal(setup.owner.editing,setup.editing);assert.equal(setup.owner.items,setup.items);assert.equal(setup.notices.length,1);
-      assert.equal(setup.notices[0].message,code==='outcome_unknown'?'unknown':packageName==='reminders'?'failed':'conflict');
+      assert.equal(setup.notices[0].message,code==='outcome_unknown'?'unknown':'conflict');
       assert.equal(setup.notices[0].kind,'error');assert.equal(setup.owner.pending,code==='outcome_unknown'?'original-request':null);
+      assert.deepEqual(setup.forgotten,code==='outcome_unknown'?[]:['original-request']);
       assert.equal(setup.requests.length,1);
     }
   });
