@@ -14210,7 +14210,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "goals",
-        "version": "0.2.3",
+        "version": "0.2.4",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -14276,6 +14276,10 @@
                         ]
                       },
                       "seq": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "held_through": {
                         "type": "integer",
                         "minimum": 0
                       },
@@ -14709,6 +14713,17 @@
       ],
       "versions": [
         {
+          "version": "0.2.4",
+          "commit": "3c1e4876c612e60285c2c2357ecef8dd35a95754",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Keep replies completed during a manual pause out of goal totals when their callbacks arrive after Resume\n- Preserve continuation admission when a paused reply's completion callback arrives late",
+            "locales": {
+              "zh-CN": "- 手动暂停期间已完成的回复，即使结束回调晚于“继续”到达，也不计入目标统计\n- 暂停期间回复的结束回调迟到时，保留已安排的目标继续轮次"
+            }
+          }
+        },
+        {
           "version": "0.2.3",
           "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
           "min_sailry_version": "0.1.6",
@@ -14899,17 +14914,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Shorten test labels without changing assertions\n- Correct the production SDK history fixture and verify configured goal limits",
+        "text": "- Keep replies completed during a manual pause out of goal totals when their callbacks arrive after Resume\n- Preserve continuation admission when a paused reply's completion callback arrives late",
         "locales": {
-          "zh-CN": "- 缩短测试名称，保持断言不变\n- 修正生产 SDK 历史记录测试数据，并验证配置的目标限制",
-          "zh-TW": "- 縮短測試名稱，保持斷言不變\n- 修正正式 SDK 歷史記錄測試資料，並驗證設定的目標限制",
-          "ja": "- アサーションを変更せずにテスト名を短縮\n- 本番 SDK の履歴テストデータを修正し、設定された目標制限を検証",
-          "ko": "- 검증 내용을 변경하지 않고 테스트 이름 단축\n- 실제 SDK 기록 테스트 데이터를 수정하고 설정된 목표 제한 검증",
-          "fr": "- Raccourcir les noms des tests sans modifier les assertions\n- Corriger les données de test de l’historique du SDK de production et vérifier les limites configurées",
-          "de": "- Testnamen kürzen, ohne die Prüfungen zu ändern\n- Verlaufstestdaten des Produktions-SDK korrigieren und konfigurierte Ziellimits prüfen",
-          "es": "- Acortar los nombres de las pruebas sin cambiar las aserciones\n- Corregir los datos de prueba del historial del SDK de producción y verificar los límites configurados",
-          "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções\n- Corrigir os dados de teste do histórico do SDK de produção e verificar os limites configurados",
-          "ru": "- Сократить названия тестов без изменения проверок\n- Исправить тестовые данные истории рабочего SDK и проверить заданные ограничения целей"
+          "zh-CN": "- 手动暂停期间已完成的回复，即使结束回调晚于“继续”到达，也不计入目标统计\n- 暂停期间回复的结束回调迟到时，保留已安排的目标继续轮次"
         }
       }
     },
