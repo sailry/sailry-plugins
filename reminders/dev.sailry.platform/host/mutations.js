@@ -1,15 +1,15 @@
 import {context, readProjectCatalog} from "sailry/sdk";
-import {key, read, revision, draft, stored, fault, sameNode} from "./records.js";
+import {key, read, revision, draft, stored, fault, sameNode, checkBase} from "./records.js";
 import {changes, removal, execution} from "./schedules.js";
 
 function owned(item, project) {
   if (project !== undefined && item.project !== project) throw fault("permission_denied", "Reminder belongs to another project");
 }
 export async function saveOperations(input, project) {
-  const item = draft(input), expected = revision(input.revision), old = await read(item.id);
+  const item = draft(input), old = await read(item.id);
   owned(item, project);
   if (old.present) owned(old.value, project);
-  if (old.revision !== expected) throw fault("revision_conflict", "Reminder changed");
+  const expected = checkBase(input, old);
   const target = old.present ? await execution(old.value) : item.execution_node;
   if (!sameNode(target, context().execution_node) || !sameNode(item.execution_node, target)) {
     throw fault("conflict", "Reminder remains on its original execution Node");
@@ -26,10 +26,10 @@ export async function saveOperations(input, project) {
     ...await changes(item, String(BigInt(expected) + 1n))]};
 }
 export async function removeOperations(input, project) {
-  const expected = revision(input.revision), old = await read(input.id);
+  const old = await read(input.id);
   if (!old.present) throw fault("not_found", "Reminder is unavailable");
   owned(old.value, project);
-  if (old.revision !== expected) throw fault("revision_conflict", "Reminder changed");
+  const expected = checkBase(input, old);
   if (!sameNode(await execution(old.value), context().execution_node)) {
     throw fault("conflict", "Reminder remains on its original execution Node");
   }

@@ -379,7 +379,6 @@ test("foreign notification copies never deliver locally", async () => {
   assert.equal(setup.prepared.length,0);
 });
 
-
 test("remote listings use executor revisions and preserve stale-write rejection", async () => {
   const source = await fixture(), owner = await fixture({execution_node:otherNode});
   source.seed(item(1,{execution_node:otherNode}), "9");
@@ -390,11 +389,11 @@ test("remote listings use executor revisions and preserve stale-write rejection"
   assert.equal(listed[0].revision, "4");
   assert.equal(listed[0].title, "Current on owner");
   assert.equal(listed[1].revision, "1");
-  const saved = await source.main.save({...listed[0],title:"Edited"});
+  const saved = await source.main.save({...listed[0],title:"Edited",expected_value:listed[0]});
   assert.equal(saved.Ok.revision, "5");
   assert.equal(owner.schedules.size, 1);
   assert.equal(source.schedules.size, 0);
-  const stale = await source.main.remove({id:listed[0].id,revision:listed[0].revision});
+  const stale = await source.main.remove({id:listed[0].id,revision:listed[0].revision,expected_value:listed[0]});
   assert.equal(stale.Err.code, "revision_conflict");
   assert.equal(owner.get(`reminder/${listed[0].id}`).value.title, "Edited");
   start(source);
@@ -414,4 +413,69 @@ test("offline listings retain copies without writable revisions", async () => {
   assert.equal(listed[0].revision, null);
   assert.equal(listed[1].revision, "1");
   assert.equal(setup.prepared.length, 0);
+});
+
+test("same content uses executor revisions for edits and removal", async () => {
+  const source=await fixture(),target=await fixture({execution_node:otherNode});
+  const original=item(1,{execution_node:otherNode,project:null});
+  source.seed(original,"2");target.seed(original,"9");
+  source.host=async call=>({Ok:{data:await target.main[call.handler](call.input)}});
+  const saved=await source.main.save({...original,title:"Changed",revision:"2"});
+  assert.equal(saved.Ok.revision,"10");
+  assert.equal(target.get(`reminder/${original.id}`).value.title,"Changed");
+  assert.equal(target.prepared[0][0].data.expected_revision,"9");
+  assert.equal(source.prepared.length,0);
+  source.seed(target.get(`reminder/${original.id}`).value,"3");
+  const removed=await source.main.remove({id:original.id,revision:"3"});
+  assert.equal(removed.Ok.removed,true);
+  assert.equal(target.get(`reminder/${original.id}`).present,false);
+  assert.equal(target.prepared[1][0].data.expected_revision,"10");
+  assert.equal(target.schedules.size,0);
+});
+
+test("different executor content rejects stale edits and removal", async () => {
+  for(const handler of ["save","remove"]) {
+    const source=await fixture(),target=await fixture({execution_node:otherNode});
+    const original=item(1,{execution_node:otherNode,project:null});
+    source.seed(original,"2");target.seed({...original,message:"Concurrent edit"},"9");
+    source.host=async call=>({Ok:{data:await target.main[call.handler](call.input)}});
+    const input=handler==="save"?{...original,title:"Stale edit",revision:"2"}:{id:original.id,revision:"2"};
+    const result=await source.main[handler](input);
+    assert.equal(result.Err.code,"revision_conflict");
+    assert.equal(target.get(`reminder/${original.id}`).value.message,"Concurrent edit");
+    assert.equal(target.prepared.length,0);
+    assert.equal(target.schedules.size,0);
+    assert.equal(source.prepared.length,0);
+  }
+});
+
+test("target changes after content validation still fail local CAS", async () => {
+  const setup=await fixture(),original=item(1,{project:null});
+  setup.seed(original,"9");
+  const pending=await setup.mutations.saveOperations({...original,title:"Changed",revision:"2",
+    expected_value:setup.records.snapshot(original)});
+  setup.seed({...original,message:"Raced"},"10");
+  assert.throws(()=>setup.apply(pending.operations),/Value changed/);
+  assert.equal(setup.get(`reminder/${original.id}`).value.message,"Raced");
+  assert.equal(setup.handlers.size,0);
+  assert.equal(setup.schedules.size,0);
+});
+
+test("delivery content survives acknowledgement revision changes", async () => {
+  const setup=await fixture(),original=item(1,{project:null,due_ms:Date.now()-1000});
+  setup.seed(original,"9");
+  const input={id:original.id,revision:"2",expected_value:setup.records.snapshot(original)};
+  assert.deepEqual(clone(await setup.main.notify(input)),{delivered:true});
+  assert.equal(setup.prepared[0][0].data.expected_revision,"9");
+  assert.equal(setup.notifications.length,1);
+  assert.deepEqual(clone(await setup.main.notify(input)),{skipped:true});
+});
+
+test("queued delivery skips a later content change", async () => {
+  const setup=await fixture(),original=item(1,{project:null,due_ms:Date.now()-1000});
+  setup.seed({...original,title:"Changed"},"9");
+  assert.deepEqual(clone(await setup.main.notify({id:original.id,revision:"2",
+    expected_value:setup.records.snapshot(original)})),{skipped:true});
+  assert.equal(setup.notifications.length,0);
+  assert.equal(setup.prepared.length,0);
 });

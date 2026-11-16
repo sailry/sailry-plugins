@@ -29,6 +29,13 @@ cannot move an existing schedule. The host commits its personal record and local
 dispatch changes in one transaction. Personal record synchronization transfers
 data to the controller without creating another schedule.
 
+Source and executor KV revisions are independent. Existing-resource calls may
+carry `expected_value`, the original business record without its projected
+revision. The execution host compares that content before using its own current
+revision in the atomic transaction. Editors retain the original record across
+refreshes, so concurrent changes fail without overwriting them. Ordinary local
+calls without `expected_value` keep their existing revision check.
+
 Offline execution hosts return an explicit failure. Missing legacy ownership is
 never inferred from a visible personal record: only an existing local dispatch
 handler or schedule proves its original host. Editing such a record on that host

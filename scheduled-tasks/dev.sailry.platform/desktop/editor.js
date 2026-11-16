@@ -1,7 +1,7 @@
 import {div} from "gpui-kit";
 import {Button, Field, VForm} from "gpui-component";
 import {ModelPopup, SegmentedTabs, SelectField, Toggle} from "sailry/ui";
-import {sameNode} from "../host/records.js";
+import {sameNode, snapshot} from "../host/records.js";
 import {TextField, createText, readText, releaseText,
   DateTimeField, createDateTime, readDateTime, releaseDateTime} from "sailry/forms";
 
@@ -10,7 +10,7 @@ export function editor(item, text) {
     : {revision:"0",name:"",prompt:"",queue:"default",project:null,worktree:null,
       config:null,execution:"model",team:null,models:{},enabled:true,timing:{kind:"once",data:{at_ms:Date.now() + 300000}}};
   const data = draft.timing.data;
-  const editing = {draft,kind:draft.timing.kind,model:draft.config ? `${draft.config.provider}/${draft.config.model}` : null,
+  const editing = {draft,original:item ? snapshot(item) : null,kind:draft.timing.kind,model:draft.config ? `${draft.config.provider}/${draft.config.model}` : null,
     modelLoading:false,modelVersion:0,leadKey:null,leadError:false,
     name:createText(draft.name,{label:text.name,placeholder:text.namePlaceholder}),
     prompt:createText(draft.prompt,{label:text.prompt,placeholder:text.promptPlaceholder,multiline:true}),

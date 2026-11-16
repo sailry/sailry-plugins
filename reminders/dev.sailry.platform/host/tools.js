@@ -1,5 +1,5 @@
 import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {project, page, read, fault, sameNode, hostCall} from "./records.js";
+import {project, page, read, fault, sameNode, hostCall, snapshot} from "./records.js";
 import {saveOperations, removeOperations, transactionResult} from "./mutations.js";
 import {execution} from "./schedules.js";
 
@@ -51,7 +51,8 @@ export async function reminders({arguments:input, step, state, outcome}) {
         if (!current) throw fault("not_found", "Reminder is unavailable");
         if (current.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
         if (current.revision !== args.revision) throw fault("revision_conflict", "Reminder changed");
-        return {result:await hostCall(target, "save", {...current,...changes,execution_node:target,revision:args.revision})};
+        return {result:await hostCall(target, "save", {...current,...changes,execution_node:target,revision:current.revision,
+          expected_value:snapshot(current)})};
       }
       pending = await saveOperations({...old.value,...changes,revision:args.revision}, scope);
     } else {
@@ -64,7 +65,7 @@ export async function reminders({arguments:input, step, state, outcome}) {
         if (!current) throw fault("not_found", "Reminder is unavailable");
         if (current.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
         if (current.revision !== args.revision) throw fault("revision_conflict", "Reminder changed");
-        return {result:await hostCall(target, "remove", args)};
+        return {result:await hostCall(target, "remove", {...args, revision:current.revision, expected_value:snapshot(current)})};
       }
       pending = await removeOperations(args, scope);
     }

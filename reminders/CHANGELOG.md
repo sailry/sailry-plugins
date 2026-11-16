@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.20
+
+- Compare original reminder content across hosts before using the execution Node's local revision
+- Preserve edits and reject concurrent content changes without recreating schedules
+- Keep pending notifications valid across acknowledgement-only revision changes
+
 ## 0.1.19
 
 - Retain the original request when a nested operation has an uncertain outcome.

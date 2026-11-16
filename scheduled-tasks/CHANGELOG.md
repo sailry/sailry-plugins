@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.23
+
+- Compare original task content before editing or running a task on another host
+- Use the execution Node's local revision and retain stale drafts without overwriting newer changes
+- Fence manual queue admission against concurrent personal-data synchronization
+
 ## 0.1.22
 
 - Retain the original request when a nested operation has an uncertain outcome.

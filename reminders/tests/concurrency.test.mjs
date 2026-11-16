@@ -30,7 +30,7 @@ for(const name of ['reminders','scheduled-tasks']) {
     const held=[],file=name==='reminders'?'schedules':'dispatch';
     const records=name==='scheduled-tasks'
       ?vm.runInNewContext(`${await source(name,'records')}\n({execution,requireConfig})`)
-      :{requireConfig(){}};
+      :vm.runInNewContext(`${await source(name,'records')}\n({snapshot})`);
     const changes=vm.runInNewContext(`${await source(name,file)}\nchanges`,{
       context:()=>({package:{name},execution_node:[1,...Array(31).fill(0)]}),...records,
       prepareRequest:command=>command.data.action.kind,

@@ -13,6 +13,32 @@ export function revision(value) {
   }
   return value;
 }
+function ordered(value) {
+  if (Array.isArray(value)) return value.map(ordered);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, ordered(value[key])]));
+  }
+  return value;
+}
+export function snapshot(value) {
+  const {id, execution_node = null, name, prompt, project = null, worktree = null, config,
+    execution = "team", team = null, models = {}, timing, enabled, queue} = value;
+  return JSON.parse(JSON.stringify({id, execution_node, name, prompt, project, worktree, config,
+    execution, team:team === null ? null : {id:team.id, revision:null}, models,
+    timing:timing?.kind === "weekly" ? {...timing, data:{...timing.data,
+      weekdays:[...timing.data.weekdays].sort((a,b) => a-b)}} : timing, enabled, queue}));
+}
+export function checkBase(input, entry) {
+  const expected = revision(input.revision);
+  // Source and executor revisions are independent. An explicit original value
+  // proves content equality before using this Node's revision for its CAS.
+  if (Object.hasOwn(input, "expected_value")) {
+    if (!entry.present || JSON.stringify(ordered(snapshot(entry.value))) !== JSON.stringify(ordered(snapshot(input.expected_value)))) {
+      throw fault("revision_conflict", "Task changed");
+    }
+  } else if (entry.revision !== expected) throw fault("revision_conflict", "Task changed");
+  return entry.revision;
+}
 export function node(value) {
   if (!Array.isArray(value) || value.length !== 32 || !value.some(byte => byte !== 0)
       || value.some(byte => !Number.isInteger(byte) || byte < 0 || byte > 255)) {
@@ -110,9 +136,8 @@ export function requireConfig(config) {
   if (!config) throw fault("not_configured", "Task requires an explicit model");
 }
 export async function checked(input) {
-  const expected = revision(input.revision);
   const old = await read(input.id);
-  if (old.revision !== expected) throw fault("revision_conflict", "Task changed");
+  checkBase(input, old);
   return old;
 }
 export async function read(id) {

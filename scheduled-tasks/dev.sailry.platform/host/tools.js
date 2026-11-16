@@ -1,5 +1,5 @@
 import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {read, fault, timing, execution, sameNode, hostCall} from "./records.js";
+import {read, fault, timing, execution, sameNode, hostCall, snapshot} from "./records.js";
 import {listing, saveOperations, removeOperations, transactionResult} from "./mutations.js";
 import {executor} from "./dispatch.js";
 
@@ -69,7 +69,8 @@ export async function scheduled_tasks({arguments:input, step, state, outcome}) {
         if (!current) throw fault("not_found", "Task is unavailable");
         if (current.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
         if (current.revision !== args.revision) throw fault("revision_conflict", "Task changed");
-        return {result:await hostCall(target,"save",{...select(args,current),...changes,execution_node:target,revision:args.revision})};
+        return {result:await hostCall(target,"save",{...select(args,current),...changes,execution_node:target,revision:current.revision,
+          expected_value:snapshot(current)})};
       }
       pending=await saveOperations({...select(args,old.value),...changes,revision:args.revision},scope.project);
     } else {
@@ -82,7 +83,7 @@ export async function scheduled_tasks({arguments:input, step, state, outcome}) {
         if (!current) throw fault("not_found", "Task is unavailable");
         if (current.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
         if (current.revision !== args.revision) throw fault("revision_conflict", "Task changed");
-        return {result:await hostCall(target, "remove", args)};
+        return {result:await hostCall(target, "remove", {...args, revision:current.revision, expected_value:snapshot(current)})};
       }
       pending=await removeOperations(args,scope.project);
     }

@@ -1,13 +1,13 @@
 import { div } from "gpui-kit";
 import { Button, Checkbox, Field, VForm } from "gpui-component";
 import { SelectField } from "sailry/ui";
-import {sameNode} from "../host/records.js";
+import {sameNode, snapshot} from "../host/records.js";
 import { TextField, createText, readText, releaseText,
   DateTimeField, createDateTime, readDateTime, releaseDateTime } from "sailry/forms";
 
 export function editor(item, text) {
   const draft = item ? {...item} : {revision:"0", project:null, title:"", message:"", due_ms:null, completed:false};
-  return {draft, timed:draft.due_ms !== null,
+  return {draft, original:item ? snapshot(item) : null, timed:draft.due_ms !== null,
     title:createText(draft.title, {label:text.title, placeholder:text.titlePlaceholder}),
     message:createText(draft.message, {label:text.message, placeholder:text.messagePlaceholder, multiline:true}),
     time:createDateTime(draft.due_ms ?? Date.now() + 300000, text.time)};
@@ -23,7 +23,8 @@ export function value(editor) {
     try { due = readDateTime(editor.time); } catch (_) { throw new Error("invalidTime"); }
     if (due !== editor.draft.due_ms && due <= Date.now()) throw new Error("invalidTime");
   }
-  return {...editor.draft, title, message:readText(editor.message), due_ms:due};
+  return {...editor.draft, title, message:readText(editor.message), due_ms:due,
+    ...(editor.original ? {expected_value:editor.original} : {})};
 }
 function projects(view, disabled) {
   const {text, editing} = view;
