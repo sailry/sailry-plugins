@@ -19053,12 +19053,12 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.16",
+        "version": "0.1.17",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.2.0-alpha.1",
+            "min_sailry_version": "0.2.0-alpha.2",
             "storage": {
               "collections": [
                 {
@@ -19490,6 +19490,17 @@
       ],
       "versions": [
         {
+          "version": "0.1.17",
+          "commit": "02cbd44e241783ad3843ff55585f48f1f843761e",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Require the first Sailry version with execution-Node callback routing",
+            "locales": {
+              "zh-CN": "- 要求支持执行主机回调路由的 Sailry 版本"
+            }
+          }
+        },
+        {
           "version": "0.1.16",
           "commit": "1c62fb9155e613a7549c0c08e03fed8e9644178b",
           "min_sailry_version": "0.2.0-alpha.1",
@@ -19648,9 +19659,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep edits, deletion and delivery history on each reminder's original execution Node\n- Select an execution host for new reminders from the controller resource directory\n- Preserve unknown legacy ownership without creating replacement schedules",
+        "text": "- Require the first Sailry version with execution-Node callback routing",
         "locales": {
-          "zh-CN": "- 提醒的编辑、删除和通知记录始终由原执行主机处理\n- 新建提醒可从主控资源目录选择执行主机\n- 旧记录归属不明时保留数据，不重复创建定时计划"
+          "zh-CN": "- 要求支持执行主机回调路由的 Sailry 版本"
         }
       }
     },
@@ -19807,7 +19818,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20007,6 +20018,19 @@
                       "models": {
                         "type": "object",
                         "default": {}
+                      },
+                      "execution_node": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "minItems": 32,
+                        "maxItems": 32,
+                        "items": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 255
+                        }
                       }
                     }
                   }
@@ -20057,11 +20081,24 @@
                 "stop",
                 "projects",
                 "initialize",
-                "scheduled_tasks"
+                "scheduled_tasks",
+                "options",
+                "model",
+                "runtime",
+                "states"
               ],
               "turn": {
                 "initialize": "initialize"
-              }
+              },
+              "read_only": [
+                "list",
+                "history",
+                "projects",
+                "options",
+                "model",
+                "runtime",
+                "states"
+              ]
             },
             "tools": [
               {
@@ -20512,7 +20549,7 @@
             },
             "category": "automation",
             "tint": "amber",
-            "min_sailry_version": "0.1.6"
+            "min_sailry_version": "0.2.0-alpha.2"
           }
         }
       },
@@ -20528,6 +20565,17 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.20",
+          "commit": "02cbd44e241783ad3843ff55585f48f1f843761e",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Choose an execution host for new schedules from the controller directory\n- Keep task edits, execution, queue controls and history on the original host\n- Read model and team choices from the selected execution host",
+            "locales": {
+              "zh-CN": "- 新建定时任务可从主控目录选择执行主机\n- 编辑、运行、队列控制与记录始终由原主机处理\n- 从所选执行主机读取模型和团队选项"
+            }
+          }
+        },
         {
           "version": "0.1.19",
           "commit": "9513f99d228b8519773326699d633ef0619b536f",
@@ -20714,7 +20762,10 @@
         }
       ],
       "release_notes": {
-        "text": "- Keep the card border on rows that are not open in the details panel"
+        "text": "- Choose an execution host for new schedules from the controller directory\n- Keep task edits, execution, queue controls and history on the original host\n- Read model and team choices from the selected execution host",
+        "locales": {
+          "zh-CN": "- 新建定时任务可从主控目录选择执行主机\n- 编辑、运行、队列控制与记录始终由原主机处理\n- 从所选执行主机读取模型和团队选项"
+        }
       }
     },
     {
