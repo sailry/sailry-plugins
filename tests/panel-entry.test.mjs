@@ -8,7 +8,7 @@ async function controller(name,file='main.js',globals={}) {
   const source=(await readFile(new URL(`../${name}/dev.sailry.platform/desktop/${file}`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'').replace('default class','class');
   return vm.runInNewContext(`${source}\n${name==='scheduled-tasks'?'ScheduledTasks':name==='reminders'?'Reminders':({databases:'Databases',gomoku:'Gomoku',reversi:'Reversi',xiangqi:'Xiangqi',poker:'Poker','liars-dice':'LiarsDice',doudizhu:'DouDizhu','city-trader':'CityTrader'})[name]}`,{
-    View:class{},Motion:class{},context:()=>JSON.stringify({locale:'en'}),
+    View:class{},Motion:class{},sdkContext:()=>({execution_node:[1,...Array(31).fill(0)]}),context:()=>JSON.stringify({locale:'en'}),
     messages:()=>new Proxy({names:['First','Second','Third']},{get:(value,key)=>value[key]??key}),...globals,
   });
 }
@@ -27,7 +27,7 @@ for(const name of ['scheduled-tasks','reminders'])test(`${name}: entry reloads d
     nextChange:updates.read,page:load,list:async()=>({Ok:await load()}),
     history:async()=>({Ok:{items:[{job:{id:`run-${revision}`}}],next_before:null}}),
     states:async()=>({}),
-    readProjectCatalog:async()=>({projects:[{id:'project',name:'Project'}],worktrees:[]}),
+    readResourceCatalog:async()=>({sources:[{node:[1,...Array(31).fill(0)],projects:[{id:'project',name:'Project'}],worktrees:[]}]}),
     listModels:async()=>({models:[]}),listTeams:async()=>[],lead:()=>null,toast:value=>notices.push(value),
     prepareRequest:()=>assert.fail('read invalidation must not replay an action'),
   });

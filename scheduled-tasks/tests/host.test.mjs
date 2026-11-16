@@ -78,16 +78,16 @@ test("native states span job pages and prioritize active runs over later complet
   assert.equal(setup.transactions.length,0);
 });
 test("task history scans native pages for one handler's runs",async()=>{
-  const setup=await fixture(),job=(id,handler)=>({id,handler,status:"completed",event:{payload:{name:"Review"}}});
-  setup.pages.set(null,{jobs:[job("a1","a"),job("b1","b")],next_before:21});
-  setup.pages.set(21,{jobs:[job("b2","b"),job("a2","a")],next_before:10});
-  setup.pages.set(10,{jobs:[job("a3","a")],next_before:null});
-  const page=JSON.parse(JSON.stringify(await setup.api.history({before:null,handler:"a",limit:2})));
+  const setup=await fixture(),handler=id(41),other=id(42),job=(id,handler)=>({id,handler,status:"completed",event:{payload:{name:"Review"}}});
+  setup.pages.set(null,{jobs:[job("a1",handler),job("b1",other)],next_before:21});
+  setup.pages.set(21,{jobs:[job("b2",other),job("a2",handler)],next_before:10});
+  setup.pages.set(10,{jobs:[job("a3",handler)],next_before:null});
+  const page=JSON.parse(JSON.stringify(await setup.api.history({before:null,handler,limit:2})));
   assert.deepEqual(page.Ok.items.map(item=>[item.job.id,item.session]),[["a1","session-a1"],["a2","session-a2"]]);
   assert.equal(page.Ok.next_before,10);
   const reads=setup.requests.map(command=>command.data.action).filter(action=>action.kind==="read_result").map(action=>action.data.id);
   assert.deepEqual(reads,["a1","a2"]);
-  const rest=JSON.parse(JSON.stringify(await setup.api.history({before:10,handler:"a",limit:2})));
+  const rest=JSON.parse(JSON.stringify(await setup.api.history({before:10,handler,limit:2})));
   assert.deepEqual(rest.Ok.items.map(item=>item.job.id),["a3"]);assert.equal(rest.Ok.next_before,null);
 });
 test("new handlers capture Node-validated configuration without exporting or choosing defaults",async()=>{
