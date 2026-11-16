@@ -104,3 +104,22 @@ test('databases: entry refreshes catalogs without SQL execution or losing select
   changed({cursor:'7:true:2',entry:'2',connected:true},cx);await jobs.shift()(cx);
   assert.equal(loads.length,2);assert.equal(owner.pending,pending);
 });
+
+
+for(const name of ['scheduled-tasks','reminders'])test(`${name}: nested uncertain results retain the original request`,async()=>{
+  const jobs=[],prepared=[],completed=[],forgotten=[],node=[1,...Array(31).fill(0)];
+  const Controller=await controller(name,'main.js',{
+    prepareHostCall:(target,handler,input)=>{prepared.push({target,handler,input});return 'original-request';},
+    completeRequest:async request=>{completed.push(request);return {Ok:{data:{Err:{code:'outcome_unknown',message:'Inspect original operation'}}}};},
+    forgetRequest:request=>forgotten.push(request),toast(){},
+  });
+  const owner=new Controller(),cx={notify(){},spawn:job=>jobs.push(job)};
+  const editing={draft:{name:'Keep draft',title:'Keep draft'}};
+  Object.assign(owner,{items:[],hosts:[],executionNode:node,busy:false,pending:null,editing,text:{unknown:'Unknown'},refresh(){this.refreshed=true;}});
+  owner.perform('save',{execution_node:node},cx);await jobs.shift()(cx);
+  assert.equal(owner.pending,'original-request');assert.equal(owner.editing,editing);
+  assert.equal(owner.error,'unknown');assert.equal(owner.refreshed,true);
+  owner.perform(null,null,cx);await jobs.shift()(cx);
+  assert.equal(prepared.length,1);assert.deepEqual(completed,['original-request','original-request']);
+  assert.deepEqual(forgotten,[]);assert.equal(owner.pending,'original-request');
+});

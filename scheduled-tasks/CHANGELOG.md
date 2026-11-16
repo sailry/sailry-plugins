@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Retain the original request when a nested operation has an uncertain outcome.
+
 ## 0.1.21
 
 - Read remote records and edit revisions from their execution Node.

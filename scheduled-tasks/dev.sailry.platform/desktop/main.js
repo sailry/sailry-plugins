@@ -287,8 +287,11 @@ export default class ScheduledTasks extends View {
           this.pending = prepareHostCall(target,handler,input);
         }
         const receipt = await completeRequest(this.pending);
-        if (receipt.Err && uncertain(receipt.Err.code)) { this.error = receipt.Err.code==="unavailable"?"executionUnavailable":"unknown"; return; }
         const fault = receipt.Err ?? receipt.Ok?.data?.Err;
+        if (fault && uncertain(fault.code)) {
+          this.error = fault.code==="unavailable"?"executionUnavailable":"unknown";
+          this.refresh(cx); return;
+        }
         if (fault) this.error = fault.code === "revision_conflict" ? "conflict"
           : fault.code === "not_configured" ? "notConfigured" : fault.code==="unavailable"?"executionUnavailable":"failed";
         forgetRequest(this.pending); this.pending = null; this.busy = false;

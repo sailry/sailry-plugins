@@ -171,17 +171,13 @@ export default class Reminders extends View {
           this.pending = prepareHostCall(target, handler, input);
         }
         const receipt = await completeRequest(this.pending);
-        if (receipt.Err) {
-          if (uncertain(receipt.Err.code)) {
-            this.error = receipt.Err.code === "unavailable" ? "executionUnavailable" : "unknown"; return;
-          }
-          this.error = receipt.Err.code === "unavailable" ? "executionUnavailable" : "failed";
-        } else {
-          const result = receipt.Ok.data;
-          if (result.Err) this.error = result.Err.code === "revision_conflict" ? "conflict"
-            : result.Err.code === "not_found" ? "projectUnavailable"
-            : result.Err.code === "unavailable" ? "executionUnavailable" : "failed";
+        const fault = receipt.Err ?? receipt.Ok?.data?.Err;
+        if (fault && uncertain(fault.code)) {
+          this.error = fault.code === "unavailable" ? "executionUnavailable" : "unknown";
+          this.refresh(cx); return;
         }
+        if (fault) this.error = fault.code === "revision_conflict" ? "conflict"
+          : fault.code === "not_found" ? "projectUnavailable" : "failed";
         forgetRequest(this.pending); this.pending = null;
         this.busy = false;
         if (!this.error) this.close(cx);
