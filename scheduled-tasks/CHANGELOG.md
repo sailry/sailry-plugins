@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.21
+
+- Read remote records and edit revisions from their execution Node.
+- Keep unavailable copies visible without allowing stale edits.
+
 ## 0.1.20
 
 - Choose an execution host for new schedules from the controller directory

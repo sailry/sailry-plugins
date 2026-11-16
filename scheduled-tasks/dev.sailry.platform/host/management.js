@@ -24,6 +24,15 @@ export async function runtime() {
 export async function list(input) {
   return result(() => listing(input));
 }
+export async function record(input) {
+  return result(async () => {
+    const entry = await read(input.id);
+    if (!entry.present) return null;
+    const target = await executor(entry.value);
+    if (!sameNode(target, context().execution_node)) throw fault("conflict", "Task belongs to another execution Node");
+    return {...entry.value, execution_node:target, revision:entry.revision};
+  });
+}
 // Read native job state independently of the visible record pages.
 export async function states() {
   const states = new Map();

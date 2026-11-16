@@ -91,14 +91,14 @@ export default class Reminders extends View {
     if (inspected) return this.inspect(inspected, event.id.startsWith("reminder-details-") ? "details" : "records", cx);
     const item = this.items.find(item => event.id === `reminder-complete-${item.id}`);
     if (item) {
-      if (!this.busy && !this.pending && typeof event.value === "boolean") this.perform("save", {...item, completed:event.value}, cx);
+      if (!this.busy && !this.pending && !item.unavailable && typeof event.value === "boolean") this.perform("save", {...item, completed:event.value}, cx);
       return;
     }
     const editing = this.items.find(item => event.id === `reminder-edit-${item.id}`);
-    if (editing) { this.edit(editing, cx); return; }
+    if (editing) { if (!editing.unavailable) this.edit(editing, cx); return; }
     const deleting = this.items.find(item => event.id === `reminder-delete-${item.id}`);
     if (deleting) {
-      if (!this.busy && !this.pending) {
+      if (!this.busy && !this.pending && !deleting.unavailable) {
         this.deleting = deleting; this.error = null; this.dialogId++; cx.notify();
       }
       return;
@@ -163,6 +163,7 @@ export default class Reminders extends View {
         if (!this.pending) {
           const item = input?.id && this.items.find(item => item.id === input.id);
           const target = item ? item.execution_node ?? this.executionNode : input?.execution_node;
+          if (item?.unavailable) { this.error = "executionUnavailable"; return; }
           if (target == null) { this.error = "executionUnknown"; return; }
           if (this.hosts.find(source => sameNode(source.node, target))?.fault) {
             this.error = "executionUnavailable"; return;

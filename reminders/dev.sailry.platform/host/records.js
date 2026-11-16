@@ -79,6 +79,21 @@ export async function commit(operations) {
   if (result.Err) throw fault(result.Err.code, result.Err.message);
   return result.Ok.data;
 }
+// Personal copies discover records; mutations use the execution Node's current
+// value and revision. An offline copy stays visible without an editable revision.
+export async function visible(id) {
+  const entry = await read(id);
+  if (!entry.present) return null;
+  const item = {...stored(entry.value, id), revision:entry.revision};
+  const target = item.execution_node;
+  if (target == null || sameNode(target, context().execution_node)) return item;
+  try { return await hostCall(target, "record", {id}, true); }
+  catch (error) {
+    if (["permission_denied", "not_found"].includes(error.code)) return null;
+    if (!["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(error.code)) throw error;
+    return {...item, revision:null, unavailable:true};
+  }
+}
 export async function page(input = {}, scope) {
   if (scope !== undefined) project(scope);
   if (input.completed !== undefined && typeof input.completed !== "boolean") {
@@ -90,13 +105,12 @@ export async function page(input = {}, scope) {
   let scanned = 0, size = 0;
   do {
     const batch = await listKeys("reminder/", after, 32);
-    const entries=await Promise.allSettled(batch.keys.map(name=>read(name.slice(9))));
+    const entries=await Promise.allSettled(batch.keys.map(name=>visible(name.slice(9))));
     for (const [index,name] of batch.keys.entries()) {
       const result=entries[index];if(result.status==='rejected')throw result.reason;
-      const id = name.slice(9), entry = result.value;
-      if (entry.present && (scope === undefined || entry.value.project === scope)
-          && (input.completed === undefined || entry.value.completed === input.completed)) {
-        const item = {...stored(entry.value, id), revision:entry.revision};
+      const item = result.value;
+      if (item && (scope === undefined || item.project === scope)
+          && (input.completed === undefined || item.completed === input.completed)) {
         const length = bytes(JSON.stringify(item));
         if (items.length && size + length > 128 * 1024) return {items, after};
         items.push(item); size += length;

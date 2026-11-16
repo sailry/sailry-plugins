@@ -287,3 +287,22 @@ runtimeTest("execution schemas preserve optional selectors and old records",asyn
     {...setup.task(14),execution:"invalid"},
     {...setup.task(15),execution:"team",team:{id:id(20),annotation:{label:"Saved metadata"}}}]),[true,true,true,false,true]);
 });
+
+
+test("remote edits preserve owner fields and reject stale listed revisions",async()=>{
+  const setup=await fixture(),target=[2,...Array(31).fill(0)];
+  const item={...setup.task(11),execution_node:target};setup.seed(item);
+  let current={...item,revision:"4",name:"Owner name",prompt:"Owner prompt"};
+  setup.host=async call=>({Ok:{data:{Ok:call.handler==="record"?plain(current):{...call.input,revision:"5"}}}});
+  const listed=(await setup.plan({action:"list"})).result.items;
+  assert.equal(listed[0].revision,"4");assert.equal(listed[0].name,"Owner name");
+  const update=await setup.plan({action:"update",id:item.id,revision:"4",name:"Changed"});
+  assert.equal(update.result.revision,"5");
+  const saved=setup.hostCalls.find(call=>call.handler==="save").input;
+  assert.equal(saved.prompt,"Owner prompt");assert.equal(saved.revision,"4");
+  current={...current,revision:"6"};
+  const stale=await setup.plan({action:"delete",id:item.id,revision:"4"});
+  assert.equal(stale.result.error.code,"revision_conflict");
+  assert.equal(setup.hostCalls.some(call=>call.handler==="remove"),false);
+  assert.equal(setup.transactions.length,0);
+});

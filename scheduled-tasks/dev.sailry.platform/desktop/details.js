@@ -17,6 +17,7 @@ export function runColor(status, colors) {
 export function runLabel(text, status) { return text[status === "failed" ? "runFailed" : status] ?? text.finished; }
 // Native activity wins, then the pause choice, then the latest outcome and the schedule.
 export function taskStatus(text, item) {
+  if (item.unavailable) return {label:text.executionUnavailable, tone:"muted"};
   if (item.status === "running") return {label:text.running, tone:"info"};
   if (item.status === "queued") return {label:text.queued, tone:"info"};
   if (!item.enabled) return {label:text.paused, tone:"muted"};

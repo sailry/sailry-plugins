@@ -14,7 +14,7 @@ function timeText(view, item, now) {
   return item.enabled && Number.isFinite(item.next_ms) ? when(item.next_ms, now, view.text) : "";
 }
 function card(view, item, now) {
-  const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
+  const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending || !!item.unavailable;
   const open = panel?.task === item.id ? panel.tab : null, time = timeText(view, item, now);
   // CardRow has no selected state; a ring border, in place of its own, marks the task shown in the details panel.
   return CardRow.new(`task-card-${item.id}`,{row_id:`task-row-${item.id}`})

@@ -499,3 +499,17 @@ test("records list only this reminder's deliveries with labels and errors", () =
   assert.deepEqual(plain(setup.nodes.get("reminder-records-empty").props), {variant:"list", icon:"bell", label:"No records"});
   assert.deepEqual(plain(setup.nodes.get("reminder-panel-tabs").props.items.map(item => item.label)), ["Details", "Records 0"]);
 });
+
+
+test("offline reminder copies keep details and disable mutations", () => {
+  const item = {id:"offline",project:null,revision:null,title:"Offline",message:"",due_ms:null,notified_ms:null,completed:false,unavailable:true};
+  const setup = fixture([item]); setup.render();
+  for (const action of ["complete","edit","delete"]) {
+    assert.equal(setup.nodes.get(`reminder-${action}-offline`).props.disabled,true);
+    setup.view.control({id:`reminder-${action}-offline`,value:true},setup.cx);
+  }
+  assert.deepEqual(setup.calls,[]);
+  assert.deepEqual(texts(setup.nodes.get("reminder-when-offline")),[setup.view.text.executionUnavailable]);
+  setup.view.control({id:"reminder-details-offline"},setup.cx);
+  assert.equal(setup.view.panel.reminder,"offline");
+});

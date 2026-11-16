@@ -4,7 +4,7 @@ import {readFile} from "node:fs/promises";
 import vm from "node:vm";
 import {id,plain,executionNode,otherNode} from "./store.mjs";
 
-async function fixture() {
+async function fixture(localNode=executionNode) {
   const records=(await readFile(new URL("../dev.sailry.platform/host/records.js",import.meta.url),"utf8"))
     .replace(/^import .*;\n/gm,"").replace(/^export /gm,"");
   const dispatch=(await readFile(new URL("../dev.sailry.platform/host/dispatch.js",import.meta.url),"utf8"))
@@ -16,8 +16,11 @@ async function fixture() {
   const hostCalls=[];
   const requests=[],transactions=[],values=new Map(),pages=new Map(),config={provider:"provider",model:"selected",effort:"high",mode:"code",permission:"ask"};
   const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null,host:async()=>({Err:{code:"unavailable",message:"Offline"}})};
-  const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001",execution_node:executionNode}),
-    getValue:async key=>{reads.push(key);return values.get(key)??{revision:"0",present:false,value:null};},listKeys:async()=>({keys:[],after:null}),
+  const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001",execution_node:localNode}),
+    getValue:async key=>{reads.push(key);return values.get(key)??{revision:"0",present:false,value:null};},listKeys:async(prefix,after,limit)=>{
+      const keys=[...values.keys()].filter(key=>key.startsWith(prefix)&&(!after||key>after)).sort();
+      return {keys:keys.slice(0,limit),after:keys.length>limit?keys[limit-1]:null};
+    },
     readProjectCatalog:async()=>({projects:[],worktrees:[]}),
     prepareHostCall:(node,handler,input,readOnly=false)=>{const value={node,handler,input,readOnly};hostCalls.push(value);return {host:value};},
     prepareRequest:command=>{requests.push(command);return String(requests.length-1);},
@@ -38,7 +41,7 @@ async function fixture() {
       return {Ok:{data:[{data:{revision:"1"}}]}};
     },forgetRequest(){},
   };
-  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,save,remove,run,cancel,stop,states,history})`,runtime);
+  const api=vm.runInNewContext(`${records}\n${dispatch}\n${mutations}\n${main}\n({draft,changes,list,record,save,remove,run,cancel,stop,states,history})`,runtime);
   const input={execution_node:executionNode,id:"00000000-0000-0000-0000-000000000002",revision:"0",name:"Review",prompt:"Read the project",
     queue:"default",enabled:false,project:null,worktree:null,config:null,timing:{kind:"once",data:{at_ms:Date.now()+300000}}};
   return {api,input,config,teams,handlers,reads,control,values,pages,requests,transactions,hostCalls};
@@ -226,5 +229,31 @@ test("offline tasks and unknown ownership never enqueue locally",async()=>{
   delete setup.input.execution_node;
   setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
   assert.equal((await setup.api.save(setup.input)).Err.code,"unavailable");
+  assert.equal(setup.transactions.length,0);
+});
+
+
+test("remote listing revisions match executor mutations and reject stale drafts",async()=>{
+  const source=await fixture(),owner=await fixture(otherNode);
+  const item={...source.input,config:source.config,execution_node:otherNode};
+  source.values.set(`task/${item.id}`,{present:true,revision:"9",value:plain(item)});
+  owner.values.set(`task/${item.id}`,{present:true,revision:"4",value:{...plain(item),name:"Current on owner"}});
+  source.control.host=async call=>({Ok:{data:await owner.api[call.handler](call.input)}});
+  owner.control.failure=null;
+  const listed=(await source.api.list({})).Ok.items;
+  assert.equal(listed.length,1);assert.equal(listed[0].revision,"4");assert.equal(listed[0].name,"Current on owner");
+  const saved=await source.api.save({...listed[0],name:"Edited"});
+  assert.ok(saved.Ok);assert.equal(owner.transactions.length,1);assert.equal(source.transactions.length,0);
+  assert.equal(owner.transactions[0][0].data.expected_revision,"4");
+  owner.values.set(`task/${item.id}`,{present:true,revision:"5",value:{...plain(item),name:"Edited"}});
+  const stale=await source.api.remove({id:item.id,revision:listed[0].revision});
+  assert.equal(stale.Err.code,"revision_conflict");assert.equal(owner.transactions.length,1);
+});
+
+test("offline listings retain copies without writable revisions",async()=>{
+  const setup=await fixture();
+  setup.values.set(`task/${setup.input.id}`,{present:true,revision:"9",value:{...setup.input,config:setup.config,execution_node:otherNode}});
+  const listed=(await setup.api.list({})).Ok.items;
+  assert.equal(listed.length,1);assert.equal(listed[0].revision,null);assert.equal(listed[0].unavailable,true);
   assert.equal(setup.transactions.length,0);
 });

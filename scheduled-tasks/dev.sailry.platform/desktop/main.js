@@ -77,7 +77,7 @@ export default class ScheduledTasks extends View {
           if(!remote)return item;
           return {...item,next_ms:remote.value?.schedules.find(schedule=>schedule.id===item.id)?.next_ms ?? null,
             status:remote.value?.status[item.id]?.status ?? null,started_ms:remote.value?.status[item.id]?.started_ms ?? null,
-            unavailable:remote.value===null};
+            unavailable:item.unavailable || remote.value===null};
         });
         if (this.panel && !this.items.some(item => item.id === this.panel.task)) this.panel = null;
         if (task === (this.panel?.task ?? null)) {
@@ -107,7 +107,7 @@ export default class ScheduledTasks extends View {
     if (item) {
       if (event.id === `task-details-${item.id}`) return this.inspect(item,"details",cx);
       if (event.id === `task-records-${item.id}`) return this.inspect(item,"records",cx);
-      if (this.busy || this.pending) return;
+      if (this.busy || this.pending || item.unavailable) return;
       if (event.id === `task-enabled-${item.id}` && typeof event.value === "boolean") this.perform("save", {...item,enabled:event.value},cx);
       else if (event.id === `task-run-${item.id}`) this.perform("run", {id:item.id},cx);
       else if (event.id === `task-edit-${item.id}`) this.edit(item,cx);
@@ -282,6 +282,7 @@ export default class ScheduledTasks extends View {
         if (!this.pending) {
           const item=input?.id && this.items.find(item=>item.id===input.id);
           const target=input?.execution_node ?? item?.execution_node ?? this.executionNode;
+          if(item?.unavailable){this.error="executionUnavailable";return;}
           if(this.hosts.find(source=>sameNode(source.node,target))?.fault){this.error="executionUnavailable";return;}
           this.pending = prepareHostCall(target,handler,input);
         }

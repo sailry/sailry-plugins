@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.18
+
+- Read remote records and edit revisions from their execution Node.
+- Keep unavailable copies visible without allowing stale edits.
+
 ## 0.1.17
 
 - Require the first Sailry version with execution-Node callback routing

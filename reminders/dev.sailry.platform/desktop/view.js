@@ -12,7 +12,7 @@ export function order(items) {
     || a.title.localeCompare(b.title));
 }
 function card(view, item, now) {
-  const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending;
+  const {text, panel} = view, colors = theme().colors, disabled = view.busy || !!view.pending || !!item.unavailable;
   const open = panel?.reminder === item.id ? panel.tab : null, late = overdue(item, now);
   // CardRow has no selected state; a ring border, in place of its own, marks the reminder shown in the details panel.
   const row = CardRow.new(`reminder-card-${item.id}`, {row_id:`reminder-row-${item.id}`})
@@ -26,7 +26,7 @@ function card(view, item, now) {
       .child(div().h_flex().w_full().min_w_0().items_center().justify_end().gap_2()
         .child(div().id(`reminder-when-${item.id}`).min_w_0().truncate().text_xs()
           .text_color(late ? colors.destructive : colors.muted_foreground)
-          .child(item.due_ms === null ? text.noTime : when(item.due_ms, now, text)))
+          .child(item.unavailable ? text.executionUnavailable : item.due_ms === null ? text.noTime : when(item.due_ms, now, text)))
         .children(late ? [statusTag(reminderStatus(text, item, now), `reminder-state-${item.id}`)] : [])))
     .child(CardColumn.new(`reminder-actions-${item.id}`, {variant:"actions"})
       .child(IconButton.new(`reminder-details-${item.id}`, {icon:"info",label:text.details,selected:open === "details"}))

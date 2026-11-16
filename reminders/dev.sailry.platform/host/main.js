@@ -1,5 +1,5 @@
 import {context} from "sailry/sdk";
-import { key, read, revision, commit, page, result, node, sameNode, hostCall } from "./records.js";
+import { key, read, revision, commit, page, result, node, sameNode, hostCall, stored } from "./records.js";
 import {saveOperations, removeOperations} from "./mutations.js";
 import {presentation} from "./locales.js";
 import {execution} from "./schedules.js";
@@ -7,6 +7,15 @@ export {initialize, reminders} from "./tools.js";
 export {history} from "./schedules.js";
 
 export async function list(input) { return result(() => page(input ?? {})); }
+export async function record(input) {
+  return result(async () => {
+    const entry = await read(input.id);
+    if (!entry.present) return null;
+    const target = await execution(entry.value);
+    if (!sameNode(target, context().execution_node)) throw Object.assign(new Error("Reminder belongs to another execution Node"), {code:"conflict"});
+    return {...stored(entry.value, input.id), execution_node:target, revision:entry.revision};
+  });
+}
 export async function save(input) {
   return result(async () => {
     if (input.id != null) {

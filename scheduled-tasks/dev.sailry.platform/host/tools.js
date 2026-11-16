@@ -65,7 +65,11 @@ export async function scheduled_tasks({arguments:input, step, state, outcome}) {
       const changes=Object.fromEntries(["name","prompt","timing","enabled"].filter(key => Object.hasOwn(args,key)).map(key => [key,args[key]]));
       const target = await executor(old.value);
       if (!sameNode(target, context().execution_node)) {
-        return {result:await hostCall(target,"save",{...select(args,old.value),...changes,execution_node:target,revision:args.revision})};
+        const current = await hostCall(target, "record", {id:args.id}, true);
+        if (!current) throw fault("not_found", "Task is unavailable");
+        if (current.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
+        if (current.revision !== args.revision) throw fault("revision_conflict", "Task changed");
+        return {result:await hostCall(target,"save",{...select(args,current),...changes,execution_node:target,revision:args.revision})};
       }
       pending=await saveOperations({...select(args,old.value),...changes,revision:args.revision},scope.project);
     } else {
@@ -73,7 +77,13 @@ export async function scheduled_tasks({arguments:input, step, state, outcome}) {
       if (!old.present) throw fault("not_found", "Task is unavailable");
       if (old.value.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
       const target = await executor(old.value);
-      if (!sameNode(target, context().execution_node)) return {result:await hostCall(target,"remove",args)};
+      if (!sameNode(target, context().execution_node)) {
+        const current = await hostCall(target, "record", {id:args.id}, true);
+        if (!current) throw fault("not_found", "Task is unavailable");
+        if (current.project !== scope.project) throw fault("permission_denied", "Task belongs to another project");
+        if (current.revision !== args.revision) throw fault("revision_conflict", "Task changed");
+        return {result:await hostCall(target, "remove", args)};
+      }
       pending=await removeOperations(args,scope.project);
     }
     return {call:{operation:"storage.transaction",arguments:{operations:pending.operations}},

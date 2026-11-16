@@ -130,16 +130,30 @@ export async function commit(operations) {
   if (result.Err) throw fault(result.Err.code, result.Err.message);
   return result.Ok.data;
 }
+// Personal copies discover records; mutations use the execution Node's current
+// value and revision. An offline copy stays visible without an editable revision.
+export async function visible(id) {
+  const entry = await getValue(key(id));
+  if (!entry.present) return null;
+  const item = {...entry.value, revision:entry.revision};
+  const target = item.execution_node;
+  if (target == null || sameNode(target, context().execution_node)) return item;
+  try { return await hostCall(target, "record", {id}, true); }
+  catch (error) {
+    if (["permission_denied", "not_found"].includes(error.code)) return null;
+    if (!["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(error.code)) throw error;
+    return {...item, revision:null, unavailable:true};
+  }
+}
 export async function page(input = {}, project) {
   const page = await listKeys("task/", input.after ?? null, 32);
   const items = [];
   let size = 0, after = input.after ?? null;
-  const entries=await Promise.allSettled(page.keys.map(name=>getValue(name)));
+  const entries=await Promise.allSettled(page.keys.map(name=>visible(name.slice(5))));
   for (const [index,name] of page.keys.entries()) {
     const result=entries[index];if(result.status==='rejected')throw result.reason;
-    const entry = result.value;
-    if (entry.present && (project === undefined || entry.value.project === project)) {
-      const item = {...entry.value, revision:entry.revision};
+    const item = result.value;
+    if (item && (project === undefined || item.project === project)) {
       const length = bytes(JSON.stringify(item));
       // Keep task pages within the host callback result budget.
       if (items.length && size + length > 128 * 1024) return {items, after};

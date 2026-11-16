@@ -419,3 +419,16 @@ test("unrepresentable dates remain readable without changing schedule values",()
   assert.equal(schedule.interval(1,text),"Every 0.001 s");
   assert.notEqual(schedule.when(now,now,text),"—");
 });
+
+
+test("offline task copies keep details and disable mutations",()=>{
+  const setup=fixture();setup.view.items=[task("offline",{revision:null,unavailable:true})];setup.render();
+  for(const action of ["enabled","run","edit","delete"]){
+    assert.equal(setup.nodes.get(`task-${action}-offline`).props.disabled,true);
+    setup.view.control({id:`task-${action}-offline`,value:true},setup.cx);
+  }
+  assert.deepEqual(setup.calls,[]);
+  assert.deepEqual(texts(setup.nodes.get("task-state-offline")),[setup.view.text.executionUnavailable]);
+  setup.view.control({id:"task-details-offline"},setup.cx);
+  assert.equal(setup.view.panel.task,"offline");
+});

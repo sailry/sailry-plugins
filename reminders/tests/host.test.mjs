@@ -378,3 +378,40 @@ test("foreign notification copies never deliver locally", async () => {
   assert.equal(setup.notifications.length,0);
   assert.equal(setup.prepared.length,0);
 });
+
+
+test("remote listings use executor revisions and preserve stale-write rejection", async () => {
+  const source = await fixture(), owner = await fixture({execution_node:otherNode});
+  source.seed(item(1,{execution_node:otherNode}), "9");
+  source.seed(item(2));
+  owner.seed(item(1,{execution_node:otherNode,title:"Current on owner"}), "4");
+  source.host = async call => ({Ok:{data:await owner.main[call.handler](call.input)}});
+  const listed = (await source.main.list({})).Ok.items;
+  assert.equal(listed[0].revision, "4");
+  assert.equal(listed[0].title, "Current on owner");
+  assert.equal(listed[1].revision, "1");
+  const saved = await source.main.save({...listed[0],title:"Edited"});
+  assert.equal(saved.Ok.revision, "5");
+  assert.equal(owner.schedules.size, 1);
+  assert.equal(source.schedules.size, 0);
+  const stale = await source.main.remove({id:listed[0].id,revision:listed[0].revision});
+  assert.equal(stale.Err.code, "revision_conflict");
+  assert.equal(owner.get(`reminder/${listed[0].id}`).value.title, "Edited");
+  start(source);
+  const changed = await call(source,{action:"update",id:id(1),revision:"5",message:"Added note"});
+  assert.equal(changed.result.revision, "6");
+  assert.equal(owner.get(`reminder/${id(1)}`).value.title, "Edited");
+  assert.equal(source.get(`reminder/${id(1)}`).revision, "9");
+});
+
+test("offline listings retain copies without writable revisions", async () => {
+  const setup = await fixture();
+  setup.seed(item(1,{execution_node:otherNode}), "9");
+  setup.seed(item(2));
+  const listed = (await setup.main.list({})).Ok.items;
+  assert.equal(listed.length, 2);
+  assert.equal(listed[0].unavailable, true);
+  assert.equal(listed[0].revision, null);
+  assert.equal(listed[1].revision, "1");
+  assert.equal(setup.prepared.length, 0);
+});

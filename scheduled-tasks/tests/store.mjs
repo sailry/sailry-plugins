@@ -13,7 +13,7 @@ export async function fixture(project=id(1)) {
   const config={assistant:null,resource:null,provider:id(3),model:"chosen",effort:"high",mode:"code",permission:"ask",credential:null};
   let turn=null, call=id(10);
   const setup={config,session:{config},execution:{execution:"team",team:null,models:{}},teams:[{id:id(20),name:"Reviewers",revision:"7"}],
-    values,schedules,handlers,requests,transactions,
+    values,schedules,handlers,requests,transactions,hostCalls:[],host:async()=>({Err:{code:"unavailable",message:"Offline"}}),
     project,worktree:id(2),contextSession:id(5),nextCall(value){call=value;},turn(){return turn;}};
   const runtime={context:()=>({package:{name:"scheduled-tasks"},invocation:call,execution_node:executionNode,worktree:setup.worktree,session:setup.contextSession}),
     callId:()=>call,readSession:async()=>plain(setup.session),readTurnState:()=>turn,stageTurnState:value=>{turn=plain(value);},
@@ -24,9 +24,11 @@ export async function fixture(project=id(1)) {
     },
     listTeams:async()=>plain(setup.teams),
     readProjectCatalog:async()=>({projects:[{id:id(1)},{id:id(4)}],worktrees:[{id:id(2),project:id(1)}]}),
+    prepareHostCall:(node,handler,input,readOnly=false)=>{const call={node,handler,input,readOnly};setup.hostCalls.push(plain(call));return {host:call};},
     prepareRequest:command=>{requests.push(plain(command));return requests.length-1;},
     prepareTransaction:operations=>{transactions.push(plain(operations));return "management";},
     completeRequest:async request=>{
+      if(request?.host)return setup.host(request.host);
       const command=requests[request];
       if(command?.kind==="resolve_plugin_model")return {Ok:{kind:"session_config",data:plain(command.data.config)}};
       const action=command?.data?.action;

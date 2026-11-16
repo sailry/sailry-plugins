@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "scheduled-tasks",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Run tasks on a schedule",
   "extensions": {
     "dev.sailry.platform": {
@@ -256,6 +256,7 @@
         ],
         "handlers": [
           "list",
+          "record",
           "save",
           "remove",
           "run",
@@ -275,6 +276,7 @@
         },
         "read_only": [
           "list",
+          "record",
           "history",
           "projects",
           "options",

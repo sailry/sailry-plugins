@@ -13,6 +13,7 @@ for(const name of ['reminders','scheduled-tasks']) {
     const ids=Array.from({length:6},(_,index)=>`11111111-1111-4111-8111-${String(index+1).padStart(12,'0')}`),held=[];
     const prefix=name==='reminders'?'reminder/':'task/';
     const page=vm.runInNewContext(`${await source(name,'records')}\npage`,{
+      context:()=>({execution_node:[1,...Array(31).fill(0)]}),
       listKeys:async()=>({keys:ids.map(id=>prefix+id),after:null}),
       getValue:key=>new Promise(resolve=>held.push({key,resolve})),
     });

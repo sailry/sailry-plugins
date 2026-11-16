@@ -47,7 +47,11 @@ export async function reminders({arguments:input, step, state, outcome}) {
         .filter(key => Object.hasOwn(args,key)).map(key => [key,args[key]]));
       const target = await execution(old.value);
       if (!sameNode(target, context().execution_node)) {
-        return {result:await hostCall(target, "save", {...old.value,...changes,execution_node:target,revision:args.revision})};
+        const current = await hostCall(target, "record", {id:args.id}, true);
+        if (!current) throw fault("not_found", "Reminder is unavailable");
+        if (current.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
+        if (current.revision !== args.revision) throw fault("revision_conflict", "Reminder changed");
+        return {result:await hostCall(target, "save", {...current,...changes,execution_node:target,revision:args.revision})};
       }
       pending = await saveOperations({...old.value,...changes,revision:args.revision}, scope);
     } else {
@@ -55,7 +59,13 @@ export async function reminders({arguments:input, step, state, outcome}) {
       if (!old.present) throw fault("not_found", "Reminder is unavailable");
       if (old.value.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
       const target = await execution(old.value);
-      if (!sameNode(target, context().execution_node)) return {result:await hostCall(target, "remove", args)};
+      if (!sameNode(target, context().execution_node)) {
+        const current = await hostCall(target, "record", {id:args.id}, true);
+        if (!current) throw fault("not_found", "Reminder is unavailable");
+        if (current.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
+        if (current.revision !== args.revision) throw fault("revision_conflict", "Reminder changed");
+        return {result:await hostCall(target, "remove", args)};
+      }
       pending = await removeOperations(args, scope);
     }
     return {call:{operation:"storage.transaction",arguments:{operations:pending.operations}},
