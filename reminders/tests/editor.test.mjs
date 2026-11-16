@@ -9,6 +9,9 @@ const source = (await readFile(new URL("../dev.sailry.platform/desktop/editor.js
 const node=[1,...Array(31).fill(0)],otherNode=[2,...Array(31).fill(0)];
 const sameNode=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const plain = value => JSON.parse(JSON.stringify(value));
+const records = (await readFile(new URL("../dev.sailry.platform/host/records.js",import.meta.url),"utf8"))
+  .replace(/^import .*;\n/gm,"").replace(/^export /gm,"");
+const snapshot = vm.runInNewContext(`${records}\nsnapshot`);
 const controller = (await readFile(new URL("../dev.sailry.platform/desktop/main.js", import.meta.url), "utf8"))
   .replace(/^import .*;\n/gm, "").replace(/^export default /gm, "");
 const control = vm.runInNewContext(`${controller}\nReminders.prototype.control`, {View:class {},sameNode});
@@ -28,7 +31,7 @@ function fixture() {
   }
   const constructors=Object.fromEntries(["Button","Checkbox","Field"]
     .map(kind=>[kind,function(id,label){return element(kind,id,{label});}]));
-  const api=vm.runInNewContext(`${source}\n({editor,release,value,render})`,{div:()=>element(),...constructors,sameNode,
+  const api=vm.runInNewContext(`${source}\n({editor,release,value,render})`,{div:()=>element(),...constructors,sameNode,snapshot,
     VForm:function(){return element("Form");},SelectField:{new:(id,props)=>element("SelectField",id,props)},
     theme:()=>({colors:{destructive:"danger"}}),window:{viewport_size:()=>({width:1200,height:900})},
     createText:(value,props)=>{const id=`text-${texts.size}`;texts.set(id,value);created.push({id,props});return id;},
@@ -100,4 +103,16 @@ test("new host selection confines project choices and stays fixed afterward", ()
   assert.deepEqual(plain(setup.view.editing.draft.execution_node),otherNode);
   setup.render();
   assert.equal(setup.nodes.get("reminder-host").props.disabled,true);
+});
+
+test("original content survives a source refresh", () => {
+  const setup=fixture(), original={execution_node:otherNode,id:"saved",revision:"3",title:"Original",
+    project:null,message:"Before",due_ms:null,completed:false,notified_ms:null};
+  setup.view.editing=setup.api.editor(original,setup.view.text);
+  original.title="Concurrent edit";
+  setup.texts.set(setup.view.editing.title,"My edit");
+  const input=plain(setup.api.value(setup.view.editing));
+  assert.equal(input.title,"My edit");
+  assert.equal(input.expected_value.title,"Original");
+  assert.equal(input.expected_value.revision,undefined);
 });

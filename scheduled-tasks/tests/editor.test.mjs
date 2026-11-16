@@ -11,6 +11,9 @@ const main=(await readFile(new URL("../dev.sailry.platform/desktop/main.js",impo
 const node=[1,...Array(31).fill(0)],otherNode=[2,...Array(31).fill(0)];
 const sameNode=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const plain=value=>JSON.parse(JSON.stringify(value));
+const records=(await readFile(new URL("../dev.sailry.platform/host/records.js",import.meta.url),"utf8"))
+  .replace(/^import .*;\n/gm,"").replace(/^export /gm,"");
+const snapshot=vm.runInNewContext(`${records}\nsnapshot`);
 const config={assistant:null,resource:null,provider:"provider",model:"explicit",effort:"high",mode:"plan",permission:"full",credential:null};
 function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}}) {
   const nodes=new Map(),texts=new Map(),created=[],released=[],jobs=[],notices=[],requests=[],forgotten=[];
@@ -26,7 +29,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     if(id)nodes.set(id,proxy);return proxy;
   }
   const api=vm.runInNewContext(`${source}\n({editor,release,value,render,effortKey,setTiming,lead,leadEffort})`,{
-    sameNode,div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
+    sameNode,snapshot,div:()=>element(),Button:function(id){return element("Button",id);},Field:function(){return element("Field");},VForm:function(){return element("Form");},
     ...Object.fromEntries(["TextField","DateTimeField","SelectField","ModelPopup","SegmentedTabs","Toggle"]
       .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}])),
     createText:(value,props)=>{const id=`text-${texts.size}`;texts.set(id,value);created.push(props);return id;},
@@ -34,7 +37,7 @@ function fixture(resolve=async()=>config,outcome={Err:{code:"outcome_unknown"}})
     releaseDateTime:value=>released.push(value),
   });
   const Controller=vm.runInNewContext(`${main}\nScheduledTasks`,{View:class{},effortKey:api.effortKey,setTiming:api.setTiming,value:api.value,
-    editor:api.editor,lead:api.lead,sameNode,
+    editor:api.editor,lead:api.lead,sameNode,snapshot,
     resolveSessionModel:resolve,hostCall:async(_node,handler,input)=>handler==="model"?resolve(input.model,input.effort,input.config):{models:[],teams:[]},
     prepareHostCall:(node,handler,input)=>{requests.push({node,data:{handler,input}});return "original-request";},
     completeRequest:async()=>outcome,forgetRequest:id=>forgotten.push(id),toast:value=>notices.push(value)});
@@ -369,4 +372,20 @@ test("host changes clear foreign project and model choices",async()=>{
   view.editing.draft.id="existing";view.control({id:"task-host",value:JSON.stringify(node)},setup.cx);
   assert.deepEqual(plain(view.editing.draft.execution_node),otherNode);
   setup.render();assert.equal(setup.nodes.get("task-host").props.disabled,true);
+});
+
+test("edits keep original content across source refresh and version drift",async()=>{
+  const setup=fixture(),item={...setup.view.editing.draft,execution_node:otherNode,id:"saved",revision:"3",
+    name:"Original",prompt:"Keep this",config:{...config}};
+  setup.view.editing=setup.api.editor(item,setup.view.text);
+  const original=plain(setup.view.editing.original);
+  setup.view.items=[{...item,name:"Concurrent change",revision:"8"}];
+  item.config.effort="low";
+  setup.texts.set(setup.view.editing.name,"My edit");
+  setup.view.save(setup.cx);await setup.jobs.shift()(setup.cx);
+  assert.deepEqual(plain(setup.requests[0].data.input.expected_value),original);
+  assert.equal(setup.requests[0].data.input.expected_value.config.effort,"high");
+  assert.equal(setup.requests[0].data.input.name,"My edit");
+  assert.equal(setup.requests[0].data.input.revision,"3");
+  assert.deepEqual(plain(setup.requests[0].node),otherNode);
 });

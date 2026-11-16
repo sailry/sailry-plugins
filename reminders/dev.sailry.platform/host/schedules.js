@@ -1,5 +1,5 @@
 import { context, prepareRequest, completeRequest, forgetRequest } from "sailry/sdk";
-import { fault, key, result, read, node, sameNode, hostCall } from "./records.js";
+import { fault, key, result, read, node, sameNode, hostCall, snapshot } from "./records.js";
 
 async function query(kind, data) {
   const action = data === undefined ? {kind} : {kind, data};
@@ -33,7 +33,8 @@ export async function changes(item, nextRevision) {
   }));
   operations.push(dispatch("save_schedule", {
     id:item.id,revision:schedule ? exact(schedule.revision) : "0",enabled,topic:item.id,
-    payload:{id:item.id, revision:nextRevision},timing:{kind:"once",data:{at_ms:item.due_ms ?? 0}},next_ms:null,
+    payload:{id:item.id, revision:nextRevision, expected_value:snapshot(item)},
+    timing:{kind:"once",data:{at_ms:item.due_ms ?? 0}},next_ms:null,
   }));
   return operations;
 }

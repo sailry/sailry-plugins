@@ -5,7 +5,7 @@ import { modal_closed,nextControlEvent,showWorkspaceDetails,toast } from "sailry
 import { messages } from "./locales.js";
 import { editor, release, value } from "./editor.js";
 import { render } from "./view.js";
-import {page, sameNode} from "../host/records.js";
+import {page, sameNode, snapshot} from "../host/records.js";
 import {history} from "../host/schedules.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
@@ -157,12 +157,16 @@ export default class Reminders extends View {
   }
   perform(handler, input, cx) {
     if (this.busy) return;
+    if (!this.pending && input?.id) {
+      const previous = input.expected_value ?? (handler === "remove" ? this.deleting : this.items.find(item => item.id === input.id));
+      if (previous) input = {...input, expected_value:snapshot(previous)};
+    }
     this.busy = true; this.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
         if (!this.pending) {
           const item = input?.id && this.items.find(item => item.id === input.id);
-          const target = item ? item.execution_node ?? this.executionNode : input?.execution_node;
+          const target = input?.expected_value?.execution_node ?? input?.execution_node ?? item?.execution_node ?? this.executionNode;
           if (target == null) { this.error = "executionUnknown"; return; }
           if (this.hosts.find(source => sameNode(source.node, target))?.fault) {
             this.error = "executionUnavailable"; return;

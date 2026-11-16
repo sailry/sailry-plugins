@@ -39,6 +39,28 @@ export function revision(value) {
   }
   return value;
 }
+function ordered(value) {
+  if (Array.isArray(value)) return value.map(ordered);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, ordered(value[key])]));
+  }
+  return value;
+}
+export function snapshot(value) {
+  const {id, execution_node = null, project, title, message, completed, due_ms, notified_ms = null} = value;
+  return JSON.parse(JSON.stringify({id, execution_node, project, title, message, completed, due_ms, notified_ms}));
+}
+export function checkBase(input, entry) {
+  const expected = revision(input.revision);
+  // Source and executor revisions are independent. An explicit original value
+  // proves content equality before using this Node's revision for its CAS.
+  if (Object.hasOwn(input, "expected_value")) {
+    if (!entry.present || JSON.stringify(ordered(snapshot(entry.value))) !== JSON.stringify(ordered(snapshot(input.expected_value)))) {
+      throw fault("revision_conflict", "Reminder changed");
+    }
+  } else if (entry.revision !== expected) throw fault("revision_conflict", "Reminder changed");
+  return entry.revision;
+}
 export function bytes(text) {
   let length = 0;
   for (const char of text) {

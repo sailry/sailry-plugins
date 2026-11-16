@@ -6,7 +6,7 @@ import {list, history, states} from "../host/management.js";
 import {messages} from "./locales.js";
 import {editor, release, value, effortKey, setTiming, lead} from "./editor.js";
 import {render} from "./view.js";
-import {sameNode, hostCall} from "../host/records.js";
+import {sameNode, hostCall, snapshot} from "../host/records.js";
 
 const uncertain = code => ["unavailable", "busy", "outcome_unknown", "internal", "cancelled"].includes(code);
 function unwrap(result) { if (result.Err) throw result.Err; return result.Ok; }
@@ -276,12 +276,20 @@ export default class ScheduledTasks extends View {
   }
   perform(handler, input, cx) {
     if (this.busy) return;
+    if (!this.pending && input?.id && ["save", "remove", "run"].includes(handler)) {
+      const previous = handler === "save" && this.editing?.draft.id === input.id && this.editing.original ? this.editing.original
+        : handler === "remove" ? this.deleting : this.items.find(item => item.id === input.id);
+      if (previous) {
+        const expected = snapshot(previous);
+        input = {...input, revision:input.revision ?? previous.revision, expected_value:expected};
+      }
+    }
     this.busy = true; this.error = null; cx.notify();
     cx.spawn(async cx => {
       try {
         if (!this.pending) {
           const item=input?.id && this.items.find(item=>item.id===input.id);
-          const target=input?.execution_node ?? item?.execution_node ?? this.executionNode;
+          const target=input?.expected_value?.execution_node ?? input?.execution_node ?? item?.execution_node ?? this.executionNode;
           if(this.hosts.find(source=>sameNode(source.node,target))?.fault){this.error="executionUnavailable";return;}
           this.pending = prepareHostCall(target,handler,input);
         }

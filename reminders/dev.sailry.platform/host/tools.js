@@ -1,5 +1,5 @@
 import {context, callId, readTurnState, stageTurnState} from "sailry/sdk";
-import {project, page, read, fault, sameNode, hostCall} from "./records.js";
+import {project, page, read, fault, sameNode, hostCall, snapshot, checkBase} from "./records.js";
 import {saveOperations, removeOperations, transactionResult} from "./mutations.js";
 import {execution} from "./schedules.js";
 
@@ -47,7 +47,9 @@ export async function reminders({arguments:input, step, state, outcome}) {
         .filter(key => Object.hasOwn(args,key)).map(key => [key,args[key]]));
       const target = await execution(old.value);
       if (!sameNode(target, context().execution_node)) {
-        return {result:await hostCall(target, "save", {...old.value,...changes,execution_node:target,revision:args.revision})};
+        checkBase(args, old);
+        return {result:await hostCall(target, "save", {...old.value,...changes,execution_node:target,revision:args.revision,
+          expected_value:snapshot(old.value)})};
       }
       pending = await saveOperations({...old.value,...changes,revision:args.revision}, scope);
     } else {
@@ -55,7 +57,10 @@ export async function reminders({arguments:input, step, state, outcome}) {
       if (!old.present) throw fault("not_found", "Reminder is unavailable");
       if (old.value.project !== scope) throw fault("permission_denied", "Reminder belongs to another project");
       const target = await execution(old.value);
-      if (!sameNode(target, context().execution_node)) return {result:await hostCall(target, "remove", args)};
+      if (!sameNode(target, context().execution_node)) {
+        checkBase(args, old);
+        return {result:await hostCall(target, "remove", {...args, expected_value:snapshot(old.value)})};
+      }
       pending = await removeOperations(args, scope);
     }
     return {call:{operation:"storage.transaction",arguments:{operations:pending.operations}},

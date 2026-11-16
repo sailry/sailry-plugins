@@ -19,6 +19,13 @@ state stays in its local dispatcher, even when personal task records are visible
 through another controller or execution host. Opening a run uses its recorded
 Node as well as its session ID.
 
+Source and executor KV revisions are independent. Edits, removal and manual runs
+can carry `expected_value`, the original task content without its projected
+revision, status or next-run metadata. The execution host first checks that
+content, then uses its own local revision for mutations. Editors retain their
+original snapshot through list refreshes and reject concurrent content changes.
+Calls without this content condition keep their existing local revision checks.
+
 Changing a host is available only while creating a task. An unavailable host
 does not create a local replacement. Legacy records without an owner require
 an existing dispatch handler or schedule on the local Node before their next
@@ -44,9 +51,11 @@ each execution still captures the latest team at admission.
 
 Newly saved handlers create each session through the shared Node path and
 associate it with `{namespace:"scheduled-tasks", kind:"task", id:task.id}`.
-Running an existing task manually refreshes its current handler and enqueues
-the run in one revision-checked transaction, preserving the schedule cursor and
-previously captured deliveries. Older recurring handlers retain their original
+Running an existing task manually checks its local KV revision with a same-value
+write, refreshes its current handler and enqueues the run in one transaction.
+This advances the personal record's revision without changing its content and
+preserves the schedule cursor and previously captured deliveries.
+Older recurring handlers retain their original
 command until the task is saved or run manually. Execution selection and task
 association use the same session API as other plugins and external clients;
 there is no package-owned Agent runner.

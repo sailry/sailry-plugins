@@ -1,5 +1,5 @@
 import {context, readProjectCatalog, listTeams, prepareRequest, completeRequest, forgetRequest} from "sailry/sdk";
-import {key, read, commit, result, fault, node, sameNode, hostCall} from "./records.js";
+import {key, read, commit, result, fault, node, sameNode, hostCall, snapshot, checkBase} from "./records.js";
 import {query, configuration, registration, operation, exact, executor, resolve} from "./dispatch.js";
 import {listing, saveOperations, removeOperations} from "./mutations.js";
 
@@ -42,8 +42,9 @@ export async function states() {
 }
 export async function save(input) {
   return result(async () => {
+    let old;
     if (input.id != null) {
-      const old = await read(input.id);
+      old = await read(input.id);
       if (old.present) {
         const target = await executor(old.value);
         if (input.execution_node != null && !sameNode(input.execution_node, target)) {
@@ -53,7 +54,13 @@ export async function save(input) {
       }
     }
     const target = node(input.execution_node ?? context().execution_node);
-    if (!sameNode(target, context().execution_node)) return hostCall(target, "save", input);
+    if (!sameNode(target, context().execution_node)) {
+      if (old) {
+        checkBase(input, old);
+        if (old.present) input = {...input, expected_value:snapshot(old.value)};
+      }
+      return hostCall(target, "save", input);
+    }
     const pending = await saveOperations(input);
     const outputs = await commit(pending.operations);
     return {...pending.item,revision:outputs[0].data.revision};
@@ -64,7 +71,10 @@ export async function remove(input) {
     const old = await read(input.id);
     if (old.present) {
       const target = await executor(old.value);
-      if (!sameNode(target, context().execution_node)) return hostCall(target, "remove", input);
+      if (!sameNode(target, context().execution_node)) {
+        checkBase(input, old);
+        return hostCall(target, "remove", {...input, expected_value:snapshot(old.value)});
+      }
     }
     const pending = await removeOperations(input);
     await commit(pending.operations);
@@ -76,18 +86,25 @@ export async function run(input) {
     key(input.id);
     const record = await read(input.id);
     if (!record.present) throw fault("not_found", "Task is unavailable");
+    if (input.revision != null || Object.hasOwn(input, "expected_value")) checkBase(input, record);
     const target = await executor(record.value);
-    if (!sameNode(target, context().execution_node)) return hostCall(target, "run", input);
-    // Task edits change their handler in the same transaction. Read its revision
-    // first so a concurrent edit either supplies current task data or fails CAS.
+    if (!sameNode(target, context().execution_node)) {
+      return hostCall(target, "run", {...input, revision:record.revision, expected_value:snapshot(record.value)});
+    }
+    // The KV fence also catches source snapshots that change the local view
+    // without editing this Node's handler.
     const handler = (await query("list_handlers")).find(handler => handler.name === input.id);
     const old = await read(input.id);
     if (!old.present) throw fault("not_found", "Task is unavailable");
-    old.value.config = await configuration(old.value.config,old.value.team);
+    if (input.revision != null || Object.hasOwn(input, "expected_value")) checkBase(input, old);
+    const current = {...old.value, config:await configuration(old.value.config,old.value.team)};
     if (!handler) throw fault("not_found", "Task handler is unavailable");
-    const outputs = await commit([registration(old.value,exact(handler.revision)),
-      operation("enqueue",{handler:input.id,payload:{name:old.value.name}})]);
-    const output = outputs[1];
+    const outputs = await commit([
+      {kind:"write", data:{key:key(input.id), value:old.value, expected_revision:old.revision}},
+      registration(current,exact(handler.revision)),
+      operation("enqueue",{handler:input.id,payload:{name:old.value.name}}),
+    ]);
+    const output = outputs[2];
     if (output?.kind !== "dispatch" || output.data?.kind !== "job") {
       throw fault("outcome_unknown", "Task run outcome is unavailable");
     }

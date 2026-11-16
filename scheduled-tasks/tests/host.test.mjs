@@ -15,7 +15,7 @@ async function fixture() {
     .replace(/^import .*;\n/gm,"").replace(/^export \{.*;\n/gm,"").replace(/^export /gm,"");
   const hostCalls=[];
   const requests=[],transactions=[],values=new Map(),pages=new Map(),config={provider:"provider",model:"selected",effort:"high",mode:"code",permission:"ask"};
-  const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null,host:async()=>({Err:{code:"unavailable",message:"Offline"}})};
+  const teams=[{id:id(20),name:"Reviewers",revision:"7"}],handlers=[],reads=[],control={failure:null,beforeCommit:null,host:async()=>({Err:{code:"unavailable",message:"Offline"}})};
   const runtime={listTeams:async()=>teams,context:()=>({package:{name:"scheduled-tasks"},invocation:"00000000-0000-0000-0000-000000000001",execution_node:executionNode}),
     getValue:async key=>{reads.push(key);return values.get(key)??{revision:"0",present:false,value:null};},listKeys:async()=>({keys:[],after:null}),
     readProjectCatalog:async()=>({projects:[],worktrees:[]}),
@@ -27,7 +27,11 @@ async function fixture() {
       const command=requests[Number(id)];
       if(id==="transaction"&&transactions.at(-1)?.at(-1)?.data.kind==="enqueue") {
         if(control.failure)return {Err:control.failure};
-        return {Ok:{data:[{kind:"dispatch",data:{kind:"handler",data:{}}},
+        control.beforeCommit?.();
+        const write=transactions.at(-1)[0].data,entry=values.get(write.key);
+        if(entry?.revision!==write.expected_revision)return {Err:{code:"revision_conflict",message:"Task changed"}};
+        values.set(write.key,{...entry,revision:String(BigInt(entry.revision)+1n),value:plain(write.value)});
+        return {Ok:{data:[{kind:"plugin_value",data:values.get(write.key)},{kind:"dispatch",data:{kind:"handler",data:{}}},
           {kind:"dispatch",data:{kind:"job",data:{id:"new-job",handler:transactions.at(-1).at(-1).data.data.handler}}}]}};
       }
       if(command?.kind==="resolve_plugin_model")return control.resolve?.(command.data) ?? {Ok:{kind:"session_config",data:{...config}}};
@@ -180,12 +184,15 @@ test("manual runs refresh handlers and enqueue atomically without changing sched
   assert.deepEqual(setup.requests.map(command=>command.kind),["dispatch","resolve_plugin_model"]);
   assert.equal(setup.transactions.length,1);
   const operations=plain(setup.transactions[0]);
-  assert.deepEqual(operations.map(operation=>operation.data.kind),["save_handler","enqueue"]);
-  const registration=operations[0].data.data;
+  assert.equal(operations[0].kind,"write");
+  assert.equal(operations[0].data.expected_revision,"4");
+  assert.deepEqual(operations[0].data.value,plain(setup.api.draft(item)));
+  assert.deepEqual(operations.slice(1).map(operation=>operation.data.kind),["save_handler","enqueue"]);
+  const registration=operations[1].data.data;
   assert.equal(registration.revision,"7");assert.equal(registration.callback.completion,"turn");
   assert.equal(registration.callback.command.data.execution,"team");
   assert.deepEqual(registration.callback.command.data.association,{namespace:"scheduled-tasks",kind:"task",id:item.id});
-  assert.equal(setup.values.get(`task/${item.id}`),entry);
+  assert.equal(setup.values.get(`task/${item.id}`).revision,"5");
   assert.equal(item.execution,undefined);assert.equal(item.config,setup.config);
 });
 
@@ -227,4 +234,60 @@ test("offline tasks and unknown ownership never enqueue locally",async()=>{
   setup.values.set(`task/${setup.input.id}`,{revision:"1",present:true,value:plain(setup.input)});
   assert.equal((await setup.api.save(setup.input)).Err.code,"unavailable");
   assert.equal(setup.transactions.length,0);
+});
+
+test("matching content uses local task revisions across hosts",async()=>{
+  for(const handler of ["save","remove"]) {
+    const setup=await fixture(),original={...setup.input,config:setup.config};
+    setup.values.set(`task/${original.id}`,{revision:"9",present:true,value:plain(original)});
+    const input=handler==="save"?{...original,name:"Changed",revision:"2",expected_value:plain(original)}
+      :{id:original.id,revision:"2",expected_value:plain(original)};
+    const result=await setup.api[handler](input);
+    assert.ok(result.Ok,JSON.stringify(result));
+    assert.equal(setup.transactions.length,1);
+    assert.equal(setup.transactions[0][0].data.expected_revision,"9");
+    assert.equal(setup.transactions[0][0].kind,handler==="save"?"write":"remove");
+  }
+});
+
+test("task content changes reject edits removal and manual runs",async()=>{
+  for(const handler of ["save","remove","run"]) {
+    const setup=await fixture(),original={...setup.input,config:setup.config};
+    setup.values.set(`task/${original.id}`,{revision:"9",present:true,value:{...plain(original),prompt:"Concurrent edit"}});
+    setup.handlers.push({name:original.id,revision:4});
+    const input=handler==="save"?{...original,name:"Stale edit",revision:"2",expected_value:plain(original)}
+      :{id:original.id,revision:"2",expected_value:plain(original)};
+    assert.equal((await setup.api[handler](input)).Err.code,"revision_conflict");
+    assert.equal(setup.transactions.length,0);
+    assert.equal(setup.requests.length,0);
+    assert.equal(setup.values.get(`task/${original.id}`).value.prompt,"Concurrent edit");
+  }
+});
+
+test("forwarded task edits carry original content without projection fields",async()=>{
+  const setup=await fixture(),original={...setup.input,config:setup.config,execution_node:otherNode};
+  setup.values.set(`task/${original.id}`,{revision:"2",present:true,value:plain(original)});
+  setup.control.host=async call=>({Ok:{data:{Ok:{handler:call.handler}}}});
+  await setup.api.save({...original,name:"Changed",revision:"2",status:"running",next_ms:42});
+  await setup.api.remove({id:original.id,revision:"2"});
+  for(const call of setup.hostCalls) {
+    assert.equal(call.input.expected_value.name,"Review");
+    assert.equal(call.input.expected_value.revision,undefined);
+    assert.equal(call.input.expected_value.status,undefined);
+    assert.equal(call.input.expected_value.next_ms,undefined);
+  }
+});
+
+test("manual run content changes fail the transaction fence",async()=>{
+  const setup=await fixture(),original={...setup.input,config:setup.config};
+  const key=`task/${original.id}`;
+  setup.values.set(key,{revision:"9",present:true,value:plain(original)});
+  setup.handlers.push({name:original.id,revision:4});
+  setup.control.beforeCommit=()=>setup.values.set(key,{revision:"10",present:true,value:{...plain(original),prompt:"Raced"}});
+  const result=await setup.api.run({id:original.id,revision:"2",expected_value:plain(original)});
+  assert.equal(result.Err.code,"revision_conflict");
+  assert.equal(setup.transactions.length,1);
+  assert.equal(setup.transactions[0][0].data.expected_revision,"9");
+  assert.equal(setup.values.get(key).value.prompt,"Raced");
+  assert.equal(setup.values.get(key).revision,"10");
 });

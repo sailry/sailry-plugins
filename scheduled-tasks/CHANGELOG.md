@@ -1,5 +1,11 @@
 # Changes
 
+## 0.1.21
+
+- Compare original task content before editing or running a task on another host
+- Use the execution Node's local revision and retain stale drafts without overwriting newer changes
+- Fence manual queue admission against concurrent personal-data synchronization
+
 ## 0.1.20
 
 - Choose an execution host for new schedules from the controller directory

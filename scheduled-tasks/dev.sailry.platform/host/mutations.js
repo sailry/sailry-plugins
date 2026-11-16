@@ -1,5 +1,5 @@
 import {context, readProjectCatalog} from "sailry/sdk";
-import {key, read, revision, draft, checked, page, fault, sameNode} from "./records.js";
+import {key, read, revision, draft, checked, page, fault, sameNode, checkBase} from "./records.js";
 import {query, changes, removal, configuration, executor} from "./dispatch.js";
 
 function owned(item, project) {
@@ -34,7 +34,7 @@ export async function removeOperations(input, project) {
   const old = await read(input.id);
   if (!old.present) throw fault("not_found", "Task is unavailable");
   owned(old.value, project);
-  if (old.revision !== revision(input.revision)) throw fault("revision_conflict", "Task changed");
+  checkBase(input, old);
   if (!sameNode(await executor(old.value), context().execution_node)) {
     throw fault("conflict", "Task remains on its original execution Node");
   }
