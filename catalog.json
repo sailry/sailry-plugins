@@ -19053,7 +19053,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "reminders",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "To-dos and scheduled reminders",
         "extensions": {
           "dev.sailry.platform": {
@@ -19492,8 +19492,16 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "72ef4187c103dab62c7d32dd3322fa987b5ec543",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Retain the original request when a nested operation has an uncertain outcome."
+          }
+        },
+        {
           "version": "0.1.18",
-          "commit": "4164456fbacb26b4cda80c51221dfc5dec2b3ff3",
+          "commit": "051403090adfd0ee1e9e016f0779cfee4d8aef05",
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
@@ -19669,7 +19677,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
+        "text": "- Retain the original request when a nested operation has an uncertain outcome."
       }
     },
     {
@@ -19825,7 +19833,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20575,8 +20583,16 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "72ef4187c103dab62c7d32dd3322fa987b5ec543",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Retain the original request when a nested operation has an uncertain outcome."
+          }
+        },
+        {
           "version": "0.1.21",
-          "commit": "4164456fbacb26b4cda80c51221dfc5dec2b3ff3",
+          "commit": "051403090adfd0ee1e9e016f0779cfee4d8aef05",
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
@@ -20779,7 +20795,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
+        "text": "- Retain the original request when a nested operation has an uncertain outcome."
       }
     },
     {
