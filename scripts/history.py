@@ -116,40 +116,43 @@ def lineage(history, manifests, name):
         selected.add(commit)
         for parent in graph[commit]:
             previous = manifest(parent)
-            # A version reset starts a new package lineage, including on merged branches.
+            # Legacy resets delimit discovery of previously unindexed package histories.
             if previous is not None and previous[1] <= current:
                 pending.append(parent)
     return [(commit, manifest(commit)[0]) for commit in graph if commit in selected]
 
 
-def collisions(history, entries):
-    groups = {}
-    for commit, manifest in entries:
-        groups.setdefault(manifest["version"], set()).add(commit)
-    result = {}
-    for version, commits in groups.items():
-        if len(commits) < 2:
-            continue
-        ancestors = set()
-        for commit, *parents in history:
-            if commit in commits or commit in ancestors:
-                ancestors.update(parents)
-        candidates = commits - ancestors
-        if len(candidates) > 1:
-            result[version] = candidates
-    return result
+def trees(root, names):
+    if not names:
+        return {}
+    result = subprocess.run(["git", "cat-file", "--batch-check"], cwd=root, check=True,
+                            input="\n".join(names) + "\n", capture_output=True, text=True)
+    contents = {}
+    for name, line in zip(names, result.stdout.splitlines(), strict=True):
+        fields = line.split()
+        if len(fields) != 3 or fields[1] != "tree":
+            raise ValueError("Published package commits require available package trees")
+        contents[name] = fields[0]
+    return contents
 
 
-def recorded(root, candidates):
-    pending = {(name, version): commits for name, versions in candidates.items()
-               for version, commits in versions.items()}
-    selected = {}
-    if not pending:
-        return selected
-    # The earliest recorded identity on the main lineage wins a divergent version collision.
-    commits = git(root, "log", "--first-parent", "--reverse", "--format=%H", "--",
+def recorded(root, packages, withdrawals):
+    commits = git(root, "log", "--first-parent", "--format=%H", "--",
                   "catalog.json").splitlines()
+    if not commits:
+        return {}, None
+    current = objects(root, ["HEAD:catalog.json"])["HEAD:catalog.json"]
+    if current is None:
+        raise ValueError("Restore the committed catalog before generating package history")
+    selected = {(package["id"], record["version"]): record["commit"]
+                for package in json.loads(current).get("packages", [])
+                if package["id"] in packages for record in package.get("versions", [])}
+    # Older generators removed withdrawn releases; recover only those explicit identities.
+    pending = {(name, version) for name, versions in withdrawals.items()
+               for version in versions if name in packages and (name, version) not in selected}
     for offset in range(0, len(commits), 16):
+        if not pending:
+            break
         snapshots = objects(root, [f"{commit}:catalog.json" for commit in commits[offset:offset + 16]])
         for text in snapshots.values():
             if text is None:
@@ -157,46 +160,89 @@ def recorded(root, candidates):
             for package in json.loads(text).get("packages", []):
                 for record in package.get("versions", []):
                     key = package["id"], record["version"]
-                    if key in pending and record["commit"] in pending[key]:
+                    if key in pending:
                         selected[key] = record["commit"]
-                        del pending[key]
-            if not pending:
-                return selected
-    return selected
+                        pending.remove(key)
+    return selected, commits[0]
 
 
-def versions(root, packages):
+def versions(root, packages, withdrawals=None):
     if git(root, "rev-parse", "--is-shallow-repository") == "true":
         raise ValueError("Catalog history requires a complete Git checkout")
     if git(root, "status", "--porcelain", "--untracked-files=all", "--", *packages):
         raise ValueError("Commit package changes before generating catalog history")
     commits = {name: [line.split() for line in git(
-        root, "rev-list", "--full-history", "--simplify-merges", "--topo-order", "--parents",
+        root, "rev-list", "--full-history", "--topo-order", "--parents",
         "HEAD", "--", name + "/").splitlines()]
                for name in packages}
     manifests = objects(root, [f"{row[0]}:{name}/plugin.json"
                                for name, history in commits.items() for row in history])
     histories = {name: lineage(history, manifests, name) for name, history in commits.items()}
-    canonical = recorded(root, {name: collisions(commits[name], entries)
-                                for name, entries in histories.items()})
+    canonical, publication = recorded(root, packages, withdrawals or {})
+    # The committed catalog owns legacy identities; newly introduced content must match them.
+    published = set(git(root, "rev-list", publication).splitlines()) if publication else set()
+    recent = {}
+    for name, history in commits.items():
+        recent[name] = []
+        for commit, *_ in history:
+            if commit in published:
+                continue
+            text = manifests[f"{commit}:{name}/plugin.json"]
+            manifest = json.loads(text) if text is not None else None
+            if isinstance(manifest, dict) and manifest.get("name") == name:
+                precedence(manifest.get("version"))
+                recent[name].append((commit, manifest))
+        if publication is None:
+            histories[name] = recent[name]
+    references = {f"{commit}:{name}" for name, history in histories.items()
+                  for commit, _ in [*history, *recent[name]]}
+    references.update(f"{commit}:{name}" for (name, _), commit in canonical.items())
+    contents = trees(root, sorted(references))
     result = {}
     for name, history in histories.items():
-        selected = {}
-        for commit, manifest in history:
-            version = manifest["version"]
-            if (name, version) in canonical and commit != canonical[name, version]:
-                continue
+        candidates = {}
+        for commit, manifest in [*history, *recent[name]]:
+            candidates.setdefault(manifest["version"], set()).add(commit)
+        selected = {version: commit for (package, version), commit in canonical.items()
+                    if package == name}
+        for version, entries in candidates.items():
             if version in selected:
-                continue
+                expected = contents[f"{selected[version]}:{name}"]
+                checked = [commit for commit, manifest in recent[name] if manifest["version"] == version]
+                if version == history[0][1]["version"]:
+                    checked.append(history[0][0])
+            else:
+                # A new version has one content tree, even before its first publication.
+                first = next(commit for commit, *_ in reversed(commits[name]) if commit in entries)
+                selected[version] = first
+                expected = contents[f"{first}:{name}"]
+                checked = entries
+            if any(contents[f"{commit}:{name}"] != expected for commit in checked):
+                raise ValueError(f"Package {name} {version} changed content; increase the package version")
+        records = []
+        for version, commit in selected.items():
+            source = f"{commit}:{name}/plugin.json"
+            text = manifests.get(source)
+            if text is None:
+                text = objects(root, [source])[source]
+            manifest = json.loads(text) if text is not None else None
+            if not isinstance(manifest, dict) or manifest.get("name") != name or manifest.get("version") != version:
+                raise ValueError("Published package commits must match their names and versions")
             record = {"version": version, "commit": commit}
-            extension = manifest.get("extensions", {}).get("dev.sailry.platform", {})
-            if "min_sailry_version" in extension:
-                minimum = extension["min_sailry_version"]
-                precedence(minimum)
-                record["min_sailry_version"] = minimum
-            selected[version] = record
-        result[name] = sorted(selected.values(), key=lambda record: precedence(record["version"]),
-                              reverse=True)
+            extensions = manifest.get("extensions", {})
+            if "dev.sailry.platform" in extensions:
+                extension = extensions["dev.sailry.platform"]
+                if not isinstance(extension, dict) or not isinstance(extension.get("api_version"), str):
+                    raise ValueError("Sailry extension API versions must be strings")
+                record["api_version"] = extension["api_version"]
+                if "min_sailry_version" in extension:
+                    minimum = extension["min_sailry_version"]
+                    precedence(minimum)
+                    record["min_sailry_version"] = minimum
+            records.append(record)
+        order = {row[0]: index for index, row in enumerate(commits[name])}
+        result[name] = sorted(records, key=lambda record: (
+            precedence(record["version"]), -order.get(record["commit"], len(order))), reverse=True)
     filenames = ["CHANGELOG.md", *(f"CHANGELOG.{locale}.md" for locale in LOCALES)]
     snapshots = objects(root, [f"{record['commit']}:{name}/{filename}"
                                for name, records in result.items() for record in records

@@ -27,7 +27,13 @@
 - Regenerate `catalog.json` with `python3 scripts/catalog.py` after manifest
   changes and check it with `python3 scripts/catalog.py --check`. Commit package
   content first, then generate and commit the catalog so version records reference
-  existing commits. Use a complete Git checkout for history generation. Run the relevant
+  existing commits. The committed catalog owns published version-to-commit
+  identities; never edit those mappings by hand. New versions must have exactly
+  one package tree and reference their first content commit. Correct unpublished
+  same-version edits before publication; published fixes require a new version.
+  `catalog-withdrawn.json` may withdraw any release, including the latest, while
+  retaining its immutable history record and compatibility metadata. Use a
+  complete Git checkout for history generation. Run the relevant
   package checks and behavior tests described in the README; report their actual
   scope. Documentation-only changes need diff review, not product builds.
 - Keep release notes in `CHANGELOG.md` under `## <manifest version>`; optional

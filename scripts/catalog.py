@@ -45,22 +45,18 @@ def skills(directory, package):
     return result
 
 
-def withdrawn(root, packages, history):
+def withdrawn(root):
     text = read(root / "catalog-withdrawn.json")
     if text is None:
         return {}
     entries = json.loads(text)
-    current = {package["id"]: package["manifest"]["version"] for package in packages}
     if not isinstance(entries, dict):
         raise ValueError("Catalog withdrawals must name packages")
     result = {}
     for name, requested in entries.items():
-        available = {record["version"] for record in history.get(name, [])}
-        if (name not in current or not isinstance(requested, list)
+        if (not isinstance(requested, list)
                 or any(not isinstance(version, str) for version in requested)
-                or len(requested) != len(set(requested))
-                or any(version == current[name] or version not in available
-                       for version in requested)):
+                or len(requested) != len(set(requested))):
             raise ValueError(f"Invalid catalog withdrawal for {name}")
         result[name] = set(requested)
     return result
@@ -68,8 +64,9 @@ def withdrawn(root, packages, history):
 
 def catalog(root=ROOT, version_history=None):
     manifests = sorted(root.glob("*/plugin.json"))
+    withdrawals = withdrawn(root)
     if version_history is None:
-        version_history = versions(root, [path.parent.name for path in manifests])
+        version_history = versions(root, [path.parent.name for path in manifests], withdrawals)
     packages = []
     entries = []
     for manifest in manifests:
@@ -90,10 +87,15 @@ def catalog(root=ROOT, version_history=None):
             entry["release_notes"] = release_notes
         packages.append(entry)
         entries.extend(skills(manifest.parent, name))
-    withdrawals = withdrawn(root, packages, version_history)
+    names = {package["id"] for package in packages}
+    for name, requested in withdrawals.items():
+        available = {record["version"] for record in version_history.get(name, [])}
+        if name not in names or not requested <= available:
+            raise ValueError(f"Invalid catalog withdrawal for {name}")
     for package in packages:
-        package["versions"] = [record for record in package["versions"]
-                               if record["version"] not in withdrawals.get(package["id"], ())]
+        package["versions"] = [{**record, "withdrawn": True}
+                               if record["version"] in withdrawals.get(package["id"], ()) else record
+                               for record in package["versions"]]
     return {"version": 1, "packages": packages, "skills": entries}
 
 

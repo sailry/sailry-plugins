@@ -3,6 +3,7 @@
 import importlib.util
 from pathlib import Path
 import json
+import os
 import tempfile
 import subprocess
 import sys
@@ -112,13 +113,18 @@ class Catalog(unittest.TestCase):
 
 def git(root, *arguments):
     return subprocess.check_output(["git", *arguments], cwd=root, text=True,
-                                   stderr=subprocess.PIPE).strip()
+                                   stderr=subprocess.PIPE, env={**os.environ,
+                                       "GIT_AUTHOR_DATE": "2000-01-01T00:00:00+00:00",
+                                       "GIT_COMMITTER_DATE": "2000-01-01T00:00:00+00:00",
+                                   }).strip()
 
 
 def repository(root):
     git(root, "init", "--quiet", "--initial-branch=main")
     git(root, "config", "user.name", "Fixture")
     git(root, "config", "user.email", "fixture@example.invalid")
+    git(root, "config", "commit.gpgsign", "false")
+    git(root, "config", "core.hooksPath", os.devnull)
 
 
 def commit(root, message):
@@ -127,14 +133,15 @@ def commit(root, message):
     return git(root, "rev-parse", "HEAD")
 
 
-def release(root, version, minimum=None, text=None, localized=None):
+def release(root, version, minimum=None, text=None, localized=None, api="v1", platform=True):
     package = root / "sample"
     package.mkdir(exist_ok=True)
-    extension = {"api_version": "v1"}
+    extension = {"api_version": api} if api is not None else {}
     if minimum is not None:
         extension["min_sailry_version"] = minimum
-    data = {"name": "sample", "version": version,
-            "extensions": {"dev.sailry.platform": extension}}
+    data = {"name": "sample", "version": version}
+    if platform:
+        data["extensions"] = {"dev.sailry.platform": extension}
     (package / "plugin.json").write_text(json.dumps(data), encoding="utf-8")
     if text is not None:
         (package / "CHANGELOG.md").write_text(text, encoding="utf-8")
@@ -143,23 +150,73 @@ def release(root, version, minimum=None, text=None, localized=None):
     return commit(root, f"Release {version}")
 
 
+def publish(root, records=None):
+    data = catalog.catalog(root) if records is None else {
+        "version": 1, "packages": [{"id": "sample", "versions": records}],
+    }
+    (root / "catalog.json").write_text(json.dumps(data), encoding="utf-8")
+    commit(root, "Publish catalog")
+    return data
+
+
 class History(unittest.TestCase):
-    def test_selects_final_package_content(self):
+    def test_uses_first_matching_content_commit(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
             first = release(root, "1.0.0")
+            second = release(root, "1.1.0")
+            git(root, "checkout", first, "--", "sample")
+            restored = commit(root, "Restore the original package tree")
+            self.assertNotEqual(first, restored)
+            records = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertEqual([(record["version"], record["commit"]) for record in records],
+                             [("1.1.0", second), ("1.0.0", first)])
+
+    def test_preserves_recorded_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            publish(root)
             (root / "sample" / "main.js").write_text("export const value = 1;\n")
-            final = commit(root, "Complete package content")
-            self.assertNotEqual(first, final)
+            final = commit(root, "Record legacy same-version content")
+            publish(root, [{"version": "1.0.0", "commit": final}])
             before = catalog.catalog(root)
-            (root / "catalog.json").write_text(json.dumps(before))
-            commit(root, "Publish catalog")
             (root / "README.md").write_text("Repository documentation\n")
             commit(root, "Update repository documentation")
             self.assertEqual(catalog.catalog(root), before)
             self.assertEqual(before["packages"][0]["versions"],
-                             [{"version": "1.0.0", "commit": final}])
+                             [{"version": "1.0.0", "commit": final, "api_version": "v1"}])
+            (root / "catalog.json").write_text("{}")
+            self.assertEqual(catalog.catalog(root), before)
+
+    def test_rejects_unpublished_content_changes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            (root / "sample" / "main.js").write_text("export const value = 1;\n")
+            commit(root, "Change content without increasing version")
+            with self.assertRaisesRegex(ValueError, "sample 1.0.0 changed content"):
+                catalog.catalog(root)
+            release(root, "1.1.0")
+            with self.assertRaisesRegex(ValueError, "sample 1.0.0 changed content"):
+                catalog.catalog(root)
+
+    def test_rejects_published_content_changes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            publish(root)
+            (root / "sample" / "main.js").write_text("export const value = 1;\n")
+            commit(root, "Change published content")
+            with self.assertRaisesRegex(ValueError, "sample 1.0.0 changed content"):
+                catalog.catalog(root)
+            release(root, "1.1.0")
+            with self.assertRaisesRegex(ValueError, "sample 1.0.0 changed content"):
+                catalog.catalog(root)
 
     def test_preserves_immutable_notes_and_minimums(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -174,12 +231,36 @@ class History(unittest.TestCase):
             self.assertEqual(entry["manifest"]["version"], "0.1.0")
             self.assertEqual(entry["release_notes"], {"text": "- Stable"})
             self.assertEqual(entry["versions"], [
-                {"version": "0.1.0", "commit": latest, "min_sailry_version": "0.1.0-alpha.5",
+                {"version": "0.1.0", "commit": latest, "api_version": "v1", "min_sailry_version": "0.1.0-alpha.5",
                  "release_notes": {"text": "- Stable"}},
-                {"version": "0.1.0-alpha.4", "commit": first,
+                {"version": "0.1.0-alpha.4", "commit": first, "api_version": "v1",
                  "min_sailry_version": "0.1.0-alpha.4",
                  "release_notes": {"text": "- Preview", "locales": {"zh-CN": "- 预览"}}},
             ])
+
+    def test_preserves_unknown_and_absent_api(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            plain = release(root, "1.0.0", platform=False)
+            future = release(root, "2.0.0", "0.2.0-alpha.1", "## 2.0.0\n- Future API\n", api="v99")
+            records = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertEqual(records, [
+                {"version": "2.0.0", "commit": future, "api_version": "v99",
+                 "min_sailry_version": "0.2.0-alpha.1", "release_notes": {"text": "- Future API"}},
+                {"version": "1.0.0", "commit": plain},
+            ])
+
+    def test_requires_string_api(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for index, api in enumerate((None, 1)):
+                with self.subTest(api=api):
+                    root = Path(directory) / str(index)
+                    root.mkdir()
+                    repository(root)
+                    release(root, "1.0.0", api=api)
+                    with self.assertRaisesRegex(ValueError, "API versions must be strings"):
+                        catalog.catalog(root)
 
     def test_orders_semver_with_build_ties(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -187,8 +268,10 @@ class History(unittest.TestCase):
             repository(root)
             versions = ["0.1.0-alpha.4", "0.1.0-alpha.5", "0.1.0", "0.1.0+build.1",
                         "0.1.0+build.2", "0.2.0-alpha.1"]
-            for version in versions:
+            for index, version in enumerate(versions):
                 release(root, version)
+                if index == 2:
+                    publish(root)
             self.assertEqual([item["version"] for item in catalog.catalog(root)["packages"][0]["versions"]],
                              list(reversed(versions)))
 
@@ -209,68 +292,42 @@ class History(unittest.TestCase):
             self.assertEqual([(item["version"], item["commit"]) for item in records[:3]],
                              [("3.0.0", merged), ("2.0.0", second), ("1.1.0", first)])
 
-    def test_preserves_first_parent_version(self):
+    def test_preserves_same_tree_merge_identity(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
-            first = release(root, "1.0.0")
+            release(root, "1.0.0")
+            publish(root)
             git(root, "switch", "--quiet", "-c", "feature")
-            release(root, "1.1.0", "0.1.0-alpha.8", "## 1.1.0\n- Branch change\n",
-                    "## 1.1.0\n- 分支变更\n")
-            alternative = catalog.catalog(root)["packages"][0]["versions"][0]
+            (root / "README.md").write_text("Feature documentation\n")
+            commit(root, "Document feature")
+            alternative = release(root, "1.1.0")
             git(root, "switch", "--quiet", "main")
-            canonical = release(root, "1.1.0", "0.1.0-alpha.7", "## 1.1.0\n- Recorded change\n",
-                                "## 1.1.0\n- 已记录变更\n")
-            before = catalog.catalog(root)["packages"][0]["versions"]
-            (root / "catalog.json").write_text(json.dumps(catalog.catalog(root)))
-            commit(root, "Record canonical catalog")
-            result = subprocess.run(["git", "merge", "--no-ff", "--no-edit", "feature"], cwd=root,
-                                    capture_output=True)
-            self.assertEqual(result.returncode, 1)
-            merged = release(root, "1.2.0", text="## 1.2.0\n- Combined changes\n",
-                             localized="## 1.2.0\n- 合并变更\n")
+            canonical = release(root, "1.1.0")
+            self.assertNotEqual(canonical, alternative)
+            before = publish(root)
+            git(root, "merge", "--no-ff", "--no-edit", "feature")
             records = catalog.catalog(root)["packages"][0]["versions"]
-            self.assertEqual(records, [
-                {"version": "1.2.0", "commit": merged,
-                 "release_notes": {"text": "- Combined changes", "locales": {"zh-CN": "- 合并变更"}}},
-                {"version": "1.1.0", "commit": canonical, "min_sailry_version": "0.1.0-alpha.7",
-                 "release_notes": {"text": "- Recorded change", "locales": {"zh-CN": "- 已记录变更"}}},
-                {"version": "1.0.0", "commit": first},
-            ])
-            self.assertEqual(records[1:], before)
-            correct = catalog.catalog(root)
-            incorrect = catalog.catalog(root)
-            incorrect["packages"][0]["versions"][1] = alternative
-            (root / "catalog.json").write_text(json.dumps(incorrect))
-            commit(root, "Record conflicting branch identity")
-            self.assertEqual(catalog.catalog(root), correct)
-            (root / "catalog.json").write_text("{}")
-            self.assertEqual(catalog.catalog(root), correct)
-            (root / "catalog.json").write_text(json.dumps(correct))
-            commit(root, "Regenerate catalog")
-            self.assertEqual(catalog.catalog(root), correct)
+            self.assertEqual(records, before["packages"][0]["versions"])
+            self.assertEqual(records[0]["commit"], canonical)
 
-    def test_prefers_descendant_over_parent_order(self):
+    def test_rejects_merged_version_collisions(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
-            release(root, "1.0.0", text="## 1.0.0\n- Initial content\n")
-            (root / "catalog.json").write_text(json.dumps(catalog.catalog(root)))
-            commit(root, "Record initial catalog")
+            release(root, "1.0.0")
+            publish(root)
             git(root, "switch", "--quiet", "-c", "feature")
-            final = release(root, "1.0.0", text="## 1.0.0\n- Final content\n")
+            release(root, "1.1.0", text="## 1.1.0\n- Branch content\n")
             git(root, "switch", "--quiet", "main")
-            first = release(root, "1.1.0", text="## 1.1.0\n- Main change\n")
+            release(root, "1.1.0", text="## 1.1.0\n- Published content\n")
+            publish(root)
             result = subprocess.run(["git", "merge", "--no-ff", "--no-edit", "feature"], cwd=root,
                                     capture_output=True)
             self.assertEqual(result.returncode, 1)
-            merged = release(root, "1.2.0", text="## 1.2.0\n- Combined changes\n")
-            records = catalog.catalog(root)["packages"][0]["versions"]
-            self.assertEqual(records, [
-                {"version": "1.2.0", "commit": merged, "release_notes": {"text": "- Combined changes"}},
-                {"version": "1.1.0", "commit": first, "release_notes": {"text": "- Main change"}},
-                {"version": "1.0.0", "commit": final, "release_notes": {"text": "- Final content"}},
-            ])
+            release(root, "1.2.0", text="## 1.2.0\n- Combined changes\n")
+            with self.assertRaisesRegex(ValueError, "sample 1.1.0 changed content"):
+                catalog.catalog(root)
 
     def test_rejects_uncommitted_package_content(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -281,7 +338,7 @@ class History(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Commit package changes"):
                 catalog.catalog(root)
 
-    def test_excludes_retired_version_lineages(self):
+    def test_preserves_recorded_version_reset(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
@@ -289,10 +346,22 @@ class History(unittest.TestCase):
             release(root, "0.3.2")
             reset = release(root, "0.1.0", text="## 0.1.0\n- Current lineage\n")
             latest = release(root, "0.1.1")
+            publish(root, [{"version": "0.1.1", "commit": latest}, {"version": "0.1.0", "commit": reset}])
             records = catalog.catalog(root)["packages"][0]["versions"]
             self.assertEqual([(item["version"], item["commit"]) for item in records],
                              [("0.1.1", latest), ("0.1.0", reset)])
             self.assertEqual(records[1]["release_notes"], {"text": "- Current lineage"})
+
+    def test_rejects_new_version_reset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "0.1.0", text="## 0.1.0\n- Published content\n")
+            publish(root)
+            release(root, "0.3.2")
+            release(root, "0.1.0", text="## 0.1.0\n- Reset content\n")
+            with self.assertRaisesRegex(ValueError, "sample 0.1.0 changed content"):
+                catalog.catalog(root)
 
     def test_withdraws_incompatible_historical_version(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -305,15 +374,40 @@ class History(unittest.TestCase):
             commit(root, "Withdraw incompatible release")
             records = catalog.catalog(root)["packages"][0]["versions"]
             self.assertEqual([(record["version"], record["commit"]) for record in records],
-                             [("0.1.27", latest), ("0.1.25", compatible)])
+                             [("0.1.27", latest), ("0.1.26", withdrawn), ("0.1.25", compatible)])
             self.assertEqual([record["min_sailry_version"] for record in records],
-                             ["0.1.3", "0.1.2"])
-            self.assertNotIn(withdrawn, [record["commit"] for record in records])
-            for invalid in ('{"sample":["0.1.27"]}', '{"sample":["0.1.26","0.1.26"]}',
+                             ["0.1.3", "0.1.2", "0.1.2"])
+            self.assertNotIn("withdrawn", records[0])
+            self.assertTrue(records[1]["withdrawn"])
+            self.assertNotIn("withdrawn", records[2])
+            (root / "catalog-withdrawn.json").write_text('{"sample":["0.1.26","0.1.27"]}')
+            latest_withdrawn = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertTrue(latest_withdrawn[0]["withdrawn"])
+            self.assertEqual(latest_withdrawn[0]["commit"], latest)
+            for invalid in ('{"sample":["0.1.26","0.1.26"]}', '{"sample":[1]}',
                             '{"sample":["0.1.24"]}', '{"other":["0.1.26"]}'):
                 (root / "catalog-withdrawn.json").write_text(invalid)
                 with self.assertRaisesRegex(ValueError, "Invalid catalog withdrawal"):
                     catalog.catalog(root)
+
+    def test_recovers_withdrawn_recorded_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            first = release(root, "1.0.0", "0.1.0", "## 1.0.0\n- Original notes\n")
+            publish(root)
+            release(root, "1.0.0", "0.1.1", "## 1.0.0\n- Legacy changed notes\n")
+            latest = release(root, "1.1.0")
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0"]}')
+            publish(root, [{"version": "1.1.0", "commit": latest}])
+            records = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertEqual(records[1], {
+                "version": "1.0.0", "commit": first, "api_version": "v1",
+                "min_sailry_version": "0.1.0", "release_notes": {"text": "- Original notes"},
+                "withdrawn": True,
+            })
+            publish(root)
+            self.assertEqual(catalog.catalog(root)["packages"][0]["versions"], records)
 
     def test_rejects_incomplete_checkouts(self):
         with tempfile.TemporaryDirectory() as directory:

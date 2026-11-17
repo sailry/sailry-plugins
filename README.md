@@ -48,21 +48,40 @@ omitted. New notes count as package content and require the usual version bump.
 those locales retain the current English fallback until their notes are updated.
 
 Each catalog package also includes `versions`, ordered by descending SemVer
-precedence. A version records its final package-content commit, minimum Sailry
-version when declared, and notes from that immutable commit. Build metadata does
-not affect precedence; equal-precedence records retain newest-commit order.
-The current `manifest` and notes remain available alongside the history.
+precedence. A version records one immutable package-content commit, its declared
+`api_version` and `min_sailry_version`, and release notes from that commit.
+`api_version` is omitted for packages without the Sailry extension; declared API
+strings are preserved even when the current application does not support them.
+Build metadata does not affect precedence; equal-precedence records retain
+newest-commit order. The current `manifest` and notes remain available alongside
+the history.
 
 Catalog generation needs complete Git history. Commit package changes first,
 then run the generator and commit `catalog.json` separately so every version
 points to an existing commit. Unrelated repository or catalog-only commits do not
 change package history. Missing historical translations are omitted.
-When historical source reset package versions, the current version lineage ends
-at that reset; retired higher versions are not offered as current releases.
-`catalog-withdrawn.json` lists historical versions omitted from new catalogs
-when their compatibility metadata is wrong. Withdrawals leave immutable
-package commits and installed captures intact; the next compatible historical
-version remains available to older applications.
+
+The committed `HEAD:catalog.json` is the publication record. Generation preserves
+its exact version-to-commit mappings, including historical identities accepted
+before the immutable publication rule. Past same-version edits cannot be repaired
+by selecting an earlier or later commit. Previously retired version lineages stay
+retired. A new version must have exactly one package tree across its history and
+records its first content commit. All package commits introduced since the last
+catalog publication are checked, so a same-version edit is rejected even if a
+later commit increases the version. Correct such an unpublished commit before
+publishing; a published package fix needs a new version. Generation also compares
+the current package tree with its recorded version. Do not edit recorded commit
+identities by hand: the committed index is the reviewed authority, not a signed
+external release registry.
+
+`catalog-withdrawn.json` lists versions excluded from recommendations and
+installations when their compatibility metadata or contents are unsuitable.
+Withdrawn records remain in `versions` with `withdrawn: true`, retaining their
+original commit and metadata. The latest version can also be withdrawn. Versions
+omitted by older withdrawal catalogs recover their last recorded identities from
+committed catalog history. Withdrawals leave installed packages and captured
+resources intact; the next compatible historical version remains available to
+older applications.
 
 ## Working with the application submodule
 
