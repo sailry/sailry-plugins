@@ -66,9 +66,12 @@ its exact version-to-commit mappings, including historical identities accepted
 before the immutable publication rule. Past same-version edits cannot be repaired
 by selecting an earlier or later commit. Previously retired version lineages stay
 retired. A new version must have exactly one package tree across its history and
-records its first content commit. All package commits introduced since the last
-catalog publication are checked, so a same-version edit is rejected even if a
-later commit increases the version. Correct such an unpublished commit before
+records its first content commit. It must also have distinct SemVer precedence:
+changing build metadata cannot publish another package under the same release
+precedence. Already recorded build ties retain their identities. All package
+commits introduced since the last catalog publication are checked, so a
+same-version edit is rejected even if a later commit increases the version.
+Correct such an unpublished commit before
 publishing; a published package fix needs a new version. Generation also compares
 the current package tree with its recorded version. Do not edit recorded commit
 identities by hand: the committed index is the reviewed authority, not a signed

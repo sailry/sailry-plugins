@@ -262,18 +262,42 @@ class History(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "API versions must be strings"):
                         catalog.catalog(root)
 
-    def test_orders_semver_with_build_ties(self):
+    def test_orders_recorded_build_ties(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
             versions = ["0.1.0-alpha.4", "0.1.0-alpha.5", "0.1.0", "0.1.0+build.1",
                         "0.1.0+build.2", "0.2.0-alpha.1"]
-            for index, version in enumerate(versions):
-                release(root, version)
-                if index == 2:
-                    publish(root)
+            releases = [{"version": version, "commit": release(root, version)} for version in versions]
+            publish(root, releases)
             self.assertEqual([item["version"] for item in catalog.catalog(root)["packages"][0]["versions"]],
                              list(reversed(versions)))
+
+    def test_rejects_new_build_aliases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for original in ("1.0.0", "1.0.0+build.1"):
+                for published in (False, True):
+                    with self.subTest(original=original, published=published):
+                        root = Path(directory) / f"{original}-{published}"
+                        root.mkdir()
+                        repository(root)
+                        release(root, original)
+                        if published:
+                            publish(root)
+                        (root / "sample" / "main.js").write_text("export const changed = true;\n")
+                        release(root, "1.0.0+build.2")
+                        with self.assertRaisesRegex(ValueError, "reuses SemVer precedence"):
+                            catalog.catalog(root)
+
+    def test_accepts_new_precedence_with_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "0.9.0")
+            publish(root)
+            latest = release(root, "1.0.0+build.2")
+            records = catalog.catalog(root)["packages"][0]["versions"]
+            self.assertEqual(records[0], {"version": "1.0.0+build.2", "commit": latest, "api_version": "v1"})
 
     def test_keeps_merged_version_commits(self):
         with tempfile.TemporaryDirectory() as directory:

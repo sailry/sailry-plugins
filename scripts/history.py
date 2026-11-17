@@ -205,6 +205,9 @@ def versions(root, packages, withdrawals=None):
             candidates.setdefault(manifest["version"], set()).add(commit)
         selected = {version: commit for (package, version), commit in canonical.items()
                     if package == name}
+        identities = {}
+        for version in [*selected, *candidates]:
+            identities.setdefault(precedence(version), set()).add(version)
         for version, entries in candidates.items():
             if version in selected:
                 expected = contents[f"{selected[version]}:{name}"]
@@ -212,6 +215,9 @@ def versions(root, packages, withdrawals=None):
                 if version == history[0][1]["version"]:
                     checked.append(history[0][0])
             else:
+                if len(identities[precedence(version)]) > 1:
+                    raise ValueError(f"Package {name} {version} reuses SemVer precedence; "
+                                     "build metadata is not a version bump")
                 # A new version has one content tree, even before its first publication.
                 first = next(commit for commit, *_ in reversed(commits[name]) if commit in entries)
                 selected[version] = first
