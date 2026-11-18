@@ -22816,7 +22816,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.36",
+        "version": "0.1.37",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22953,6 +22953,18 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.37",
+          "commit": "6b0a201a2b9d934210abb714aae87b34855de800",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Fill the activity heatmap with square days sized to the card, ending at the latest date.",
+            "locales": {
+              "zh-CN": "- 按卡片宽度铺满活跃热力图，最新日期放在最后一格。"
+            }
+          }
+        },
         {
           "version": "0.1.36",
           "commit": "cee1fd57556be20a943ca5d84617b79ede9de010",
@@ -23431,9 +23443,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show the activity calendar in a separate card with square day cells.",
+        "text": "- Fill the activity heatmap with square days sized to the card, ending at the latest date.",
         "locales": {
-          "zh-CN": "- 活跃热力图放在独立卡片中，每天显示为一个方格。"
+          "zh-CN": "- 按卡片宽度铺满活跃热力图，最新日期放在最后一格。"
         }
       }
     },
@@ -24698,7 +24710,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "workbuddy",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "WorkBuddy model channels",
         "homepage": "https://www.workbuddy.ai",
         "license": "MIT",
@@ -25416,6 +25428,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "d7f324ded1e72f37108f38b6dbd3028eda690513",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Preserve the conversation ID across model requests within a Sailry conversation.",
+            "locales": {
+              "zh-CN": "- 同一个 Sailry 会话的多次模型请求沿用相同的会话标识。"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "ba5f145ecd97f4b651d42d351544235d033df2d8",
           "api_version": "v1",
@@ -25578,17 +25602,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Warn about the account risk before every sign-in\n- Add \"Free models only\" for each site, on by default: list only models free now and refuse the others before sending. Update a saved channel's models once to keep using it\n- Turn automatic check-in off by default; saved settings keep their choice\n- Follow the current WorkBuddy client identity and recognize two more check-in answers",
+        "text": "- Preserve the conversation ID across model requests within a Sailry conversation.",
         "locales": {
-          "zh-CN": "- 每次登录前提示账号风险\n- 为每个站点新增“仅使用免费模型”，默认开启：只列出当前免费的模型，其他模型在发送前拒绝。已保存的渠道需更新一次模型后才能继续使用\n- 自动签到默认关闭；已保存的设置保持原选择\n- 跟进当前 WorkBuddy 客户端标识，并识别另外两种签到结果",
-          "zh-TW": "- 每次登入前提示帳號風險\n- 為每個站點新增「僅使用免費模型」，預設開啟：只列出目前免費的模型，其他模型在傳送前拒絕。已儲存的渠道需更新一次模型後才能繼續使用\n- 自動簽到預設關閉；已儲存的設定維持原選擇\n- 跟進目前 WorkBuddy 用戶端識別，並辨識另外兩種簽到結果",
-          "ja": "- サインインのたびにアカウントのリスクを警告\n- サイトごとの「無料モデルのみ」を追加（既定でオン）：現在無料のモデルだけを一覧に表示し、それ以外は送信前に拒否。保存済みのチャンネルはモデルを一度更新すると引き続き使えます\n- 自動チェックインを既定でオフに変更。保存済みの設定はそのまま\n- 現行の WorkBuddy クライアント識別に追従し、チェックインの応答を 2 種類追加で認識",
-          "ko": "- 로그인할 때마다 계정 위험을 경고\n- 사이트별 \"무료 모델만 사용\" 추가(기본 켜짐): 현재 무료인 모델만 나열하고 나머지는 전송 전에 거부. 저장된 채널은 모델을 한 번 업데이트해야 계속 사용할 수 있습니다\n- 자동 출석 체크를 기본으로 끔. 저장된 설정은 선택을 유지\n- 현재 WorkBuddy 클라이언트 식별 정보를 따르고 출석 체크 응답 두 가지를 추가로 인식",
-          "fr": "- Avertir du risque pour le compte avant chaque connexion\n- Ajouter « Modèles gratuits uniquement » pour chaque site, activé par défaut : ne lister que les modèles gratuits actuellement et refuser les autres avant l'envoi. Mettez à jour une fois les modèles d'un canal enregistré pour continuer à l'utiliser\n- Désactiver par défaut le pointage automatique ; les réglages enregistrés conservent leur choix\n- Suivre l'identité actuelle du client WorkBuddy et reconnaître deux réponses de pointage supplémentaires",
-          "de": "- Vor jeder Anmeldung auf das Kontorisiko hinweisen\n- „Nur kostenlose Modelle“ je Website hinzugefügt, standardmäßig an: nur aktuell kostenlose Modelle auflisten und andere vor dem Senden ablehnen. Die Modelle eines gespeicherten Kanals einmal aktualisieren, um ihn weiter zu nutzen\n- Automatischer Check-in ist standardmäßig aus; gespeicherte Einstellungen behalten ihre Wahl\n- Aktuelle WorkBuddy-Client-Kennung übernommen und zwei weitere Check-in-Antworten erkannt",
-          "es": "- Avisar del riesgo para la cuenta antes de cada inicio de sesión\n- Añadir «Solo modelos gratuitos» por sitio, activado de forma predeterminada: listar solo los modelos gratuitos ahora y rechazar los demás antes de enviar. Actualiza una vez los modelos de un canal guardado para seguir usándolo\n- Desactivar el registro diario automático de forma predeterminada; los ajustes guardados conservan su elección\n- Seguir la identidad actual del cliente de WorkBuddy y reconocer dos respuestas más del registro diario",
-          "pt-BR": "- Avisar sobre o risco para a conta antes de cada login\n- Adicionar \"Somente modelos gratuitos\" por site, ativado por padrão: listar apenas os modelos gratuitos agora e recusar os demais antes do envio. Atualize uma vez os modelos de um canal salvo para continuar usando\n- Desativar o check-in automático por padrão; configurações salvas mantêm a escolha\n- Seguir a identidade atual do cliente WorkBuddy e reconhecer mais duas respostas de check-in",
-          "ru": "- Предупреждать о риске для аккаунта перед каждым входом\n- Добавлена настройка «Только бесплатные модели» для каждого сайта, включена по умолчанию: показываются только бесплатные сейчас модели, остальные отклоняются до отправки. Обновите модели сохранённого канала один раз, чтобы продолжить работу\n- Автоматическая отметка по умолчанию выключена; сохранённые настройки сохраняют выбор\n- Используется текущая идентификация клиента WorkBuddy и распознаются ещё два ответа отметки"
+          "zh-CN": "- 同一个 Sailry 会话的多次模型请求沿用相同的会话标识。"
         }
       }
     },
