@@ -22816,7 +22816,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.35",
+        "version": "0.1.36",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22953,6 +22953,18 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.36",
+          "commit": "cee1fd57556be20a943ca5d84617b79ede9de010",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Show the activity calendar in a separate card with square day cells.",
+            "locales": {
+              "zh-CN": "- 活跃热力图放在独立卡片中，每天显示为一个方格。"
+            }
+          }
+        },
         {
           "version": "0.1.35",
           "commit": "43cb66488d9b570be8e7a774477950738abca902",
@@ -23419,17 +23431,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show the activity heatmap for 30-day and 90-day ranges as well as one year, as a weekly calendar\n- Wait for the matching report when the date range changes",
+        "text": "- Show the activity calendar in a separate card with square day cells.",
         "locales": {
-          "zh-CN": "- 30 天和 90 天范围也显示活跃热力图（原仅 1 年），按周历排列\n- 切换日期范围后，等待对应的统计报告",
-          "zh-TW": "- 30 天與 90 天範圍也顯示活躍熱度圖（原僅 1 年），依週曆排列\n- 切換日期範圍後，等待對應的統計報告",
-          "ja": "- 1 年に加えて 30 日と 90 日の範囲でもアクティビティのヒートマップを週カレンダーで表示\n- 期間の切り替え時に、選択した期間のレポートを待つ",
-          "ko": "- 1년뿐 아니라 30일·90일 범위에서도 활동 히트맵을 주간 달력으로 표시\n- 기간을 변경하면 해당 기간의 보고서가 도착할 때까지 대기",
-          "fr": "- Afficher la carte thermique d’activité aussi pour les périodes de 30 et 90 jours, sous forme de calendrier hebdomadaire\n- Attendre le rapport correspondant lors d’un changement de période",
-          "de": "- Aktivitäts-Heatmap auch für 30- und 90-Tage-Zeiträume als Wochenkalender anzeigen, nicht nur für ein Jahr\n- Beim Wechsel des Zeitraums auf den passenden Bericht warten",
-          "es": "- Mostrar el mapa de calor de actividad también en los rangos de 30 y 90 días, como calendario semanal\n- Esperar el informe correspondiente al cambiar el intervalo de fechas",
-          "pt-BR": "- Mostrar o mapa de calor de atividade também nos intervalos de 30 e 90 dias, como calendário semanal\n- Aguardar o relatório correspondente ao mudar o intervalo de datas",
-          "ru": "- Показывать тепловую карту активности также для периодов 30 и 90 дней в виде недельного календаря\n- При смене периода ждать отчёт за выбранный период"
+          "zh-CN": "- 活跃热力图放在独立卡片中，每天显示为一个方格。"
         }
       }
     },
