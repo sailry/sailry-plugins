@@ -2300,7 +2300,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -2664,6 +2664,15 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "5e02b1c0e6eb8db8316545f8a03415e8fe5a4626",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Return a partial impact or map page when its metadata exceeds the output budget."
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "api_version": "v1",
@@ -2869,18 +2878,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
-        "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
-        }
+        "text": "- Return a partial impact or map page when its metadata exceeds the output budget."
       }
     },
     {
