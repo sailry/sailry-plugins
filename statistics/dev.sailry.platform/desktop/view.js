@@ -19,7 +19,7 @@ const swatches = text => div().h_flex().flex_wrap().gap_3().children(SERIES.map(
 const missing = text => ({text:text.composer_metric_unknown,text_tone:'muted'});
 /** Table row and header heights; a table showing every row adds FRAME for its header divider and border. */
 const ROW=36,HEADER=32,FRAME=3;
-/** Ranges whose activity calendar shows below the trend. */
+/** Ranges that display the activity calendar. */
 const CALENDAR=['30d','90d','1y'];
 /** Resource labels retain the Node identity even when UUIDs coincide. */
 function catalog(view,data) {
@@ -85,17 +85,19 @@ function summary(view,totals) {
   return (narrow ? div().v_flex() : div().h_flex().items_stretch().gap_6()).min_w_0().child(tokens).child(figures);
 }
 
-function activity(view,data) {
+function tokenTrend(view,data) {
   const {state,text}=view,t=key=>text[key],granularity=unit(state.range);
-  // Daily ranges of a month or more add the calendar; shorter ones are the trend itself.
-  const year=CALENDAR.includes(state.range) ? heatmap(data.days,t,data.query?.utc_offset_minutes ?? 0) : null;
   return column()
     .child(div().h_flex().justify_between().items_center().gap_3().child(label(text.usage_trend)).child(swatches(text)))
     .child(StackedChart.new(`usage-trend-${granularity}`,trend(data,granularity,t)))
-    .children(year ? [column().id('usage-activity').gap_2().mt_2().pt_4().border_t_1().border_color(theme().colors.border)
-      .child(muted(text.usage_active_days.replace('%{count}',String(year.active))).text_xs())
-      .child(Heatmap.new('usage-heatmap-plot',{rows:year.rows,columns:year.columns,cells:year.cells}))] : [])
     .child(div().h_flex().justify_end().child(muted(text.usage_local_time).text_xs()));
+}
+
+function activity(view,data) {
+  const {rows,columns,cells,active}=heatmap(data.days,key=>view.text[key],data.query?.utc_offset_minutes ?? 0);
+  return column().gap_2()
+    .child(label(view.text.usage_active_days.replace('%{count}',String(active))))
+    .child(Heatmap.new('usage-heatmap-plot',{rows,columns,cells}));
 }
 
 function distribution(view,data) {
@@ -171,7 +173,8 @@ export function render(view) {
     body.child(muted([view.text.usage_partial,...names].join(' · ')).id('usage-partial'));
   }
   if(data)body.child(card('usage-summary',summary(view,data.totals)))
-    .child(card('usage-trend-card',activity(view,data)))
+    .child(card('usage-trend-card',tokenTrend(view,data)))
+    .children(CALENDAR.includes(state.range) ? [card('usage-activity-card',activity(view,data))] : [])
     .child(card('usage-breakdown-card',distribution(view,data)))
     .child(card('usage-requests-card',requests(view,data)));
   return div().id('usage-page').v_flex().size_full().min_w_0().min_h_0().child(Header.new('usage-header',{content:JSON.stringify(view.header())})).child(div().id('usage-scroll').flex_1().min_h_0().min_w_0().overflow_y_scroll().child(body));

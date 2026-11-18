@@ -73,7 +73,7 @@ test('filter refreshes retain report sections and avoid flow changes',()=>{
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   setup.render();
   const selectors=setup.nodes.get('usage-content').items.map(item=>item.selector);
-  assert.deepEqual(selectors,['usage-filters','usage-summary','usage-trend-card','usage-breakdown-card','usage-requests-card']);
+  assert.deepEqual(selectors,['usage-filters','usage-summary','usage-trend-card','usage-activity-card','usage-breakdown-card','usage-requests-card']);
   state.select('project','selected');const generation=state.start();
   for(const observation of [null,{report:null,connected:true,refreshing:true},
     {report:null,connected:true,refreshing:false,error:{code:'unavailable'}}]) {
@@ -105,17 +105,20 @@ test('token legend is a two-by-two grid with reasoning unshared',()=>{
   assert.deepEqual(texts('usage-part-reasoning'),['Reasoning','50']);
 });
 
-test('month and longer ranges add the fitted heatmap below the trend',()=>{
+test('month and longer ranges show the activity card below the trend',()=>{
   const setup=fixture(),{state}=setup.view;
   const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   state.range='7d';setup.render();
   assert.ok(setup.nodes.has('usage-trend-day'));assert.equal(setup.nodes.has('usage-heatmap-plot'),false);
-  state.range='30d';setup.render();
-  assert.equal(setup.nodes.get('usage-heatmap-plot').kind,'Heatmap');
-  state.range='1y';setup.render();
-  assert.ok(setup.nodes.has('usage-trend-week'));
-  assert.equal(setup.nodes.get('usage-heatmap-plot').kind,'Heatmap');
+  assert.equal(setup.nodes.has('usage-activity-card'),false);
+  for(const [range,unit] of [['30d','day'],['90d','week'],['1y','week']]) {
+    state.range=range;setup.render();
+    const sections=setup.nodes.get('usage-content').items.map(item=>item.selector);
+    assert.ok(setup.nodes.has(`usage-trend-${unit}`));
+    assert.equal(sections.indexOf('usage-activity-card'),sections.indexOf('usage-trend-card')+1);
+    assert.equal(setup.nodes.get('usage-activity-card-box').items[0].items[0].items[1],setup.nodes.get('usage-heatmap-plot'));
+  }
 });
 
 test('changing the date range waits for a report for the new range',()=>{

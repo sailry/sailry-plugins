@@ -1,3 +1,7 @@
+## 0.1.36
+
+- Show the activity calendar in a separate card with square day cells.
+
 ## 0.1.35
 
 - Show the activity heatmap for 30-day and 90-day ranges as well as one year, as a weekly calendar
