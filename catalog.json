@@ -22816,7 +22816,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.37",
+        "version": "0.1.38",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22953,6 +22953,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.38",
+          "commit": "cde9ed7549baa66afdadba65515211c60f0e1f53",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Fill the activity heatmap with history beyond the selected range, keep its filters, and space its title from the grid",
+            "locales": {
+              "zh-CN": "- 活跃热力图不再受所选时间范围的开始日期限制，按卡片宽度显示历史并沿用筛选；加大标题与图表的间距",
+              "zh-TW": "- 活躍熱度圖不再受所選時間範圍的開始日期限制，依卡片寬度顯示歷史並沿用篩選；加大標題與圖表的間距",
+              "ja": "- アクティビティのヒートマップを選択した期間の開始日に制限せず、カード幅に合わせて履歴を表示（フィルターは維持）。タイトルとの間隔を拡大",
+              "ko": "- 활동 히트맵이 선택한 기간의 시작일에 제한되지 않고 카드 너비만큼 기록을 표시하며 필터를 유지합니다. 제목과의 간격을 넓혔습니다",
+              "fr": "- La carte thermique d’activité affiche l’historique au-delà de la période choisie, conserve les filtres et s’éloigne davantage du titre",
+              "de": "- Aktivitäts-Heatmap zeigt den Verlauf über den gewählten Zeitraum hinaus, behält die Filter bei und hat mehr Abstand zum Titel",
+              "es": "- El mapa de calor de actividad muestra historial más allá del rango seleccionado, conserva los filtros y separa más el título",
+              "pt-BR": "- O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título",
+              "ru": "- Тепловая карта активности показывает историю за пределами выбранного периода, сохраняет фильтры и отделена от заголовка большим отступом"
+            }
+          }
+        },
         {
           "version": "0.1.37",
           "commit": "6b0a201a2b9d934210abb714aae87b34855de800",
@@ -23443,9 +23463,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Fill the activity heatmap with square days sized to the card, ending at the latest date.",
+        "text": "- Fill the activity heatmap with history beyond the selected range, keep its filters, and space its title from the grid",
         "locales": {
-          "zh-CN": "- 按卡片宽度铺满活跃热力图，最新日期放在最后一格。"
+          "zh-CN": "- 活跃热力图不再受所选时间范围的开始日期限制，按卡片宽度显示历史并沿用筛选；加大标题与图表的间距",
+          "zh-TW": "- 活躍熱度圖不再受所選時間範圍的開始日期限制，依卡片寬度顯示歷史並沿用篩選；加大標題與圖表的間距",
+          "ja": "- アクティビティのヒートマップを選択した期間の開始日に制限せず、カード幅に合わせて履歴を表示（フィルターは維持）。タイトルとの間隔を拡大",
+          "ko": "- 활동 히트맵이 선택한 기간의 시작일에 제한되지 않고 카드 너비만큼 기록을 표시하며 필터를 유지합니다. 제목과의 간격을 넓혔습니다",
+          "fr": "- La carte thermique d’activité affiche l’historique au-delà de la période choisie, conserve les filtres et s’éloigne davantage du titre",
+          "de": "- Aktivitäts-Heatmap zeigt den Verlauf über den gewählten Zeitraum hinaus, behält die Filter bei und hat mehr Abstand zum Titel",
+          "es": "- El mapa de calor de actividad muestra historial más allá del rango seleccionado, conserva los filtros y separa más el título",
+          "pt-BR": "- O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título",
+          "ru": "- Тепловая карта активности показывает историю за пределами выбранного периода, сохраняет фильтры и отделена от заголовка большим отступом"
         }
       }
     },
