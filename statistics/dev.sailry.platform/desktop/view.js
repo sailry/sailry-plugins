@@ -1,7 +1,7 @@
 import {div} from 'gpui-kit';
 import {Button,Tab,TabBar,Tag,Pagination} from 'gpui-component';
 import {theme,Header} from 'sailry';
-import {SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading,SelectField} from 'sailry/ui';
+import {SettingsGroup,DataTable,Heatmap,StackedChart,ProgressBar,Loading,SelectField,Measure} from 'sailry/ui';
 import {compact,grouped} from './format.js';
 import {heatmap,trend,SERIES} from './charts.js';
 import {overview,percent} from './summary.js';
@@ -94,10 +94,14 @@ function tokenTrend(view,data) {
 }
 
 function activity(view,data) {
-  const {rows,columns,cells,active}=heatmap(data.days,key=>view.text[key],data.query?.utc_offset_minutes ?? 0);
+  const query={...view.state.query,...data.query};
+  const grid=view.activityWidth > 0 ? heatmap(data.days,key=>view.text[key],{
+    width:view.activityWidth,start:query.start_ms,end:query.end_ms,offset:query.utc_offset_minutes,
+  }) : null;
   return column().gap_2()
-    .child(label(view.text.usage_active_days.replace('%{count}',String(active))))
-    .child(Heatmap.new('usage-heatmap-plot',{rows,columns,cells}));
+    .child(label(view.text.usage_heatmap))
+    .child(div().v_flex().w_full().min_w_0().child(Measure.new('usage-activity-width'))
+      .children(grid ? [Heatmap.new('usage-heatmap-plot',grid)] : []));
 }
 
 function distribution(view,data) {

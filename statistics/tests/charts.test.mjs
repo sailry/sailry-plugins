@@ -100,22 +100,23 @@ test('rounds axis ticks to readable steps', () => {
 test('sorts model totals and folds only beyond the first eight', () => {
   const value = point(at(2024,1,1), usage('9550','1000','5000'), '10');
   value.models = Object.fromEntries(Array.from({length:10}, (_,index) => [`model-${index}`,usage(String(1000 - index * 10), '100', '500')]));
-  const chart = heatmap([value], text), cell = chart.cells[0];
+  const bounds={width:100,start:value.start_ms,end:Number(value.start_ms)+86400000};
+  const chart = heatmap([value], text, bounds), cell = chart.cells.at(-1);
   assert.equal(cell.tooltip.title, '10.6k Token');
   assert.equal(cell.tooltip.rows.length, 9);
   assert.deepEqual(cell.tooltip.rows[0], {label:'model-0',value:'1.1k'});
   assert.deepEqual(cell.tooltip.rows[8], {label:'Other models',value:'2.0k'});
   assert.equal(cell.intensity, 1);
-  assert.equal(chart.active, 1);
   value.models = {z:usage('1','1'),a:usage('1','1'),empty:usage('0','0')};
-  assert.deepEqual(heatmap([value], text).cells[0].tooltip.rows.map(row => row.label), ['a','z']);
+  assert.deepEqual(heatmap([value], text, bounds).cells.at(-1).tooltip.rows.map(row => row.label), ['a','z']);
 });
 
 test('uses captured offset across host time zones', () => {
   const offset=-240,winter=point(Date.UTC(2024,0,15,4)),data=report({days:[winter]},offset);
+  const bounds={width:100,start:winter.start_ms,end:Number(winter.start_ms)+86400000,offset};
   const results=[];
   for(const name of ['UTC','America/New_York','Asia/Shanghai'])zone(name,()=>results.push({
-    heatmap:heatmap(data.days,text,offset).cells[0].tooltip.heading,
+    heatmap:heatmap(data.days,text,bounds).cells.at(-1).tooltip.heading,
     trend:trend(data,'day',text).buckets[0].tooltip.heading,
   }));
   assert.deepEqual(results,[
@@ -128,22 +129,25 @@ test('uses captured offset across host time zones', () => {
 test('keeps fixed days aligned across seasonal changes', () => {
   const offset=-240,spring=days(at(2024,2,28,0,0,offset),35,()=>null);
   const autumn=days(at(2024,10,27,0,0,offset),15);
+  const bounds={width:108,start:spring[0].start_ms,end:Number(spring.at(-1).start_ms)+86400000,offset};
   const results=[];
   for(const name of ['UTC','America/New_York','Asia/Shanghai'])zone(name,()=>{
-    const chart=heatmap(spring,text,offset),weeks=trend(report({days:autumn},offset),'week',text);
+    const chart=heatmap(spring,text,bounds),weeks=trend(report({days:autumn},offset),'week',text);
     results.push({cells:chart.cells.map(cell=>[cell.column,cell.row,cell.tooltip.heading]),
       weeks:weeks.buckets.map(bucket=>bucket.tooltip.heading)});
   });
   assert.deepEqual(results[1],results[0]);assert.deepEqual(results[2],results[0]);
   assert.deepEqual(results[0].weeks,['2024-10-27','2024-10-28 – 2024-11-03','2024-11-04 – 2024-11-10']);
-  const chart=heatmap(spring,text,offset);
+  const chart=heatmap(spring,text,bounds);
   assert.equal(chart.rows,7);assert.equal(chart.columns,6);
-  assert.deepEqual([chart.cells[0].column,chart.cells[0].row],[0,2]);
-  assert.equal(chart.cells[1].tooltip.heading,'2024-02-29');
-  assert.deepEqual([chart.cells[5].column,chart.cells[5].row],[1,0]);
-  assert.equal(chart.cells[12].tooltip.heading,'2024-03-11');
-  assert.equal(chart.cells[2].label_group,'2024-3');assert.equal(chart.cells[2].label,'Month 3');
-  assert.equal(chart.active,0);
+  assert.ok(chart.cells.slice(0,7).every(cell => cell.intensity===0 && cell.label===''));
+  const cells=chart.cells.slice(7);
+  assert.deepEqual([cells[0].column,cells[0].row],[1,0]);
+  assert.equal(cells[1].tooltip.heading,'2024-02-29');
+  assert.deepEqual([cells[5].column,cells[5].row],[1,5]);
+  assert.equal(cells[12].tooltip.heading,'2024-03-11');
+  assert.equal(cells[2].label_group,'2024-3');assert.equal(cells[2].label,'Month 3');
+  assert.ok(cells.every(cell=>cell.intensity===0));
 });
 
 test('keeps half hours unique through host fallback', () => {
@@ -157,21 +161,35 @@ test('keeps half hours unique through host fallback', () => {
   assert.equal(results[0].at(-1),'2024-11-03 23:30–00:00');
 });
 
-test('retains one-row short ranges and square-root intensity', () => {
+test('keeps intensity and pads days before the range', () => {
   const points = [point(at(2024,1,1),null),point(at(2024,1,2),null,'1'),point(at(2024,1,3),usage('1','0')),point(at(2024,1,4),usage('4','0')),point(at(2024,1,5),usage('9','0')),point(at(2024,1,6),usage('16','0'))];
-  const chart = heatmap(points,text);
-  assert.equal(chart.rows,1);
-  assert.equal(chart.columns,6);
-  assert.deepEqual(chart.cells.map(cell => cell.intensity),[0,0,0.25,0.45,0.7,1]);
-  assert.deepEqual(chart.cells.map(cell => cell.column),[0,1,2,3,4,5]);
-  assert.equal(chart.cells[0].tooltip.title,'0 Token');
-  assert.equal(chart.cells[1].tooltip.title,'Unknown Token');
-  assert.ok(chart.cells.every(cell => cell.row === 0 && cell.label_group === undefined));
+  const chart = heatmap(points,text,{width:108,start:at(2024,1,1),end:at(2024,1,7)});
+  const selected=chart.cells.slice(-6);
+  assert.deepEqual(selected.map(cell => cell.intensity),[0,0,0.25,0.45,0.7,1]);
+  assert.ok(chart.cells.slice(0,-6).every(cell => cell.intensity === 0 && cell.tooltip.title === ''));
+  assert.equal(selected[0].tooltip.title,'0 Token');
+  assert.equal(selected[1].tooltip.title,'Unknown Token');
   assert.doesNotThrow(() => JSON.stringify(chart));
 });
 
-test('lays a month out as a weekly calendar', () => {
-  const chart = heatmap(Array.from({length:30},(_,index)=>point(at(2024,1,1)+index*86400000)),text);
-  assert.equal(chart.rows,7);
-  assert.equal(chart.columns,5);
+test('fills the measured width and keeps the newest date last', () => {
+  const latest=point(at(2024,1,30),usage('1','0'));
+  for(const width of [250,900]) {
+    const chart=heatmap([latest],text,{width,start:at(2024,1,1),end:at(2024,1,31)});
+    const final=chart.cells.at(-1);
+    assert.equal(chart.rows,7);
+    assert.equal(chart.columns,Math.ceil(width/18));
+    assert.equal(chart.cells.length,chart.rows*chart.columns);
+    assert.deepEqual([final.column,final.row,final.intensity],[chart.columns-1,chart.rows-1,1]);
+    assert.equal(final.tooltip.heading,'2024-01-30');
+    assert.ok(chart.cells.slice(0,-1).every(cell=>cell.intensity===0));
+  }
+});
+
+test('a narrower year adds rows without clipping dates', () => {
+  const width=230,start=at(2023,1,1),end=at(2024,1,1);
+  const chart=heatmap([point(start)],text,{width,start,end});
+  assert.ok(chart.rows>7);
+  assert.equal(chart.cells.at(-365).tooltip.heading,'2023-01-01');
+  assert.equal(chart.cells.at(-1).tooltip.heading,'2023-12-31');
 });

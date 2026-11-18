@@ -1,3 +1,7 @@
+## 0.1.37
+
+- Fill the activity heatmap with square days sized to the card, ending at the latest date.
+
 ## 0.1.36
 
 - Show the activity calendar in a separate card with square day cells.

@@ -23,16 +23,15 @@ export function parts(tokens) {
   return [cache, input - cache, integer(tokens.output)];
 }
 
-export function heatmap(points, text, offset=0) {
-  const first = points.length ? timestamp(points[0].start_ms,offset) : null;
-  const start = first && Number.isFinite(first.getTime())
-    ? calendarDay(first) - (first.getUTCDay() + 6) % 7 : null;
-  const days = [];
+export function heatmap(points, text, {width, start, end, offset=0}) {
+  const first = calendarDay(timestamp(start,offset));
+  const last = calendarDay(timestamp(Number(end)-1,offset));
+  const columns = Math.max(1, Math.ceil(width / 18));
+  const rows = Math.max(7, Math.ceil((last - first + 1) / columns));
+  const days = new Map();
   for (const point of points) {
-    const date = timestamp(point.start_ms,offset);
-    if (start === null || !Number.isFinite(date.getTime())) continue;
-    const position = calendarDay(date) - start;
-    if (position < 0) continue;
+    const day = calendarDay(timestamp(point.start_ms,offset));
+    if (!Number.isFinite(day) || day < first || day > last) continue;
     const models = Object.entries(point.models).map(([name, tokens]) => [name, total(tokens)])
       .filter(([, value]) => value > 0n)
       .sort(([a, av], [b, bv]) => av !== bv ? (av > bv ? -1 : 1) : a < b ? -1 : a > b ? 1 : 0);
@@ -40,30 +39,29 @@ export function heatmap(points, text, offset=0) {
       const other = models.splice(8).reduce((sum, [, value]) => sum + value, 0n);
       models.push([text('usage_other_models'), other]);
     }
-    days.push({date, position, models, tokens:valueOf(point)});
+    days.set(day,{models, tokens:valueOf(point)});
   }
-  // A week or less is one row; longer ranges are a Monday-first calendar.
-  const rows = days.length <= 7 ? 1 : 7;
-  const columns = rows === 1 ? Math.max(days.length, 1) : Math.floor((days.at(-1)?.position ?? 0) / 7) + 1;
-  const maximum = days.reduce((maximum, day) => day.tokens > maximum ? day.tokens : maximum, 0n);
-  const cells = days.map(day => {
-    const level = day.tokens > 0n ? Math.ceil(Math.sqrt(Number(day.tokens) / Number(maximum)) * 4) : 0;
-    const date = day.date;
+  const maximum = [...days.values()].reduce((maximum, day) => day.tokens > maximum ? day.tokens : maximum, 0n);
+  // Work back from the final cell so resizing only moves the beginning.
+  const cells = Array.from({length:columns * rows}, (_, position) => {
+    const day = last - columns * rows + 1 + position;
+    const value = days.get(day);
+    const level = value?.tokens > 0n ? Math.ceil(Math.sqrt(Number(value.tokens) / Number(maximum)) * 4) : 0;
+    const date = new Date(day * DAY), inRange = day >= first;
     return {
-      column:rows === 1 ? day.position - days[0].position : Math.floor(day.position / 7),
-      row:rows === 1 ? 0 : day.position % 7,
+      column:Math.floor(position / rows),
+      row:position % rows,
       intensity:[0, 0.25, 0.45, 0.7, 1][Math.min(level, 4)],
-      label:rows === 1 ? `${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`
-        : text('usage_month').replace('%{month}', String(date.getUTCMonth() + 1)),
-      ...(rows === 1 ? {} : {label_group:`${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`}),
+      label:inRange ? text('usage_month').replace('%{month}', String(date.getUTCMonth() + 1)) : '',
+      label_group:`${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`,
       tooltip:{
         heading:calendarDate(date),
-        title:`${compact(day.tokens) ?? text('composer_metric_unknown')} ${text('composer_tokens')}`,
-        rows:day.models.map(([label, value]) => ({label, value:compact(value)})),
+        title:value ? `${compact(value.tokens) ?? text('composer_metric_unknown')} ${text('composer_tokens')}` : '',
+        rows:value?.models.map(([label, value]) => ({label, value:compact(value)})) ?? [],
       },
     };
   });
-  return {rows, columns, cells, active:days.filter(day => day.tokens > 0n).length};
+  return {rows, columns, cells};
 }
 
 /** Groups report points into half-hour, day or Monday-based week buckets at one fixed offset. */

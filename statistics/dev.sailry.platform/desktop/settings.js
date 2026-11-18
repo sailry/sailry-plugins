@@ -37,8 +37,12 @@ export default class Usage extends View {
       catch (_) { /* Closing the page releases its controls. */ }
     });
   }
-  /** Select confirmations carry the generation that rendered their choices; stale ones are ignored. */
   control(event,cx) {
+    if(event.id==='usage-activity-width' && typeof event.value==='number') {
+      if(this.activityWidth!==event.value) {this.activityWidth=event.value;cx.notify();}
+      return;
+    }
+    // Select confirmations carry the generation that rendered their choices.
     if(typeof event.value!=='string' || !event.id.startsWith('usage-filter-'))return;
     const [generation,...parts]=event.value.split(':');
     if(generation===String(this.state.generation))this.filter(event.id.slice('usage-filter-'.length),parts.join(':'),cx);

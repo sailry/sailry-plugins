@@ -28,7 +28,7 @@ function fixture() {
     if(id)nodes.set(id,proxy);
     return proxy;
   }
-  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading','SelectField']
+  const adapters=Object.fromEntries(['Header','SettingsGroup','DataTable','Heatmap','StackedChart','ProgressBar','Loading','SelectField','Measure']
     .map(kind=>[kind,{new:(id,props)=>element(kind,id,props)}]));
   const constructors=Object.fromEntries(['Button','Progress','Tab','TabBar','Tag','Pagination']
     .map(kind=>[kind,function(id){return element(kind,id);} ]));
@@ -36,7 +36,7 @@ function fixture() {
     div:()=>element(),...adapters,...constructors,compact,grouped,heatmap,trend,SERIES,overview,percent,breakdown,annotated,VISIBLE,NAME_WIDTH,formatRows,unit,DIMENSIONS,
     theme:()=>({colors:{muted_foreground:'muted'}}),window:{viewport_size:()=>({width:1440})},
   });
-  const view={state:new State('captured'),text:messages('en'),error:null,header:()=>({title:'Usage'}),
+  const view={state:new State('captured'),activityWidth:900,text:messages('en'),error:null,header:()=>({title:'Usage'}),
     filters:()=>({range:{items:[{id:'30d',label:'30 days'}],selected:'30d'},selects:[{id:'usage-filter-project',label:'All projects',items:[],selected:'1:'}]})};
   return {view,nodes,render(){nodes.clear();return render(view);}};
 }
@@ -117,7 +117,9 @@ test('month and longer ranges show the activity card below the trend',()=>{
     const sections=setup.nodes.get('usage-content').items.map(item=>item.selector);
     assert.ok(setup.nodes.has(`usage-trend-${unit}`));
     assert.equal(sections.indexOf('usage-activity-card'),sections.indexOf('usage-trend-card')+1);
-    assert.equal(setup.nodes.get('usage-activity-card-box').items[0].items[0].items[1],setup.nodes.get('usage-heatmap-plot'));
+    const activity=setup.nodes.get('usage-activity-card-box').items[0].items[0].items;
+    assert.equal(activity[0].items[0],'Activity heatmap');
+    assert.deepEqual(activity[1].items,[setup.nodes.get('usage-activity-width'),setup.nodes.get('usage-heatmap-plot')]);
   }
 });
 
@@ -145,12 +147,12 @@ test('changing the date range waits for a report for the new range',()=>{
 test('uses retained report offset while next query loads',()=>{
   const setup=fixture(),{state}=setup.view,point={start_ms:String(Date.UTC(2024,0,15,4)),models:{},
     metrics:{responses:'1',tokens:{input:'1',output:'0',cached_input:'0',reasoning:'0'}}};
-  const report={node:'captured',query:{dimension:'model',utc_offset_minutes:-240},
+  const report={node:'captured',query:{dimension:'model',utc_offset_minutes:-240,start_ms:point.start_ms,end_ms:String(Number(point.start_ms)+86400000)},
     totals:{responses:'1',tokens:point.metrics.tokens,cost:null,generation:null},days:[point],recent:[],groups:[],requests:{items:[],has_more:false}};
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   state.range='1y';assert.ok(state.select('project','next'));state.query.utc_offset_minutes=-600;
   setup.render();
   assert.equal(state.data(),report);
   assert.equal(setup.nodes.get('usage-trend-week').props.buckets[0].tooltip.heading,'2024-01-15');
-  assert.equal(setup.nodes.get('usage-heatmap-plot').props.cells[0].tooltip.heading,'2024-01-15');
+  assert.equal(setup.nodes.get('usage-heatmap-plot').props.cells.at(-1).tooltip.heading,'2024-01-15');
 });
