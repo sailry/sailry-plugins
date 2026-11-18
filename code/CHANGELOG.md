@@ -1,3 +1,7 @@
+## 0.1.19
+
+- Return a partial impact or map page when its metadata exceeds the output budget.
+
 ## 0.1.18
 
 - Restore outline icons in navigation and tools

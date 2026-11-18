@@ -39,6 +39,23 @@ runtimeTest('production script shapes a bounded impact query',async () => {
   assert.deepEqual(output.calls,[]);
 });
 
+runtimeTest('production script keeps impacted files within the budget',async () => {
+  const path = 'src/example.rs';
+  const fixture = await packageInput(directory,'impact',{
+    step:1,state:{budget:1024,offset:0},outcome:{kind:'code_graph',data:{
+      view:'impact',index_revision:3,total:1,callers:[],callees:[],map:[],skipped:1,
+      targets:[{path,name:'main',kind:'function',start_line:0,end_line:2}],
+      issues:[{path:'x'.repeat(1100),kind:'unsupported'}],
+      impact:[{path,depth:1,confidence:'local',symbols:[]}],
+    }},
+  });
+  const result = execute(fixture).result.Ok.result;
+  assert.equal(result.partial,true);
+  assert.equal(result.truncated,true);
+  assert.equal(result.files[0].path,path);
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 1024);
+});
+
 async function sourcePage(count,nextOffset) {
   const revision = 'a'.repeat(64);
   return packageInput(directory,'context',{

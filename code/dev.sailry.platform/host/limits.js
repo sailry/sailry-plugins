@@ -27,8 +27,20 @@ export function omitted(data) {
   data.truncated = true;
 }
 
-/** Drops trailing list items until the result fits its budget. */
+/** Drops trailing metadata and list items until the result fits its budget. */
 export function fit(data, key, budget, offset) {
+  if (size(data) <= budget) return data;
+  const first = {...data,[key]:data[key].slice(0,1),partial:true,truncated:true};
+  if (offset !== undefined && data[key].length) {
+    first.next_offset = Math.max(data.next_offset ?? 0,offset+data[key].length);
+  }
+  if (size({...first,issues:[],targets:[]}) > budget) first[key] = [];
+  for (const field of ['issues','targets']) {
+    while (size(first) > budget && first[field]?.length) {
+      first[field].pop();
+      omitted(data);
+    }
+  }
   while (size(data) > budget && data[key].length) {
     data[key].pop();
     omitted(data);

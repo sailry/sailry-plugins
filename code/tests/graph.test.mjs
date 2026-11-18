@@ -60,6 +60,26 @@ test('bounds impact output by bytes',() => {
   assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 1024);
 });
 
+test('trims impact metadata before omitting files',() => {
+  const path = 'internal/desktop/live/provider_refresh_test.go';
+  const targets = Array.from({length:10},(_,index) => ({
+    path,name:`TestProviderRefreshPreservesDraftAndUpdatesModels${index}`,kind:'function',start_line:index,end_line:index+3,
+  }));
+  const issues = Array.from({length:5},(_,index) => ({path:`internal/desktop/foo${index}/${'long/'.repeat(20)}test.go`,kind:'unsupported'}));
+  const result = answer(impact,{paths:[path],max_bytes:2000,offset:5},page('impact',{
+    targets,issues,skipped:9,total:7,next_offset:6,
+    impact:[{path,depth:1,confidence:'local',symbols:[affected('update',0,1,'local')]}],
+  })).result;
+  assert.equal(result.isError,undefined);
+  assert.equal(result.files[0].path,path);
+  assert.equal(result.targets[0].name,targets[0].name);
+  assert.equal(result.next_offset,6);
+  assert.equal(result.skipped,9);
+  assert.equal(result.partial,true);
+  assert.equal(result.truncated,true);
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 2000);
+});
+
 test('resumes map output at the first omitted file',() => {
   const entries = Array.from({length:10},(_,index) => ({path:`src/${index}.rs`,score:100-index,symbols:[
     {name:`method_${index}`,kind:'function',start_line:0,end_line:10,signature:'parameter: String, '.repeat(20),references:4},
