@@ -94,11 +94,14 @@ function tokenTrend(view,data) {
 }
 
 function activity(view,data) {
+  // The heatmap's own longer window once read, else the page's report.
   const query={...view.state.query,...data.query};
-  const grid=view.activityWidth > 0 ? heatmap(data.days,key=>view.text[key],{
-    width:view.activityWidth,start:query.start_ms,end:query.end_ms,offset:query.utc_offset_minutes,
+  const heat=!view.state.previous && view.heat?.cursor===view.state.resourceCursor() ? view.heat : null;
+  const grid=view.activityWidth > 0 ? heatmap(heat?.days ?? data.days,key=>view.text[key],{
+    width:view.activityWidth,start:heat?.start ?? query.start_ms,end:heat?.end ?? query.end_ms,
+    offset:heat?.offset ?? query.utc_offset_minutes,
   }) : null;
-  return column().gap_2()
+  return column().gap_4()
     .child(label(view.text.usage_heatmap))
     .child(div().v_flex().w_full().min_w_0().child(Measure.new('usage-activity-width'))
       .children(grid ? [Heatmap.new('usage-heatmap-plot',grid)] : []));

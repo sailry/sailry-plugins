@@ -1,3 +1,7 @@
+## 0.1.38
+
+- O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título
+
 ## 0.1.35
 
 - Mostrar o mapa de calor de atividade também nos intervalos de 30 e 90 dias, como calendário semanal

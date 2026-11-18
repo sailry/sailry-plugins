@@ -23,10 +23,31 @@ export function parts(tokens) {
   return [cache, input - cache, integer(tokens.output)];
 }
 
+/** Columns of 18 DIP cells that fill width. */
+export const heatmapColumns = width => Math.max(1, Math.ceil(width / 18));
+/** Days to read for the grid, within the Node's usage query limit. */
+export const heatmapDays = width => Math.min(366, heatmapColumns(width) * 7);
+
+/** Sums day points of several Nodes, preserving measured tokens when available. */
+export function mergeDays(lists) {
+  const add = (a, b) => a == null || b == null ? a ?? b ?? null : {input:String(integer(a.input)+integer(b.input)),
+    output:String(integer(a.output)+integer(b.output)),cached_input:String(integer(a.cached_input)+integer(b.cached_input)),
+    reasoning:String(integer(a.reasoning ?? 0)+integer(b.reasoning ?? 0))};
+  const days = new Map();
+  for (const point of lists.flat()) {
+    const key = String(point.start_ms), current = days.get(key);
+    if (!current) { days.set(key, {...point, metrics:{...point.metrics}, models:Object.assign(Object.create(null),point.models)}); continue; }
+    current.metrics.responses = String(integer(current.metrics.responses) + integer(point.metrics.responses));
+    current.metrics.tokens = add(current.metrics.tokens, point.metrics.tokens);
+    for (const [name, tokens] of Object.entries(point.models)) current.models[name] = add(current.models[name], tokens);
+  }
+  return [...days.values()].sort((a, b) => Number(a.start_ms) - Number(b.start_ms));
+}
+
 export function heatmap(points, text, {width, start, end, offset=0}) {
   const first = calendarDay(timestamp(start,offset));
   const last = calendarDay(timestamp(Number(end)-1,offset));
-  const columns = Math.max(1, Math.ceil(width / 18));
+  const columns = heatmapColumns(width);
   const rows = Math.max(7, Math.ceil((last - first + 1) / columns));
   const days = new Map();
   for (const point of points) {

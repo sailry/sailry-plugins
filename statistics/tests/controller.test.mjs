@@ -8,6 +8,7 @@ import {compact,grouped,duration} from '../dev.sailry.platform/desktop/format.js
 import {formatRows} from '../dev.sailry.platform/desktop/requests.js';
 import {breakdown,annotated,VISIBLE,NAME_WIDTH} from '../dev.sailry.platform/desktop/breakdown.js';
 import {percent} from '../dev.sailry.platform/desktop/summary.js';
+import {heatmapDays,mergeDays} from '../dev.sailry.platform/desktop/charts.js';
 
 const source = (await readFile(new URL('../dev.sailry.platform/desktop/settings.js', import.meta.url), 'utf8'))
   .replace(/^import .*;\n/gm, '').replace('export default class Usage', 'class Usage');
@@ -23,7 +24,7 @@ test('shared timing format preserves request display units',()=>{
 function fixture(overrides={}) {
   const tasks = [], events = [], controls = [], calls = [], notices=[],cx = {spawn:task => tasks.push(task), notify() {}};
   const {Usage} = vm.runInNewContext(`${source}\n({Usage})`, {
-    View:class {}, context:() => JSON.stringify({node,locale:'en'}), State, RANGES, query, choices, messages,
+    View:class {}, context:() => JSON.stringify({node,locale:'en'}), State, RANGES, query, choices, messages, heatmapDays, mergeDays,
     nextTableEvent:async () => { throw new Error('closed'); },
     header_action:async () => { if (!events.length) throw new Error('closed'); return events.shift(); },
     nextControlEvent:async () => { if (!controls.length) throw new Error('closed'); return controls.shift(); },
@@ -123,6 +124,50 @@ test('provider choices retain their Node and bare resource IDs',async()=>{
   assert.deepEqual(reports[0][0].projects,[]);assert.deepEqual(reports[0][0].providers,[]);
   const watched=setup.calls.filter(call=>call[0]==='watch').at(-1);
   assert.deepEqual(watched[1].providers,['same-provider']);assert.equal(watched[2],false);assert.equal(watched[3],remote);
+});
+
+test('expanded heatmap uses bounded days and selected filters',async()=>{
+  const reads=[],setup=fixture({readUsageChoices:async(query,target)=>{
+    reads.push([plain(query),target]);return {days:[]};
+  }});
+  const {view,cx,tasks}=setup,{state}=view,day=86400000;
+  view.filter('project',`${remote}:project-a`,cx);
+  view.filter('model','chosen',cx);
+  state.accept({cursor:'1',all:false,view:{report:{cursor:'10'}}},state.generation);
+  view.control({id:'usage-activity-width',value:954},cx);
+  await tasks.at(-1)(cx);
+  const [[read,target]]=reads;
+  assert.equal(target,remote);
+  assert.equal(read.end_ms-read.start_ms,366*day);
+  assert.equal((read.end_ms+read.utc_offset_minutes*60000)%day,0);
+  assert.deepEqual([read.projects,read.models],[['project-a'],['chosen']]);
+  assert.equal(state.query.end_ms-state.query.start_ms,30*day);
+
+  for(const width of [480,954]) {
+    const range=width===480?'1y':'24h';
+    view.filter('range',range,cx);
+    state.accept({cursor:'2',all:false,view:{report:{cursor:'11'}}},state.generation);
+    const count=tasks.length;
+    view.activityWidth=width;
+    view.loadHeatmap(state.generation,cx);
+    assert.equal(tasks.length,count);
+    assert.equal(view.heat,null);
+  }
+});
+
+test('switching filters drops cached and in-flight heatmap data',async()=>{
+  const releases=[],setup=fixture({readUsageChoices:()=>new Promise(resolve=>releases.push(resolve))});
+  const {view,cx,tasks}=setup,{state}=view;
+  state.accept({cursor:'1',all:true,view:{summary:{},complete:true,sources:[]}},state.generation);
+  view.control({id:'usage-activity-width',value:900},cx);
+  const pending=tasks.at(-1)(cx);
+  assert.equal(releases.length,2);
+  view.heat={span:300,days:[]};
+  view.filter('provider',`${remote}:provider-a`,cx);
+  assert.equal(view.heat,null);
+  for(const release of releases)release({days:[]});
+  await pending;
+  assert.equal(view.heat,null);
 });
 
 test('stale inventories cannot restore removed sources',async()=>{

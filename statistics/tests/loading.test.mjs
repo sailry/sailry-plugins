@@ -151,6 +151,7 @@ test('uses retained report offset while next query loads',()=>{
     totals:{responses:'1',tokens:point.metrics.tokens,cost:null,generation:null},days:[point],recent:[],groups:[],requests:{items:[],has_more:false}};
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
   state.range='1y';assert.ok(state.select('project','next'));state.query.utc_offset_minutes=-600;
+  setup.view.heat={cursor:state.resourceCursor(),days:[],start:Date.UTC(2024,0,16),end:Date.UTC(2024,0,17),offset:0};
   setup.render();
   assert.equal(state.data(),report);
   assert.equal(setup.nodes.get('usage-trend-week').props.buckets[0].tooltip.heading,'2024-01-15');

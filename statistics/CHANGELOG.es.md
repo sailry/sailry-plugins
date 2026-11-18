@@ -1,3 +1,7 @@
+## 0.1.38
+
+- El mapa de calor de actividad muestra historial más allá del rango seleccionado, conserva los filtros y separa más el título
+
 ## 0.1.35
 
 - Mostrar el mapa de calor de actividad también en los rangos de 30 y 90 días, como calendario semanal

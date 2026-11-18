@@ -1,3 +1,7 @@
+## 0.1.38
+
+- La carte thermique d’activité affiche l’historique au-delà de la période choisie, conserve les filtres et s’éloigne davantage du titre
+
 ## 0.1.35
 
 - Afficher la carte thermique d’activité aussi pour les périodes de 30 et 90 jours, sous forme de calendrier hebdomadaire

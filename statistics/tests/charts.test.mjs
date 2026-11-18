@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {heatmap, trend, buckets, axis, parts} from '../dev.sailry.platform/desktop/charts.js';
+import {heatmap, heatmapDays, mergeDays, trend, buckets, axis, parts} from '../dev.sailry.platform/desktop/charts.js';
 
 const labels = {usage_other_models:'Other models',usage_month:'Month %{month}',composer_metric_unknown:'Unknown',composer_tokens:'Token',usage_cache_hits:'Cache hits',usage_uncached_input:'Uncached input',usage_column_output:'Output'};
 const text = key => labels[key] ?? key;
@@ -192,4 +192,26 @@ test('a narrower year adds rows without clipping dates', () => {
   assert.ok(chart.rows>7);
   assert.equal(chart.cells.at(-365).tooltip.heading,'2023-01-01');
   assert.equal(chart.cells.at(-1).tooltip.heading,'2023-12-31');
+});
+
+test('bounds history without clipping columns or shifting the last date', () => {
+  const width=954,end=at(2025,1,1),span=heatmapDays(width),start=end-span*DAY;
+  assert.equal(heatmapDays(540),210);
+  assert.equal(span,366);
+  const chart=heatmap([point(start),point(end-DAY)],text,{width,start,end});
+  assert.deepEqual([chart.columns,chart.rows,chart.cells.length],[53,7,371]);
+  assert.ok(chart.cells.slice(0,5).every(cell=>cell.intensity===0 && cell.label===''));
+  assert.equal(chart.cells[5].tooltip.heading,'2024-01-01');
+  assert.equal(chart.cells.at(-1).tooltip.heading,'2024-12-31');
+});
+
+test('merges day points across Nodes without losing measured usage', () => {
+  const tokens = (input, output) => ({input, output, cached_input:'0', reasoning:'0'});
+  const a = {start_ms:'0', metrics:{responses:'1', tokens:tokens('10','2')}, models:{m:tokens('10','2')}};
+  const b = {start_ms:'0', metrics:{responses:'2', tokens:tokens('5','1')}, models:{m:tokens('5','1'), ['__proto__']:tokens('1','0')}};
+  const c = point(DAY,null);
+  const [day, next] = mergeDays([[point(0,null), c], [a], [b, c], [point(0,null)]]);
+  assert.deepEqual([day.metrics.responses, day.metrics.tokens.input, day.models.m.output, day.models.__proto__.input], ['3','15','3','1']);
+  assert.equal(next.metrics.tokens, null);
+  assert.equal(a.metrics.responses, '1');
 });

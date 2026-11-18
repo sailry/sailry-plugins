@@ -1,3 +1,7 @@
+## 0.1.38
+
+- Aktivitäts-Heatmap zeigt den Verlauf über den gewählten Zeitraum hinaus, behält die Filter bei und hat mehr Abstand zum Titel
+
 ## 0.1.35
 
 - Aktivitäts-Heatmap auch für 30- und 90-Tage-Zeiträume als Wochenkalender anzeigen, nicht nur für ein Jahr

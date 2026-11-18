@@ -6,6 +6,7 @@ import {formatRows} from './requests.js';
 import {messages} from './locales.js';
 import {State,RANGES,choices} from './state.js';
 import {render} from './view.js';
+import {heatmapDays,mergeDays} from './charts.js';
 
 export default class Usage extends View {
   init(_props,cx) {
@@ -39,7 +40,11 @@ export default class Usage extends View {
   }
   control(event,cx) {
     if(event.id==='usage-activity-width' && typeof event.value==='number') {
-      if(this.activityWidth!==event.value) {this.activityWidth=event.value;cx.notify();}
+      if(this.activityWidth!==event.value) {
+        this.activityWidth=event.value;
+        if(heatmapDays(event.value)>(this.heat?.span ?? 0))this.loadHeatmap(this.state.generation,cx);
+        cx.notify();
+      }
       return;
     }
     // Select confirmations carry the generation that rendered their choices.
@@ -50,7 +55,7 @@ export default class Usage extends View {
   filter(field,value,cx) {if(this.state.select(field,value))this.observe(cx);}
   observe(cx) {
     const generation=this.state.start();this.error=null;this.choiceCursor=null;
-    this.resources=[];
+    this.resources=[];this.heat=null;
     this.loadChoices(generation,cx);
     try {watchUsage(this.state.query,this.state.all,this.state.node);}catch(_){this.report('usage_read_failed');cx.notify();return;}
     cx.notify();
@@ -62,7 +67,7 @@ export default class Usage extends View {
         const error=this.state.view?.error?.code==='invalid_request' ? 'usage_query_failed' : this.state.view?.error ? 'usage_read_failed' : null;
         if(error)this.report(error);else this.error=null;
         const cursor=this.state.resourceCursor();
-        if(this.state.view?.report && this.choiceCursor!==cursor) {this.choiceCursor=cursor;this.loadChoices(generation,cx);}
+        if(this.state.view?.report && this.choiceCursor!==cursor) {this.choiceCursor=cursor;this.loadChoices(generation,cx);this.loadHeatmap(generation,cx);}
         cx.notify();
       }} catch (_) { if(generation===this.state.generation){this.report('usage_read_failed');cx.notify();} }
     });
@@ -96,6 +101,26 @@ export default class Usage extends View {
         } catch (_) { /* The watch reports usage failures independently of project inventory. */ }
       });
     }
+  }
+  /** The heatmap's own window: as many days as its width shows, ending with
+   * the page's window and keeping its filters, so it is not limited to the
+   * selected range. */
+  loadHeatmap(generation,cx) {
+    if(!(this.activityWidth>0) || !this.state.view?.report)return;
+    const span=heatmapDays(this.activityWidth),range=RANGES[this.state.range].days;
+    if(range<30 || span<=range)return;
+    const end=this.state.query.end_ms,cursor=this.state.resourceCursor();
+    const query={...this.state.query,start_ms:end-span*86400000,dimension:'model',before:null};
+    const nodes=this.state.all ? this.sources.map(source=>source.node) : [this.state.node];
+    const request=this.heatRequest=(this.heatRequest ?? 0)+1;
+    cx.spawn(async cx=>{
+      const reports=await Promise.all(nodes.map(node=>readUsageChoices(query,node).catch(()=>null)));
+      if(request!==this.heatRequest || generation!==this.state.generation || cursor!==this.state.resourceCursor())return;
+      const found=reports.filter(Boolean);
+      this.heat=found.length ? {span,cursor,start:query.start_ms,end,offset:query.utc_offset_minutes,
+        days:mergeDays(found.map(report=>report.days ?? []))} : null;
+      cx.notify();
+    });
   }
   refresh(cx) {
     const moved=this.state.advance();

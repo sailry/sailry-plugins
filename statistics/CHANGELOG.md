@@ -1,3 +1,7 @@
+## 0.1.38
+
+- Fill the activity heatmap with history beyond the selected range, keep its filters, and space its title from the grid
+
 ## 0.1.37
 
 - Fill the activity heatmap with square days sized to the card, ending at the latest date.
