@@ -108,11 +108,11 @@ test('filter changes reset dependent fields and preserve frozen deleted model ch
   assert(options.model.some(item=>item.id==='old'));assert(options.model.some(item=>item.id==='removed'));
   state.select('project','next');assert.deepEqual(state.query.providers,[]);assert.deepEqual(state.query.models,[]);
 });
-test('filter reads retain prior reports until current data arrives',()=>{
-  for(const field of ['range','project','provider','model']) {
+test('resource filters retain prior reports until current data arrives',()=>{
+  for(const field of ['project','provider','model']) {
     const state=new State('a'),generation=state.start();
     state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},generation);
-    assert(state.select(field,field==='range'?'7d':'selected'));
+    assert(state.select(field,'selected'));
     const next=state.start(),replacement={requests:{items:[],has_more:false}};
     assert.equal(state.data(),report);assert(!state.ready());
     assert(!state.accept({cursor:'2',all:false,view:{report:replacement,connected:true,refreshing:false}},generation));

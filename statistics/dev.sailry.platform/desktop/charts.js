@@ -42,7 +42,8 @@ export function heatmap(points, text, offset=0) {
     }
     days.push({date, position, models, tokens:valueOf(point)});
   }
-  const rows = days.length <= 31 ? 1 : 7;
+  // A week or less is one row; longer ranges are a Monday-first calendar.
+  const rows = days.length <= 7 ? 1 : 7;
   const columns = rows === 1 ? Math.max(days.length, 1) : Math.floor((days.at(-1)?.position ?? 0) / 7) + 1;
   const maximum = days.reduce((maximum, day) => day.tokens > maximum ? day.tokens : maximum, 0n);
   const cells = days.map(day => {

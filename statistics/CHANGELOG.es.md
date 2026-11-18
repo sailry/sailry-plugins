@@ -1,3 +1,8 @@
+## 0.1.35
+
+- Mostrar el mapa de calor de actividad también en los rangos de 30 y 90 días, como calendario semanal
+- Esperar el informe correspondiente al cambiar el intervalo de fechas
+
 ## 0.1.33
 
 - Quitar el anillo y el panel de contexto; ahora la aplicación los muestra en el editor

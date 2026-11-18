@@ -1,3 +1,8 @@
+## 0.1.35
+
+- Aktivitäts-Heatmap auch für 30- und 90-Tage-Zeiträume als Wochenkalender anzeigen, nicht nur für ein Jahr
+- Beim Wechsel des Zeitraums auf den passenden Bericht warten
+
 ## 0.1.33
 
 - Kontextring und -panel entfernt; die Anwendung zeigt sie nun im Eingabefeld

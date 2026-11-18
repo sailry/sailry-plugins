@@ -105,15 +105,38 @@ test('token legend is a two-by-two grid with reasoning unshared',()=>{
   assert.deepEqual(texts('usage-part-reasoning'),['Reasoning','50']);
 });
 
-test('one-year ranges add the fitted heatmap below the trend',()=>{
+test('month and longer ranges add the fitted heatmap below the trend',()=>{
   const setup=fixture(),{state}=setup.view;
   const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
   state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},state.start());
-  setup.render();
+  state.range='7d';setup.render();
   assert.ok(setup.nodes.has('usage-trend-day'));assert.equal(setup.nodes.has('usage-heatmap-plot'),false);
+  state.range='30d';setup.render();
+  assert.equal(setup.nodes.get('usage-heatmap-plot').kind,'Heatmap');
   state.range='1y';setup.render();
   assert.ok(setup.nodes.has('usage-trend-week'));
   assert.equal(setup.nodes.get('usage-heatmap-plot').kind,'Heatmap');
+});
+
+test('changing the date range waits for a report for the new range',()=>{
+  const setup=fixture(),{state}=setup.view;
+  const report={node:'captured',query:{dimension:'model'},totals:{responses:'0',tokens:null,cost:null,generation:null},days:[],recent:[],groups:[],requests:{items:[],has_more:false}};
+  assert.ok(state.select('range','7d'));
+  const previous=state.start();
+  state.accept({cursor:'1',all:false,view:{report,connected:true,refreshing:false}},previous);
+  setup.render();
+  assert.ok(setup.nodes.has('usage-trend-day'));
+  assert.ok(state.select('range','1y'));
+  const generation=state.start();
+  assert.equal(state.accept({cursor:'2',all:false,view:{report,connected:true,refreshing:false}},previous),false);
+  setup.render();
+  assert.equal(setup.nodes.has('usage-summary'),false);
+  assert.equal(setup.nodes.has('usage-trend-week'),false);
+  assert.equal(setup.nodes.has('usage-heatmap-plot'),false);
+  state.accept({cursor:'2',all:false,view:{report:{...report,query:{...state.query}},connected:true,refreshing:false}},generation);
+  setup.render();
+  assert.ok(setup.nodes.has('usage-trend-week'));
+  assert.ok(setup.nodes.has('usage-heatmap-plot'));
 });
 
 test('uses retained report offset while next query loads',()=>{

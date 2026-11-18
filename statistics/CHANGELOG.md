@@ -1,3 +1,8 @@
+## 0.1.35
+
+- Show the activity heatmap for 30-day and 90-day ranges as well as one year, as a weekly calendar
+- Wait for the matching report when the date range changes
+
 ## 0.1.34
 
 - List projects from all execution hosts, including projects without usage, and route project and provider filters to their owning host

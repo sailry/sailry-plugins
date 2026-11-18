@@ -44,9 +44,10 @@ export class State {
     return true;
   }
   select(field,value) {
-    const previous=this.data();
+    // All figures depend on the date window. Clear them when the window changes.
+    const previous=field==='range' ? null : this.data();
     if (field === 'range') {
-      if(!RANGES[value])return false;
+      if(!RANGES[value] || value===this.range)return false;
       const {dimension,projects,providers,models}=this.query;
       this.range=value;Object.assign(this.query,query(value),{dimension,projects,providers,models});
     }

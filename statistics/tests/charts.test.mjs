@@ -169,3 +169,9 @@ test('retains one-row short ranges and square-root intensity', () => {
   assert.ok(chart.cells.every(cell => cell.row === 0 && cell.label_group === undefined));
   assert.doesNotThrow(() => JSON.stringify(chart));
 });
+
+test('lays a month out as a weekly calendar', () => {
+  const chart = heatmap(Array.from({length:30},(_,index)=>point(at(2024,1,1)+index*86400000)),text);
+  assert.equal(chart.rows,7);
+  assert.equal(chart.columns,5);
+});

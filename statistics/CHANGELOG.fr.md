@@ -1,3 +1,8 @@
+## 0.1.35
+
+- Afficher la carte thermique d’activité aussi pour les périodes de 30 et 90 jours, sous forme de calendrier hebdomadaire
+- Attendre le rapport correspondant lors d’un changement de période
+
 ## 0.1.33
 
 - Retirer l'anneau et le panneau de contexte, désormais affichés par l'application dans la zone de saisie

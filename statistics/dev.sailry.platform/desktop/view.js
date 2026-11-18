@@ -19,6 +19,8 @@ const swatches = text => div().h_flex().flex_wrap().gap_3().children(SERIES.map(
 const missing = text => ({text:text.composer_metric_unknown,text_tone:'muted'});
 /** Table row and header heights; a table showing every row adds FRAME for its header divider and border. */
 const ROW=36,HEADER=32,FRAME=3;
+/** Ranges whose activity calendar shows below the trend. */
+const CALENDAR=['30d','90d','1y'];
 /** Resource labels retain the Node identity even when UUIDs coincide. */
 function catalog(view,data) {
   const inventories=Array.isArray(view.inventory) ? view.inventory : view.inventory ? [view.inventory] : [];
@@ -85,7 +87,8 @@ function summary(view,totals) {
 
 function activity(view,data) {
   const {state,text}=view,t=key=>text[key],granularity=unit(state.range);
-  const year=state.range==='1y' ? heatmap(data.days,t,data.query?.utc_offset_minutes ?? 0) : null;
+  // Daily ranges of a month or more add the calendar; shorter ones are the trend itself.
+  const year=CALENDAR.includes(state.range) ? heatmap(data.days,t,data.query?.utc_offset_minutes ?? 0) : null;
   return column()
     .child(div().h_flex().justify_between().items_center().gap_3().child(label(text.usage_trend)).child(swatches(text)))
     .child(StackedChart.new(`usage-trend-${granularity}`,trend(data,granularity,t)))
