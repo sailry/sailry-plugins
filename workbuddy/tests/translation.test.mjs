@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
-import {cases,invalid} from './fixtures.mjs';
+import {cases,invalid,request} from './fixtures.mjs';
 import {runtimeTest,translate,translationInput} from '../../scripts/test-host.mjs';
 
 const root = new URL('../',import.meta.url);
@@ -49,10 +49,25 @@ test('carries every Hy4 suffix split across calls',()=>{
 });
 
 
+test('reuses the conversation ID across request steps',()=>{
+  const different='8d24abd7-60ef-4ea4-98be-c77496601498';
+  const anonymous='00000000-0000-0000-0000-000000000000';
+  for(const endpoint of ['https://copilot.tencent.com','https://www.workbuddy.ai','https://www.codebuddy.ai']) {
+    const prepare=overrides=>modules.adapter.prepare(request({endpoint,...overrides})).headers;
+    const first=prepare(), next=prepare({system:'A later step'});
+    assert.equal(next['X-Conversation-ID'],first['X-Conversation-ID']);
+    assert.equal(prepare({session:different})['X-Conversation-ID'],different);
+    for(const key of ['X-Conversation-Request-ID','X-Conversation-Message-ID']) assert.notEqual(next[key],first[key]);
+    const noSession=prepare({session:anonymous})['X-Conversation-ID'];
+    assert.notEqual(noSession,anonymous);
+    assert.notEqual(noSession,prepare({session:anonymous})['X-Conversation-ID']);
+  }
+});
+
 test('groups regional presets without changing route identities',async()=>{
   const manifest=JSON.parse(await readFile(new URL('plugin.json',root),'utf8'));
   const presets=manifest.extensions['dev.sailry.platform'].model_providers;
-  assert.equal(manifest.version,'0.1.18');
+  assert.equal(manifest.version,'0.1.19');
   assert.equal(manifest.extensions['dev.sailry.platform'].min_sailry_version,'0.1.6');
   // Every sign-in states its risk once, in each language the package ships.
   for (const flow of manifest.extensions['dev.sailry.platform'].model_auth) {

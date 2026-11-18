@@ -3,8 +3,9 @@ import {inline,image} from './image.mjs';
 
 // The translation cases run with the free-model restriction off; its own cases follow them.
 export const unrestricted = {free_only_china:false,free_only_international:false,free_only_codebuddy:false};
+const session = '8e6869f6-d77e-4ad4-b608-65a770b7e97a';
 export const request = overrides => ({version:'v1',model:'fixture-model',endpoint:'https://copilot.tencent.com',
-  session:'fixture-session',system:'Preserve the task',messages:[{role:'user',parts:[{kind:'text',text:'A fixture task'}]}],
+  session,system:'Preserve the task',messages:[{role:'user',parts:[{kind:'text',text:'A fixture task'}]}],
   tools:[],tool_choice:{kind:'auto'},reasoning:{effort:'default',replay:false},stream:true,
   max_output_tokens:4096,temperature:null,top_p:null,stop:[],options:{},settings:unrestricted,...overrides});
 
@@ -27,6 +28,7 @@ const prepared = output => {
   assert.equal(output.headers['X-IDE-Version'],'5.9.3');
   const keys = ['X-Conversation-ID','X-Conversation-Request-ID','X-Conversation-Message-ID'];
   for (const key of keys) assert.match(output.headers[key],/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.equal(output.headers['X-Conversation-ID'],session);
   assert.equal(new Set(keys.map(key=>output.headers[key])).size,3);
   return JSON.parse(output.body);
 };

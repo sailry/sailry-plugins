@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Preserve the conversation ID across model requests within a Sailry conversation.
+
 ## 0.1.18
 
 - Warn about the account risk before every sign-in

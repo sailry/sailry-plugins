@@ -182,6 +182,8 @@ export function prepare(input) {
     body.reasoning_effort = effort;
   }
   const desktop = identity(endpoint);
+  const session = input.session;
+  const conversation = session && session !== '00000000-0000-0000-0000-000000000000' ? session : identifier();
   return {method: 'POST', url: `${endpoint}/v2/chat/completions`, headers: {
     'Content-Type': 'application/json', 'User-Agent': desktop.agent,
     Accept: 'application/json, text/plain, */*',
@@ -190,7 +192,7 @@ export function prepare(input) {
     'X-Requested-With': 'XMLHttpRequest', 'X-Product': 'SaaS',
     'X-CodeBuddy-Request': '1', 'Accept-Language': endpoint === 'https://copilot.tencent.com' ? 'zh-CN' : 'en-US',
     'X-No-User-Id': '1', 'X-No-Enterprise-Id': '1', ...desktop.extra,
-    'X-Conversation-ID': identifier(), 'X-Conversation-Request-ID': identifier(),
+    'X-Conversation-ID': conversation, 'X-Conversation-Request-ID': identifier(),
     'X-Conversation-Message-ID': identifier(),
   }, body: JSON.stringify(body), credential: {header: 'Authorization', template: 'Bearer {access}'}, framing: 'sse'};
 }
