@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Reference the turn clock without injecting a changing timestamp into tool guidance
+
 ## 0.1.23
 
 - Compare original task content before editing or running a task on another host

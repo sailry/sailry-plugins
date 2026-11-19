@@ -7,8 +7,7 @@ export function initialize({project, tools, config, execution:mode, team, models
   if (!config || config.assistant || config.resource) return {instruction:"",tools:[]};
   stageTurnState({project,worktree:project === null ? null : context().worktree,config,
     ...execution({execution:mode,team,models})});
-  const now = Date.now();
-  return {instruction:`Current UTC: ${new Date(now).toISOString()} (${now} ms). Ask for the schedule and timezone if missing. Once/every use UTC milliseconds; every is a fixed elapsed interval. Weekly uses an explicit IANA timezone, ISO weekdays (Monday=1 through Sunday=7), hour and minute. It runs once at the earlier instant of a repeated local time and skips a missing local time.`,tools};
+  return {instruction:"Use the turn's UTC start time for relative times when available. Otherwise establish the current time before resolving a relative schedule. Ask for the schedule and timezone if missing. Once/every use UTC milliseconds; every is a fixed elapsed interval. Weekly uses an explicit IANA timezone, ISO weekdays (Monday=1 through Sunday=7), hour and minute. It runs once at the earlier instant of a repeated local time and skips a missing local time.",tools};
 }
 function argumentsFor(value) {
   const fields = {list:["after"],create:["name","prompt","timing","enabled","execution","team"],

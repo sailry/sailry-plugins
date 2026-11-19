@@ -7,7 +7,8 @@ import {runtimeTest,validateSchema} from "../../scripts/test-host.mjs";
 test("initialization captures the execution scope and explicit session config",async()=>{
   const setup=await fixture(), initialized=await setup.initialize();
   assert.deepEqual(setup.turn(),{project:id(1),worktree:id(2),config:setup.config,...setup.execution});
-  assert.match(initialized.instruction,/Current UTC: .* ms/);
+  assert.match(initialized.instruction,/turn's UTC start time/);
+  assert.equal(initialized.instruction,(await setup.initialize()).instruction);
   setup.session.config={...setup.config,model:"another"};
   assert.equal(setup.turn().config.model,"chosen");
   assert.deepEqual(plain((await setup.initialize({...setup.config,assistant:{package:"assistant"}})).tools),[]);

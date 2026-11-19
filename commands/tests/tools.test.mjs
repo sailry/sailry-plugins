@@ -52,7 +52,7 @@ test('waits for output with optional text and paging', () => {
   assert.equal(fields.wait_ms.maximum, 30000);
   assert.equal(fields.until.type, 'string');
   assert.match(declaration.description, /event-driven wait/);
-  assert.match(declaration.description, /either output preview/);
+  assert.match(declaration.description, /new occurrence .* either output stream after this read begins/);
   assert.match(declaration.description, /command exit or deadline still returns/);
   assert.match(declaration.description, /Omitted or zero wait_ms reads immediately/);
   const id = '11111111-1111-4111-8111-111111111111';

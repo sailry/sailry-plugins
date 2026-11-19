@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Describe waiting for a new output match when reading a running command
+
 ## 0.1.22
 
 - Remove generic preview-limit notices from conversation tool results.
