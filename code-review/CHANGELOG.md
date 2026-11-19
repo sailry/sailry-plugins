@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Sync 66 review rules with OpenCodeReview v1.13.13 and clarify how to resume an unfinished capture.
+
 ## 0.1.19
 
 - Require an eligible team role for delegated reviews when the turn has configured roles.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- 66 Prüfregeln aus OpenCodeReview v1.13.13 übernommen und die Fortsetzung einer unvollständigen Erfassung erläutert.
+
 ## 0.1.18
 
 - Prüfaufgaben nach den Zuständigkeiten der Teamrollen delegieren.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Sincroniza 66 reglas de revisión con OpenCodeReview v1.13.13 y aclara cómo reanudar una captura incompleta.
+
 ## 0.1.18
 
 - Delega las revisiones según las responsabilidades de cada rol del equipo.

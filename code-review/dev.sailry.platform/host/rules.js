@@ -25,11 +25,19 @@ export const entries = [
     "rule": "cargo_toml.md"
   },
   {
+    "pattern": "**/Move.toml",
+    "rule": "move_toml.md"
+  },
+  {
+    "pattern": "**/*.move",
+    "rule": "move.md"
+  },
+  {
     "pattern": "**/composer.json",
     "rule": "composer_json.md"
   },
   {
-    "pattern": "**/*.{json,json5}",
+    "pattern": "**/*.{json,json5,jsonc}",
     "rule": "json.md"
   },
   {
@@ -69,6 +77,18 @@ export const entries = [
     "rule": "pug.md"
   },
   {
+    "pattern": "**/*.{ejs,liquid,njk}",
+    "rule": "ejs_liquid_njk.md"
+  },
+  {
+    "pattern": "**/*.{haml,slim}",
+    "rule": "haml_slim.md"
+  },
+  {
+    "pattern": "**/*.erb",
+    "rule": "erb.md"
+  },
+  {
     "pattern": "**/*.ets",
     "rule": "arkts.md"
   },
@@ -85,8 +105,16 @@ export const entries = [
     "rule": "kotlin.md"
   },
   {
+    "pattern": "**/*.scala",
+    "rule": "scala.md"
+  },
+  {
     "pattern": "**/*.{fs,fsi,fsx}",
     "rule": "fsharp.md"
+  },
+  {
+    "pattern": "**/*.cs",
+    "rule": "csharp.md"
   },
   {
     "pattern": "**/*.rs",
@@ -137,7 +165,7 @@ export const entries = [
     "rule": "r.md"
   },
   {
-    "pattern": "**/*.{tf,hcl,tfvars}",
+    "pattern": "**/*.{tf,tofu,hcl,tfvars}",
     "rule": "terraform.md"
   },
   {
@@ -161,6 +189,10 @@ export const entries = [
     "rule": "swift.md"
   },
   {
+    "pattern": "**/*.nu",
+    "rule": "nushell.md"
+  },
+  {
     "pattern": "**/*.elm",
     "rule": "elm.md"
   },
@@ -175,6 +207,14 @@ export const entries = [
   {
     "pattern": "**/*.thrift",
     "rule": "thrift.md"
+  },
+  {
+    "pattern": "**/*.{bzl,bazel,star}",
+    "rule": "starlark.md"
+  },
+  {
+    "pattern": "**/{BUILD,WORKSPACE}",
+    "rule": "starlark.md"
   },
   {
     "pattern": "**/*.capnp",
@@ -215,6 +255,18 @@ export const entries = [
   {
     "pattern": "**/*.rego",
     "rule": "rego.md"
+  },
+  {
+    "pattern": "**/*.{glsl,hlsl,wgsl,metal}",
+    "rule": "shader.md"
+  },
+  {
+    "pattern": "**/*.{ps1,psm1,psd1}",
+    "rule": "powershell.md"
+  },
+  {
+    "pattern": "**/*.{clj,cljs,cljc,edn}",
+    "rule": "clojure.md"
   }
 ];
 export const rules = {
@@ -241,6 +293,14 @@ export const rules = {
   "cargo_toml.md": {
     "path": "rules/cargo_toml.md",
     "sha256": "0c0fd9e692e217d850ea66691e73775bcf045b1faf06d3814a43242d8dd8a593"
+  },
+  "move_toml.md": {
+    "path": "rules/move_toml.md",
+    "sha256": "26479ed4dee7faafc5e6b17a066068088dfe5740ecf4fd4f3255c0ea8c2c57f6"
+  },
+  "move.md": {
+    "path": "rules/move.md",
+    "sha256": "c5afab32d3a6fdc3ef52382c9947386272e47f904e53319512116cbffca5474b"
   },
   "composer_json.md": {
     "path": "rules/composer_json.md",
@@ -286,6 +346,18 @@ export const rules = {
     "path": "rules/pug.md",
     "sha256": "1a4e02a7bb73958b828cc1a5eb8f73ec59c82a221b4be5ba206b055537f5d8f3"
   },
+  "ejs_liquid_njk.md": {
+    "path": "rules/ejs_liquid_njk.md",
+    "sha256": "10cbfd1d4644991fd2843f036f12080b0518611b3eca15f646ae2882757e35a5"
+  },
+  "haml_slim.md": {
+    "path": "rules/haml_slim.md",
+    "sha256": "d81be1d43bc31562099800691391430348aa845bd218f17f843bd84d03c05e41"
+  },
+  "erb.md": {
+    "path": "rules/erb.md",
+    "sha256": "3935ae6b57e8b58506b21171bc79fe3da7ef189b724352aba275d03111a81e6c"
+  },
   "arkts.md": {
     "path": "rules/arkts.md",
     "sha256": "8c146c5713b3ba32166930d8ba1c96e649fef593fd465dc73e6c7fb979bb8682"
@@ -302,9 +374,17 @@ export const rules = {
     "path": "rules/kotlin.md",
     "sha256": "816c6930855936bf987de87ae6847d954da015ed4af37a8bee2cb9e3128afae1"
   },
+  "scala.md": {
+    "path": "rules/scala.md",
+    "sha256": "975460d04f30835433728428869de7ea6b8c3fe8593402bf580a54a7fba813cf"
+  },
   "fsharp.md": {
     "path": "rules/fsharp.md",
     "sha256": "cbfcbaf2061476a1666916a8166fea5b97d6503d0ab07321a468e490f348cd5c"
+  },
+  "csharp.md": {
+    "path": "rules/csharp.md",
+    "sha256": "b5de00bd9ce67b62f3abfcb508ed9d918caf516baa277f596f5b152f69bbc446"
   },
   "rust.md": {
     "path": "rules/rust.md",
@@ -378,6 +458,10 @@ export const rules = {
     "path": "rules/swift.md",
     "sha256": "38d69073741b6b355803dfd6631c01d4f4f999ab438667abcf911e591045036b"
   },
+  "nushell.md": {
+    "path": "rules/nushell.md",
+    "sha256": "62f772314230147c4a67cb7f9e1b207b5deff82bff816042dd06b5d61df39fe3"
+  },
   "elm.md": {
     "path": "rules/elm.md",
     "sha256": "a1d394cb495cfc2cc8f9c682945e3cc744091e9ebc58e0a692a2287a22d1e580"
@@ -393,6 +477,10 @@ export const rules = {
   "thrift.md": {
     "path": "rules/thrift.md",
     "sha256": "0403f77502963820e119a957c2c356dea6553e8bdd6408acbe400ae2bc1e1a71"
+  },
+  "starlark.md": {
+    "path": "rules/starlark.md",
+    "sha256": "41653e7e9a2562a0502f0379ab0dd5b0431419d348024cf5f3f73c36f65adedd"
   },
   "capnp.md": {
     "path": "rules/capnp.md",
@@ -429,6 +517,18 @@ export const rules = {
   "rego.md": {
     "path": "rules/rego.md",
     "sha256": "61c128158a98d813f1296f8d26102b520d694cc9edc379fe6b9ca2ab8366c0d2"
+  },
+  "shader.md": {
+    "path": "rules/shader.md",
+    "sha256": "bcd567b7b51c376e5b0a4d97209f6d80ad94e36e2575ac6ded391f28581c350a"
+  },
+  "powershell.md": {
+    "path": "rules/powershell.md",
+    "sha256": "5f3c6e3d48ad8f259510bcbe2e23664e86db3f8bbe40a00d4153a270022bc577"
+  },
+  "clojure.md": {
+    "path": "rules/clojure.md",
+    "sha256": "dcaed8ba627900684d934422924c428d398e2518cf9fcfc1c4d32cd04c224b0d"
   },
   "default.md": {
     "path": "rules/default.md",
