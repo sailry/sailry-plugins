@@ -22816,7 +22816,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.38",
+        "version": "0.1.39",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22844,17 +22844,17 @@
                 "slot": "statistics",
                 "kind": "metric",
                 "label": {
-                  "label": "Session average",
+                  "label": "Generation speed",
                   "locales": {
-                    "zh-CN": "会话均速",
-                    "zh-TW": "工作階段平均速度",
-                    "de": "Sitzungsdurchschnitt",
-                    "es": "Promedio de sesión",
-                    "fr": "Moyenne de la session",
-                    "ja": "セッション平均速度",
-                    "ko": "세션 평균 속도",
-                    "pt-BR": "Média da sessão",
-                    "ru": "Средняя скорость сеанса"
+                    "zh-CN": "生成速度",
+                    "zh-TW": "生成速度",
+                    "de": "Generierungsgeschwindigkeit",
+                    "es": "Velocidad de generación",
+                    "fr": "Vitesse de génération",
+                    "ja": "生成速度",
+                    "ko": "생성 속도",
+                    "pt-BR": "Velocidade de geração",
+                    "ru": "Скорость генерации"
                   }
                 },
                 "icon": "gauge",
@@ -22953,6 +22953,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.39",
+          "commit": "ccaea58dbe72ea1a7aa8ca581c63cd6e8b6b1551",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Clarify how generation speed is measured in the usage report and session statistics.",
+            "locales": {
+              "zh-CN": "- 明确用量报告和会话统计中的生成速度口径。",
+              "zh-TW": "- 釐清用量報告與工作階段統計中的生成速度。",
+              "ja": "- 使用状況レポートとセッション統計の生成速度の表記を明確化。",
+              "ko": "- 사용량 보고서와 세션 통계에서 생성 속도의 의미를 명확히 했습니다.",
+              "fr": "- Précise la vitesse de génération dans le rapport d’utilisation et les statistiques de session.",
+              "de": "- Die Generierungsgeschwindigkeit im Nutzungsbericht und in der Sitzungsstatistik ist eindeutiger bezeichnet.",
+              "es": "- Se aclara la velocidad de generación en el informe de uso y las estadísticas de sesión.",
+              "pt-BR": "- Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.",
+              "ru": "- Уточнено значение скорости генерации в отчёте об использовании и статистике сеанса."
+            }
+          }
+        },
         {
           "version": "0.1.38",
           "commit": "cde9ed7549baa66afdadba65515211c60f0e1f53",
@@ -23463,17 +23483,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Fill the activity heatmap with history beyond the selected range, keep its filters, and space its title from the grid",
+        "text": "- Clarify how generation speed is measured in the usage report and session statistics.",
         "locales": {
-          "zh-CN": "- 活跃热力图不再受所选时间范围的开始日期限制，按卡片宽度显示历史并沿用筛选；加大标题与图表的间距",
-          "zh-TW": "- 活躍熱度圖不再受所選時間範圍的開始日期限制，依卡片寬度顯示歷史並沿用篩選；加大標題與圖表的間距",
-          "ja": "- アクティビティのヒートマップを選択した期間の開始日に制限せず、カード幅に合わせて履歴を表示（フィルターは維持）。タイトルとの間隔を拡大",
-          "ko": "- 활동 히트맵이 선택한 기간의 시작일에 제한되지 않고 카드 너비만큼 기록을 표시하며 필터를 유지합니다. 제목과의 간격을 넓혔습니다",
-          "fr": "- La carte thermique d’activité affiche l’historique au-delà de la période choisie, conserve les filtres et s’éloigne davantage du titre",
-          "de": "- Aktivitäts-Heatmap zeigt den Verlauf über den gewählten Zeitraum hinaus, behält die Filter bei und hat mehr Abstand zum Titel",
-          "es": "- El mapa de calor de actividad muestra historial más allá del rango seleccionado, conserva los filtros y separa más el título",
-          "pt-BR": "- O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título",
-          "ru": "- Тепловая карта активности показывает историю за пределами выбранного периода, сохраняет фильтры и отделена от заголовка большим отступом"
+          "zh-CN": "- 明确用量报告和会话统计中的生成速度口径。",
+          "zh-TW": "- 釐清用量報告與工作階段統計中的生成速度。",
+          "ja": "- 使用状況レポートとセッション統計の生成速度の表記を明確化。",
+          "ko": "- 사용량 보고서와 세션 통계에서 생성 속도의 의미를 명확히 했습니다.",
+          "fr": "- Précise la vitesse de génération dans le rapport d’utilisation et les statistiques de session.",
+          "de": "- Die Generierungsgeschwindigkeit im Nutzungsbericht und in der Sitzungsstatistik ist eindeutiger bezeichnet.",
+          "es": "- Se aclara la velocidad de generación en el informe de uso y las estadísticas de sesión.",
+          "pt-BR": "- Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.",
+          "ru": "- Уточнено значение скорости генерации в отчёте об использовании и статистике сеанса."
         }
       }
     },
