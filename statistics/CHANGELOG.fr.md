@@ -1,3 +1,7 @@
+## 0.1.39
+
+- Précise la vitesse de génération dans le rapport d’utilisation et les statistiques de session.
+
 ## 0.1.38
 
 - La carte thermique d’activité affiche l’historique au-delà de la période choisie, conserve les filtres et s’éloigne davantage du titre

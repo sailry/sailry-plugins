@@ -1,3 +1,7 @@
+## 0.1.39
+
+- Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.
+
 ## 0.1.38
 
 - O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título

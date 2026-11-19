@@ -1,3 +1,7 @@
+## 0.1.39
+
+- Die Generierungsgeschwindigkeit im Nutzungsbericht und in der Sitzungsstatistik ist eindeutiger bezeichnet.
+
 ## 0.1.38
 
 - Aktivitäts-Heatmap zeigt den Verlauf über den gewählten Zeitraum hinaus, behält die Filter bei und hat mehr Abstand zum Titel

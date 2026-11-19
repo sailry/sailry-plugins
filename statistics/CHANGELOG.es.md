@@ -1,3 +1,7 @@
+## 0.1.39
+
+- Se aclara la velocidad de generación en el informe de uso y las estadísticas de sesión.
+
 ## 0.1.38
 
 - El mapa de calor de actividad muestra historial más allá del rango seleccionado, conserva los filtros y separa más el título

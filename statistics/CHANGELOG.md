@@ -1,3 +1,7 @@
+## 0.1.39
+
+- Clarify how generation speed is measured in the usage report and session statistics.
+
 ## 0.1.38
 
 - Fill the activity heatmap with history beyond the selected range, keep its filters, and space its title from the grid

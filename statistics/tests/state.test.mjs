@@ -5,9 +5,12 @@ import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.p
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('speed details use latest own time to first token',()=>{
+test('generation speed uses the host interval and displays the latest own first-token latency separately',async()=>{
+  const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
+  const label=manifest.extensions['dev.sailry.platform'].ui.find(item=>item.id==='composer_speed').label;
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
+    assert.equal(label.locales[locale] ?? label.label,text.usage_speed);
     for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
       const statistics={first_token_us:first,generation:{output_tokens:'20',elapsed_us:'1000000',responses:'1'},
         delegated:{first_token_us:'1',generation:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};

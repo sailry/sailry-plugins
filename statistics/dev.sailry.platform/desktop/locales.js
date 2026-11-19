@@ -38,8 +38,6 @@ const locales = {
     "usage_column_hit": "Cache hits",
     "usage_column_responses": "Responses",
     "usage_responses": "Responses",
-    "usage_speed": "Average speed",
-    "usage_speed_help": "Includes time to first token, excludes queues and tools",
     "usage_cost": "Estimated cost (USD)",
     "usage_cost_help": "Reference estimate, not a bill",
     "usage_trend": "Token trend",
@@ -78,7 +76,9 @@ const locales = {
     "composer_timed_output": "Timed output",
     "composer_turns": "Turns",
     "composer_cost": "Cost",
-    "composer_speed": "Session average",
+    "usage_speed": "Generation speed",
+    "usage_speed_help": "Measurements from updated hosts exclude the wait for the first token. Measurements from older hosts can include it.",
+    "composer_speed": "Generation speed",
     "composer_first_token": "TTFT",
     "composer_cache": "Cache",
     "composer_cache_hit": "Cache hit rate",
@@ -152,8 +152,6 @@ const locales = {
     "usage_column_hit": "缓存命中",
     "usage_column_responses": "响应",
     "usage_responses": "响应数",
-    "usage_speed": "平均速度",
-    "usage_speed_help": "按模型响应总耗时计算，包含首 Token 延迟，不含排队和工具执行",
     "usage_cost": "估算费用（USD）",
     "usage_cost_help": "参考估算，不代表实际账单",
     "usage_trend": "Token 趋势",
@@ -192,7 +190,9 @@ const locales = {
     "composer_timed_output": "测速输出",
     "composer_turns": "轮次",
     "composer_cost": "估算费用",
-    "composer_speed": "会话均速",
+    "usage_speed": "生成速度",
+    "usage_speed_help": "新版主机从首个 Token 到达后开始计时。旧版主机的记录可能包含等待首个 Token 的时间。",
+    "composer_speed": "生成速度",
     "composer_first_token": "TTFT",
     "composer_cache": "缓存率",
     "composer_cache_hit": "命中率",
@@ -228,7 +228,9 @@ const locales = {
     "context_no_data": "暂无数据"
   },
   "de": {
-    "composer_speed": "Sitzungsdurchschnitt",
+    "usage_speed": "Generierungsgeschwindigkeit",
+    "usage_speed_help": "Aktualisierte Hosts messen ab dem ersten Token. Messungen älterer Hosts können die Wartezeit bis dahin enthalten.",
+    "composer_speed": "Generierungsgeschwindigkeit",
     "composer_context_estimate": "Geschätzter Kontext %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "Kontext",
@@ -247,7 +249,9 @@ const locales = {
     "context_no_data": "Keine Daten"
   },
   "es": {
-    "composer_speed": "Promedio de sesión",
+    "usage_speed": "Velocidad de generación",
+    "usage_speed_help": "Los hosts actualizados excluyen la espera hasta el primer token. Las mediciones de hosts anteriores pueden incluirla.",
+    "composer_speed": "Velocidad de generación",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "Contexto",
@@ -266,7 +270,9 @@ const locales = {
     "context_no_data": "Sin datos"
   },
   "fr": {
-    "composer_speed": "Moyenne de la session",
+    "usage_speed": "Vitesse de génération",
+    "usage_speed_help": "Les hôtes à jour excluent le délai avant le premier token. Les mesures des anciens hôtes peuvent l’inclure.",
+    "composer_speed": "Vitesse de génération",
     "composer_context_estimate": "Contexte estimé %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "Contexte",
@@ -285,7 +291,9 @@ const locales = {
     "context_no_data": "Aucune donnée"
   },
   "ja": {
-    "composer_speed": "セッション平均速度",
+    "usage_speed": "生成速度",
+    "usage_speed_help": "更新済みのホストでは最初のトークンが届くまでの待ち時間を除きます。旧版ホストの記録ではこの待ち時間が含まれる場合があります。",
+    "composer_speed": "生成速度",
     "composer_context_estimate": "推定コンテキスト %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "コンテキスト",
@@ -304,7 +312,9 @@ const locales = {
     "context_no_data": "データなし"
   },
   "ko": {
-    "composer_speed": "세션 평균 속도",
+    "usage_speed": "생성 속도",
+    "usage_speed_help": "업데이트된 호스트는 첫 토큰까지의 대기 시간을 제외합니다. 이전 버전 호스트의 측정값에는 이 시간이 포함될 수 있습니다.",
+    "composer_speed": "생성 속도",
     "composer_context_estimate": "예상 컨텍스트 %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "컨텍스트",
@@ -323,7 +333,9 @@ const locales = {
     "context_no_data": "데이터 없음"
   },
   "pt-BR": {
-    "composer_speed": "Média da sessão",
+    "usage_speed": "Velocidade de geração",
+    "usage_speed_help": "Hosts atualizados excluem a espera pelo primeiro token. Medições de hosts antigos podem incluí-la.",
+    "composer_speed": "Velocidade de geração",
     "composer_context_estimate": "Contexto estimado %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "Contexto",
@@ -342,7 +354,9 @@ const locales = {
     "context_no_data": "Sem dados"
   },
   "ru": {
-    "composer_speed": "Средняя скорость сеанса",
+    "usage_speed": "Скорость генерации",
+    "usage_speed_help": "Обновлённые хосты исключают время ожидания первого токена. В измерениях старых хостов оно может учитываться.",
+    "composer_speed": "Скорость генерации",
     "composer_context_estimate": "Оценка контекста %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "Контекст",
@@ -361,7 +375,9 @@ const locales = {
     "context_no_data": "Нет данных"
   },
   "zh-TW": {
-    "composer_speed": "工作階段平均速度",
+    "usage_speed": "生成速度",
+    "usage_speed_help": "新版主機從收到第一個 Token 後開始計時。舊版主機的紀錄可能包含等待第一個 Token 的時間。",
+    "composer_speed": "生成速度",
     "composer_context_estimate": "估算上下文 %{used} / %{limit}",
     "composer_first_token": "TTFT",
     "context_title": "上下文",
