@@ -18547,7 +18547,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -18576,6 +18576,15 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.19",
+          "commit": "68ac24f0e119647fd39ef2a6931d0abc4f4b6bc7",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Document bounded tool composition and validate the code graph permission during preflight."
+          }
+        },
         {
           "version": "0.1.18",
           "commit": "5b96732eee9a7258f0aa13ab7226543d373fd775",
@@ -18792,18 +18801,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Align runtime guidance and SDK references with moejs and MyGo/Kit",
-        "locales": {
-          "zh-CN": "- 按当前 moejs 与 MyGo/Kit 更新运行时指导和 SDK 参考",
-          "zh-TW": "- 依目前 moejs 與 MyGo/Kit 更新執行環境指引與 SDK 參考",
-          "ja": "- moejs と MyGo/Kit に合わせてランタイムの説明と SDK リファレンスを更新",
-          "ko": "- moejs 및 MyGo/Kit에 맞게 런타임 안내와 SDK 참조 갱신",
-          "fr": "- Aligner la documentation du runtime et les références SDK sur moejs et MyGo/Kit",
-          "de": "- Laufzeithinweise und SDK-Referenzen an moejs und MyGo/Kit anpassen",
-          "es": "- Actualizar la guía de ejecución y las referencias del SDK para moejs y MyGo/Kit",
-          "pt-BR": "- Atualizar as orientações de execução e as referências do SDK para moejs e MyGo/Kit",
-          "ru": "- Обновить описание среды выполнения и справку SDK для moejs и MyGo/Kit"
-        }
+        "text": "- Document bounded tool composition and validate the code graph permission during preflight."
       }
     },
     {
