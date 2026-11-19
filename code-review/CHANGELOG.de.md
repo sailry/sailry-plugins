@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Kleine Prüfumfänge liefern die ausgewählten Regeln direkt. Änderungen und Befunde lassen sich gebündelt verarbeiten, und die letzte Gruppenbestätigung kann die Prüfung abschließen.
+
 ## 0.1.20
 
 - 66 Prüfregeln aus OpenCodeReview v1.13.13 übernommen und die Fortsetzung einer unvollständigen Erfassung erläutert.

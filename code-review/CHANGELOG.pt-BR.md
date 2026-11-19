@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Revisões pequenas incluem as regras selecionadas na primeira resposta. É possível agrupar alterações e achados e concluir com a última confirmação de grupo.
+
 ## 0.1.20
 
 - Sincroniza 66 regras de revisão com o OpenCodeReview v1.13.13 e esclarece como retomar uma captura incompleta.

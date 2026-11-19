@@ -1,5 +1,6 @@
-import {fail,fields,identifier,integer,limits,path,size} from './policy.js';
+import {fail,fields,identifier,integer,limits,path,size,text} from './policy.js';
 import {head,identity,key,manifest,record} from './records.js';
+import {delivered,deliveryBytes} from './delivery.js';
 
 export function available(file) {
   if (!file.content || !['diff','old','new'].every(part => {
@@ -43,35 +44,94 @@ export async function verify(value,file) {
   for (const part of parts) for await (const _page of pages(value,file,part,captured)) { /* Validate every captured page. */ }
 }
 
-export async function read(input) {
-  const args=fields(input,['review_id','path','part','offset','limit'],['review_id','path']);
-  identifier(args.review_id); path(args.path);
-  const part=args.part ?? 'diff';
-  if (!['diff','old','new'].includes(part)) fail('Invalid review content part');
-  const offset=integer(args.offset ?? 0,'review content offset',0,Number.MAX_SAFE_INTEGER);
-  const limit=integer(args.limit ?? 500,'review content limit',1,Number.MAX_SAFE_INTEGER);
-  const current=await head(args.review_id,await identity());
-  const scope=await manifest(current.value), file=scope.files.find(file => file.path === args.path);
-  if (!file) fail('Review file is outside the scope');
-  const result={review_id:args.review_id,snapshot:current.value.snapshot,path:file.path,
+async function readPage(value,file,part,offset,limit,budget) {
+  const result={review_id:value.id,snapshot:value.snapshot,path:file.path,
     old_path:file.old_path,metadata_revision:file.metadata_revision,revision:file.revision,
     part,offset,next:null,...(part === 'diff' ? {lines:[]} : {text:''})};
+  let used=size(result);
+  if (used > budget) return null;
   let position=0, count=0;
-  for await (const page of pages(current.value,file,part)) {
+  for await (const page of pages(value,file,part)) {
     for (const row of page.rows) {
       if (position++ < offset) continue;
       if (count === limit) { result.next=offset+count; return result; }
-      const previous=part === 'diff' ? null : result.text;
-      if (part === 'diff') result.lines.push(row); else result.text+=row;
-      if (size(result) > limits.output) {
-        if (part === 'diff') result.lines.pop(); else result.text=previous;
-        if (!count) fail('Review source line exceeds the output budget');
+      // Array rows add a separator. Text rows lose their surrounding JSON quotes.
+      const addition=size(row)+(part === 'diff' ? Number(count > 0) : -2);
+      const more=page.next !== null || position < page.offset+page.rows.length;
+      const cursor=more ? Math.max(0,String(offset+count+1).length-4) : 0;
+      if (used+addition+cursor > budget) {
+        if (!count) return null;
         result.next=offset+count;
         return result;
       }
+      if (part === 'diff') result.lines.push(row); else result.text+=row;
+      used+=addition;
       count++;
     }
   }
   if (offset > position) fail('Review content offset exceeds the source');
   return result;
+}
+
+export async function diffs(value,files,offset=0,limit=Number.MAX_SAFE_INTEGER,budget=limits.output) {
+  if (offset > files.length) fail('Review file offset exceeds the selection');
+  const result={review_id:value.id,snapshot:value.snapshot,offset,next:null,files:[]};
+  const cursor=Math.max(0,String(files.length).length-4);
+  let used=size(result)+cursor;
+  if (used > budget) return null;
+  let index=offset;
+  for (;index < files.length;index++) {
+    const separator=Number(index > offset);
+    const page=await readPage(value,files[index],'diff',0,limit,budget-used-separator);
+    if (!page) break;
+    result.files.push(page);
+    used+=size(page)+separator;
+  }
+  result.next=index < files.length ? index : null;
+  return result;
+}
+
+export async function read(input) {
+  const args=fields(input,['review_id','path','paths','group','part','offset','limit'],['review_id']);
+  identifier(args.review_id);
+  if (['path','paths','group'].filter(key=>Object.hasOwn(args,key)).length !== 1) {
+    fail('Select a review path, paths, or group');
+  }
+  const part=args.part ?? 'diff';
+  if (!['diff','old','new'].includes(part)) fail('Invalid review content part');
+  const offset=integer(args.offset ?? 0,'review content offset',0,Number.MAX_SAFE_INTEGER);
+  const defaultLimit=args.path === undefined ? Number.MAX_SAFE_INTEGER : 500;
+  const limit=integer(args.limit ?? defaultLimit,'review content limit',1,Number.MAX_SAFE_INTEGER);
+  if (args.path !== undefined) path(args.path);
+  else {
+    if (part !== 'diff') fail('Batch review content only supports diff');
+    if (args.group !== undefined) text(args.group,'review group');
+    else {
+      if (!Array.isArray(args.paths) || args.paths.length < 1 || args.paths.length > limits.page
+          || new Set(args.paths).size !== args.paths.length) fail('Select 1 to 100 distinct review paths');
+      args.paths.forEach(path);
+    }
+  }
+
+  const {value}=await head(args.review_id,await identity());
+  const scope=await manifest(value);
+  if (args.path !== undefined) {
+    const file=scope.files.find(file=>file.path === args.path);
+    if (!file) fail('Review file is outside the scope');
+    const budget=part === 'diff' ? limits.output-deliveryBytes : limits.output;
+    const page=await readPage(value,file,part,offset,limit,budget);
+    if (!page) fail('Review source line exceeds the output budget');
+    return {...page,...delivered(value.id,[page])};
+  }
+  const group=args.group === undefined ? null : scope.groups.find(group=>group.id === args.group);
+  if (args.group !== undefined && !group) fail('Review group is outside the scope');
+  const byPath=new Map(scope.files.map(file=>[file.path,file]));
+  const files=(group ? group.files : args.paths).map(name=>{
+    const file=byPath.get(name);
+    if (!file) fail('Review file is outside the scope');
+    return file;
+  });
+  const result=await diffs(value,files,offset,limit,limits.modelOutput-deliveryBytes);
+  if (!result || result.next === offset) fail('Review file exceeds the batch output budget; read its path separately');
+  return {...result,...delivered(value.id,result.files)};
 }

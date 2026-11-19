@@ -6,6 +6,50 @@ const skipped = ['.env','.npmrc','.netrc','.pypirc','.ssh/id_rsa','credentials/t
   'cert/server.key','node_modules/lib/main.js','target/debug/app.rs','generated/types.ts','src/schema.pb.go',
   'assets/app.min.js','Cargo.lock'];
 
+test('small scopes publish in their first call', async () => {
+  const source = Array.from({length:12},(_,index) => file(`part-${index}/file.go`));
+  const current = await fixture(source);
+  const scope = await current.invoke('scope',{});
+  assert.equal(scope.status,'open');
+  assert.equal(scope.next,null);
+  assert.equal(scope.counts.files,source.length);
+  assert.equal(scope.groups.length,source.length);
+  assert.equal(current.calls.filter(call=>call.kind === 'list_git_changes').length,2);
+  assert.equal(scope.rules.length,1);
+  assert.equal(scope.rules[0].path,scope.files[0].rule.path);
+  assert.equal(scope.rules[0].sha256,scope.files[0].rule.sha256);
+  assert.ok(scope.rules[0].text.length > 0);
+  assert.equal((await current.invoke('scope',{review_id:scope.review_id})).rules,undefined);
+});
+
+test('selected rules use a bounded share of the response', async () => {
+  const source=['file.go','file.py','file.ts','file.rs','file.java','file.cpp','file.swift',
+    'composer.json','file.scala','file.hs'].map(path=>file(path));
+  const current=await fixture(source);
+  const scope=await current.invoke('scope',{});
+  assert.equal(scope.status,'open');
+  assert.equal(scope.counts.files,source.length);
+  assert.equal(scope.next,null);
+  assert.ok(scope.rules.length > 1 && scope.rules.length < source.length);
+  assert.ok(Buffer.byteLength(JSON.stringify(scope.rules)) <= 32*1024);
+  assert.equal(new Set(scope.rules.map(rule=>rule.path)).size,scope.rules.length);
+  assert.ok(Buffer.byteLength(JSON.stringify(scope)) <= 128*1024);
+});
+
+test('small scopes verify inventory before publication', async () => {
+  let inventories=0;
+  const source=Array.from({length:12},(_,index)=>file(`src/file-${index}.go`));
+  const current=await fixture(source,{command(command) {
+    if (command.kind === 'list_git_changes' && ++inventories === 2) {
+      return {Err:{code:'revision_conflict',message:'Inventory changed before publication'}};
+    }
+  }});
+  const scope=await current.invoke('scope',{});
+  assert.equal(scope.error.code,'revision_conflict');
+  assert.equal(current.calls.filter(call=>call.kind === 'read_git_change').length,source.length);
+  assert.equal([...current.values.values()].filter(value=>value.present).length,0);
+});
+
 test('initial page limit preserves complete frozen coverage', async () => {
   const source = [file('src/first.rs'),file('src/second.rs'),file('src/third.rs')];
   const fixtureData = await fixture(source);

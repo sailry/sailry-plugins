@@ -3,6 +3,27 @@ import {begin,discard,finish,flush,recover,resume} from './capture.js';
 import {advance,initialize,pending} from './capture/scope.js';
 import {fail,fields,identifier,integer,limits,size} from './policy.js';
 import {head,key,manifest,record,write} from './records.js';
+import {rules} from './rules.js';
+import {bodies} from './rule-text.js';
+
+export function attachRules(result,files,budget=limits.output) {
+  const documents=[], seen=new Set();
+  const base=size({...result,rules:documents});
+  if (base > budget) return;
+  const allowed=Math.min(32*1024-2,budget-base);
+  let used=0;
+  for (const {rule} of files) {
+    const file=rule?.path?.slice('rules/'.length), metadata=rules[file];
+    if (!metadata || metadata.path !== rule.path || metadata.sha256 !== rule.sha256 || seen.has(file)) continue;
+    seen.add(file);
+    const document={...metadata,text:bodies[file]};
+    const length=size(document)+Number(documents.length > 0);
+    if (used+length > allowed) continue;
+    documents.push(document);
+    used+=length;
+  }
+  result.rules=documents;
+}
 
 export async function page(value, offset = 0, limit = limits.page, content = null) {
   integer(offset, 'review offset', 0, Number.MAX_SAFE_INTEGER);
@@ -23,6 +44,7 @@ export async function page(value, offset = 0, limit = limits.page, content = nul
     }
     const target = {file:'files',group:'groups',skipped:'skipped',finding:'findings'}[row.kind];
     result[target].push(row.value);
+    result.next = next+1 < total ? next+1 : null;
     if (size(result) > limits.output) {
       result[target].pop();
       if (next === offset) fail('Review page item exceeds the bounded output budget');
@@ -58,6 +80,7 @@ export async function prepare(input, actor) {
     const value=await advance(owner);
     if (!value) return pending(owner);
     const output=await page(value,0,limit);
+    attachRules(output,output.files,limits.modelOutput);
     await finish(owner,[write(key(owner.id,'head'),value)]);
     return output;
   } catch (error) {

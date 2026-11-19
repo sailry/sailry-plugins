@@ -7,7 +7,7 @@ import {clone,fail,limits,size} from '../policy.js';
 import {key,record,shards} from '../records.js';
 
 // Leave time for a bounded native read and the durable checkpoint before the host deadline.
-const reads=16, duration=25000;
+const reads=16, smallScope=12, duration=25000;
 
 export function initialize(owner,target) {
   owner.value.progress={phase:'inventory',target:clone(target),snapshot:null,cursor:null,
@@ -63,11 +63,15 @@ export async function advance(owner) {
     fail('Review capture is incompatible','invalid_request');
   }
   const expires=Date.now()+duration;
-  let inventory=null;
-  for (let step=0;step<reads && Date.now()<expires;step++) {
+  let inventory=null, budget=reads;
+  for (let step=0;step<budget && Date.now()<expires;step++) {
     if (progress.phase === 'publish') return head(owner);
     if (progress.phase === 'inventory') {
       const page=await inventoryPage(owner.actor.worktree,progress.target,progress.cursor);
+      if (!progress.cursor && page.exhausted && page.entries.length <= smallScope) {
+        // Allow three source parts per file plus inventory, grouping, and verification phases.
+        budget=Math.max(reads,page.entries.length*3+4);
+      }
       progress.inventory.push(...await store(owner,page.entries.map(value=>({kind:'entry',value}))));
       progress.snapshot=page.snapshot;
       progress.cursor=page.next;
@@ -104,6 +108,7 @@ export async function advance(owner) {
       const file=progress.current, part=progress.part;
       if (part === 'diff') {
         const page=await changePage(owner.actor.worktree,progress.snapshot,file,progress.offset);
+        if (page.next !== null) budget=reads;
         if (page.binary || page.skip_reason) {
           await complete(owner,'skipped',{path:file.path,reason:page.skip_reason ?? 'binary file'});
         } else {
@@ -121,6 +126,7 @@ export async function advance(owner) {
         }
       } else {
         const page=await contextPage(owner.actor.worktree,progress.snapshot,file,part,progress.offset);
+        if (page.next !== null) budget=reads;
         await append(owner,'data',{v:1,kind:'content',path:file.path,part,
           revision:file.revision,offset:page.offset,next:page.next,text:page.text});
         file.content[part].count++;
@@ -163,5 +169,5 @@ export async function advance(owner) {
 export function pending(owner) {
   const progress=owner.value.progress;
   return {review_id:owner.id,status:'capturing',snapshot:progress.snapshot,
-    counts:clone(progress.counts),next:null};
+    counts:clone(progress.counts),next:null,continuation:{review_id:owner.id}};
 }

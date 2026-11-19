@@ -32,6 +32,60 @@ test('stored evidence survives edits and reopening',async()=>{
   assert.equal(fresh.counts.files,2);
 });
 
+test('batch diffs preserve selected order and frozen content',async()=>{
+  const source=[file('app/a.js'),file('app/b.js'),file('tests/other.js')];
+  const current=await fixture(source),scope=await current.invoke('scope',{});
+  const review_id=scope.review_id;
+  const selection=[source[2].path,source[0].path];
+  current.change(source[0].path,{lines:[]});
+  const calls=current.calls.length;
+  const batch=await current.read({review_id,paths:selection});
+  assert.equal(batch.next,null);
+  assert.deepEqual(batch.files,await Promise.all(selection.map(path=>current.read({review_id,path}))));
+  assert.deepEqual(batch.files[1].lines,source[0].lines);
+  const group=scope.groups[0];
+  const grouped=await current.read({review_id,group:group.id,offset:1});
+  assert.deepEqual(grouped.files.map(file=>file.path),group.files.slice(1));
+  assert.equal(current.calls.length,calls);
+  for (const input of [{paths:[]},{paths:[...selection,selection[0]]},{paths:[...selection,'other.js']},
+    {path:source[0].path,group:group.id},{group:'unknown'},{group:group.id,part:'old'},
+    {group:group.id,offset:group.files.length+1}]) {
+    assert.equal((await current.read({review_id,...input})).error.code,'invalid_request');
+  }
+});
+
+test('batch file and diff cursors continue within encoded budget',async()=>{
+  const large={kind:'added',old_line:null,new_line:7,text:'漢'.repeat(12000)};
+  const source=[file('src/a.js',{lines:[large]}),file('src/b.js',{lines:[large,
+    {kind:'added',old_line:null,new_line:8,text:'return "quoted";'}]}),file('src/c.js')];
+  const current=await fixture(source),scope=await current.invoke('scope',{});
+  const request={review_id:scope.review_id,group:scope.groups[0].id,limit:1};
+  const first=await current.read(request);
+  assert.equal(first.next,1);
+  assert.deepEqual(first.files.map(file=>file.path),['src/a.js']);
+  const next=await current.read({...request,offset:first.next});
+  assert.equal(next.next,null);
+  assert.deepEqual(next.files.map(file=>file.path),['src/b.js','src/c.js']);
+  for (const page of [first,next]) assert.ok(Buffer.byteLength(JSON.stringify(page)) <= 48*1024);
+  const partial=next.files[0];
+  assert.equal(partial.next,1);
+  const tail=await current.read({review_id:scope.review_id,path:partial.path,offset:partial.next});
+  assert.deepEqual([...partial.lines,...tail.lines],source[1].lines);
+  assert.equal(tail.next,null);
+});
+
+test('batch reads across stored pages until the output budget',async()=>{
+  const lines=Array.from({length:520},(_,index)=>({kind:'added',old_line:null,new_line:index+1,text:`line ${index}`}));
+  const source=file('src/long.js',{lines});
+  const current=await fixture([source]),scope=await current.invoke('scope',{});
+  const selected={review_id:scope.review_id};
+  const batch=await current.read({...selected,paths:[source.path]});
+  assert.equal(batch.next,null);
+  assert.equal(batch.files[0].next,null);
+  assert.deepEqual(batch.files[0].lines,lines);
+  assert.equal((await current.read({...selected,path:source.path})).next,500);
+});
+
 test('missing content never falls back to live source',async()=>{
   const current=await fixture(),scope=await current.invoke('scope',{});
   const value=current.values.get(`review/${scope.review_id}/head`).value;

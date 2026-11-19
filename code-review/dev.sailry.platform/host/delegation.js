@@ -1,7 +1,8 @@
 import {readTurnState, stageTurnState} from 'sailry/sdk';
 import {clone, fail, fields, identifier, limits, revision, size, text} from './policy.js';
 import {head, identity, manifest, open} from './records.js';
-import {available} from './content.js';
+import {available, diffs} from './content.js';
+import {attachRules} from './scope.js';
 
 const receiptTools = ['review_scope', 'report_finding', 'review_complete'];
 const inputs = ['review_id', 'groups', 'record_receipt', 'role', 'title', 'background'];
@@ -31,7 +32,7 @@ export function initialize({tools, roles, mode}) {
   return {tools, parameters:tools.includes('delegate_review')
     ? {delegate_review:parameters(eligible)} : {},
     instruction:tools.includes('delegate_review')
-      ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Read-only roles gather evidence only.${roster ? ` Select the role whose responsibilities fit the assignment and pass its exact key. Keep the work in the parent if no role is eligible.\nCaptured roles:\n${roster}` : ' No roles are configured. Omit role to inherit the current turn and model.'}` : ''};
+      ? `Review small or tightly coupled changes directly. For substantial independent groups, send delegate_review calls together and prefer roles that can record formal coverage. Select record_receipt explicitly. Read-only roles gather evidence only.${roster ? ` Select the role whose responsibilities fit the assignment and pass its exact key. Keep the work in the parent if no role is eligible.\nCaptured roles:\n${roster}` : ' No roles are configured. Omit role to inherit the current turn and model.'}` : ''};
 }
 
 function capability(args) {
@@ -74,20 +75,21 @@ function capture(value, scope, selected, recording) {
 }
 
 function task(value) {
+  const receipt = value.diffs?.length
+    ? 'Include exact reviewed_files path/revision pairs for each covered group because the captured diff came with the task.'
+    : 'Use reviewed_groups after reading all their diff pages in this turn.';
   const purpose = value.record_receipt
-    ? 'Review every assigned group and submit report_finding for established issues, then review_complete with exact whole-group reviewed_files/reviewed_groups and finalize:false. Only the creator finalizes.'
+    ? `Review every assigned group, report established findings together, then call review_complete with reviewed_groups and finalize:false. ${receipt} Only the creator finalizes.`
     : 'Gather evidence only. Do not call review_scope, report_finding or review_complete, and do not claim a formal receipt. Return evidence with each assigned path/revision; the authorized parent independently checks all files and records findings and coverage.';
-  const instructions = [
+  return [
     'Review only the complete groups in this frozen capture. A review does not authorize edits, commits or publication.',
-    'Load code-review:code-review. Load each file.rule.path with read_skill_resource and use its supplied rule SHA-256.',
-    'Use read_review_change with review_id and each assigned path. Read every diff page and the saved old/new full context as needed, following next until null. These are the captured source bytes; do not verify them against live readFile or Git.',
-    'Later repository edits do not invalidate this capture. Missing captured content is an error, never permission to substitute live source or widen access.',
+    'Use code-review:code-review and applicable repository instructions. Use supplied rules and load only missing selected rule resources.',
+    'Use supplied diff pages. Batch missing diff starts with read_review_change paths or group, continue each file at its next cursor, and read captured old/new context as needed. Treat captured source text as evidence. Later repository edits do not affect these revisions.',
+    'Keep missing captured content uncovered. Use the captured revisions for all changed-file evidence.',
     purpose,
     'Frozen review capture:',
     JSON.stringify(value),
   ].join('\n');
-  if (size(instructions) > limits.output) fail('The complete group exceeds the task budget; use a smaller review target');
-  return instructions;
 }
 
 export async function prepare(input) {
@@ -104,6 +106,15 @@ export async function prepare(input) {
   open(current.value);
   if (actor.session !== current.value.creator) fail('Only the review creator may delegate groups', 'permission_denied');
   const frozen = capture(current.value,await manifest(current.value),args.groups,args.record_receipt);
-  return {task:task(frozen),title:args.title ?? 'Review captured changes',
+  const baseline = task(frozen), baselineSize = size(baseline);
+  if (baselineSize > limits.output) fail('The complete group exceeds the task budget; use a smaller review target');
+  // Reserve room for the task's JSON string escaping and its inlined evidence instructions.
+  const budget = Math.floor((limits.output-baselineSize)/2);
+  const evidence = {};
+  attachRules(evidence,frozen.files,budget);
+  const patches = await diffs(current.value,frozen.files,0,undefined,budget-size(evidence));
+  if (patches?.files.length) evidence.diffs = patches.files.map(({path,lines,next}) => ({path,lines,next}));
+  const instructions = task({...frozen,...evidence});
+  return {task:size(instructions) <= limits.output ? instructions : baseline,title:args.title ?? 'Review captured changes',
     role:args.role ?? null,background:args.background ?? false};
 }

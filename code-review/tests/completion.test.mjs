@@ -7,6 +7,70 @@ function partial(scope, group) {
     .map(({path,revision}) => ({path,revision})),finalize:false});
 }
 
+function compact(scope) {
+  return {review_id:scope.review_id,reviewed_groups:scope.groups.map(({id}) => id),finalize:true};
+}
+
+function initialize(current) {
+  current.initialize({mode:'code',roles:[],tools:[]});
+}
+
+test('delivered groups finalize with host-derived file receipts', async () => {
+  const current = await fixture([file('src/a.rs'),file('src/b.rs')]);
+  initialize(current);
+  const scope = await current.capture();
+  const args = compact(scope);
+  const key = `review/${scope.review_id}/head`;
+  const before = structuredClone(current.values.get(key));
+  const group = scope.groups[0];
+  const result = await current.read({review_id:scope.review_id,group:group.id});
+  assert.ok(result.delivery_token);
+  for (const invalid of [args,{...args,delivery_token:uuid(99)}]) {
+    const rejected = await current.invoke('complete',invalid);
+    assert.equal(rejected.error.code,'invalid_request');
+    assert.deepEqual(rejected.remaining.counts,{files:2,groups:1});
+    assert.deepEqual(current.values.get(key),before);
+  }
+  const completed = await current.invoke('complete',{...args,delivery_token:result.delivery_token});
+  assert.equal(completed.status,'complete');
+  assert.deepEqual(completed.reviewed_groups,[group.id]);
+  const [id] = current.values.get(key).value.receipts;
+  const proof = current.values.get(`review/${scope.review_id}/receipt/${id}/0`).value.rows;
+  assert.deepEqual(proof.filter(row => row.kind === 'file').map(row => row.value),receipt(scope).reviewed_files);
+});
+
+test('delivery tokens cover contiguous diff pages only as of the returned result', async () => {
+  const lines = Array.from({length:3},(_,index) => ({kind:'added',old_line:null,new_line:index+1,text:`line ${index}`}));
+  const current = await fixture([file('src/main.rs',{lines})]);
+  initialize(current);
+  const scope = await current.capture(), args = compact(scope);
+  const request = {review_id:scope.review_id,path:scope.files[0].path};
+  const context = await current.read({...request,part:'new'});
+  assert.equal(context.delivery_token,undefined);
+  const first = await current.read({...request,limit:1});
+  const last = await current.read({...request,offset:2});
+  assert.equal(last.next,null);
+  assert.ok(first.delivery_sequence < last.delivery_sequence);
+  assert.equal((await current.invoke('complete',{...args,delivery_token:last.delivery_token})).error.code,'invalid_request');
+  const middle = await current.read({...request,offset:first.next,limit:1});
+  assert.ok(last.delivery_sequence < middle.delivery_sequence);
+  assert.equal((await current.invoke('complete',{...args,delivery_token:last.delivery_token})).error.code,'invalid_request');
+  assert.equal((await current.invoke('complete',{...args,delivery_token:middle.delivery_token})).status,'complete');
+});
+
+test('delivery tokens stay in their capture and turn', async () => {
+  const current = await fixture();
+  initialize(current);
+  const first = await current.capture(), second = await current.capture();
+  const old = await current.read({review_id:first.review_id,path:first.files[0].path});
+  const fresh = await current.read({review_id:second.review_id,path:second.files[0].path});
+  const input = compact(second);
+  assert.equal((await current.invoke('complete',{...input,delivery_token:old.delivery_token})).error.code,'invalid_request');
+  initialize(current);
+  assert.equal((await current.invoke('complete',{...input,delivery_token:fresh.delivery_token})).error.code,'invalid_request');
+  assert.equal((await current.invoke('complete',receipt(second))).status,'complete');
+});
+
 test('zero findings still require every file and group', async () => {
   const fixtureData = await fixture(Array.from({length:15},(_,index) => file(`src/${index}.rs`)));
   const scope = await fixtureData.capture();

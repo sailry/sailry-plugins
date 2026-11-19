@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Les petites revues incluent les règles sélectionnées dès la première réponse. Les changements et les constats peuvent être traités par lots, et la dernière attestation peut clôturer la revue.
+
 ## 0.1.20
 
 - Synchronise 66 règles de revue avec OpenCodeReview v1.13.13 et précise comment reprendre une capture inachevée.

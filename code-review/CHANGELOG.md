@@ -1,5 +1,12 @@
 # Changes
 
+## 0.1.21
+
+- Return small frozen scopes and their selected rules in one response, and batch captured diff reads.
+- Record several findings in one transaction and locate findings by changed line when a snippet is omitted.
+- Derive file receipts for completed groups from the frozen scope and allow the creator to finalize with the last group receipt.
+- Keep small reviews with one reviewer and send available frozen evidence with independent delegated groups.
+
 ## 0.1.20
 
 - Sync 66 review rules with OpenCodeReview v1.13.13 and clarify how to resume an unfinished capture.

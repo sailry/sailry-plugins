@@ -156,7 +156,10 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   return {values,calls,valueReads,captured,sessions,start,finish,commit,
     initialize:input => plain(entry.namespace.initialize(plain(input))),
     delegate:async input => plain(await entry.namespace.delegate(plain(input))),
-    read:async input => plain(await entry.namespace.read(plain(input))),
+    read:async input => {
+      currentCall = uuid(++sequence);
+      return plain(await entry.namespace.read(plain(input)));
+    },
     terminal:turn => turns.set(turn,'completed'),
     add:value => data.push(plain(value)),
     invoke:async (name,args) => finish(await start(name,args)),

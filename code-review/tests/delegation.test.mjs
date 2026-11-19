@@ -34,7 +34,13 @@ test('handoff contains complete authoritative frozen groups', async () => {
   assert.deepEqual(capture.files,scope.files.filter(file => file.group === selected));
   assert.deepEqual(capture.groups,scope.groups.filter(group => group.id === selected));
   assert.ok(capture.files.every(file => file.metadata_revision && file.revision && file.rule.sha256));
+  assert.deepEqual(capture.diffs.map(({path}) => path),capture.files.map(({path}) => path));
+  assert.ok(capture.diffs.every(({lines,next}) => lines[0].text === 'return changed();' && next === null));
+  const expectedRules = new Map(capture.files.map(({rule:{path,sha256}}) => [path,{path,sha256}]));
+  assert.deepEqual(capture.rules.map(({path,sha256}) => ({path,sha256})),[...expectedRules.values()]);
+  assert.ok(capture.rules.every(({text}) => typeof text === 'string' && text.trim().length > 0));
   assert.match(output.task,/finalize:false/);
+  assert.match(output.task,/Include exact reviewed_files/);
   assert.deepEqual(plain([...current.values]),before);
 });
 
@@ -61,6 +67,7 @@ test('initialization binds roles without adding tools', async () => {
   assert.deepEqual(selection.tools,tools);
   assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,['reviewer','evidence']);
   assert.ok(selection.parameters.delegate_review.required.includes('role'));
+  assert.match(selection.instruction,/Review small or tightly coupled changes directly/);
   assert.ok(!initialize(current,{roles:[roles[2]]}).tools.includes('delegate_review'));
   const limited = initialize(current,{tools:['review_scope']});
   assert.deepEqual(limited.tools,['review_scope']);

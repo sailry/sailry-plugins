@@ -2,6 +2,7 @@ import {verify} from './content.js';
 import {fail, fields, identifier, limits, path, revision, size} from './policy.js';
 import {head, key, manifest, open, shards, transaction, write} from './records.js';
 import {completion} from './locales.js';
+import {missingDelivery} from './delivery.js';
 
 export function display(value) {
   return {...value,sailry_result:{version:1,diagnostics:[],
@@ -25,38 +26,50 @@ function remaining(scope, covered) {
 }
 
 function receipt(args, scope, value) {
-  if (!Array.isArray(args.reviewed_files)
-      || !Array.isArray(args.reviewed_groups)
-      || typeof args.finalize !== 'boolean') fail('Invalid review receipt');
-  const files = new Map(), groups = new Set();
-  for (const file of args.reviewed_files) {
+  if (!Array.isArray(args.reviewed_groups) || typeof args.finalize !== 'boolean') fail('Invalid review receipt');
+  const groups = new Set(), known = new Map(scope.groups.map(group => [group.id,group]));
+  const selected = new Set();
+  const byPath = new Map(scope.files.map(file => [file.path,file]));
+  for (const group of args.reviewed_groups) {
+    if (typeof group !== 'string' || groups.has(group)) fail('Duplicate or invalid reviewed group');
+    const expected = known.get(group);
+    if (!expected) fail('Reviewed group is outside the scope');
+    if (value.reviewed_groups.includes(group)) fail('Review group already has a receipt','conflict');
+    if (!expected.files?.length) fail('The frozen review group is incomplete','internal');
+    for (const path of expected.files) {
+      if (byPath.get(path)?.group !== group || selected.has(path)) fail('The frozen review group is incomplete','internal');
+      selected.add(path);
+    }
+    groups.add(group);
+  }
+  if (!args.finalize && !groups.size) fail('Child or partial completion requires a whole group receipt');
+  const files = scope.files.filter(file => groups.has(file.group));
+  if (selected.size !== files.length) fail('The frozen review group is incomplete','internal');
+  if (Object.hasOwn(args,'reviewed_files')) verifyExplicitFiles(args.reviewed_files,byPath,selected);
+  return {files,groups};
+}
+
+function verifyExplicitFiles(input, expected, selected) {
+  if (!Array.isArray(input)) fail('Invalid review receipt');
+  const files = new Set();
+  for (const file of input) {
     fields(file,['path','revision'],['path','revision']);
     path(file.path);
     revision(file.revision);
     if (files.has(file.path)) fail('Duplicate reviewed file');
-    const expected = scope.files.find(candidate => candidate.path === file.path);
-    if (!expected) fail('Reviewed file is outside the scope');
-    if (expected.revision !== file.revision) fail('Receipt uses a stale file revision','revision_conflict');
-    files.set(file.path,file.revision);
+    if (!expected.has(file.path)) fail('Reviewed file is outside the scope');
+    if (expected.get(file.path).revision !== file.revision) fail('Receipt uses a stale file revision','revision_conflict');
+    files.add(file.path);
   }
-  for (const group of args.reviewed_groups) {
-    if (typeof group !== 'string' || groups.has(group)) fail('Duplicate or invalid reviewed group');
-    const expected = scope.groups.find(candidate => candidate.id === group);
-    if (!expected) fail('Reviewed group is outside the scope');
-    if (value.reviewed_groups.includes(group)) fail('Review group already has a receipt','conflict');
-    if (expected.files.some(path => !files.has(path))) fail('Review receipt must cover whole groups');
-    groups.add(group);
-  }
-  if (scope.files.some(file => files.has(file.path) && !groups.has(file.group))) {
-    fail('Reviewed files require their complete group receipt');
-  }
-  if (!args.finalize && !groups.size) fail('Child or partial completion requires a whole group receipt');
-  return {files,groups};
+  if ([...selected].some(path => !files.has(path))) fail('Review receipt must cover whole groups');
+  if (files.size !== selected.size) fail('Reviewed files require their complete group receipt');
 }
+
 export async function prepare(input, actor, intent) {
-  const args = fields(input,['review_id','reviewed_files','reviewed_groups','finalize'],
-    ['review_id','reviewed_files','reviewed_groups','finalize']);
+  const args = fields(input,['review_id','reviewed_files','reviewed_groups','finalize','delivery_token'],
+    ['review_id','reviewed_groups','finalize']);
   identifier(args.review_id);
+  if (Object.hasOwn(args,'delivery_token')) identifier(args.delivery_token);
   const current = await head(args.review_id,actor);
   open(current.value);
   if (args.finalize && actor.session !== current.value.creator) fail('Only the review creator may finalize','permission_denied');
@@ -67,13 +80,22 @@ export async function prepare(input, actor, intent) {
   if (args.finalize && (pending.counts.files || pending.counts.groups)) {
     fail('Review coverage is incomplete','invalid_request',pending);
   }
-  await Promise.all(scope.files.filter(file=>args.finalize||incoming.files.has(file.path)).map(file=>verify(current.value,file)));
+  if (!Object.hasOwn(args,'reviewed_files')) {
+    const files = missingDelivery(args.review_id,args.delivery_token,incoming.files);
+    if (files.length) {
+      const missingGroups = new Set(files.map(file => file.group));
+      const groups = scope.groups.filter(group => missingGroups.has(group.id));
+      fail('Read every claimed diff page and submit the newest delivery_token for this review, or use explicit file receipts for evidence already reviewed',
+        'invalid_request',remaining({files,groups},new Set()));
+    }
+  }
+  await Promise.all((args.finalize ? scope.files : incoming.files).map(file=>verify(current.value,file)));
   const operations = [];
   current.value.reviewed_groups = scope.groups.map(group => group.id).filter(id => covered.has(id));
   if (incoming.groups.size) {
     const id = identifier(intent);
     if (current.value.receipts.includes(id)) fail('Receipt was already recorded','conflict');
-    const rows = [...args.reviewed_files.map(value => ({kind:'file',value})),
+    const rows = [...incoming.files.map(({path,revision}) => ({kind:'file',value:{path,revision}})),
       ...args.reviewed_groups.map(value => ({kind:'group',value})),{kind:'reporter',value:actor.session}];
     const stored = shards(args.review_id,`receipt/${id}`,'receipt',rows);
     operations.push(...stored.operations);

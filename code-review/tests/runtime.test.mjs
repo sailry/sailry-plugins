@@ -64,6 +64,9 @@ runtimeTest('production SDK resumes a captured package review', async () => {
     read({kind:'read_plugin_value',data:{key:`review/${review}/scope/0`}},'plugin_value',
       entry(`review/${review}/scope/0`,{v:1,kind:'scope',rows:[
         {kind:'file',value:file},{kind:'group',value:group}]})),
+    read({kind:'read_plugin_value',data:{key:`review/${review}/data/0`}},'plugin_value',
+      entry(`review/${review}/data/0`,{v:1,kind:'content',capture:review,path:file.path,part:'diff',
+        revision:file.revision,offset:0,next:null,lines:[{kind:'added',old_line:null,new_line:7,text:'return changed();'}]})),
   ];
   const output = execute(input);
   assert.equal(output.result.Ok.isError,undefined);
@@ -71,7 +74,9 @@ runtimeTest('production SDK resumes a captured package review', async () => {
   assert.equal(captured.review_id,review);
   assert.deepEqual(captured.snapshot,snapshot);
   assert.deepEqual(captured.files,[file]);
-  assert.equal(output.calls.length,3);
+  assert.deepEqual(captured.diffs,[{path:file.path,next:null,
+    lines:[{kind:'added',old_line:null,new_line:7,text:'return changed();'}]}]);
+  assert.equal(output.calls.length,4);
   for (const call of output.calls) assert.deepEqual(call.plugin,input.context);
   assert.notEqual(input.context.package.digest,head.package.digest);
 });
@@ -95,6 +100,29 @@ runtimeTest('production SDK reads captured source without Git',async()=>{
   assert.equal(output.result.Ok.next,null);
   assert.equal(output.result.Ok.revision,file.revision);
   assert.deepEqual(output.calls.map(call=>call.command.kind),['read_session','read_plugin_value','read_plugin_value','read_plugin_value']);
+});
+
+runtimeTest('production SDK retains diff delivery from read-only tools', async () => {
+  const {input,review,file,group,head,sessionData,entry,read} = await stored('read');
+  const {session} = input.context;
+  const prefix = `review/${review}`;
+  input.input = {review_id:review,path:file.path};
+  input.context.turn = '00000000-0000-4000-8000-000000000007';
+  input.policy.read_only = true;
+  input.replies = [
+    read({kind:'read_session',data:{session}},'session',sessionData),
+    read({kind:'read_plugin_value',data:{key:`${prefix}/head`}},'plugin_value',entry(`${prefix}/head`,head)),
+    read({kind:'read_plugin_value',data:{key:`${prefix}/scope/0`}},'plugin_value',entry(`${prefix}/scope/0`,
+      {v:1,kind:'scope',rows:[{kind:'file',value:file},{kind:'group',value:group}]})),
+    read({kind:'read_plugin_value',data:{key:`${prefix}/data/0`}},'plugin_value',entry(`${prefix}/data/0`,
+      {v:1,kind:'content',capture:review,path:file.path,part:'diff',revision:file.revision,
+        offset:0,next:null,lines:[{kind:'added',old_line:null,new_line:7,text:'return changed();'}]})),
+  ];
+  const output = execute(input);
+  assert.equal(output.result.Ok.delivery_token,policy.call_id);
+  assert.equal(output.result.Ok.delivery_sequence,1);
+  assert.deepEqual(output.staged_turn.diff_delivery.tokens,[{id:review,token:policy.call_id,sequence:1}]);
+  assert.equal(output.staged_turn.diff_delivery.files[JSON.stringify([review,file.path,file.revision])],1);
 });
 
 

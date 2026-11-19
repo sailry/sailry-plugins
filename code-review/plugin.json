@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
@@ -28,7 +28,7 @@
           "zh-CN": "审查代码变更与拉取请求"
         }
       },
-      "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code or Flagship turn and a writable, tool-capable captured role; pass the exact key of the captured role responsible for the assignment, or omit role when the roster is empty to inherit the current turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. Use read_review_change with review_id, path and part diff/old/new for every captured patch and full changed-file context page. Do not substitute live Git or file reads for captured evidence. Later worktree edits, unrelated paths, HEAD or index changes do not invalidate a published review. A new scope captures the new state; older metadata-only reviews remain readable but cannot fabricate missing content. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. Creating scopes, recording findings and submitting receipts write private review records and require Code or Flagship mode. read_review_change is read-only and remains available for evidence gathering in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
+      "instructions": "For requested code review, load code-review:code-review. Review the frozen capture, batch independent reads and findings, and explicitly attest complete groups. Keep small scopes with one reviewer. Use delegate_review for independent large groups and prefer a role authorized to submit its own receipt. Review records are private and require Code or Flagship mode. A review request alone does not authorize changes or publication.",
       "storage": {
         "collections": [
           {
@@ -77,7 +77,9 @@
           "dev.sailry.platform/host/delegation.js",
           "dev.sailry.platform/host/capture.js",
           "dev.sailry.platform/host/capture/scope.js",
-          "dev.sailry.platform/host/content.js"
+          "dev.sailry.platform/host/content.js",
+          "dev.sailry.platform/host/rule-text.js",
+          "dev.sailry.platform/host/delivery.js"
         ],
         "handlers": [
           "scope",
@@ -101,7 +103,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Capture every eligible mapped diff and full old/new changed-file context before publishing an immutable review. While status is capturing, call again with the returned review_id and no offset to continue its durable capture. Once open, follow next with review_id and offset until null; limit bounds each response, never samples coverage. Omit target for worktree all. Host reads validate file revisions; a final inventory check precedes publication. Later repository changes do not invalidate published evidence. Read it with read_review_change, never live Git or readFile. Binary or unsupported files have explicit skips. A failed capture never publishes a partial review.",
+          "description": "Freeze an immutable review with mapped diffs and saved source context, defaulting to worktree all. Follow any capture continuation and inventory cursor returned. Use the selected rule text supplied once on publication.",
           "handler": {
             "name": "scope",
             "parameters": {
@@ -239,7 +241,7 @@
             "workspace"
           ],
           "presentation": "details",
-          "description": "Read immutable captured review content using review_id and scoped path. part diff returns mapped changed/context lines; old or new returns the complete captured source side, preserving CR/LF and a missing final newline. Offset and next count mapped rows for diff or source lines for old/new. Follow next until null. No live Git or file read occurs. Metadata-only older reviews cannot provide missing bytes; create a new scope without discarding the old review.",
+          "description": "Read frozen review evidence. Use paths or group to batch diffs, or path for one diff or an old/new source side. Follow next for the same batch or path. Each file within a batch has its own diff cursor for single-path continuation.",
           "handler": {
             "name": "read",
             "read_only": true,
@@ -247,8 +249,7 @@
               "type": "object",
               "additionalProperties": false,
               "required": [
-                "review_id",
-                "path"
+                "review_id"
               ],
               "properties": {
                 "review_id": {
@@ -269,13 +270,46 @@
                 },
                 "offset": {
                   "type": "integer",
-                  "minimum": 0
+                  "minimum": 0,
+                  "description": "File offset for paths/group, or row offset for path."
                 },
                 "limit": {
                   "type": "integer",
-                  "minimum": 1
+                  "minimum": 1,
+                  "description": "Maximum rows per file in the requested part."
+                },
+                "paths": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "group": {
+                  "type": "string",
+                  "minLength": 1
                 }
-              }
+              },
+              "oneOf": [
+                {
+                  "required": [
+                    "path"
+                  ]
+                },
+                {
+                  "required": [
+                    "paths"
+                  ]
+                },
+                {
+                  "required": [
+                    "group"
+                  ]
+                }
+              ]
             }
           },
           "display": {
@@ -414,7 +448,7 @@
             "workspace"
           ],
           "presentation": "details",
-          "description": "Record one demonstrated P0-P3 finding in an open review. Pass the scoped path and strong revision, side new for added lines or old for deleted lines, and a complete source-line snippet with LF separators (one trailing LF allowed). The snippet must uniquely match mapped diff lines on that side and contain a changed line; context-only or ambiguous snippets fail. A unique match corrects a mistaken line number. State the trigger and consequence in explanation and concrete supporting evidence; confidence or agreement is not evidence. Use the captured revision, not the current worktree revision. Snippets are matched only against stored mapped diff content.",
+          "description": "Record one or up to 63 evidence-backed findings against frozen changes. Use path, revision, side and a one-based changed line. A snippet is optional and must uniquely match a changed line when included. The batch returns one result per input in order.",
           "handler": {
             "name": "finding",
             "flow": {
@@ -470,21 +504,94 @@
                 "evidence": {
                   "type": "string",
                   "minLength": 1
+                },
+                "findings": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 63,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "revision": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "side": {
+                        "enum": [
+                          "new",
+                          "old"
+                        ]
+                      },
+                      "line": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "snippet": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "severity": {
+                        "enum": [
+                          "P0",
+                          "P1",
+                          "P2",
+                          "P3"
+                        ]
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "explanation": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "evidence": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "revision",
+                      "side",
+                      "line",
+                      "severity",
+                      "title",
+                      "explanation",
+                      "evidence"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
-                "review_id",
-                "path",
-                "revision",
-                "side",
-                "line",
-                "snippet",
-                "severity",
-                "title",
-                "explanation",
-                "evidence"
+                "review_id"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "oneOf": [
+                {
+                  "required": [
+                    "path",
+                    "revision",
+                    "side",
+                    "line",
+                    "severity",
+                    "title",
+                    "explanation",
+                    "evidence"
+                  ]
+                },
+                {
+                  "required": [
+                    "findings"
+                  ]
+                }
+              ]
             }
           },
           "display": {
@@ -568,7 +675,7 @@
             "workspace"
           ],
           "presentation": "summary",
-          "description": "Submit exact reviewed_files path/revision receipts and every fully covered reviewed_group, even when no findings exist. Each claimed group must contain all its files; duplicate, unknown, stale or partial receipts fail. Direct delegated children use finalize=false. Only the creator may finalize=true after all stored and incoming receipts cover the scope; it validates the complete stored snapshot, never the changing worktree. To finalize coverage already submitted by children, pass empty arrays. On failure inspect remaining and scope pages; revision_conflict requires a fresh invocation. Success counts findings and does not claim tests were run.",
+          "description": "Attest complete frozen groups using their IDs and the latest diff delivery token. The host derives file revisions and checks diff delivery. Set finalize:true to record the creator’s last groups and finish in one call. A delegated reviewer uses finalize:false. Explicit reviewed_files receipts remain available for cross-turn and delegated inline evidence.",
           "handler": {
             "name": "complete",
             "flow": {
@@ -602,7 +709,8 @@
                       "revision"
                     ],
                     "additionalProperties": false
-                  }
+                  },
+                  "description": "Optional explicit path/revision receipts for complete groups."
                 },
                 "reviewed_groups": {
                   "type": "array",
@@ -613,11 +721,15 @@
                 },
                 "finalize": {
                   "type": "boolean"
+                },
+                "delivery_token": {
+                  "type": "string",
+                  "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$",
+                  "description": "Latest diff delivery token for this review, using the greatest delivery_sequence. Required for compact group receipts."
                 }
               },
               "required": [
                 "review_id",
-                "reviewed_files",
                 "reviewed_groups",
                 "finalize"
               ],
@@ -647,7 +759,7 @@
             "workspace"
           ],
           "presentation": "details",
-          "description": "Delegate complete frozen review groups to a new direct child. The package supplies the unchanged snapshot, inventory metadata revision, every file metadata/strong revision and selected rules; do not hand-write captures. Set record_receipt=true only for an authorized Code or Flagship turn and writable, tool-capable captured role. Pass the exact key of the captured role whose responsibilities fit the assignment. With an empty roster, omit role to inherit the current turn and model. Evidence-only delegation is explicit and never records coverage. A group is never sampled to fit the task budget. Existing children and roles are not changed.",
+          "description": "Assign complete independent frozen groups in a large review. Prefer a writable, tool-capable role and record_receipt:true so the child can record its own findings and coverage. A read-only role can gather evidence for the creator.",
           "handler": {
             "name": "delegate",
             "operation": "agents.delegate",

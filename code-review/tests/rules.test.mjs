@@ -3,6 +3,7 @@ import {readFile,readdir} from 'node:fs/promises';
 import test from 'node:test';
 import {createHash} from 'node:crypto';
 import {entries as generated, rules as metadata} from '../dev.sailry.platform/host/rules.js';
+import {bodies} from '../dev.sailry.platform/host/rule-text.js';
 
 const skill = new URL('../skills/code-review/',import.meta.url);
 const rules = new URL('rules/',skill);
@@ -40,26 +41,28 @@ test('workflow patterns precede generic YAML', () => {
   assert.ok(position('.github/**/*.{yaml,yml}') < position('**/*.{yaml,yml}'));
 });
 
-test('skill loads the index through skill resources', async () => {
+test('skill supports reading remaining rule resources', async () => {
   const text = await readFile(new URL('SKILL.md',skill),'utf8');
-  assert.match(text,/Read `rules\/index\.md` with `read_skill_resource`/);
+  assert.match(text,/read_skill_resource/);
 });
 
 
-test('generated metadata preserves rule order and original hashes', async () => {
+test('generated rules preserve order and original bytes', async () => {
   assert.deepEqual(generated,entries);
   assert.equal(files.length,66);
   assert.deepEqual(Object.keys(metadata).sort(),files.slice().sort());
+  assert.deepEqual(Object.keys(bodies).sort(),files.slice().sort());
   for (const file of files) {
     const body = await readFile(new URL(file,rules));
     assert.deepEqual(metadata[file],{path:`rules/${file}`,sha256:createHash('sha256').update(body).digest('hex')});
+    assert.deepEqual(Buffer.from(bodies[file]),body);
   }
 });
 
 test('tools declare captured storage ownership', async () => {
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.20');
+  assert.equal(manifest.version,'0.1.21');
   assert.equal(extension.api_version,'v1');
   assert.deepEqual(extension.tools.map(tool => tool.name),['review_scope','read_review_change','report_finding','review_complete','delegate_review']);
   assert.equal(extension.tools.find(tool=>tool.name==='review_complete').presentation,'summary');
@@ -86,7 +89,6 @@ test('skill reads stored patches and source context', async () => {
   assert.match(text,/part:\"old\"/);
   assert.match(text,/part:\"new\"/);
   assert.match(text,/Never use live Git/);
-  assert.match(text,/Older metadata-only scopes and receipts remain intact/);
-  assert.match(text,/`record_receipt:true` rejects Plan turns, read-only roles/);
-  assert.match(text,/parent must independently verify every assigned file/);
+  assert.match(text,/Read-only roles can gather evidence with `record_receipt:false`/);
+  assert.match(text,/parent must verify their evidence/);
 });
