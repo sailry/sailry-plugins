@@ -1,3 +1,7 @@
+## 0.1.40
+
+- Le libellé chinois des sous-agents a été harmonisé dans les statistiques de session.
+
 ## 0.1.39
 
 - Précise la vitesse de génération dans le rapport d’utilisation et les statistiques de session.

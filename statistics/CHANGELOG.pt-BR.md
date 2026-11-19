@@ -1,3 +1,7 @@
+## 0.1.40
+
+- Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.
+
 ## 0.1.39
 
 - Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.

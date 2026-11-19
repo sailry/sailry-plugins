@@ -1,3 +1,7 @@
+## 0.1.40
+
+- Se ha unificado el nombre chino de los subagentes en las estadísticas de sesión.
+
 ## 0.1.39
 
 - Se aclara la velocidad de generación en el informe de uso y las estadísticas de sesión.

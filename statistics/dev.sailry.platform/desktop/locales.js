@@ -178,7 +178,7 @@ const locales = {
     "usage_other_models": "其他模型",
     "composer_metric_unknown": "—",
     "composer_this_session": "本会话",
-    "composer_subagents": "子代理",
+    "composer_subagents": "子智能体",
     "composer_tokens": "Token",
     "composer_input_tokens": "输入 Token",
     "composer_token_usage": "Token",
@@ -375,6 +375,7 @@ const locales = {
     "context_no_data": "Нет данных"
   },
   "zh-TW": {
+    "composer_subagents": "子智能體",
     "usage_speed": "生成速度",
     "usage_speed_help": "新版主機從收到第一個 Token 後開始計時。舊版主機的紀錄可能包含等待第一個 Token 的時間。",
     "composer_speed": "生成速度",

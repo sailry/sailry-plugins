@@ -1,3 +1,7 @@
+## 0.1.40
+
+- Die chinesische Bezeichnung für Unteragenten in der Sitzungsstatistik wurde vereinheitlicht.
+
 ## 0.1.39
 
 - Die Generierungsgeschwindigkeit im Nutzungsbericht und in der Sitzungsstatistik ist eindeutiger bezeichnet.

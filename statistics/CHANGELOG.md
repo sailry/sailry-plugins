@@ -1,3 +1,7 @@
+## 0.1.40
+
+- Update the Chinese label for subagents in session statistics.
+
 ## 0.1.39
 
 - Clarify how generation speed is measured in the usage report and session statistics.

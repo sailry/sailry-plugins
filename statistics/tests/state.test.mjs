@@ -189,7 +189,8 @@ test('composer combines child totals and preserves own metrics',()=>{
   assert.equal(messages('en').composer_this_session,'This session');
   assert.equal(messages('en').composer_subagents,'Subagents');
   assert.equal(messages('zh-CN').composer_this_session,'本会话');
-  assert.equal(messages('zh-CN').composer_subagents,'子代理');
+  assert.equal(messages('zh-CN').composer_subagents,'子智能体');
+  assert.equal(messages('zh-TW').composer_subagents,'子智能體');
   assert.deepEqual(statistics,before);
 });
 
