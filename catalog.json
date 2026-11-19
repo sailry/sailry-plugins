@@ -140,7 +140,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "agy",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "Antigravity models through the installed agy CLI",
         "homepage": "https://antigravity.google",
         "license": "MIT",
@@ -216,7 +216,8 @@
                   "efforts": {
                     "low": "-low",
                     "medium": "-medium",
-                    "high": "-high"
+                    "high": "-high",
+                    "xhigh": "-xhigh"
                   },
                   "replay_bytes": 114688,
                   "sign_in": "Run agy in a terminal and sign in, then try again",
@@ -270,6 +271,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.2",
+          "commit": "8823f3963352e6f7cb86394d6fdb6da650fea612",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Group reported xhigh variants under their model’s reasoning levels.",
+            "locales": {
+              "zh-CN": "- 将 CLI 返回的 xhigh 变体归入对应模型的推理强度。",
+              "zh-TW": "- 將 CLI 回傳的 xhigh 變體歸入對應模型的推理強度。",
+              "ja": "- CLI が返した xhigh バリアントを対応するモデルの推論レベルにまとめます。",
+              "ko": "- CLI가 반환한 xhigh 변형을 해당 모델의 추론 수준으로 묶습니다.",
+              "fr": "- Les variantes xhigh disponibles figurent parmi les niveaux de raisonnement de leur modèle.",
+              "de": "- Gemeldete xhigh-Varianten erscheinen als Denkstufe des jeweiligen Modells.",
+              "es": "- Las variantes xhigh disponibles se agrupan con los niveles de razonamiento de su modelo.",
+              "pt-BR": "- As variantes xhigh disponíveis aparecem entre os níveis de raciocínio do modelo correspondente.",
+              "ru": "- Варианты xhigh, возвращаемые CLI, отображаются среди уровней рассуждения соответствующей модели."
+            }
+          }
+        },
+        {
           "version": "0.1.1",
           "commit": "0219081fbf837bd0b9fe4ff8b4cb6418416e67f8",
           "api_version": "v1",
@@ -311,17 +332,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Ask to accept the account risk before adding the channel",
+        "text": "- Group reported xhigh variants under their model’s reasoning levels.",
         "locales": {
-          "zh-CN": "- 添加渠道前先确认账号风险",
-          "zh-TW": "- 新增管道前先確認帳號風險",
-          "ja": "- チャンネルを追加する前にアカウントのリスクを確認",
-          "ko": "- 채널을 추가하기 전에 계정 위험 확인",
-          "fr": "- Demander d'accepter le risque pour le compte avant d'ajouter le canal",
-          "de": "- Vor dem Hinzufügen des Kanals das Kontorisiko bestätigen lassen",
-          "es": "- Pedir que se acepte el riesgo de la cuenta antes de añadir el canal",
-          "pt-BR": "- Pedir a aceitação do risco da conta antes de adicionar o canal",
-          "ru": "- Запрашивать согласие с риском для аккаунта перед добавлением канала"
+          "zh-CN": "- 将 CLI 返回的 xhigh 变体归入对应模型的推理强度。",
+          "zh-TW": "- 將 CLI 回傳的 xhigh 變體歸入對應模型的推理強度。",
+          "ja": "- CLI が返した xhigh バリアントを対応するモデルの推論レベルにまとめます。",
+          "ko": "- CLI가 반환한 xhigh 변형을 해당 모델의 추론 수준으로 묶습니다.",
+          "fr": "- Les variantes xhigh disponibles figurent parmi les niveaux de raisonnement de leur modèle.",
+          "de": "- Gemeldete xhigh-Varianten erscheinen als Denkstufe des jeweiligen Modells.",
+          "es": "- Las variantes xhigh disponibles se agrupan con los niveles de razonamiento de su modelo.",
+          "pt-BR": "- As variantes xhigh disponíveis aparecem entre os níveis de raciocínio do modelo correspondente.",
+          "ru": "- Варианты xhigh, возвращаемые CLI, отображаются среди уровней рассуждения соответствующей модели."
         }
       }
     },
