@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.2
+
+- As variantes xhigh disponíveis aparecem entre os níveis de raciocínio do modelo correspondente.
+
 ## 0.1.1
 
 - Pedir a aceitação do risco da conta antes de adicionar o canal

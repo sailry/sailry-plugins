@@ -54,7 +54,7 @@ test('declares the vendor differences', () => {
   assert.equal(adapter.framing, 'ndjson');
   assert.deepEqual(adapter.origins, []);
   assert.equal(adapter.acp.system_meta, 'antigravity.systemPrompt.append');
-  assert.deepEqual(adapter.acp.efforts, {low: '-low', medium: '-medium', high: '-high'});
+  assert.deepEqual(adapter.acp.efforts, {low: '-low', medium: '-medium', high: '-high', xhigh: '-xhigh'});
   assert.equal(adapter.acp.replay_bytes, 112 * 1024);
   assert.equal(adapter.acp.model_argument, undefined);
   assert.equal(adapter.acp.auth_method, undefined);
@@ -64,7 +64,7 @@ test('declares the vendor differences', () => {
 
 test('warns before a channel is added', () => {
   // The channel has no sign-in, so the preset carries the warning.
-  assert.equal(manifest.version, '0.1.1');
+  assert.equal(manifest.version, '0.1.2');
   assert.equal(extension.model_auth, undefined);
   assert.match(provider.warning.text, /your own account/);
   assert.deepEqual(Object.keys(provider.warning.locales).sort(), ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN', 'zh-TW']);

@@ -18,7 +18,7 @@ disabled or removed.
   move credentials, does not set `--gemini-dir` or `SSH_CONNECTION`, and does
   not redirect `agy`'s traffic. Sign in by running `agy` yourself.
 - Models are the ones `agy` lists. When the list cannot be read the provider
-  says so; no model is invented. `-low`, `-medium` and `-high` variants of one
+  says so; no model is invented. `-low`, `-medium`, `-high` and `-xhigh` variants of one
   model appear as its effort levels.
 - Tool calls travel as text, because `agy` has no function-call channel a client
   can fill. A malformed call is a model error, never assistant text.

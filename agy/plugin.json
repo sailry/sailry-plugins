@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Antigravity models through the installed agy CLI",
   "homepage": "https://antigravity.google",
   "license": "MIT",
@@ -77,7 +77,8 @@
             "efforts": {
               "low": "-low",
               "medium": "-medium",
-              "high": "-high"
+              "high": "-high",
+              "xhigh": "-xhigh"
             },
             "replay_bytes": 114688,
             "sign_in": "Run agy in a terminal and sign in, then try again",
