@@ -22947,7 +22947,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.39",
+        "version": "0.1.40",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23084,6 +23084,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.40",
+          "commit": "941234aa9e7f317ac5c841e9b759c3f41dd38139",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Update the Chinese label for subagents in session statistics.",
+            "locales": {
+              "zh-CN": "- 会话统计统一使用“子智能体”。",
+              "zh-TW": "- 工作階段統計統一使用「子智能體」。",
+              "ja": "- セッション統計でサブエージェントの中国語表記を統一しました。",
+              "ko": "- 세션 통계에서 하위 에이전트의 중국어 표기를 통일했습니다.",
+              "fr": "- Le libellé chinois des sous-agents a été harmonisé dans les statistiques de session.",
+              "de": "- Die chinesische Bezeichnung für Unteragenten in der Sitzungsstatistik wurde vereinheitlicht.",
+              "es": "- Se ha unificado el nombre chino de los subagentes en las estadísticas de sesión.",
+              "pt-BR": "- Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.",
+              "ru": "- Унифицировано китайское название субагентов в статистике сеанса."
+            }
+          }
+        },
         {
           "version": "0.1.39",
           "commit": "ccaea58dbe72ea1a7aa8ca581c63cd6e8b6b1551",
@@ -23614,17 +23634,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Clarify how generation speed is measured in the usage report and session statistics.",
+        "text": "- Update the Chinese label for subagents in session statistics.",
         "locales": {
-          "zh-CN": "- 明确用量报告和会话统计中的生成速度口径。",
-          "zh-TW": "- 釐清用量報告與工作階段統計中的生成速度。",
-          "ja": "- 使用状況レポートとセッション統計の生成速度の表記を明確化。",
-          "ko": "- 사용량 보고서와 세션 통계에서 생성 속도의 의미를 명확히 했습니다.",
-          "fr": "- Précise la vitesse de génération dans le rapport d’utilisation et les statistiques de session.",
-          "de": "- Die Generierungsgeschwindigkeit im Nutzungsbericht und in der Sitzungsstatistik ist eindeutiger bezeichnet.",
-          "es": "- Se aclara la velocidad de generación en el informe de uso y las estadísticas de sesión.",
-          "pt-BR": "- Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.",
-          "ru": "- Уточнено значение скорости генерации в отчёте об использовании и статистике сеанса."
+          "zh-CN": "- 会话统计统一使用“子智能体”。",
+          "zh-TW": "- 工作階段統計統一使用「子智能體」。",
+          "ja": "- セッション統計でサブエージェントの中国語表記を統一しました。",
+          "ko": "- 세션 통계에서 하위 에이전트의 중국어 표기를 통일했습니다.",
+          "fr": "- Le libellé chinois des sous-agents a été harmonisé dans les statistiques de session.",
+          "de": "- Die chinesische Bezeichnung für Unteragenten in der Sitzungsstatistik wurde vereinheitlicht.",
+          "es": "- Se ha unificado el nombre chino de los subagentes en las estadísticas de sesión.",
+          "pt-BR": "- Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.",
+          "ru": "- Унифицировано китайское название субагентов в статистике сеанса."
         }
       }
     },
