@@ -3017,7 +3017,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -3832,6 +3832,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "434c479256b5e24007a8af682adb2e822a86010e",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Checkpoint review capture progress in batches instead of after every Git step.",
+            "locales": {
+              "zh-CN": "- 审查采集进度改为分批保存，不再在每个 Git 步骤后写入。"
+            }
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
           "api_version": "v1",
@@ -4067,9 +4079,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove generic preview-limit notices from conversation tool results.",
+        "text": "- Checkpoint review capture progress in batches instead of after every Git step.",
         "locales": {
-          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+          "zh-CN": "- 审查采集进度改为分批保存，不再在每个 Git 步骤后写入。"
         }
       }
     },
