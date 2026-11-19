@@ -3017,7 +3017,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -3423,38 +3423,7 @@
                         }
                       ],
                       "separator": "\n"
-                    },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "en": "Partial results",
-                            "zh-CN": "仅显示部分结果",
-                            "zh-TW": "僅顯示部分結果",
-                            "ja": "一部の結果",
-                            "ko": "일부 결과",
-                            "fr": "Résultats partiels",
-                            "de": "Teilergebnisse",
-                            "es": "Resultados parciales",
-                            "pt-BR": "Resultados parciais",
-                            "ru": "Частичные результаты"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/next"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      }
-                    ]
+                    }
                   }
                 }
               },
@@ -3863,6 +3832,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "a7960caa09354a1e1b76512fc1adb7e91b3edc03",
           "api_version": "v1",
@@ -4086,17 +4067,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Return small frozen scopes and their selected rules in one response, and batch captured diff reads.\n- Record several findings in one transaction and locate findings by changed line when a snippet is omitted.\n- Derive file receipts for completed groups from the frozen scope and allow the creator to finalize with the last group receipt.\n- Keep small reviews with one reviewer and send available frozen evidence with independent delegated groups.",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 小规模审查首轮返回冻结范围和适用规则。支持批量读取差异、批量记录问题，并在确认最后一组时完成审查。",
-          "zh-TW": "- 小型審查在首次回應中提供凍結範圍與適用規則。支援批次讀取差異、批次記錄問題，並可在確認最後一組時完成審查。",
-          "ja": "- 小規模なレビューでは初回応答に適用ルールを含めます。差分の取得と指摘の登録をまとめ、最後のグループ確認とレビュー完了を同時に行えます。",
-          "ko": "- 작은 검토는 첫 응답에 선택된 규칙을 포함합니다. 변경 내용과 발견 사항을 일괄 처리하고 마지막 그룹 확인과 함께 검토를 완료할 수 있습니다.",
-          "fr": "- Les petites revues incluent les règles sélectionnées dès la première réponse. Les changements et les constats peuvent être traités par lots, et la dernière attestation peut clôturer la revue.",
-          "de": "- Kleine Prüfumfänge liefern die ausgewählten Regeln direkt. Änderungen und Befunde lassen sich gebündelt verarbeiten, und die letzte Gruppenbestätigung kann die Prüfung abschließen.",
-          "es": "- Las revisiones pequeñas incluyen las reglas seleccionadas en la primera respuesta. Se pueden agrupar cambios y hallazgos y finalizar con la última confirmación de grupo.",
-          "pt-BR": "- Revisões pequenas incluem as regras selecionadas na primeira resposta. É possível agrupar alterações e achados e concluir com a última confirmação de grupo.",
-          "ru": "- Небольшие проверки сразу возвращают выбранные правила. Изменения и замечания можно обрабатывать пакетами, а проверку завершить при подтверждении последней группы."
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
@@ -4105,7 +4078,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -4555,6 +4528,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "api_version": "v1",
@@ -4785,17 +4770,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
@@ -10319,7 +10296,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.29",
+        "version": "0.1.30",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10583,36 +10560,7 @@
                           }
                         }
                       ]
-                    },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/unsupported_names"
-                              },
-                              "equals": 0,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      }
-                    ]
+                    }
                   }
                 },
                 "contexts": [
@@ -10709,46 +10657,6 @@
                         }
                       ]
                     },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/next_offset"
-                              },
-                              "equals": null,
-                              "negate": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/offset"
-                              },
-                              "equals": 0,
-                              "negate": true
-                            }
-                          ],
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/lines"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      }
-                    ],
                     "paths": {
                       "value": {
                         "source": "arguments",
@@ -11576,35 +11484,6 @@
                         }
                       ]
                     },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/skipped"
-                              },
-                              "equals": 0,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      }
-                    ],
                     "paths": {
                       "value": {
                         "source": "result",
@@ -11808,35 +11687,6 @@
                         }
                       ]
                     },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/skipped"
-                              },
-                              "equals": 0,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      }
-                    ],
                     "paths": {
                       "value": {
                         "source": "result",
@@ -12288,6 +12138,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.30",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
+        {
           "version": "0.1.29",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
           "api_version": "v1",
@@ -12605,17 +12467,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
@@ -12624,7 +12478,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.36",
+        "version": "0.1.37",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -13170,33 +13024,6 @@
                             }
                           ]
                         }
-                      },
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/omitted_paths"
-                              },
-                              "equals": 0,
-                              "negate": true
-                            }
-                          ]
-                        }
                       }
                     ]
                   }
@@ -13313,25 +13140,6 @@
                               "value": {
                                 "source": "result",
                                 "path": "/data/binary"
-                              },
-                              "equals": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
                               },
                               "equals": true
                             }
@@ -13498,40 +13306,6 @@
                             }
                           ]
                         }
-                      },
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "zh-CN": "仅显示部分结果"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/references_truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/entries"
-                              },
-                              "equals": true,
-                              "item": "/truncated"
-                            }
-                          ]
-                        }
                       }
                     ]
                   }
@@ -13651,42 +13425,6 @@
                       "separator": "\n"
                     },
                     "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "en": "Partial results",
-                            "zh-CN": "仅显示部分结果",
-                            "zh-TW": "僅顯示部分結果",
-                            "ja": "一部の結果",
-                            "ko": "일부 결과",
-                            "fr": "Résultats partiels",
-                            "de": "Teilergebnisse",
-                            "es": "Resultados parciales",
-                            "pt-BR": "Resultados parciais",
-                            "ru": "Частичные результаты"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/next"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      },
                       {
                         "message": {
                           "label": "Binary file",
@@ -14057,42 +13795,6 @@
                     "notices": [
                       {
                         "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "en": "Partial results",
-                            "zh-CN": "仅显示部分结果",
-                            "zh-TW": "僅顯示部分結果",
-                            "ja": "一部の結果",
-                            "ko": "일부 결과",
-                            "fr": "Résultats partiels",
-                            "de": "Teilergebnisse",
-                            "es": "Resultados parciales",
-                            "pt-BR": "Resultados parciais",
-                            "ru": "Частичные результаты"
-                          }
-                        },
-                        "when": {
-                          "any": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            },
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/next"
-                              },
-                              "equals": null,
-                              "negate": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
                           "label": "Binary file",
                           "locales": {
                             "en": "Binary file",
@@ -14229,6 +13931,18 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.37",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
         {
           "version": "0.1.36",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -14597,17 +14311,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
@@ -16397,7 +16103,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
@@ -16880,34 +16586,6 @@
                     "notices": [
                       {
                         "message": {
-                          "label": "Partial content",
-                          "locales": {
-                            "en": "Partial content",
-                            "zh-CN": "部分内容",
-                            "zh-TW": "部分內容",
-                            "ja": "一部の内容",
-                            "ko": "일부 내용",
-                            "fr": "Contenu partiel",
-                            "de": "Teilinhalt",
-                            "es": "Contenido parcial",
-                            "pt-BR": "Conteúdo parcial",
-                            "ru": "Частичное содержимое"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/body_truncated"
-                              },
-                              "equals": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
                           "label": "Not saved",
                           "locales": {
                             "en": "Not saved",
@@ -17127,34 +16805,6 @@
                       "separator": "\n\n"
                     },
                     "notices": [
-                      {
-                        "message": {
-                          "label": "Partial content",
-                          "locales": {
-                            "en": "Partial content",
-                            "zh-CN": "部分内容",
-                            "zh-TW": "部分內容",
-                            "ja": "一部の内容",
-                            "ko": "일부 내용",
-                            "fr": "Contenu partiel",
-                            "de": "Teilinhalt",
-                            "es": "Contenido parcial",
-                            "pt-BR": "Conteúdo parcial",
-                            "ru": "Частичное содержимое"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/body_truncated"
-                              },
-                              "equals": true
-                            }
-                          ]
-                        }
-                      },
                       {
                         "message": {
                           "label": "Not saved",
@@ -17408,34 +17058,6 @@
                     "notices": [
                       {
                         "message": {
-                          "label": "Partial content",
-                          "locales": {
-                            "en": "Partial content",
-                            "zh-CN": "部分内容",
-                            "zh-TW": "部分內容",
-                            "ja": "一部の内容",
-                            "ko": "일부 내용",
-                            "fr": "Contenu partiel",
-                            "de": "Teilinhalt",
-                            "es": "Contenido parcial",
-                            "pt-BR": "Conteúdo parcial",
-                            "ru": "Частичное содержимое"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/receipt/body_truncated"
-                              },
-                              "equals": true
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "message": {
                           "label": "Not saved",
                           "locales": {
                             "en": "Not saved",
@@ -17584,6 +17206,18 @@
         "conversation.message.read"
       ],
       "versions": [
+        {
+          "version": "0.1.22",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
         {
           "version": "0.1.21",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -17798,17 +17432,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
@@ -21810,7 +21436,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.29",
+        "version": "0.1.30",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -22069,37 +21695,7 @@
                           }
                         }
                       ]
-                    },
-                    "notices": [
-                      {
-                        "message": {
-                          "label": "Partial results",
-                          "locales": {
-                            "en": "Partial results",
-                            "zh-CN": "仅显示部分结果",
-                            "zh-TW": "僅顯示部分結果",
-                            "ja": "一部の結果",
-                            "ko": "일부 결과",
-                            "fr": "Résultats partiels",
-                            "de": "Teilergebnisse",
-                            "es": "Resultados parciales",
-                            "pt-BR": "Resultados parciais",
-                            "ru": "Частичные результаты"
-                          }
-                        },
-                        "when": {
-                          "all": [
-                            {
-                              "value": {
-                                "source": "result",
-                                "path": "/data/truncated"
-                              },
-                              "equals": true
-                            }
-                          ]
-                        }
-                      }
-                    ]
+                    }
                   }
                 }
               },
@@ -22745,6 +22341,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.30",
+          "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Remove generic preview-limit notices from conversation tool results.",
+            "locales": {
+              "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+            }
+          }
+        },
+        {
           "version": "0.1.29",
           "commit": "268d1d0b6257a74de3cb464d603ff20e6d80bd0b",
           "api_version": "v1",
@@ -23109,17 +22717,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Tidy the remote file header: click its blank space to edit the path, leave the field to cancel",
+        "text": "- Remove generic preview-limit notices from conversation tool results.",
         "locales": {
-          "zh-CN": "- 整理远程文件标题栏：点击空白处编辑路径，离开输入框即取消",
-          "zh-TW": "- 整理遠端檔案標題列：點擊空白處編輯路徑，離開輸入框即取消",
-          "ja": "- リモートファイルのヘッダーを整理：空白部分のクリックでパスを編集し、入力欄から離れると取り消し",
-          "ko": "- 원격 파일 헤더 정리: 빈 곳을 클릭하면 경로를 편집하고, 입력란을 벗어나면 취소",
-          "fr": "- En-tête des fichiers distants épuré : un clic dans l'espace vide modifie le chemin, quitter le champ annule",
-          "de": "- Kopfzeile der entfernten Dateien aufgeräumt: Klick auf freie Fläche bearbeitet den Pfad, Verlassen des Felds bricht ab",
-          "es": "- Encabezado de archivos remotos ordenado: un clic en el espacio libre edita la ruta y salir del campo cancela",
-          "pt-BR": "- Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela",
-          "ru": "- Заголовок удалённых файлов упрощён: щелчок по пустому месту открывает правку пути, уход из поля отменяет её"
+          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
         }
       }
     },
