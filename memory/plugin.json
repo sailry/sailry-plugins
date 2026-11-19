@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
@@ -484,34 +484,6 @@
               "notices": [
                 {
                   "message": {
-                    "label": "Partial content",
-                    "locales": {
-                      "en": "Partial content",
-                      "zh-CN": "部分内容",
-                      "zh-TW": "部分內容",
-                      "ja": "一部の内容",
-                      "ko": "일부 내용",
-                      "fr": "Contenu partiel",
-                      "de": "Teilinhalt",
-                      "es": "Contenido parcial",
-                      "pt-BR": "Conteúdo parcial",
-                      "ru": "Частичное содержимое"
-                    }
-                  },
-                  "when": {
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/receipt/body_truncated"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                },
-                {
-                  "message": {
                     "label": "Not saved",
                     "locales": {
                       "en": "Not saved",
@@ -731,34 +703,6 @@
                 "separator": "\n\n"
               },
               "notices": [
-                {
-                  "message": {
-                    "label": "Partial content",
-                    "locales": {
-                      "en": "Partial content",
-                      "zh-CN": "部分内容",
-                      "zh-TW": "部分內容",
-                      "ja": "一部の内容",
-                      "ko": "일부 내용",
-                      "fr": "Contenu partiel",
-                      "de": "Teilinhalt",
-                      "es": "Contenido parcial",
-                      "pt-BR": "Conteúdo parcial",
-                      "ru": "Частичное содержимое"
-                    }
-                  },
-                  "when": {
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/receipt/body_truncated"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                },
                 {
                   "message": {
                     "label": "Not saved",
@@ -1010,34 +954,6 @@
                 "separator": "\n\n"
               },
               "notices": [
-                {
-                  "message": {
-                    "label": "Partial content",
-                    "locales": {
-                      "en": "Partial content",
-                      "zh-CN": "部分内容",
-                      "zh-TW": "部分內容",
-                      "ja": "一部の内容",
-                      "ko": "일부 내용",
-                      "fr": "Contenu partiel",
-                      "de": "Teilinhalt",
-                      "es": "Contenido parcial",
-                      "pt-BR": "Conteúdo parcial",
-                      "ru": "Частичное содержимое"
-                    }
-                  },
-                  "when": {
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/receipt/body_truncated"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                },
                 {
                   "message": {
                     "label": "Not saved",

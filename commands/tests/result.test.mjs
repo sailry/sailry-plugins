@@ -61,7 +61,7 @@ test('stream results retain output and capture diagnostics', () => {
     assert.deepEqual(retained,original);
     assert.deepEqual(output,original);
     assert.deepEqual(sailry_content.blocks,[
-      {kind:'text',path:'/data/stdout/text',notices:[captions.truncated,captions.encoding]},
+      {kind:'text',path:'/data/stdout/text',notices:[captions.encoding]},
       {kind:'text',path:'/data/stderr/text',notices:[captions.encoding]},
     ]);
   }

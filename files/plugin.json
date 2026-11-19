@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -265,36 +265,7 @@
                     }
                   }
                 ]
-              },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/unsupported_names"
-                        },
-                        "equals": 0,
-                        "negate": true
-                      }
-                    ]
-                  }
-                }
-              ]
+              }
             }
           },
           "contexts": [
@@ -391,46 +362,6 @@
                   }
                 ]
               },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/next_offset"
-                        },
-                        "equals": null,
-                        "negate": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/offset"
-                        },
-                        "equals": 0,
-                        "negate": true
-                      }
-                    ],
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/lines"
-                        },
-                        "equals": null,
-                        "negate": true
-                      }
-                    ]
-                  }
-                }
-              ],
               "paths": {
                 "value": {
                   "source": "arguments",
@@ -1258,35 +1189,6 @@
                   }
                 ]
               },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/skipped"
-                        },
-                        "equals": 0,
-                        "negate": true
-                      }
-                    ]
-                  }
-                }
-              ],
               "paths": {
                 "value": {
                   "source": "result",
@@ -1490,35 +1392,6 @@
                   }
                 ]
               },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/skipped"
-                        },
-                        "equals": 0,
-                        "negate": true
-                      }
-                    ]
-                  }
-                }
-              ],
               "paths": {
                 "value": {
                   "source": "result",

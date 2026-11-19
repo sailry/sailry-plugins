@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.30
+
+- Remove generic preview-limit notices from conversation tool results.
+
 ## 0.1.29
 
 - Restore outline icons in navigation and tools

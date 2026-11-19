@@ -70,7 +70,6 @@ export function result({ output }) {
   if (output.kind === 'command_result' || output.kind === 'command_output') {
     blocks = ['stdout', 'stderr'].map(stream => {
       const capture = output.data[stream], notices = [];
-      if (capture.truncated) notices.push(captions.truncated);
       if (capture.invalid_utf8) notices.push(captions.encoding);
       return {kind:'text',path:`/data/${stream}/text`,notices};
     });

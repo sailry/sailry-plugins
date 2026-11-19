@@ -185,11 +185,9 @@ test('result recipes refer to original data and preserve file-specific choices',
   assert.deepEqual(office.value,reference('result','/data/sections'));
   assert.deepEqual(office.text.parts,[{value:reference('item','/text')}]);
   assert.equal(office.separator,'\n\n');
-  const partial = tool('list_directory').display.output.notices[0];
-  assert.deepEqual(partial.when.any,[
-    {value:reference('result','/data/truncated'),equals:true},
-    {value:reference('result','/data/unsupported_names'),equals:0,negate:true},
-  ]);
+  for (const name of ['list_directory','read_file','find_files','search_files']) {
+    assert.equal(Object.hasOwn(tool(name).display.output,'notices'),false,name);
+  }
 });
 
 
@@ -208,13 +206,6 @@ test('line pages retain offsets and exact edit fragments', () => {
   assert.match(tool('read_file').description,/32 KiB page budget and a 2 KiB line budget/);
   assert.match(tool('read_file').description,/shortened long line is not a new page/);
   assert.match(tool('read_file').description,/read_tool_output with the returned output reference/);
-  assert.deepEqual(tool('read_file').display.output.notices[0].when,{
-    any:[
-      {value:{source:'result',path:'/data/next_offset'},equals:null,negate:true},
-      {value:{source:'result',path:'/data/offset'},equals:0,negate:true},
-    ],
-    all:[{value:{source:'result',path:'/data/lines'},equals:null,negate:true}],
-  });
 });
 
 test('image reads keep recent images and describe non-vision facts', () => {

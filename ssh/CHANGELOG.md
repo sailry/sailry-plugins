@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.30
+
+- Remove generic preview-limit notices from conversation tool results.
+
 ## 0.1.29
 
 - Tidy the remote file header: click its blank space to edit the path, leave the field to cancel

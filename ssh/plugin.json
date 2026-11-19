@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.6",
@@ -260,37 +260,7 @@
                     }
                   }
                 ]
-              },
-              "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "en": "Partial results",
-                      "zh-CN": "仅显示部分结果",
-                      "zh-TW": "僅顯示部分結果",
-                      "ja": "一部の結果",
-                      "ko": "일부 결과",
-                      "fr": "Résultats partiels",
-                      "de": "Teilergebnisse",
-                      "es": "Resultados parciales",
-                      "pt-BR": "Resultados parciais",
-                      "ru": "Частичные результаты"
-                    }
-                  },
-                  "when": {
-                    "all": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                }
-              ]
+              }
             }
           }
         },

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Remove generic preview-limit notices from conversation tool results.
+
 ## 0.1.21
 
 - Return small frozen scopes and their selected rules in one response, and batch captured diff reads.

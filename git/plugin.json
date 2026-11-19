@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "git",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -547,33 +547,6 @@
                       }
                     ]
                   }
-                },
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/omitted_paths"
-                        },
-                        "equals": 0,
-                        "negate": true
-                      }
-                    ]
-                  }
                 }
               ]
             }
@@ -690,25 +663,6 @@
                         "value": {
                           "source": "result",
                           "path": "/data/binary"
-                        },
-                        "equals": true
-                      }
-                    ]
-                  }
-                },
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
                         },
                         "equals": true
                       }
@@ -872,40 +826,6 @@
                       }
                     ]
                   }
-                },
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "zh-CN": "仅显示部分结果"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/references_truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/entries"
-                        },
-                        "equals": true,
-                        "item": "/truncated"
-                      }
-                    ]
-                  }
                 }
               ]
             }
@@ -1025,42 +945,6 @@
                 "separator": "\n"
               },
               "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "en": "Partial results",
-                      "zh-CN": "仅显示部分结果",
-                      "zh-TW": "僅顯示部分結果",
-                      "ja": "一部の結果",
-                      "ko": "일부 결과",
-                      "fr": "Résultats partiels",
-                      "de": "Teilergebnisse",
-                      "es": "Resultados parciales",
-                      "pt-BR": "Resultados parciais",
-                      "ru": "Частичные результаты"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/next"
-                        },
-                        "equals": null,
-                        "negate": true
-                      }
-                    ]
-                  }
-                },
                 {
                   "message": {
                     "label": "Binary file",
@@ -1429,42 +1313,6 @@
                 "separator": "\n"
               },
               "notices": [
-                {
-                  "message": {
-                    "label": "Partial results",
-                    "locales": {
-                      "en": "Partial results",
-                      "zh-CN": "仅显示部分结果",
-                      "zh-TW": "僅顯示部分結果",
-                      "ja": "一部の結果",
-                      "ko": "일부 결과",
-                      "fr": "Résultats partiels",
-                      "de": "Teilergebnisse",
-                      "es": "Resultados parciales",
-                      "pt-BR": "Resultados parciais",
-                      "ru": "Частичные результаты"
-                    }
-                  },
-                  "when": {
-                    "any": [
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/truncated"
-                        },
-                        "equals": true
-                      },
-                      {
-                        "value": {
-                          "source": "result",
-                          "path": "/data/next"
-                        },
-                        "equals": null,
-                        "negate": true
-                      }
-                    ]
-                  }
-                },
                 {
                   "message": {
                     "label": "Binary file",
