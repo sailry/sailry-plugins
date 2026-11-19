@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Checkpoint review capture progress in batches instead of after every Git step.
+
 ## 0.1.22
 
 - Remove generic preview-limit notices from conversation tool results.

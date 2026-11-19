@@ -8,6 +8,9 @@ import {key,record,shards} from '../records.js';
 
 // Leave time for a bounded native read and the durable checkpoint before the host deadline.
 const reads=16, smallScope=12, duration=25000;
+// Batch checkpoints: each flush rewrites the manifest, so per-step flushes dominate
+// long captures. Resume repeats at most this much deterministic snapshot work.
+const batch=8, interval=1000;
 
 export function initialize(owner,target) {
   owner.value.progress={phase:'inventory',target:clone(target),snapshot:null,cursor:null,
@@ -63,9 +66,33 @@ export async function advance(owner) {
     fail('Review capture is incompatible','invalid_request');
   }
   const expires=Date.now()+duration;
+  let unsaved=0, saved=Date.now(), phase=progress.phase;
+  // The manifest and its pending resources commit together, so any flush is a
+  // consistent resume point; phase boundaries and exits always checkpoint.
+  const checkpoint=async () => {
+    unsaved++;
+    if (unsaved < batch && Date.now()-saved < interval && progress.phase === phase) return;
+    await flush(owner,true);
+    unsaved=0;
+    saved=Date.now();
+    phase=progress.phase;
+  };
+  try {
+    await steps(owner,expires,checkpoint);
+  } catch (error) {
+    // Keep completed reads for the continuation after a transient Git failure.
+    if (error.retryableRead) await flush(owner,unsaved > 0);
+    throw error;
+  }
+  await flush(owner,unsaved > 0);
+  return progress.phase === 'publish' ? head(owner) : null;
+}
+
+async function steps(owner,expires,checkpoint) {
+  const progress=owner.value.progress;
   let inventory=null, budget=reads;
   for (let step=0;step<budget && Date.now()<expires;step++) {
-    if (progress.phase === 'publish') return head(owner);
+    if (progress.phase === 'publish') return;
     if (progress.phase === 'inventory') {
       const page=await inventoryPage(owner.actor.worktree,progress.target,progress.cursor);
       if (!progress.cursor && page.exhausted && page.entries.length <= smallScope) {
@@ -88,7 +115,7 @@ export async function advance(owner) {
             progress.buffer=[];
             progress.phase='groups';
           }
-          await flush(owner,true);
+          await checkpoint();
           continue;
         }
         const row=inventory[progress.row];
@@ -96,7 +123,7 @@ export async function advance(owner) {
         const entry=row.value, reason=excluded(entry.path) ?? (entry.old_path ? excluded(entry.old_path) : null);
         if (reason) {
           await complete(owner,'skipped',{path:entry.path,reason});
-          await flush(owner,true);
+          await checkpoint();
           continue;
         }
         progress.current={path:entry.path,old_path:entry.old_path ?? null,kind:entry.kind,
@@ -160,10 +187,8 @@ export async function advance(owner) {
       progress.cursor=page.next;
       if (page.exhausted) progress.phase='publish';
     }
-    // Each page and its exact continuation become durable together.
-    await flush(owner,true);
+    await checkpoint();
   }
-  return progress.phase === 'publish' ? head(owner) : null;
 }
 
 export function pending(owner) {

@@ -279,3 +279,13 @@ test('encoded scope pages continue without losing files', async () => {
   }
   assert.deepEqual(new Set(paths),new Set(source.map(file => file.path)));
 });
+
+test('capture checkpoints batch completed steps', async () => {
+  const current=await fixture([file('src/main.rs'),
+    ...Array.from({length:64},(_,index) => file(`node_modules/pkg-${index}/index.js`))]);
+  const scope=await current.capture();
+  assert.equal(scope.counts.skipped,64);
+  const transactions=current.calls.filter(call => call.kind === 'plugin_transaction').length;
+  // Per-step checkpoints needed 78 transactions for this capture.
+  assert.ok(transactions <= 24,`${transactions} transactions`);
+});
