@@ -1,3 +1,7 @@
+## 0.1.41
+
+- Den Namen des Regressionstests für Generierungsgeschwindigkeit und Latenz des ersten Tokens präzisiert.
+
 ## 0.1.40
 
 - Die chinesische Bezeichnung für Unteragenten in der Sitzungsstatistik wurde vereinheitlicht.

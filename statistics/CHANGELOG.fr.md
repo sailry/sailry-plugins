@@ -1,3 +1,7 @@
+## 0.1.41
+
+- Précise le nom du test de régression sur la vitesse de génération et la latence du premier jeton.
+
 ## 0.1.40
 
 - Le libellé chinois des sous-agents a été harmonisé dans les statistiques de session.

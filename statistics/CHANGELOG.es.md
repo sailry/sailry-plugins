@@ -1,3 +1,7 @@
+## 0.1.41
+
+- Se aclara el nombre de la prueba de regresión de velocidad de generación y latencia del primer token.
+
 ## 0.1.40
 
 - Se ha unificado el nombre chino de los subagentes en las estadísticas de sesión.

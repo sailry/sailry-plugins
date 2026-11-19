@@ -5,7 +5,7 @@ import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.p
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('generation speed uses the host interval and displays the latest own first-token latency separately',async()=>{
+test('separates host generation speed from latest own first-token latency',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const label=manifest.extensions['dev.sailry.platform'].ui.find(item=>item.id==='composer_speed').label;
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {

@@ -1,3 +1,7 @@
+## 0.1.41
+
+- Clarify the regression test name for generation speed and first-token latency.
+
 ## 0.1.40
 
 - Update the Chinese label for subagents in session statistics.

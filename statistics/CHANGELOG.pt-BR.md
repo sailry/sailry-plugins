@@ -1,3 +1,7 @@
+## 0.1.41
+
+- Esclarece o nome do teste de regressão de velocidade de geração e latência do primeiro token.
+
 ## 0.1.40
 
 - Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.
