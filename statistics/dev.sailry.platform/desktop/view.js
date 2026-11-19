@@ -173,12 +173,6 @@ export function render(view) {
   const {state}=view,data=state.data();
   const body=column().id('usage-content').relative().w_full().max_w(1040).mx_auto().p_6().gap_4()
     .child(filters(view));
-  if(state.view?.partial || view.inventoryErrors?.length) {
-    const failed=new Set([...(view.inventoryErrors ?? []),...(state.overview?.sources ?? [])
-      .filter(source=>source.view?.error || !source.view?.connected).map(source=>source.node)]);
-    const names=[...failed].map(node=>view.sources?.find(source=>source.node===node)?.label ?? node.slice(0,8));
-    body.child(muted([view.text.usage_partial,...names].join(' · ')).id('usage-partial'));
-  }
   if(data)body.child(card('usage-summary',summary(view,data.totals)))
     .child(card('usage-trend-card',tokenTrend(view,data)))
     .children(CALENDAR.includes(state.range) ? [card('usage-activity-card',activity(view,data))] : [])

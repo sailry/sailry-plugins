@@ -1,3 +1,7 @@
+## 0.1.42
+
+- Remove the stale-host notice from the Usage page.
+
 ## 0.1.41
 
 - Clarify the regression test name for generation speed and first-token latency.

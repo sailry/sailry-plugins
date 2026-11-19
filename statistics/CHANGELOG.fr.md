@@ -1,3 +1,7 @@
+## 0.1.42
+
+- Retire l’avis de données d’hôtes obsolètes de la page Utilisation.
+
 ## 0.1.41
 
 - Précise le nom du test de régression sur la vitesse de génération et la latence du premier jeton.

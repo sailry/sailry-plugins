@@ -1,3 +1,7 @@
+## 0.1.42
+
+- Remove o aviso de dados desatualizados de hosts da página de uso.
+
 ## 0.1.41
 
 - Esclarece o nome do teste de regressão de velocidade de geração e latência do primeiro token.

@@ -1,3 +1,7 @@
+## 0.1.42
+
+- Den Hinweis zu veralteten Hostdaten von der Nutzungsseite entfernt.
+
 ## 0.1.41
 
 - Den Namen des Regressionstests für Generierungsgeschwindigkeit und Latenz des ersten Tokens präzisiert.

@@ -1,3 +1,7 @@
+## 0.1.42
+
+- Se elimina el aviso de datos desactualizados de servidores en la página de uso.
+
 ## 0.1.41
 
 - Se aclara el nombre de la prueba de regresión de velocidad de generación y latencia del primer token.
