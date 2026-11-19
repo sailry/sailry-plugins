@@ -2996,7 +2996,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.17",
+        "version": "0.1.18",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -3023,7 +3023,7 @@
                 "zh-CN": "审查代码变更与拉取请求"
               }
             },
-            "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code or Flagship turn and a writable, tool-capable captured role; omit role for a new child inheriting the current turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. Use read_review_change with review_id, path and part diff/old/new for every captured patch and full changed-file context page. Do not substitute live Git or file reads for captured evidence. Later worktree edits, unrelated paths, HEAD or index changes do not invalidate a published review. A new scope captures the new state; older metadata-only reviews remain readable but cannot fabricate missing content. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. Creating scopes, recording findings and submitting receipts write private review records and require Code or Flagship mode. read_review_change is read-only and remains available for evidence gathering in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
+            "instructions": "Use delegate_review to assign complete frozen groups rather than manually composing spawn_agent tasks. Select record_receipt explicitly: formal receipts require an authorized Code or Flagship turn and a writable, tool-capable captured role; pass the exact key of the captured role responsible for the assignment, or omit role when the roster is empty to inherit the current turn; evidence-only never counts as a receipt. For a requested code review, load code-review:code-review. The creator establishes review_scope and exhausts its pages before patch reads; delegated children reuse the complete delegate_review capture for their assigned groups instead of creating another scope. Use the immutable revisions and selected rule resources. Use read_review_change with review_id, path and part diff/old/new for every captured patch and full changed-file context page. Do not substitute live Git or file reads for captured evidence. Later worktree edits, unrelated paths, HEAD or index changes do not invalidate a published review. A new scope captures the new state; older metadata-only reviews remain readable but cannot fabricate missing content. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict from a failed storage flow requires a fresh tool invocation and re-reading current scope; do not retry within that failed flow. Creating scopes, recording findings and submitting receipts write private review records and require Code or Flagship mode. read_review_change is read-only and remains available for evidence gathering in Plan mode. A review request does not authorize edits, commits or publication. Read-only child roles run in Plan mode: use them only for evidence gathering, then independently verify and record coverage in the authorized parent. Do not ask a read-only child to submit private review records or change its permissions.",
             "storage": {
               "collections": [
                 {
@@ -3642,7 +3642,7 @@
                   "workspace"
                 ],
                 "presentation": "details",
-                "description": "Delegate complete frozen review groups to a new direct child. The package supplies the unchanged snapshot, inventory metadata revision, every file metadata/strong revision and selected rules; do not hand-write captures. Set record_receipt=true only for an authorized Code or Flagship turn and writable, tool-capable captured role. Omit role to inherit the current turn rather than guessing a role. Evidence-only delegation is explicit and never records coverage. A group is never sampled to fit the task budget. Existing children and roles are not changed.",
+                "description": "Delegate complete frozen review groups to a new direct child. The package supplies the unchanged snapshot, inventory metadata revision, every file metadata/strong revision and selected rules; do not hand-write captures. Set record_receipt=true only for an authorized Code or Flagship turn and writable, tool-capable captured role. Pass the exact key of the captured role whose responsibilities fit the assignment. With an empty roster, omit role to inherit the current turn and model. Evidence-only delegation is explicit and never records coverage. A group is never sampled to fit the task budget. Existing children and roles are not changed.",
                 "handler": {
                   "name": "delegate",
                   "operation": "agents.delegate",
@@ -3677,8 +3677,7 @@
                           "string",
                           "null"
                         ],
-                        "description": "Omit for a new child inheriting the current turn; named roles retain their captured mode and model",
-                        "default": null
+                        "description": "Exact key of the captured role responsible for this assignment. Omit when the roster is empty to inherit the current turn and model."
                       },
                       "background": {
                         "type": "boolean"
@@ -3730,6 +3729,26 @@
         "agents.delegate"
       ],
       "versions": [
+        {
+          "version": "0.1.18",
+          "commit": "20a089c654cbdb9c773c47b61168b7210930aa15",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Match delegated review work to the responsibilities of the selected team role.",
+            "locales": {
+              "zh-CN": "- 按团队角色的职责分派审查任务。",
+              "zh-TW": "- 依團隊角色的職責分派審查工作。",
+              "ja": "- チーム内の各ロールの担当範囲に応じてレビューを委任します。",
+              "ko": "- 팀 역할의 책임 범위에 따라 검토 작업을 위임합니다.",
+              "fr": "- Délègue les revues selon les responsabilités des rôles de l’équipe.",
+              "de": "- Prüfaufgaben nach den Zuständigkeiten der Teamrollen delegieren.",
+              "es": "- Delega las revisiones según las responsabilidades de cada rol del equipo.",
+              "pt-BR": "- Delega revisões conforme as responsabilidades de cada papel na equipe.",
+              "ru": "- Задачи проверки распределяются в соответствии с обязанностями ролей команды."
+            }
+          }
+        },
         {
           "version": "0.1.17",
           "commit": "714aea960165dd50e5f9d5389b8d23b3e9101030",
@@ -3882,17 +3901,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Restore outline icons in navigation and tools",
+        "text": "- Match delegated review work to the responsibilities of the selected team role.",
         "locales": {
-          "zh-CN": "- 导航和工具恢复线条图标",
-          "zh-TW": "- 導覽和工具恢復線條圖示",
-          "ja": "- ナビゲーションとツールのアイコンを線画に戻す",
-          "ko": "- 탐색 및 도구 아이콘을 선형으로 복원",
-          "fr": "- Icônes au trait rétablies dans la navigation et les outils",
-          "de": "- Umrisssymbole in Navigation und Werkzeugen wiederhergestellt",
-          "es": "- Iconos de contorno restaurados en la navegación y las herramientas",
-          "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
-          "ru": "- Возвращены контурные значки в навигации и инструментах"
+          "zh-CN": "- 按团队角色的职责分派审查任务。",
+          "zh-TW": "- 依團隊角色的職責分派審查工作。",
+          "ja": "- チーム内の各ロールの担当範囲に応じてレビューを委任します。",
+          "ko": "- 팀 역할의 책임 범위에 따라 검토 작업을 위임합니다.",
+          "fr": "- Délègue les revues selon les responsabilités des rôles de l’équipe.",
+          "de": "- Prüfaufgaben nach den Zuständigkeiten der Teamrollen delegieren.",
+          "es": "- Delega las revisiones según las responsabilidades de cada rol del equipo.",
+          "pt-BR": "- Delega revisões conforme as responsabilidades de cada papel na equipe.",
+          "ru": "- Задачи проверки распределяются в соответствии с обязанностями ролей команды."
         }
       }
     },
