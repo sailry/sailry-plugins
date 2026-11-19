@@ -4078,7 +4078,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -4254,7 +4254,7 @@
                   },
                   "icon": "reicon:it/terminal-square"
                 },
-                "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. With id, set wait_ms up to 30000 for an event-driven wait: return on new output, command exit or deadline. Add until to wait for that text in either output preview instead of any new output; command exit or deadline still returns. Omitted or zero wait_ms reads immediately. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
+                "description": "Read retained output; this does not start a process or read a file directly. Pass the exact UUID returned as data.id by run_command with background=true, a listed command id, or the sailry_command.id in a foreground result. Never substitute a PID, filename, command text or invented ID. Omit id or use null to list commands. Use run_command to start a new command. With id, set wait_ms up to 30000 for an event-driven wait: return on new output, command exit or deadline. Add until to wait for a new occurrence of that text in either output stream after this read begins; command exit or deadline still returns. Omitted or zero wait_ms reads immediately. To page complete command output, pass id, stream (stdout or stderr), offset=0 and limit up to 32768 bytes, then continue with next_offset. To read an original tool result omitted from model context, pass its output object unchanged, offset and limit; add stream only for a retained command stream. Command streams last while their Node owner retains them; canonical tool results survive restart.",
                 "handler": {
                   "name": "read",
                   "operation": "process.read",
@@ -4313,7 +4313,7 @@
                       "until": {
                         "type": "string",
                         "minLength": 1,
-                        "description": "With id and a positive wait_ms, wait for this substring in either output preview, command exit or deadline."
+                        "description": "With id and a positive wait_ms, wait for a new occurrence of this substring in either stream after this read begins, command exit or deadline."
                       }
                     },
                     "required": []
@@ -4527,6 +4527,18 @@
         "terminals.control"
       ],
       "versions": [
+        {
+          "version": "0.1.23",
+          "commit": "d1a70f3fa3c8989c80b235c8eb3bee87a16fa5c5",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Describe waiting for a new output match when reading a running command",
+            "locales": {
+              "zh-CN": "- 明确等待命令在本次读取开始后输出的新匹配内容"
+            }
+          }
+        },
         {
           "version": "0.1.22",
           "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
@@ -4770,9 +4782,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove generic preview-limit notices from conversation tool results.",
+        "text": "- Describe waiting for a new output match when reading a running command",
         "locales": {
-          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+          "zh-CN": "- 明确等待命令在本次读取开始后输出的新匹配内容"
         }
       }
     },
@@ -20225,7 +20237,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "scheduled-tasks",
-        "version": "0.1.23",
+        "version": "0.1.24",
         "description": "Run tasks on a schedule",
         "extensions": {
           "dev.sailry.platform": {
@@ -20975,6 +20987,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.24",
+          "commit": "d1a70f3fa3c8989c80b235c8eb3bee87a16fa5c5",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.2",
+          "release_notes": {
+            "text": "- Reference the turn clock without injecting a changing timestamp into tool guidance",
+            "locales": {
+              "zh-CN": "- 定时任务使用会话轮次的时钟，工具说明保持稳定"
+            }
+          }
+        },
+        {
           "version": "0.1.23",
           "commit": "ad21461a0f1bbb4b67eec9c1325a6961a32d0a27",
           "api_version": "v1",
@@ -21222,9 +21246,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Compare original task content before editing or running a task on another host\n- Use the execution Node's local revision and retain stale drafts without overwriting newer changes\n- Fence manual queue admission against concurrent personal-data synchronization",
+        "text": "- Reference the turn clock without injecting a changing timestamp into tool guidance",
         "locales": {
-          "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
+          "zh-CN": "- 定时任务使用会话轮次的时钟，工具说明保持稳定"
         }
       }
     },
