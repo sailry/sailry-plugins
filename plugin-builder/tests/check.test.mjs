@@ -222,7 +222,7 @@ test('requires the action behind a bound operation', () => {
 
 const operations = [
   ['models.install', 'models.install'], ['models.remove', 'models.install'],
-  ['code.search', 'code.index.read'], ['code.outline', 'code.index.read'],
+  ['code.search', 'code.index.read'], ['code.outline', 'code.index.read'], ['code.graph', 'code.index.read'],
   ['files.read_lines', 'files.read'],
   ['files.edit', 'files.write'],
   ['files.find', 'files.read'],

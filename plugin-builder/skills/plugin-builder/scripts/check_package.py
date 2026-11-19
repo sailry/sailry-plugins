@@ -53,7 +53,7 @@ ACTIONS = {
 }
 OPERATION_ACTIONS = {
     "models.install": "models.install", "models.remove": "models.install",
-    "code.search": "code.index.read", "code.outline": "code.index.read",
+    "code.search": "code.index.read", "code.outline": "code.index.read", "code.graph": "code.index.read",
     "storage.get": "storage.read", "storage.list": "storage.read",
     "storage.set": "storage.write", "storage.delete": "storage.write",
     "http.request": "http.request", "files.list": "files.read", "files.read": "files.read",

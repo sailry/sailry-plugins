@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Document bounded tool composition and validate the code graph permission during preflight.
+
 ## 0.1.18
 
 - Align runtime guidance and SDK references with moejs and MyGo/Kit

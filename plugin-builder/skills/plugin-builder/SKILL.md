@@ -27,7 +27,7 @@ Start from what the user wants the plugin to do. Pick the first level that is en
 | --- | --- | --- | --- |
 | Reusable instructions or a workflow | `skills/<name>/SKILL.md` | None | `references/manifest.md` |
 | Tools for storage, HTTP, progress or settings | `tools` bound to a host `operation` | None | `references/tools.md` |
-| Tools with custom logic | `tools` with a `handler` and a `host` entry | JavaScript (moejs) | `references/tools.md`, `references/host.md` |
+| Tools with custom logic or a bounded sequence of host operations | `tools` with a `handler` and a `host` entry | JavaScript (moejs) | `references/tools.md`, `references/host.md` |
 | An existing command-line or MCP server | `mcp.json` and `tools` with `server` | Any language | `references/tools.md` |
 | A panel, sidebar page, assistant or composer control | `desktop` and `ui` sections | JavaScript (MyGo/Kit bindings) | `references/desktop.md` |
 
