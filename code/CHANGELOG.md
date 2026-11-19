@@ -1,3 +1,7 @@
+## 0.1.20
+
+- Chain dependent file and index lookups and select the final data to return.
+
 ## 0.1.19
 
 - Return a partial impact or map page when its metadata exceeds the output budget.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -330,6 +330,98 @@
             },
             "icon": "reicon:business/diagram-tree"
           }
+        },
+        {
+          "name": "code_pipeline",
+          "contexts": [
+            "plugin",
+            "workspace"
+          ],
+          "presentation": "summary",
+          "description": "Chain dependent read-only workspace operations and return only the selected final data (16 KiB). Each follow-up binds at least one argument from the preceding result. For example, code.search by name, then files.read_lines with from_previous {\"path\":\"/symbols/0/path\",\"offset\":\"/symbols/0/range/start_line\",\"expected_revision\":\"/symbols/0/file_revision\"}. For independent reads, issue ordinary calls together.",
+          "handler": {
+            "name": "pipeline",
+            "read_only": true,
+            "flow": {
+              "operations": [
+                "files.find",
+                "files.search",
+                "files.read_lines",
+                "code.search",
+                "code.outline",
+                "code.graph"
+              ]
+            },
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "steps"
+              ],
+              "properties": {
+                "steps": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 8,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "operation"
+                    ],
+                    "properties": {
+                      "operation": {
+                        "type": "string",
+                        "enum": [
+                          "files.find",
+                          "files.search",
+                          "files.read_lines",
+                          "code.search",
+                          "code.outline",
+                          "code.graph"
+                        ]
+                      },
+                      "arguments": {
+                        "type": "object",
+                        "description": "Literal operation arguments."
+                      },
+                      "from_previous": {
+                        "type": "object",
+                        "description": "Argument names mapped to JSON pointers in the preceding result data. Required after the first step.",
+                        "additionalProperties": {
+                          "type": "string",
+                          "maxLength": 256,
+                          "pattern": "^(/|$)"
+                        }
+                      }
+                    }
+                  }
+                },
+                "select": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^(/|$)",
+                  "description": "JSON pointer in the final result data, e.g. /lines/0/text. Omit for the full final page."
+                }
+              }
+            }
+          },
+          "display": {
+            "label": "Chained code reads",
+            "icon": "reicon:it/code",
+            "locales": {
+              "en": "Chained code reads",
+              "zh-CN": "组合读取",
+              "zh-TW": "組合讀取",
+              "ja": "連続読み取り",
+              "ko": "연계 읽기",
+              "de": "Verkettete Lesezugriffe",
+              "es": "Lecturas encadenadas",
+              "fr": "Lectures enchaînées",
+              "pt-BR": "Leituras encadeadas",
+              "ru": "Цепочка чтений"
+            }
+          }
         }
       ],
       "enabled_service": "code_index",
@@ -342,17 +434,20 @@
           "dev.sailry.platform/host/main.js",
           "dev.sailry.platform/host/context.js",
           "dev.sailry.platform/host/graph.js",
-          "dev.sailry.platform/host/limits.js"
+          "dev.sailry.platform/host/limits.js",
+          "dev.sailry.platform/host/pipeline.js"
         ],
         "handlers": [
           "context",
           "impact",
-          "map"
+          "map",
+          "pipeline"
         ],
         "read_only": [
           "context",
           "impact",
-          "map"
+          "map",
+          "pipeline"
         ]
       }
     }

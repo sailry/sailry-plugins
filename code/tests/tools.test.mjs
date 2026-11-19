@@ -6,7 +6,7 @@ const extension = manifest.extensions['dev.sailry.platform'];
 
 test('preserves package identity and enable binding',() => {
   assert.equal(manifest.name,'code');
-  assert.equal(manifest.version,'0.1.19');
+  assert.equal(manifest.version,'0.1.20');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.min_sailry_version,'0.1.6');
   assert.equal(extension.scope,'host');
@@ -19,7 +19,7 @@ test('preserves package identity and enable binding',() => {
 
 test('declares only bounded structure tools',() => {
   assert.deepEqual(extension.actions,['code.index.read','files.read']);
-  assert.deepEqual(extension.tools.map(tool => tool.name),['code_search','code_outline','code_context','code_impact','code_map']);
+  assert.deepEqual(extension.tools.map(tool => tool.name),['code_search','code_outline','code_context','code_impact','code_map','code_pipeline']);
   assert.deepEqual(extension.tools.slice(0,2).map(tool => tool.operation),['code.search','code.outline']);
   const tools = Object.fromEntries(extension.tools.map(tool => [tool.name,tool]));
   const handler = tools.code_context.handler;
@@ -38,8 +38,8 @@ test('declares only bounded structure tools',() => {
     assert.equal(graph.parameters.properties.paths.maxItems,64);
   }
   assert.equal(tools.code_impact.handler.parameters.properties.depth.maximum,3);
-  assert.deepEqual(extension.host.handlers,['context','impact','map']);
-  assert.deepEqual(extension.host.read_only,['context','impact','map']);
+  assert.deepEqual(extension.host.handlers,['context','impact','map','pipeline']);
+  assert.deepEqual(extension.host.read_only,['context','impact','map','pipeline']);
   for (const resource of extension.host.resources) {
     assert.ok(fs.statSync(new URL(`../${resource}`,import.meta.url)).isFile(),resource);
   }
