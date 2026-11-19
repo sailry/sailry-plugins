@@ -2996,7 +2996,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.19",
+        "version": "0.1.20",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -3730,6 +3730,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.20",
+          "commit": "98bfb086a2189593c7df1230871a632adc8da63b",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Sync 66 review rules with OpenCodeReview v1.13.13 and clarify how to resume an unfinished capture.",
+            "locales": {
+              "zh-CN": "- 同步 OpenCodeReview v1.13.13 的 66 份审查规则，并说明如何继续未完成的快照采集。",
+              "zh-TW": "- 同步 OpenCodeReview v1.13.13 的 66 份審查規則，並說明如何繼續未完成的快照擷取。",
+              "ja": "- OpenCodeReview v1.13.13 のレビュー規則 66 件を同期し、未完了のスナップショット取得を再開する手順を明確にしました。",
+              "ko": "- OpenCodeReview v1.13.13의 검토 규칙 66개를 동기화하고 스냅샷 캡처 재개 방법을 명시했습니다.",
+              "fr": "- Synchronise 66 règles de revue avec OpenCodeReview v1.13.13 et précise comment reprendre une capture inachevée.",
+              "de": "- 66 Prüfregeln aus OpenCodeReview v1.13.13 übernommen und die Fortsetzung einer unvollständigen Erfassung erläutert.",
+              "es": "- Sincroniza 66 reglas de revisión con OpenCodeReview v1.13.13 y aclara cómo reanudar una captura incompleta.",
+              "pt-BR": "- Sincroniza 66 regras de revisão com o OpenCodeReview v1.13.13 e esclarece como retomar uma captura incompleta.",
+              "ru": "- Синхронизированы 66 правил проверки с OpenCodeReview v1.13.13 и уточнён порядок возобновления незавершённого сбора снимка."
+            }
+          }
+        },
+        {
           "version": "0.1.19",
           "commit": "b27d6b621dd5c4fa9214b0ca8d41aa98b2fba5ad",
           "api_version": "v1",
@@ -3913,9 +3933,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Require an eligible team role for delegated reviews when the turn has configured roles.",
+        "text": "- Sync 66 review rules with OpenCodeReview v1.13.13 and clarify how to resume an unfinished capture.",
         "locales": {
-          "zh-CN": "- 团队已配置角色时，委派审查必须选择能使用工具的角色。"
+          "zh-CN": "- 同步 OpenCodeReview v1.13.13 的 66 份审查规则，并说明如何继续未完成的快照采集。",
+          "zh-TW": "- 同步 OpenCodeReview v1.13.13 的 66 份審查規則，並說明如何繼續未完成的快照擷取。",
+          "ja": "- OpenCodeReview v1.13.13 のレビュー規則 66 件を同期し、未完了のスナップショット取得を再開する手順を明確にしました。",
+          "ko": "- OpenCodeReview v1.13.13의 검토 규칙 66개를 동기화하고 스냅샷 캡처 재개 방법을 명시했습니다.",
+          "fr": "- Synchronise 66 règles de revue avec OpenCodeReview v1.13.13 et précise comment reprendre une capture inachevée.",
+          "de": "- 66 Prüfregeln aus OpenCodeReview v1.13.13 übernommen und die Fortsetzung einer unvollständigen Erfassung erläutert.",
+          "es": "- Sincroniza 66 reglas de revisión con OpenCodeReview v1.13.13 y aclara cómo reanudar una captura incompleta.",
+          "pt-BR": "- Sincroniza 66 regras de revisão com o OpenCodeReview v1.13.13 e esclarece como retomar uma captura incompleta.",
+          "ru": "- Синхронизированы 66 правил проверки с OpenCodeReview v1.13.13 и уточнён порядок возобновления незавершённого сбора снимка."
         }
       }
     },
