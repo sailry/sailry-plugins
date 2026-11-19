@@ -8,12 +8,12 @@ const inputs = ['review_id', 'groups', 'record_receipt', 'role', 'title', 'backg
 
 function parameters(roles) {
   return {type:'object', additionalProperties:false,
-    required:['review_id','groups','record_receipt'], properties:{
+    required:['review_id','groups','record_receipt',...(roles.length ? ['role'] : [])], properties:{
       review_id:{type:'string',pattern:'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$'},
       groups:{type:'array',minItems:1,uniqueItems:true,
         items:{type:'string',minLength:1}},
       record_receipt:{type:'boolean',description:'Require a formal receipt, or explicitly gather evidence only'},
-      role:{type:['string','null'],enum:[...roles.map(role => role.key),null],
+      role:{type:roles.length ? 'string' : 'null',enum:roles.length ? roles.map(role => role.key) : [null],
         description:roles.length
           ? 'Pass the exact key of the captured role responsible for the assigned review work.'
           : 'Omit role to inherit the current turn and model.'},
@@ -25,9 +25,11 @@ function parameters(roles) {
 export function initialize({tools, roles, mode}) {
   const captured = roles.map(({key,read_only,tools}) => ({key,read_only,tools}));
   stageTurnState({mode,roles:captured,recording:receiptTools.every(name => tools.includes(name))});
-  const roster = roles.map(role => `${role.key}${role.read_only ? ' [read only]' : ''}${role.tools === false ? ' [no tools]' : ''}: ${role.name}${role.description ? ` — ${role.description}` : ''}`).join('\n');
+  const eligible = roles.filter(role => role.tools !== false);
+  if (roles.length && !eligible.length) tools = tools.filter(name => name !== 'delegate_review');
+  const roster = eligible.map(role => `${role.key}${role.read_only ? ' [read only]' : ''}: ${role.name}${role.description ? ` — ${role.description}` : ''}`).join('\n');
   return {tools, parameters:tools.includes('delegate_review')
-    ? {delegate_review:parameters(captured)} : {},
+    ? {delegate_review:parameters(eligible)} : {},
     instruction:tools.includes('delegate_review')
       ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Read-only roles gather evidence only.${roster ? ` Select the role whose responsibilities fit the assignment and pass its exact key. Keep the work in the parent if no role is eligible.\nCaptured roles:\n${roster}` : ' No roles are configured. Omit role to inherit the current turn and model.'}` : ''};
 }
@@ -40,7 +42,7 @@ function capability(args) {
   }
   if (typeof args.record_receipt !== 'boolean') fail('Select record_receipt explicitly');
   const role = args.role == null ? null : current.roles.find(role => role.key === args.role);
-  if (args.role != null && !role) fail('Select a role from this turn\'s captured roster');
+  if (!role && (current.roles.length || args.role != null)) fail('Select a role from this turn\'s captured roster');
   if (role?.tools === false) fail('The selected role model cannot read frozen patches; choose a tool-capable role');
   if (args.record_receipt && (!writable || role?.read_only || !current.recording)) {
     fail('Formal receipts require an authorized Code or Flagship turn and a writable role; choose evidence-only explicitly instead', 'permission_denied');

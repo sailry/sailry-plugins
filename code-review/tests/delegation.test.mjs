@@ -43,7 +43,7 @@ test('writable turns preserve receipt child selection', async () => {
   for (const mode of ['code','flagship']) {
     for (const role of [undefined,'reviewer']) {
       const current = await fixture();
-      initialize(current,{mode});
+      initialize(current,{mode,roles:role ? roles : []});
       const scope = await current.invoke('scope',{});
       const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true,role});
       assert.equal(result.isError,undefined);
@@ -59,7 +59,9 @@ test('initialization binds roles without adding tools', async () => {
   const current = await fixture();
   const selection = initialize(current);
   assert.deepEqual(selection.tools,tools);
-  assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,['reviewer','evidence','no-tools',null]);
+  assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,['reviewer','evidence']);
+  assert.ok(selection.parameters.delegate_review.required.includes('role'));
+  assert.ok(!initialize(current,{roles:[roles[2]]}).tools.includes('delegate_review'));
   const limited = initialize(current,{tools:['review_scope']});
   assert.deepEqual(limited.tools,['review_scope']);
   assert.deepEqual(limited.parameters,{});
@@ -72,13 +74,22 @@ test('review assignment describes captured responsibilities and forwards the exa
   const selection = initialize(current,{roles:[{key,name:'Audit',description,read_only:false,tools:true}]});
   assert.ok(selection.instruction.includes(description));
   assert.match(selection.instruction,/pass its exact key/);
-  assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,[key,null]);
+  assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,[key]);
   assert.match(selection.parameters.delegate_review.properties.role.description,/exact key/);
   const scope = await current.invoke('scope',{});
   const args = {review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true};
   assert.equal((await current.delegate({...args,role:key})).role,key);
+  for (const role of [undefined,null]) {
+    for (const record_receipt of [true,false]) {
+      const before = current.calls.length;
+      const rejected = await current.delegate({...args,role,record_receipt});
+      assert.match(rejected.error.message,/captured roster/);
+      assert.equal(current.calls.length,before);
+    }
+  }
   const empty = initialize(current,{roles:[]});
   assert.deepEqual(empty.parameters.delegate_review.properties.role.enum,[null]);
+  assert.ok(!empty.parameters.delegate_review.required.includes('role'));
   assert.match(empty.instruction,/Omit role to inherit/);
   assert.equal((await current.delegate(args)).role,null);
 });
@@ -150,7 +161,7 @@ test('invalid roles groups and child reuse fail closed', async () => {
   const current = await fixture();
   initialize(current);
   const scope = await current.invoke('scope',{});
-  const input = {review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true};
+  const input = {review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true,role:'reviewer'};
   for (const change of [{role:'not-captured'},{groups:[]},{groups:['unknown']},
     {groups:[...input.groups,...input.groups]},{session:uuid(99)},{worktree:uuid(99)},
     {record_receipt:null},{background:null}]) {
@@ -172,7 +183,7 @@ test('missing metadata is rejected instead of omitted', async () => {
         for (const row of record.value.rows.filter(row => row.kind === 'file')) delete row.value[field];
       }
     }
-    const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true});
+    const result = await current.delegate({review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true,role:'reviewer'});
     assert.equal(result.isError,true);
   }
 });
@@ -184,7 +195,7 @@ test('already covered groups cannot be delegated again', async () => {
   const group = scope.groups[0];
   const covered = {...scope,files:scope.files.filter(file => file.group === group.id),groups:[group]};
   assert.equal((await current.invoke('complete',receipt(covered,{finalize:false}))).status,'open');
-  const result = await current.delegate({review_id:scope.review_id,groups:[group.id],record_receipt:true});
+  const result = await current.delegate({review_id:scope.review_id,groups:[group.id],record_receipt:true,role:'reviewer'});
   assert.equal(result.error.code,'conflict');
 });
 
@@ -194,7 +205,7 @@ test('oversized whole groups are never sampled', async () => {
   const scope = await current.capture({limit:1});
   assert.equal(scope.counts.files,70);
   const group = scope.files[0].group;
-  const result = await current.delegate({review_id:scope.review_id,groups:[group],record_receipt:true});
+  const result = await current.delegate({review_id:scope.review_id,groups:[group],record_receipt:true,role:'reviewer'});
   assert.equal(result.isError,true);
   assert.match(result.error.message,/complete group exceeds the task budget/);
 });
@@ -227,7 +238,7 @@ test('package upgrades continue the original frozen review', async () => {
   const git = await current.module('git');
   for (const [index,group] of scope.groups.slice(1).entries()) {
     const output = await current.delegate({review_id:scope.review_id,
-      groups:[group.id],record_receipt:true});
+      groups:[group.id],record_receipt:true,role:'reviewer'});
     const capture = captured(output.task);
     assert.equal(capture.review_id,scope.review_id);
     assert.deepEqual(capture.snapshot,scope.snapshot);

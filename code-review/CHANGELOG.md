@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Require an eligible team role for delegated reviews when the turn has configured roles.
+
 ## 0.1.18
 
 - Match delegated review work to the responsibilities of the selected team role.
