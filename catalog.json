@@ -22996,7 +22996,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.40",
+        "version": "0.1.41",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23133,6 +23133,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.41",
+          "commit": "126b8ec45f404a8cdc229668eb025abcb1a49bf4",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Clarify the regression test name for generation speed and first-token latency.",
+            "locales": {
+              "zh-CN": "- 明确了生成速度与首个 token 延迟的回归测试名称。",
+              "zh-TW": "- 明確標示生成速度與首個 token 延遲的迴歸測試名稱。",
+              "ja": "- 生成速度と最初のトークンの遅延を検証する回帰テストの名前を明確にしました。",
+              "ko": "- 생성 속도와 첫 토큰 지연 시간을 검증하는 회귀 테스트의 이름을 명확히 했습니다.",
+              "fr": "- Précise le nom du test de régression sur la vitesse de génération et la latence du premier jeton.",
+              "de": "- Den Namen des Regressionstests für Generierungsgeschwindigkeit und Latenz des ersten Tokens präzisiert.",
+              "es": "- Se aclara el nombre de la prueba de regresión de velocidad de generación y latencia del primer token.",
+              "pt-BR": "- Esclarece o nome do teste de regressão de velocidade de geração e latência do primeiro token.",
+              "ru": "- Уточнено название регрессионного теста скорости генерации и задержки первого токена."
+            }
+          }
+        },
         {
           "version": "0.1.40",
           "commit": "941234aa9e7f317ac5c841e9b759c3f41dd38139",
@@ -23683,17 +23703,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Update the Chinese label for subagents in session statistics.",
+        "text": "- Clarify the regression test name for generation speed and first-token latency.",
         "locales": {
-          "zh-CN": "- 会话统计统一使用“子智能体”。",
-          "zh-TW": "- 工作階段統計統一使用「子智能體」。",
-          "ja": "- セッション統計でサブエージェントの中国語表記を統一しました。",
-          "ko": "- 세션 통계에서 하위 에이전트의 중국어 표기를 통일했습니다.",
-          "fr": "- Le libellé chinois des sous-agents a été harmonisé dans les statistiques de session.",
-          "de": "- Die chinesische Bezeichnung für Unteragenten in der Sitzungsstatistik wurde vereinheitlicht.",
-          "es": "- Se ha unificado el nombre chino de los subagentes en las estadísticas de sesión.",
-          "pt-BR": "- Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.",
-          "ru": "- Унифицировано китайское название субагентов в статистике сеанса."
+          "zh-CN": "- 明确了生成速度与首个 token 延迟的回归测试名称。",
+          "zh-TW": "- 明確標示生成速度與首個 token 延遲的迴歸測試名稱。",
+          "ja": "- 生成速度と最初のトークンの遅延を検証する回帰テストの名前を明確にしました。",
+          "ko": "- 생성 속도와 첫 토큰 지연 시간을 검증하는 회귀 테스트의 이름을 명확히 했습니다.",
+          "fr": "- Précise le nom du test de régression sur la vitesse de génération et la latence du premier jeton.",
+          "de": "- Den Namen des Regressionstests für Generierungsgeschwindigkeit und Latenz des ersten Tokens präzisiert.",
+          "es": "- Se aclara el nombre de la prueba de regresión de velocidad de generación y latencia del primer token.",
+          "pt-BR": "- Esclarece o nome do teste de regressão de velocidade de geração e latência do primeiro token.",
+          "ru": "- Уточнено название регрессионного теста скорости генерации и задержки первого токена."
         }
       }
     },
