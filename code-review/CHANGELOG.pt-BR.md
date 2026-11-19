@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Delega revisões conforme as responsabilidades de cada papel na equipe.
+
 ## 0.1.17
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

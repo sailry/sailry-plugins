@@ -13,8 +13,10 @@ function parameters(roles) {
       groups:{type:'array',minItems:1,uniqueItems:true,
         items:{type:'string',minLength:1}},
       record_receipt:{type:'boolean',description:'Require a formal receipt, or explicitly gather evidence only'},
-      role:{type:['string','null'],enum:[...roles.map(role => role.key),null],default:null,
-        description:'Omit for a new child inheriting the current turn; named roles retain their captured mode and model'},
+      role:{type:['string','null'],enum:[...roles.map(role => role.key),null],
+        description:roles.length
+          ? 'Pass the exact key of the captured role responsible for the assigned review work.'
+          : 'Omit role to inherit the current turn and model.'},
       title:{type:'string',minLength:1},
       background:{type:'boolean'},
     }};
@@ -23,11 +25,11 @@ function parameters(roles) {
 export function initialize({tools, roles, mode}) {
   const captured = roles.map(({key,read_only,tools}) => ({key,read_only,tools}));
   stageTurnState({mode,roles:captured,recording:receiptTools.every(name => tools.includes(name))});
-  const roster = roles.map(role => `${role.key}${role.read_only ? ' [read only]' : ''}${role.tools === false ? ' [no tools]' : ''}: ${role.name}`).join('\n');
+  const roster = roles.map(role => `${role.key}${role.read_only ? ' [read only]' : ''}${role.tools === false ? ' [no tools]' : ''}: ${role.name}${role.description ? ` — ${role.description}` : ''}`).join('\n');
   return {tools, parameters:tools.includes('delegate_review')
     ? {delegate_review:parameters(captured)} : {},
     instruction:tools.includes('delegate_review')
-      ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Omit role to inherit the current turn; read-only roles gather evidence only.${roster ? `\nCaptured roles:\n${roster}` : ''}` : ''};
+      ? `Use delegate_review for complete frozen review groups. Select record_receipt explicitly. Read-only roles gather evidence only.${roster ? ` Select the role whose responsibilities fit the assignment and pass its exact key. Keep the work in the parent if no role is eligible.\nCaptured roles:\n${roster}` : ' No roles are configured. Omit role to inherit the current turn and model.'}` : ''};
 }
 
 function capability(args) {

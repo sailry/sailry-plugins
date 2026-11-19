@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Match delegated review work to the responsibilities of the selected team role.
+
 ## 0.1.17
 
 - Restore outline icons in navigation and tools

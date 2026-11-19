@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Prüfaufgaben nach den Zuständigkeiten der Teamrollen delegieren.
+
 ## 0.1.17
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

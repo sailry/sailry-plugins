@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.18
+
+- Délègue les revues selon les responsabilités des rôles de l’équipe.
+
 ## 0.1.17
 
 - Icônes au trait rétablies dans la navigation et les outils

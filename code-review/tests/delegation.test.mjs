@@ -65,6 +65,24 @@ test('initialization binds roles without adding tools', async () => {
   assert.deepEqual(limited.parameters,{});
 });
 
+test('review assignment describes captured responsibilities and forwards the exact custom key', async () => {
+  const current = await fixture();
+  const key = 'boundary-auditor';
+  const description = 'Check session ownership and isolation';
+  const selection = initialize(current,{roles:[{key,name:'Audit',description,read_only:false,tools:true}]});
+  assert.ok(selection.instruction.includes(description));
+  assert.match(selection.instruction,/pass its exact key/);
+  assert.deepEqual(selection.parameters.delegate_review.properties.role.enum,[key,null]);
+  assert.match(selection.parameters.delegate_review.properties.role.description,/exact key/);
+  const scope = await current.invoke('scope',{});
+  const args = {review_id:scope.review_id,groups:[scope.groups[0].id],record_receipt:true};
+  assert.equal((await current.delegate({...args,role:key})).role,key);
+  const empty = initialize(current,{roles:[]});
+  assert.deepEqual(empty.parameters.delegate_review.properties.role.enum,[null]);
+  assert.match(empty.instruction,/Omit role to inherit/);
+  assert.equal((await current.delegate(args)).role,null);
+});
+
 test('receipt mode rejects plan and read-only roles', async () => {
   for (const [mode,role,available] of [
     ['plan','reviewer',tools],['code','evidence',tools],['code','reviewer',['delegate_review']],
