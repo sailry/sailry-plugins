@@ -2996,7 +2996,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
@@ -3730,6 +3730,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "b27d6b621dd5c4fa9214b0ca8d41aa98b2fba5ad",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Require an eligible team role for delegated reviews when the turn has configured roles.",
+            "locales": {
+              "zh-CN": "- 团队已配置角色时，委派审查必须选择能使用工具的角色。"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "20a089c654cbdb9c773c47b61168b7210930aa15",
           "api_version": "v1",
@@ -3901,17 +3913,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Match delegated review work to the responsibilities of the selected team role.",
+        "text": "- Require an eligible team role for delegated reviews when the turn has configured roles.",
         "locales": {
-          "zh-CN": "- 按团队角色的职责分派审查任务。",
-          "zh-TW": "- 依團隊角色的職責分派審查工作。",
-          "ja": "- チーム内の各ロールの担当範囲に応じてレビューを委任します。",
-          "ko": "- 팀 역할의 책임 범위에 따라 검토 작업을 위임합니다.",
-          "fr": "- Délègue les revues selon les responsabilités des rôles de l’équipe.",
-          "de": "- Prüfaufgaben nach den Zuständigkeiten der Teamrollen delegieren.",
-          "es": "- Delega las revisiones según las responsabilidades de cada rol del equipo.",
-          "pt-BR": "- Delega revisões conforme as responsabilidades de cada papel na equipe.",
-          "ru": "- Задачи проверки распределяются в соответствии с обязанностями ролей команды."
+          "zh-CN": "- 团队已配置角色时，委派审查必须选择能使用工具的角色。"
         }
       }
     },
