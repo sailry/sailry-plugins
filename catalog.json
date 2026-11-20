@@ -351,7 +351,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "brief",
-        "version": "0.1.13",
+        "version": "0.1.14",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -389,7 +389,7 @@
                 "ru": "Создавать HTML-документы и макеты"
               }
             },
-            "instructions": "Create session-owned HTML documents, reports, diagrams, demos and interactive previews when the user requests or accepts HTML. An explicit HTML or HTML-preview request authorizes generation directly. Without a request, you may create one small kind=preview visual, such as a chart, diagram, UI mockup or interactive explainer, when it clearly helps the current answer more than text; keep the written answer complete without it, and skip it for simple facts, routine changes or when the user prefers text. For complex development, design or refactor plans, present the full ordinary plan in the conversation first, then end with exactly one concise offer to create an HTML version and wait for the user's choice. Do not repeat the offer for that plan. Do not offer HTML for pure questions or simple changes, and never generate a document or plan HTML version automatically without acceptance. HTML does not authorize execution or project writes. Load this package's brief skill before writing. For an explicitly requested worktree file path, create and verify that real file with available file or command tools and deliver it with present_files, or with its standalone Markdown link when that tool is unavailable; do not substitute write_brief or create an additional artifact unless separately requested. If writing is unavailable, report the limitation instead of claiming the file was saved. write_brief creates only a session-owned artifact, not a worktree file; its returned card already delivers it. Do not invent a file path or duplicate that card with a Markdown file link. A separately requested file copy must actually be created and verified. write_brief uses kind=document by default for a sanitized main-body fragment and kind=preview for self-contained HTML with inline CSS and local JavaScript in an isolated sandbox. Preview has no Node, tool, credential, filesystem or network bridge; do not rely on CDNs, imports or external images. In previews, keep the body background transparent, center the main element, use the host's --sailry-* theme variables with fallbacks and keep visuals modest in size. Only the main session can write. Read existing HTML before revising, preserve its kind, and pass the exact id and latest revision as expected_revision. Keep the card summary short; do not repeat the full HTML in the final answer. A document or preview cannot collect answers; use ask_user for missing choices or information when needed.",
+            "instructions": "Create session-owned HTML documents, reports, diagrams, demos and interactive previews when the user requests or accepts HTML. An explicit HTML or HTML-preview request authorizes generation directly. Without a request, you may create one small kind=preview visual, such as a chart, diagram, UI mockup or interactive explainer, when it clearly helps the current answer more than text; keep the written answer complete without it, and skip it for simple facts, routine changes or when the user prefers text. For complex development, design or refactor plans, present the full ordinary plan in the conversation first, then end with exactly one concise offer to create an HTML version and wait for the user's choice. Do not repeat the offer for that plan. Do not offer HTML for pure questions or simple changes, and never generate a document or plan HTML version automatically without acceptance. HTML does not authorize execution or project writes. Load this package's brief skill before writing. For an explicitly requested worktree file path, create and verify that real file with available file or command tools and deliver it with present_files, or with its standalone Markdown link when that tool is unavailable; do not substitute write_brief or create an additional artifact unless separately requested. If writing is unavailable, report the limitation instead of claiming the file was saved. write_brief creates only a session-owned artifact, not a worktree file; its returned card already delivers it. Do not invent a file path or duplicate that card with a Markdown file link. A separately requested file copy must actually be created and verified. write_brief uses kind=document by default for a sanitized main-body fragment and kind=preview for self-contained HTML with inline CSS and local JavaScript in an isolated sandbox. Preview has no Node, tool, credential, filesystem or network bridge; do not rely on CDNs, imports or external images. In previews, keep the body background transparent, center the main element, use the host's --sailry-* theme variables with fallbacks and keep visuals modest in size. Only the main session can write. Read existing HTML before revising, preserve its kind, and pass the exact id and latest revision as expected_revision. Keep the card summary short; do not repeat the full HTML in the final answer. Forms are optional and only supported in document mode. Their answers arrive as ordinary user messages for that document and revision, not permission to execute; revise the document from them. Use ask_user for missing choices or information when needed.",
             "artifact_view": {
               "template": "dev.sailry.platform/document/template.html",
               "styles": [
@@ -522,6 +522,26 @@
         "artifacts.write"
       ],
       "versions": [
+        {
+          "version": "0.1.14",
+          "commit": "6cc15bfa758441e8a03f911948dc374ccca64061",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Restore optional forms in documents; Desktop sends their answers to the conversation",
+            "locales": {
+              "zh-CN": "- 恢复文档中的可选表单；Desktop 会将其答案发送到对话",
+              "zh-TW": "- 恢復文件中的選用表單；Desktop 會將其答案傳送到對話",
+              "ja": "- ドキュメントの任意フォームを復元（Desktop が回答を会話に送信します）",
+              "ko": "- 문서의 선택형 양식을 복원; Desktop이 답변을 대화로 보냅니다",
+              "fr": "- Rétablit les formulaires facultatifs dans les documents ; Desktop envoie leurs réponses à la conversation",
+              "de": "- Optionale Formulare in Dokumenten wiederhergestellt; Desktop sendet die Antworten an die Unterhaltung",
+              "es": "- Se restauran los formularios opcionales en documentos; Desktop envía sus respuestas a la conversación",
+              "pt-BR": "- Restaura formulários opcionais em documentos; o Desktop envia as respostas para a conversa",
+              "ru": "- Возвращены необязательные формы в документах; Desktop отправляет ответы в беседу"
+            }
+          }
+        },
         {
           "version": "0.1.13",
           "commit": "1831e0102f10918670b5990f8b2eedea0627ac10",
@@ -684,17 +704,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Deliver requested HTML files with present_files",
+        "text": "- Restore optional forms in documents; Desktop sends their answers to the conversation",
         "locales": {
-          "zh-CN": "- 使用 present_files 交付指定的 HTML 文件",
-          "zh-TW": "- 使用 present_files 交付指定的 HTML 檔案",
-          "ja": "- 指定された HTML ファイルを present_files で渡す",
-          "ko": "- 요청한 HTML 파일을 present_files로 전달",
-          "fr": "- Remettre les fichiers HTML demandés avec present_files",
-          "de": "- Angeforderte HTML-Dateien mit present_files übergeben",
-          "es": "- Entregar los archivos HTML solicitados con present_files",
-          "pt-BR": "- Entregar os arquivos HTML solicitados com present_files",
-          "ru": "- Передавать запрошенные HTML-файлы через present_files"
+          "zh-CN": "- 恢复文档中的可选表单；Desktop 会将其答案发送到对话",
+          "zh-TW": "- 恢復文件中的選用表單；Desktop 會將其答案傳送到對話",
+          "ja": "- ドキュメントの任意フォームを復元（Desktop が回答を会話に送信します）",
+          "ko": "- 문서의 선택형 양식을 복원; Desktop이 답변을 대화로 보냅니다",
+          "fr": "- Rétablit les formulaires facultatifs dans les documents ; Desktop envoie leurs réponses à la conversation",
+          "de": "- Optionale Formulare in Dokumenten wiederhergestellt; Desktop sendet die Antworten an die Unterhaltung",
+          "es": "- Se restauran los formularios opcionales en documentos; Desktop envía sus respuestas a la conversación",
+          "pt-BR": "- Restaura formulários opcionais em documentos; o Desktop envia as respostas para a conversa",
+          "ru": "- Возвращены необязательные формы в документах; Desktop отправляет ответы в беседу"
         }
       }
     },
