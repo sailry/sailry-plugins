@@ -18217,7 +18217,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "office",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Create and edit Word, Excel, PowerPoint and PDF files using the execution Node's tools",
         "extensions": {
           "dev.sailry.platform": {
@@ -18246,6 +18246,26 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.3",
+          "commit": "54f70b6a806d7e4706c1c259ef6ec9801fc70796",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Deliver finished files with present_files",
+            "locales": {
+              "zh-CN": "- 使用 present_files 交付完成的文件",
+              "zh-TW": "- 使用 present_files 交付完成的檔案",
+              "ja": "- 完成したファイルを present_files で渡す",
+              "ko": "- 완성된 파일을 present_files로 전달",
+              "fr": "- Remettre les fichiers terminés avec present_files",
+              "de": "- Fertige Dateien mit present_files übergeben",
+              "es": "- Entregar los archivos terminados con present_files",
+              "pt-BR": "- Entregar arquivos concluídos com present_files",
+              "ru": "- Передавать готовые файлы через present_files"
+            }
+          }
+        },
         {
           "version": "0.1.2",
           "commit": "432aced4d065017cf7cfdfb8d11ff136eba309c7",
@@ -18292,17 +18312,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Use a new plugin icon",
+        "text": "- Deliver finished files with present_files",
         "locales": {
-          "zh-CN": "- 更换插件图标",
-          "zh-TW": "- 更換外掛圖示",
-          "ja": "- プラグインのアイコンを変更",
-          "ko": "- 플러그인 아이콘 변경",
-          "fr": "- Nouvelle icône du plugin",
-          "de": "- Neues Plugin-Symbol",
-          "es": "- Nuevo icono del plugin",
-          "pt-BR": "- Novo ícone do plugin",
-          "ru": "- Новый значок плагина"
+          "zh-CN": "- 使用 present_files 交付完成的文件",
+          "zh-TW": "- 使用 present_files 交付完成的檔案",
+          "ja": "- 完成したファイルを present_files で渡す",
+          "ko": "- 완성된 파일을 present_files로 전달",
+          "fr": "- Remettre les fichiers terminés avec present_files",
+          "de": "- Fertige Dateien mit present_files übergeben",
+          "es": "- Entregar los archivos terminados con present_files",
+          "pt-BR": "- Entregar arquivos concluídos com present_files",
+          "ru": "- Передавать готовые файлы через present_files"
         }
       }
     },
