@@ -25777,7 +25777,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.18",
+        "version": "0.1.19",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -25817,7 +25817,7 @@
               {
                 "name": "list_worktrees",
                 "presentation": "summary",
-                "description": "List Git worktrees in this project with registered IDs. Entries without an ID must be registered before delegation. Use git_status with a registered worktree ID to inspect changes. File and command tools remain bound to this turn's directory.",
+                "description": "List Git worktrees in this project with registered IDs. Entries without an ID must be registered before delegation. Use git_status with a registered worktree ID to inspect changes. This conversation's file tools work only in its own worktree; do not cd into another worktree to change it.",
                 "contexts": [
                   "workspace"
                 ],
@@ -25853,7 +25853,7 @@
               {
                 "name": "create_worktree",
                 "presentation": "details",
-                "description": "Create and register an isolated worktree and new branch in the execution Node's managed directory, starting from this turn's worktree. Use head and index_revision from git_status as expected_head and expected_index. include_changes defaults to false; set true to copy uncommitted changes. Use the returned ID with spawn_agent.worktree. This does not move the parent or merge changes. After a delegated child finishes, remove its worktree when it has no changes and no new commits; otherwise follow remove_worktree. Invoke directly under the current permission mode; do not request approval through ask_user.",
+                "description": "Create and register an isolated worktree and new branch in the execution Node's managed directory, starting from this turn's worktree. Use head and index_revision from git_status as expected_head and expected_index. include_changes defaults to false; set true to copy uncommitted changes. Use the returned ID with spawn_agent.worktree. This does not move this conversation or merge changes. To develop there, pass the returned ID to spawn_agent. If the user wants this conversation itself to continue there, ask them to switch it with the composer's worktree selector, then stop. Never cd into the new worktree or change it from this conversation. After a delegated child finishes, remove its worktree when it has no changes and no new commits; otherwise follow remove_worktree. Invoke directly under the current permission mode; do not request approval through ask_user.",
                 "contexts": [
                   "workspace"
                 ],
@@ -26087,6 +26087,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.19",
+          "commit": "025f736c9ccd0915751a1ea393acbb619ebddb06",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Guide development in a new worktree to delegation or the composer's worktree selector",
+            "locales": {
+              "zh-CN": "- 在新工作区开发时引导使用子代理或输入框的工作区切换",
+              "zh-TW": "- 在新工作區開發時引導使用子代理或輸入框的工作區切換",
+              "ja": "- 新しいワークツリーでの開発はサブエージェントか入力欄のワークツリー切り替えへ案内",
+              "ko": "- 새 워크트리에서의 개발을 하위 에이전트나 입력창의 워크트리 전환으로 안내",
+              "fr": "- Orienter le développement dans un nouvel arbre de travail vers la délégation ou le sélecteur du compositeur",
+              "de": "- Entwicklung in einem neuen Worktree an Delegation oder die Worktree-Auswahl im Eingabefeld verweisen",
+              "es": "- Orientar el desarrollo en un nuevo worktree a la delegación o al selector del compositor",
+              "pt-BR": "- Orientar o desenvolvimento em uma nova worktree para delegação ou o seletor do compositor",
+              "ru": "- Направлять разработку в новом рабочем дереве в делегирование или выбор дерева в поле ввода"
+            }
+          }
+        },
+        {
           "version": "0.1.18",
           "commit": "432aced4d065017cf7cfdfb8d11ff136eba309c7",
           "api_version": "v1",
@@ -26314,17 +26334,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Use a new plugin icon",
+        "text": "- Guide development in a new worktree to delegation or the composer's worktree selector",
         "locales": {
-          "zh-CN": "- 更换插件图标",
-          "zh-TW": "- 更換外掛圖示",
-          "ja": "- プラグインのアイコンを変更",
-          "ko": "- 플러그인 아이콘 변경",
-          "fr": "- Nouvelle icône du plugin",
-          "de": "- Neues Plugin-Symbol",
-          "es": "- Nuevo icono del plugin",
-          "pt-BR": "- Novo ícone do plugin",
-          "ru": "- Новый значок плагина"
+          "zh-CN": "- 在新工作区开发时引导使用子代理或输入框的工作区切换",
+          "zh-TW": "- 在新工作區開發時引導使用子代理或輸入框的工作區切換",
+          "ja": "- 新しいワークツリーでの開発はサブエージェントか入力欄のワークツリー切り替えへ案内",
+          "ko": "- 새 워크트리에서의 개발을 하위 에이전트나 입력창의 워크트리 전환으로 안내",
+          "fr": "- Orienter le développement dans un nouvel arbre de travail vers la délégation ou le sélecteur du compositeur",
+          "de": "- Entwicklung in einem neuen Worktree an Delegation oder die Worktree-Auswahl im Eingabefeld verweisen",
+          "es": "- Orientar el desarrollo en un nuevo worktree a la delegación o al selector del compositor",
+          "pt-BR": "- Orientar o desenvolvimento em uma nova worktree para delegação ou o seletor do compositor",
+          "ru": "- Направлять разработку в новом рабочем дереве в делегирование или выбор дерева в поле ввода"
         }
       }
     },
