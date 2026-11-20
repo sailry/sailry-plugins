@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.39
+
+- Signale le code d’erreur lorsqu’une action Git échoue.
+
 ## 0.1.38
 
 - Masque le badge des modifications si Git n’est pas installé sur l’hôte.

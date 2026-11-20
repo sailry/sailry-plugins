@@ -87,18 +87,18 @@ export class Repository {
           this.status = status;
           this.readCode = null;
           if (!this.connected || !this.visible) { this.dirty = true; return false; }
-          let branches = this.branches, branchError = null;
+          let branches = this.branches, branchError = null, branchCode = null;
           const references = this.references;
           try {
             if (status.kind === 'directory') branches = null;
             else if (!branches || this.branchesDirty || identityChanged || this.loadedReferences !== references) branches = await this.api.listGitBranches();
           }
-          catch (_) { branchError = 'git_branches_failed'; }
+          catch (error) { branchError = 'git_branches_failed'; branchCode = this.api.faultCode(error.message ?? String(error)); }
           if (this.closed || sequence !== this.read) return this.latest(sequence);
           if (!this.connected || !this.visible) { this.dirty = true; return false; }
           if (!branchError) {this.branches = branches;this.loadedReferences = references;this.branchesDirty = false;}
           if (!branchError || report) this.error = branchError;
-          if (branchError && report && !current.invalidated) this.report(branchError);
+          if (branchError && report && !current.invalidated) this.report(branchError,branchCode);
           if (this.pending?.reviewing || current.review) {
             if (this.pending) this.api.forgetRequest(this.pending.id);
             this.pending = null;
@@ -117,7 +117,7 @@ export class Repository {
           if (sequence !== this.read || this.closed) return this.latest(sequence);
           this.readCode = this.api.faultCode(error.message ?? String(error));
           if (!current.invalidated && this.visible && (!current.quiet || !this.status)) {
-            this.error = 'git_read_failed'; this.report(this.error);
+            this.error = 'git_read_failed'; this.report(this.error,this.readCode);
           }
           if (!current.invalidated) return false;
         }
@@ -181,7 +181,7 @@ export class Repository {
     if (!(kind === 'initialize' ? this.canInitialize() : this.writable())) return false;
     let id;
     try { id = prepare(); }
-    catch (error) { this.error = failure(kind,this.api.faultCode(error.message ?? String(error))); this.report(this.error); this.notify(); return false; }
+    catch (error) { const code = this.api.faultCode(error.message ?? String(error)); this.error = failure(kind,code); this.report(this.error,code); this.notify(); return false; }
     ++this.read; ++this.documentRead; ++this.historyRead;
     this.loading = false; this.historyLoading = false;
     this.pending = {id,kind,...details,busy:false,reviewing:false};
@@ -200,7 +200,7 @@ export class Repository {
         this.error = failure(pending.kind,code); pending.error = this.error;
         pending.reviewing = (pending.kind === 'index' || pending.kind === 'prune') && code !== 'outcome_unknown'
           || pending.kind === 'action' && code === 'conflict';
-        this.report(this.error);
+        this.report(this.error,code);
         return false;
       }
       const result = receipt.Ok;
@@ -242,7 +242,7 @@ export class Repository {
       if (page.next) this.historyCursors.set(current + 1,page.next);
       else this.historyCursors.delete(current + 1);
       this.history = page;
-    } catch (_) { if (sequence === this.historyRead && !this.closed && this.visible && (!quiet || !this.history)) { this.error = 'git_read_failed'; this.report(this.error); } }
+    } catch (error) { if (sequence === this.historyRead && !this.closed && this.visible && (!quiet || !this.history)) { this.error = 'git_read_failed'; this.report(this.error,this.api.faultCode(error.message ?? String(error))); } }
     finally { if (sequence === this.historyRead) this.historyLoading = false; this.notify(); }
   }
 
@@ -283,8 +283,8 @@ export class Repository {
       this.documents.set(id,{id,request,...content});
       this.error = content.truncated || content.files?.some(file => file.truncated) ? 'git_diff_partial'
         : content.binary || content.files?.some(file => file.binary) ? 'git_diff_binary' : null;
-    } catch (_) {
-      if (sequence === this.documentRead && !this.closed && this.visible && (!quiet || !this.documents.has(id))) { this.error = 'git_read_failed'; this.report(this.error); }
+    } catch (error) {
+      if (sequence === this.documentRead && !this.closed && this.visible && (!quiet || !this.documents.has(id))) { this.error = 'git_read_failed'; this.report(this.error,this.api.faultCode(error.message ?? String(error))); }
     } finally { if (sequence === this.documentRead) this.documentLoading = false; this.notify(); }
   }
 

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.39
+
+- Meldet den Fehlercode, wenn eine Git-Aktion fehlschlägt.
+
 ## 0.1.38
 
 - Änderungsabzeichen ausblenden, wenn Git auf dem Host fehlt.

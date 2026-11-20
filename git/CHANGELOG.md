@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.39
+
+- Report why a Git action failed with its error code.
+
 ## 0.1.38
 
 - Hide the changes badge when Git is not installed on the host.

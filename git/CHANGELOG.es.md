@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.39
+
+- Informa el código de error cuando falla una acción de Git.
+
 ## 0.1.38
 
 - Oculta la insignia de cambios si Git no está instalado en el host.

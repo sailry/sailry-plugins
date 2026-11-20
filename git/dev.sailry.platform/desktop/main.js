@@ -32,7 +32,7 @@ export default class Git extends View {
     this.mode = workspaceMode(); this.worktrees = false; this.worktreesPending = false;
     this.message = createText('',{multiline:true,label:this.text.git_commit_message,placeholder:this.text.git_commit_message});
     this.surfaces = new Surfaces(patch => DiffState(patch),text => EditorState(text));
-    this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },key => this.report(key),ms => cx.sleep(ms));
+    this.repo = new Repository(sdk,() => { if (!this.repo.closed) this.surfaces.sync(this.repo.documents); this.notify(); },(key,code) => this.report(key,code),ms => cx.sleep(ms));
     this.actions = new Actions(this); this.menus = new Menus(this);
     this.expanded = new Map(); this.nodes = new Map(); this.current = null;
     this.watch(nextMenuEvent,(event,cx) => this.menu(event,cx),cx);
@@ -100,11 +100,12 @@ export default class Git extends View {
   run(action,cx) {
     cx.spawn(async cx => {
       try { await action(cx); }
-      catch (_) { this.report('git_action_failed'); }
+      catch (error) { this.report('git_action_failed',sdk.faultCode(error.message ?? String(error))); }
       finally { cx.notify(); }
     });
   }
-  report(key) { toast({id:'git-error',message:this.text[key] ?? this.text.git_action_failed,kind:'error'}); }
+  // The code tells the host why, for its failure record; the message is for the user.
+  report(key,code) { toast({id:'git-error',message:this.text[key] ?? this.text.git_action_failed,kind:'error',...(code ? {code} : {})}); }
   focusDocument() {
     const document = this.repo.documents.get(this.repo.selected);
     if (!document) { focusEntry(null); return; }
