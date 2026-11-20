@@ -10,7 +10,7 @@ test('keeps HTML general without promising forms',() => {
   const extension = manifest.extensions['dev.sailry.platform'];
   const skill = readFileSync(new URL('../skills/brief/SKILL.md',import.meta.url),'utf8');
   assert.equal(manifest.name,'brief');
-  assert.equal(manifest.version,'0.1.12');
+  assert.equal(manifest.version,'0.1.13');
   assert.equal(extension.api_version,'v1');
   assert.equal(extension.display.label,'HTML');
   assert(Object.values(extension.display.locales).every(label => label === 'HTML'));

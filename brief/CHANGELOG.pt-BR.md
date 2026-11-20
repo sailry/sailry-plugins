@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Entregar os arquivos HTML solicitados com present_files
+
 ## 0.1.12
 
 - O modelo não é mais informado de que documentos aceitam formulários; eles não enviam nada

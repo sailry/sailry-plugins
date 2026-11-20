@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Angeforderte HTML-Dateien mit present_files übergeben
+
 ## 0.1.12
 
 - Dem Modell wird nicht mehr mitgeteilt, dass Dokumente Formulare unterstützen; sie senden nichts

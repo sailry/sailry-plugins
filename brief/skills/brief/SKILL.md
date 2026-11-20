@@ -20,8 +20,9 @@ metadata:
 ## Choose the output target
 
 If the user requests a specific worktree file path, create and verify that real
-file with available file or command tools, then deliver its standalone Markdown
-link for sidebar preview. Do not substitute `write_brief` or create an additional
+file with available file or command tools, then deliver it with `present_files`
+as a file card with a sidebar preview. Without that tool, deliver its standalone
+Markdown link. Do not substitute `write_brief` or create an additional
 session artifact unless the user separately requests one. If file writing is
 unavailable in this mode or tool catalog, explain the limitation rather than
 claiming the requested file was saved.

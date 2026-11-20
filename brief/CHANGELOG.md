@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.13
+
+- Deliver requested HTML files with present_files
+
 ## 0.1.12
 
 - Stop telling the model that documents support forms; they submit nothing
