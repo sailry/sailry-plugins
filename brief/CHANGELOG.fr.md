@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Rétablit les formulaires facultatifs dans les documents ; Desktop envoie leurs réponses à la conversation
+
 ## 0.1.13
 
 - Remettre les fichiers HTML demandés avec present_files

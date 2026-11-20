@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- 恢復文件中的選用表單；Desktop 會將其答案傳送到對話
+
 ## 0.1.13
 
 - 使用 present_files 交付指定的 HTML 檔案

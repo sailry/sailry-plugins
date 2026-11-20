@@ -46,8 +46,8 @@ in the main session; delegated agents can contribute analysis to their parent,
 but cannot create or revise a brief. Plan mode permits this session-owned
 document, without permitting project writes or execution.
 
-Choose `kind=document` (the default) for structured documents, reports and
-diagrams. One template serves these document types. Write only the HTML fragment inside
+Choose `kind=document` (the default) for structured documents, reports, diagrams
+and optional forms. One template serves these document types. Write only the HTML fragment inside
 `<main>`, without `<html>`, `<head>`, `<body>`, scripts, styles, event handlers,
 external links or external images. The host supplies semantic theme colors,
 fonts, local diagram libraries and interaction code. Do not generate JavaScript
@@ -160,10 +160,42 @@ is limited to 512 KiB after cleaning.
 
 ## Questions
 
-A document or preview cannot collect answers: it has no bridge to the
-conversation, so a form in it submits nothing. Do not add a form or a submit
-button. List the decisions that remain open as ordinary content, and use
-`ask_user` for actual user decisions or missing information.
+Forms are optional and only supported in `kind=document`; a preview's form
+submits nothing. When the requested structured document benefits from collecting
+unresolved decisions or information, it may include a `brief-form`. Do not append
+one to every document. Use radio choices for one answer,
+checkboxes for multiple answers, and a textarea for additional context. Include
+only decisions that remain open; preserve confirmed choices when revising.
+
+Use a bounded declaration rather than executable controls. Form and field names
+must start with a Latin letter and contain only letters, digits, `_`, `.` or `-`,
+up to 64 characters. Use unique form and field names. Each form has at most
+32 fieldsets and at most 64 controls per fieldset. Each control's `name` must
+match its containing fieldset's `data-name`. A fieldset may carry `data-required`.
+Radio and checkbox values and labels are at most 512 bytes; free text is at most
+4,096 bytes. Total submitted answers are limited to 16 KiB.
+
+```html
+<form class="brief-form" data-name="decisions">
+  <fieldset data-name="approach" data-required>
+    <legend>Preferred approach</legend>
+    <label><input type="radio" name="approach" value="a"> Approach A</label>
+    <label><input type="radio" name="approach" value="b"> Approach B</label>
+  </fieldset>
+  <fieldset data-name="note">
+    <legend>Additional context</legend><textarea name="note"></textarea>
+  </fieldset>
+  <button type="submit">Submit</button>
+</form>
+```
+
+The user answers in the side panel. Answers are ordinary user messages that
+start with a reply line naming the document, its version and the form. While
+a turn is active, they enter the normal message queue. Only the latest version
+of the document in its own conversation can submit. Answers do not approve or
+start execution, answer another pending question, or change the work mode. When
+answers arrive, read the latest revision and revise the document to reflect them
+unless the user asks otherwise. Use `ask_user` separately when the actual plan review requires it.
 
 ## Suggested structure
 

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Optionale Formulare in Dokumenten wiederhergestellt; Desktop sendet die Antworten an die Unterhaltung
+
 ## 0.1.13
 
 - Angeforderte HTML-Dateien mit present_files übergeben

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Se restauran los formularios opcionales en documentos; Desktop envía sus respuestas a la conversación
+
 ## 0.1.13
 
 - Entregar los archivos HTML solicitados con present_files

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- 문서의 선택형 양식을 복원; Desktop이 답변을 대화로 보냅니다
+
 ## 0.1.13
 
 - 요청한 HTML 파일을 present_files로 전달

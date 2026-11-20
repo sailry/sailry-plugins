@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- Restore optional forms in documents; Desktop sends their answers to the conversation
+
 ## 0.1.13
 
 - Deliver requested HTML files with present_files

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.14
+
+- 恢复文档中的可选表单；Desktop 会将其答案发送到对话
+
 ## 0.1.13
 
 - 使用 present_files 交付指定的 HTML 文件
