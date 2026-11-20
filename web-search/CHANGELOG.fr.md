@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Sans modèle choisi, la recherche par modèle utilise celui de la conversation
+
 ## 0.1.20
 
 - Choisir le modèle de recherche dans le sélecteur de modèles commun

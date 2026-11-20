@@ -106,16 +106,20 @@ export default class Settings extends View {
       password:createSecret({label:text.search_password,placeholder:text[config.basic_configured?'search_configured':'search_password']})};
     cx.notify();
   }
+  follow(cx) {
+    if(this.editor?.driver!=='model'||this.loading||this.pending||this.request)return;
+    this.editor.model=null;cx.notify();
+  }
   saveEditor(cx) {
     if(this.loading)return;
     if(this.request){this.retry(cx);return;}
     if(this.pending||!this.connected||!this.editor)return;
     const editor=this.editor,settings=clone(editor.settings);
     if(editor.driver==='model') {
-      if(!catalog.contains(this.models,editor.model)) {
+      if(editor.model&&!catalog.contains(this.models,editor.model)) {
         toast({id:'search-operation',message:this.text.search_model_unavailable,kind:'error'});return;
       }
-      settings.providers.model.model=clone(editor.model);
+      settings.providers.model.model=editor.model?clone(editor.model):null;
       try {
         this.request={id:prepareRequest({kind:'save_search_settings',data:{settings,credentials:{}}}),writing:true,editor};
         this.retry(cx);

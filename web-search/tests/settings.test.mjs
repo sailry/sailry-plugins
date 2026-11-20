@@ -114,6 +114,16 @@ test('chooses a model in one picker',async()=>{
   assert.deepEqual(save.data.credentials,{});assert.equal(f.prepared.length,0);assert.equal(f.view.editor,null);
 });
 
+test('returns model search to the conversation model',async()=>{
+  const f=await fixture();f.view.edit('model',f.cx);
+  f.view.control({id:'search-model',value:{model:'alpha/default',effort:null}},f.cx);
+  f.view.follow(f.cx);assert.equal(f.view.editor.model,null);
+  f.models({models:[]});f.view.load(f.cx);await f.settle();
+  f.view.saveEditor(f.cx);await f.settle();
+  const save=[...f.requests.values()].find(request=>request.kind==='save_search_settings');
+  assert.equal(save.data.settings.providers.model.model,null);assert.equal(f.view.editor,null);
+});
+
 test('catalog refresh failures leave search settings usable',async()=>{
   const f=await fixture(),before=f.notices.length;
   f.failModels();f.external();f.view.load(f.cx);await f.settle();

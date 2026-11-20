@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Ohne gewähltes Modell nutzt die Modellsuche das Modell der Unterhaltung
+
 ## 0.1.20
 
 - Suchmodell in der gemeinsamen Modellauswahl wählen

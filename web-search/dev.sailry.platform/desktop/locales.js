@@ -51,7 +51,7 @@ const locales = {
     "search_quota_free_quota": "Free quota",
     "search_quota_paid": "Paid",
     "search_model_name": "Model",
-    "search_model_required": "Choose a model",
+    "search_model_follow": "Follow current model",
     "search_model_unavailable": "Model unavailable",
     "search_not_supported": "Search is not supported",
     "search_sign_in": "Sign in again"
@@ -104,7 +104,7 @@ const locales = {
     "search_quota_free_quota": "免费额度",
     "search_quota_paid": "付费",
     "search_model_name": "模型",
-    "search_model_required": "请选择模型",
+    "search_model_follow": "跟随当前模型",
     "search_model_unavailable": "模型不可用",
     "search_not_supported": "不支持搜索",
     "search_sign_in": "请重新登录"
@@ -161,7 +161,7 @@ const locales = {
     "search_quota_free_quota": "免費額度",
     "search_quota_paid": "付費",
     "search_model_name": "模型",
-    "search_model_required": "請選擇模型",
+    "search_model_follow": "跟隨目前模型",
     "search_model_unavailable": "模型無法使用",
     "search_not_supported": "不支援搜尋",
     "search_sign_in": "請重新登入"
@@ -218,7 +218,7 @@ const locales = {
     "search_quota_free_quota": "無料枠",
     "search_quota_paid": "有料",
     "search_model_name": "モデル",
-    "search_model_required": "モデルを選択",
+    "search_model_follow": "現在のモデルに従う",
     "search_model_unavailable": "モデルを利用できません",
     "search_not_supported": "検索に対応していません",
     "search_sign_in": "再ログインしてください"
@@ -275,7 +275,7 @@ const locales = {
     "search_quota_free_quota": "무료 할당량",
     "search_quota_paid": "유료",
     "search_model_name": "모델",
-    "search_model_required": "모델 선택",
+    "search_model_follow": "현재 모델 따르기",
     "search_model_unavailable": "모델을 사용할 수 없음",
     "search_not_supported": "검색이 지원되지 않음",
     "search_sign_in": "다시 로그인하세요"
@@ -332,7 +332,7 @@ const locales = {
     "search_quota_free_quota": "Kostenloses Kontingent",
     "search_quota_paid": "Kostenpflichtig",
     "search_model_name": "Modell",
-    "search_model_required": "Modell auswählen",
+    "search_model_follow": "Aktuellem Modell folgen",
     "search_model_unavailable": "Modell nicht verfügbar",
     "search_not_supported": "Suche wird nicht unterstützt",
     "search_sign_in": "Erneut anmelden"
@@ -389,7 +389,7 @@ const locales = {
     "search_quota_free_quota": "Cuota gratuita",
     "search_quota_paid": "De pago",
     "search_model_name": "Modelo",
-    "search_model_required": "Elige un modelo",
+    "search_model_follow": "Seguir el modelo actual",
     "search_model_unavailable": "Modelo no disponible",
     "search_not_supported": "La búsqueda no es compatible",
     "search_sign_in": "Vuelve a iniciar sesión"
@@ -446,7 +446,7 @@ const locales = {
     "search_quota_free_quota": "Quota gratuit",
     "search_quota_paid": "Payant",
     "search_model_name": "Modèle",
-    "search_model_required": "Choisir un modèle",
+    "search_model_follow": "Suivre le modèle actuel",
     "search_model_unavailable": "Modèle indisponible",
     "search_not_supported": "Recherche non prise en charge",
     "search_sign_in": "Reconnectez-vous"
@@ -503,7 +503,7 @@ const locales = {
     "search_quota_free_quota": "Cota gratuita",
     "search_quota_paid": "Pago",
     "search_model_name": "Modelo",
-    "search_model_required": "Escolha um modelo",
+    "search_model_follow": "Seguir o modelo atual",
     "search_model_unavailable": "Modelo indisponível",
     "search_not_supported": "Pesquisa não compatível",
     "search_sign_in": "Entre novamente"
@@ -560,7 +560,7 @@ const locales = {
     "search_quota_free_quota": "Бесплатная квота",
     "search_quota_paid": "Платно",
     "search_model_name": "Модель",
-    "search_model_required": "Выберите модель",
+    "search_model_follow": "Следовать текущей модели",
     "search_model_unavailable": "Модель недоступна",
     "search_not_supported": "Поиск не поддерживается",
     "search_sign_in": "Войдите снова"

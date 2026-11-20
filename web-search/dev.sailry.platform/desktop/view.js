@@ -19,8 +19,10 @@ function editor(view) {
   const form=new Form().size('large').gap_y(8);
   if(owner.driver==='model') {
     form.child(new Field().label(text.search_model_name).child(ModelPopup.new('search-model',{
-      label:text.search_model_name,placeholder:text.search_model_required,disabled:locked,catalog:{models:catalog.popup(view.models)},
+      label:text.search_model_name,placeholder:text.search_model_follow,disabled:locked,catalog:{models:catalog.popup(view.models)},
       selected:owner.model ? `${owner.model.provider}/${owner.model.model}` : null})));
+    // The picker has no empty choice; this returns the draft to the conversation's model.
+    if(owner.model)form.child(button('search-model-follow',text.search_model_follow,(_,cx)=>view.follow(cx),locked));
   } else {
     if(owner.driver==='searxng')form.child(new Field().label(text.search_endpoint)
       .child(div().id('search-editor-endpoint').child(TextField.new(owner.endpoint,{readonly:locked}))));
@@ -43,7 +45,7 @@ export function render(view) {
     // The switch already shows whether a service is enabled; describe only what it lacks and its quota.
     const missing=catalog.needsKey(capability)&&!config.key_configured?'search_key_required'
       :driver==='searxng'&&!config.endpoint?'search_endpoint_required'
-      :driver==='model'&&!catalog.contains(view.models,config.model)?'search_model_required':null;
+      :driver==='model'?(!config.model?'search_model_follow':!catalog.contains(view.models,config.model)?'search_model_unavailable':null):null;
     const detail=[missing,capability?.quota?`search_quota_${capability.quota}`:null].filter(Boolean).map(key=>text[key]).join(' · ');
     // The application's settings row: brand mark, name, what is missing; drag the handle to reorder.
     return SettingsRow.new(`${catalog.row}${driver}`,{label:text[`search_driver_${driver}`],description:detail,icon:catalog.icon(driver)})

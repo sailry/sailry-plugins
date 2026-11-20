@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Model search follows the conversation's model unless another is chosen
+
 ## 0.1.20
 
 - Choose the search model in the shared model picker
