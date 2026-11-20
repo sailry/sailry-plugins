@@ -1,7 +1,8 @@
 import {context,inspectGit} from 'sailry/sdk';
 import {labels} from './labels.js';
 
-const clearsBadge = new Set(['revision_conflict','not_found','permission_denied','wrong_target']);
+// not_configured: the execution Node has no usable Git executable.
+const clearsBadge = new Set(['revision_conflict','not_found','permission_denied','wrong_target','not_configured']);
 
 export async function badge() {
   const hidden = [{id:'changes',visible:false}];

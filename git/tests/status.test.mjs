@@ -54,7 +54,7 @@ test('bounded scans include a partial detail',async()=>{
 });
 
 test('invalidated scopes hide the badge',async()=>{
-  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target']) {
+  for (const code of ['revision_conflict','not_found','permission_denied','wrong_target','not_configured']) {
     const error=Object.assign(new Error('Repository unavailable'),{code});
     const {api}=await fixture({error});
     assert.deepEqual(await api.badge(),[{id:'changes',visible:false}]);
@@ -70,7 +70,7 @@ test('transient failures preserve the host error',async()=>{
 test('manifest declares Node status ownership',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension=manifest.extensions['dev.sailry.platform'];
-  assert.equal(manifest.version,'0.1.37');
+  assert.equal(manifest.version,'0.1.38');
   assert.equal(extension.min_sailry_version,'0.1.6');
   assert.deepEqual(extension.host.read_only,['badge']);
   assert.deepEqual(extension.host.status,{read:'badge',changes:['repository']});

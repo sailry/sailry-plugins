@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.38
+
+- Hide the changes badge when Git is not installed on the host.
+
 ## 0.1.37
 
 - Remove generic preview-limit notices from conversation tool results.

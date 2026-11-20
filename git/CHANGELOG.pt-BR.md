@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.38
+
+- Oculta o selo de alterações quando o Git não está instalado no host.
+
 ## 0.1.36
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

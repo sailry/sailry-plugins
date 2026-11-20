@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.38
+
+- Änderungsabzeichen ausblenden, wenn Git auf dem Host fehlt.
+
 ## 0.1.36
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

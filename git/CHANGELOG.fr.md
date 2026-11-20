@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.38
+
+- Masque le badge des modifications si Git n’est pas installé sur l’hôte.
+
 ## 0.1.36
 
 - Icônes au trait rétablies dans la navigation et les outils
