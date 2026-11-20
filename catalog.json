@@ -16215,13 +16215,13 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "memory",
-        "version": "0.1.22",
+        "version": "0.1.23",
         "description": "Manage project memory",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
             "min_sailry_version": "0.1.6",
-            "instructions": "Memory holds lasting user preferences, corrections and decisions. Use relevant memories from context or search_memory when they apply; current instructions win. When save_memory is available, save a lasting preference, correction or decision the user states, or anything they ask you to remember. Do not save secrets, task progress or facts available in code, Git or project docs.",
+            "instructions": "Use relevant memories or search_memory; current instructions win. When save_memory is available, honor explicit requests to remember. Otherwise save only what would guide a separate future session: the user's stated standing preferences, habits, corrections or conventions, or architectural reasons the repo cannot reveal. Skip one-off requests, plan approvals, styling and local implementation choices, progress, and facts available in code, Git or project docs. Never save secrets.",
             "storage": {
               "collections": [
                 {
@@ -16593,7 +16593,7 @@
                   "workspace"
                 ],
                 "initial": true,
-                "description": "Save a lasting preference, correction, decision or fact the user asked you to remember. Omit id to create; similar memories are returned instead of duplicated. To update or archive, pass id and expected_revision from complete memory bodies. Use global only for cross-project user preferences or feedback.",
+                "description": "Save what the user explicitly asks to remember or what should guide future sessions, not one-off requests, approvals or local choices. Never save secrets. Default to project scope; use global only for cross-project user preferences or feedback. Omit id to create; similar memories are returned, not duplicated. To update or archive, pass id and expected_revision from a complete current body.",
                 "handler": {
                   "name": "save",
                   "parameters": {
@@ -17319,6 +17319,15 @@
       ],
       "versions": [
         {
+          "version": "0.1.23",
+          "commit": "fa7a14e6aaf5dc9337faba42a6e4cc9c8cad8a4f",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Reserve save reminders for explicit memory requests and standing guidance, not routine implementation instructions or plan approvals."
+          }
+        },
+        {
           "version": "0.1.22",
           "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
           "api_version": "v1",
@@ -17544,10 +17553,7 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove generic preview-limit notices from conversation tool results.",
-        "locales": {
-          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
-        }
+        "text": "- Reserve save reminders for explicit memory requests and standing guidance, not routine implementation instructions or plan approvals."
       }
     },
     {
