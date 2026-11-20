@@ -1,13 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "memory",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "description": "Manage project memory",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
       "min_sailry_version": "0.1.6",
-      "instructions": "Memory holds lasting user preferences, corrections and decisions. Use relevant memories from context or search_memory when they apply; current instructions win. When save_memory is available, save a lasting preference, correction or decision the user states, or anything they ask you to remember. Do not save secrets, task progress or facts available in code, Git or project docs.",
+      "instructions": "Use relevant memories or search_memory; current instructions win. When save_memory is available, honor explicit requests to remember. Otherwise save only what would guide a separate future session: the user's stated standing preferences, habits, corrections or conventions, or architectural reasons the repo cannot reveal. Skip one-off requests, plan approvals, styling and local implementation choices, progress, and facts available in code, Git or project docs. Never save secrets.",
       "storage": {
         "collections": [
           {
@@ -379,7 +379,7 @@
             "workspace"
           ],
           "initial": true,
-          "description": "Save a lasting preference, correction, decision or fact the user asked you to remember. Omit id to create; similar memories are returned instead of duplicated. To update or archive, pass id and expected_revision from complete memory bodies. Use global only for cross-project user preferences or feedback.",
+          "description": "Save what the user explicitly asks to remember or what should guide future sessions, not one-off requests, approvals or local choices. Never save secrets. Default to project scope; use global only for cross-project user preferences or feedback. Omit id to create; similar memories are returned, not duplicated. To update or archive, pass id and expected_revision from a complete current body.",
           "handler": {
             "name": "save",
             "parameters": {

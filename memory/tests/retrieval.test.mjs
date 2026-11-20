@@ -59,7 +59,7 @@ for (const change of ['body','delete','foreign']) {
     const pending=change==='delete' ? await f.mutations.removeOperations(id(1),1)
       : await f.mutations.putOperations(change==='foreign' ? entry(2,'Foreign project',{project:id(9000)}) : current,change==='foreign' ? 0 : 1);
     f.onRead=key=>{if(key.startsWith('memory/body/')){f.onRead=null;f.apply(pending.operations);}};
-    // Both versions of the body share this term, which is also a save cue.
+    // Both versions share the query term; a keyword alone is not a save cue.
     const result=await initialize(f,'preference');
     if (change==='delete') assert.deepEqual(relevant(result),[]);
     else {
@@ -68,7 +68,7 @@ for (const change of ['body','delete','foreign']) {
       assert.equal(value.body,change==='body' ? current.body : 'Original preference');
     }
     assert.equal(relevant(result).length,change==='delete' ? 0 : 1);
-    assert.equal(result.parts.length,relevant(result).length+1,'bodies and the cue');
+    assert.equal(result.parts.length,relevant(result).length,'matched bodies only');
     assert.equal(f.prepared.length,0);
     assert.deepEqual(f.state.reads,[]);
   });

@@ -71,23 +71,27 @@ test('keeps at most three bodies that fit half the budget',async()=>{
   const big=hit(0,'a'.repeat(900)), size=Buffer.byteLength(policy.relevantParts([big],Infinity)[0]);
   assert.ok(size <= bounded.context_bytes/2 && size+Buffer.byteLength(policy.cue) > bounded.context_bytes/2);
   assert.deepEqual(bodies(policy.turnParts({relevant:[big],message:'Format',settings:bounded,write:true})).map(value=>value.id),['hit-0']);
-  assert.deepEqual(plain(policy.turnParts({relevant:[big],message:'Always format',settings:bounded,write:true})),[policy.cue],'the cue shares the half budget');
+  assert.deepEqual(plain(policy.turnParts({relevant:[big],message:'From now on, format Go files',settings:bounded,write:true})),[policy.cue],'the cue shares the half budget');
   assert.equal(policy.relevantLimit,3);
 });
 
 test('adds the save cue only for cue messages when writing is allowed',async()=>{
   const {policy}=await load();
-  const cued=['Always use tabs','never commit generated files',"Don't use semicolons",'I prefer short names','Please remember my editor',
-    'From now on answer in Chinese','\u4e0d\u8981\u5220\u9664\u6d4b\u8bd5','\u4ee5\u540e\u7528\u4e2d\u6587\u56de\u7b54','\u8bb0\u4f4f\u6211\u7684\u5e38\u7528\u8bbe\u7f6e','\u522b\u518d\u6dfb\u52a0\u6ce8\u91ca'];
+  const cued=['Please remember my editor','I usually prefer a short test summary',
+    'Our standing convention is to review migrations separately','From now on answer in Chinese',
+    '请记住：离线部署是因为客户现场没有网络','以后都用中文回答','我习惯先看测试结果','我们的惯例是单独评审迁移'];
   for (const message of cued) {
     assert.deepEqual(plain(policy.turnParts({message,settings,write:true})),[policy.cue],message);
     assert.deepEqual(plain(policy.turnParts({message,settings,write:false})),[],message);
   }
-  for (const message of ['Format the Go files','Explain this stack trace','\u89e3\u91ca\u8fd9\u6bb5\u4ee3\u7801','',null,undefined]) {
+  for (const message of ['Format the Go files','Use blue instead of green for this button',"Don't change the API",
+    'Always close this stream in finally','Remember to run the tests','I prefer option B for this patch',
+    'We decided to use this plan','Do not remember this value','这次改用列表，不要改接口','决定按这个方案做',
+    '我喜欢这版按钮样式','记得跑测试','别再添加注释','不要记住这个值','',null,undefined]) {
     assert.deepEqual(plain(policy.turnParts({message,settings,write:true})),[],String(message));
   }
-  assert.equal(policy.cue,'If this states a lasting preference or correction, save it with save_memory.');
-  const both=policy.turnParts({relevant:[{summary,body:'Use tabs'}],message:'Always use tabs',settings,write:true});
+  assert.match(policy.cue,/explicit memory request or guidance for a separate future session/);
+  const both=policy.turnParts({relevant:[{summary,body:'Use tabs'}],message:'For future sessions, use tabs',settings,write:true});
   assert.deepEqual([both.length,both.at(-1)],[2,policy.cue]);
 });
 
@@ -99,10 +103,10 @@ test('filters tools at initialization and returns no instruction',async () => {
   let initialized = await main.initialize({tools,project,resources:true});
   assert.deepEqual(plain(initialized),{instruction:'',parts:[],tools:['search_memory','review_memories']});
   assert.equal(state.remaining,settings.context_bytes);
-  initialized = await main.initialize({tools:['search_memory'],project,resources:false,message:'Always use tabs'});
+  initialized = await main.initialize({tools:['search_memory'],project,resources:false,message:'For future sessions, use tabs'});
   assert.deepEqual(plain(initialized),{instruction:'',parts:[],tools:['search_memory']});
   current = {...current,enabled:false};
-  initialized = await main.initialize({tools,project,resources:true,message:'Always use tabs'});
+  initialized = await main.initialize({tools,project,resources:true,message:'For future sessions, use tabs'});
   assert.deepEqual(plain(initialized),{instruction:'',parts:[],tools:[]});
 });
 
@@ -132,16 +136,17 @@ test('injects matched bodies and the cue without counting recalls',async()=>{
   let state;
   const queries=[];
   const matched={summary,body:'Prefer tabs in Go files'};
-  const {main}=await load({readMemorySettings:async()=>settings,
-    searchMemories:async(scope,query,options)=>{queries.push([scope,query,options]);return query==='Always format the Go files' ? [matched] : [];},
+  const message='For future sessions, format the Go files';
+  const {main,policy}=await load({readMemorySettings:async()=>settings,
+    searchMemories:async(scope,query,options)=>{queries.push([scope,query,options]);return query===message ? [matched] : [];},
     readMemory:async()=>structuredClone(matched),
     stageTurnState:value=>state=plain(value),readTurnState:()=>plain(state),newId:()=>id});
-  const initialized=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'Always format the Go files',mode:'code'});
-  assert.deepEqual(plain(queries),[[project,'Always format the Go files',{keyword:true}]]);
+  const initialized=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message,mode:'code'});
+  assert.deepEqual(plain(queries),[[project,message,{keyword:true}]]);
   assert.equal(initialized.instruction,'');
   assert.equal(initialized.parts.length,2);
   assert.deepEqual(bodies(initialized.parts),[{id,title:'Feedback',kind:'feedback',global:false,body:'Prefer tabs in Go files'}]);
-  assert.equal(initialized.parts.at(-1),'If this states a lasting preference or correction, save it with save_memory.');
+  assert.equal(initialized.parts.at(-1),policy.cue);
   assert.equal(state.remaining,settings.context_bytes-initialized.parts.reduce((size,part)=>size+Buffer.byteLength(part),0));
   assert.deepEqual(state.reads,[],'injected bodies grant no read authority');
   const denied=await main.save({arguments:{id,expected_revision:1,kind:'feedback',title:'Formatting',body:'Prefer tabs in Go files and Makefiles'},step:0});
@@ -149,9 +154,9 @@ test('injects matched bodies and the cue without counting recalls',async()=>{
   const searched=await main.search({query:'tests'});
   await main.beforeModel({results:[{name:'search_memory',response:searched}]});
   assert.deepEqual(Object.keys(state).sort(),['mode','project','reads','remaining','settings']);
-  const planning=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'Always format the Go files',mode:'plan'});
+  const planning=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message,mode:'plan'});
   assert.deepEqual(bodies(planning.parts).map(value=>value.id),[id]);
-  assert.ok(!planning.parts.includes('If this states a lasting preference or correction, save it with save_memory.'),'planning turns reject writes');
+  assert.ok(!planning.parts.includes(policy.cue),'planning turns reject writes');
 });
 
 test('search, replacement, scope policy and live revocation share one captured turn state',async () => {
@@ -211,13 +216,13 @@ test('the fixed policy is the manifest instructions, not turn output',async () =
   const manifest = JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const extension = manifest.extensions['dev.sailry.platform'];
   const {policy,main}=await load({readMemorySettings:async()=>settings,searchMemories:async()=>[{summary,body:'Use tabs'}],stageTurnState:()=>{}});
-  assert.equal(extension.instructions,'Memory holds lasting user preferences, corrections and decisions. Use relevant memories from context or search_memory when they apply; current instructions win. When save_memory is available, save a lasting preference, correction or decision the user states, or anything they ask you to remember. Do not save secrets, task progress or facts available in code, Git or project docs.');
+  assert.match(extension.instructions,/current instructions win/);
   assert.ok(Buffer.byteLength(extension.instructions)<=500);
   assert.equal(policy.policy,undefined);
   assert.equal(policy.instruction,undefined);
-  const initialized=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'Always use tabs',mode:'code'});
+  const initialized=await main.initialize({tools:['search_memory','save_memory'],project,resources:true,message:'For future sessions, use tabs',mode:'code'});
   assert.equal(initialized.instruction,'');
-  assert.ok(initialized.parts.every(part=>!part.includes('Memory holds lasting')&&!part.includes('Do not save secrets')));
+  assert.ok(initialized.parts.every(part=>!part.includes(extension.instructions)));
   assert.ok(extension.actions.includes('conversation.message.read'));
   assert.deepEqual(extension.host.turn,{initialize:'initialize',before_model:'beforeModel'});
   const initial=extension.tools.filter(tool=>tool.initial).map(tool=>tool.name);
@@ -229,6 +234,10 @@ test('the fixed policy is the manifest instructions, not turn output',async () =
   const save=extension.tools.find(tool=>tool.name==='save_memory');
   assert.deepEqual(save.handler.parameters.required,['kind','title','body']);
   assert.match(save.description,/Omit id to create/);
+  for (const phrase of ['explicitly asks to remember','future sessions','one-off requests','Never save secrets',
+    'project scope','cross-project user preferences or feedback','not duplicated','expected_revision from a complete current body']) {
+    assert.ok(save.description.includes(phrase),phrase);
+  }
 });
 
 test('recall counters and their storage are gone',async () => {

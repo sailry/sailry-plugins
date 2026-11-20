@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.23
+
+- Reserve save reminders for explicit memory requests and standing guidance, not routine implementation instructions or plan approvals.
+
 ## 0.1.22
 
 - Remove generic preview-limit notices from conversation tool results.

@@ -13,15 +13,14 @@ export const content = text => ({role:"user",parts:[{text}]});
 const cost = text => bytes(JSON.stringify(content(text))) + 128;
 
 export const relevantLimit = 3;
-// Lasting-preference, correction, decision and remember cues in Chinese and English. The Chinese
-// terms are escaped: don't, no more, don't use, later, from now on, next time, remember (twice),
-// always, forever, no longer, preference, like, habit, decide, switch to, forbid.
+// The cue is a reminder, not a save gate. Match requests to remember or explicitly
+// recurring guidance, not a keyword inside an implementation instruction.
 const cues = [
-  /\u4e0d\u8981|\u522b\u518d|\u522b\u7528|\u4ee5\u540e|\u4eca\u540e|\u4e0b\u6b21|\u8bb0\u4f4f|\u8bb0\u5f97|\u603b\u662f|\u6c38\u8fdc|\u4e0d\u518d|\u504f\u597d|\u559c\u6b22|\u4e60\u60ef|\u51b3\u5b9a|\u6539\u7528|\u7981\u6b62/u,
-  /\b(?:always|never|prefer(?:s|red|ence|ences)?|remember|don['\u2019]?t|do not|from now on|going forward|next time|instead of|stop (?:using|doing)|decided|i (?:like|want you to))\b/i,
+  /(?:^|[.!?\n])\s*(?:(?:please |(?:can|could) you )?remember\b(?!\s+to\b)|from now on\b|(?:in|for) future sessions\b|i (?:usually|generally) prefer\b|our standing (?:rule|convention)\b)/i,
+  /(?:^|[\u3002\uff01\uff1f\n])\s*(?:\u8bf7)?(?:\u8bb0\u4f4f|(?:\u4ee5\u540e|\u4eca\u540e)\u90fd|\u6211\u4e60\u60ef|\u6211\u7684\u957f\u671f\u504f\u597d|\u6211\u4eec\u7684\u60ef\u4f8b)/u,
 ];
 export const cued = message => typeof message === 'string' && cues.some(pattern=>pattern.test(message));
-export const cue = 'If this states a lasting preference or correction, save it with save_memory.';
+export const cue = 'Use save_memory only for an explicit memory request or guidance for a separate future session. Never save secrets.';
 
 // Each relevant body is one context part. The leading parts that fit the limit are kept, up to three.
 export function relevantParts(relevant,limit) {
