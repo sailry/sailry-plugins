@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.3
+
+- Remettre les fichiers terminés avec present_files
+
 ## 0.1.2
 
 - Nouvelle icône du plugin
