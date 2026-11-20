@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Guide development in a new worktree to delegation or the composer's worktree selector
+
 ## 0.1.18
 
 - Use a new plugin icon

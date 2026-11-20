@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Orientar el desarrollo en un nuevo worktree a la delegación o al selector del compositor
+
 ## 0.1.18
 
 - Nuevo icono del plugin

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Entwicklung in einem neuen Worktree an Delegation oder die Worktree-Auswahl im Eingabefeld verweisen
+
 ## 0.1.18
 
 - Neues Plugin-Symbol

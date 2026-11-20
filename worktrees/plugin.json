@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "worktrees",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -41,7 +41,7 @@
         {
           "name": "list_worktrees",
           "presentation": "summary",
-          "description": "List Git worktrees in this project with registered IDs. Entries without an ID must be registered before delegation. Use git_status with a registered worktree ID to inspect changes. File and command tools remain bound to this turn's directory.",
+          "description": "List Git worktrees in this project with registered IDs. Entries without an ID must be registered before delegation. Use git_status with a registered worktree ID to inspect changes. This conversation's file tools work only in its own worktree; do not cd into another worktree to change it.",
           "contexts": [
             "workspace"
           ],
@@ -77,7 +77,7 @@
         {
           "name": "create_worktree",
           "presentation": "details",
-          "description": "Create and register an isolated worktree and new branch in the execution Node's managed directory, starting from this turn's worktree. Use head and index_revision from git_status as expected_head and expected_index. include_changes defaults to false; set true to copy uncommitted changes. Use the returned ID with spawn_agent.worktree. This does not move the parent or merge changes. After a delegated child finishes, remove its worktree when it has no changes and no new commits; otherwise follow remove_worktree. Invoke directly under the current permission mode; do not request approval through ask_user.",
+          "description": "Create and register an isolated worktree and new branch in the execution Node's managed directory, starting from this turn's worktree. Use head and index_revision from git_status as expected_head and expected_index. include_changes defaults to false; set true to copy uncommitted changes. Use the returned ID with spawn_agent.worktree. This does not move this conversation or merge changes. To develop there, pass the returned ID to spawn_agent. If the user wants this conversation itself to continue there, ask them to switch it with the composer's worktree selector, then stop. Never cd into the new worktree or change it from this conversation. After a delegated child finishes, remove its worktree when it has no changes and no new commits; otherwise follow remove_worktree. Invoke directly under the current permission mode; do not request approval through ask_user.",
           "contexts": [
             "workspace"
           ],

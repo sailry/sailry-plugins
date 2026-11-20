@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.19
+
+- Orienter le développement dans un nouvel arbre de travail vers la délégation ou le sélecteur du compositeur
+
 ## 0.1.18
 
 - Nouvelle icône du plugin
