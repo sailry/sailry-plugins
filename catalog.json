@@ -12502,7 +12502,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.38",
+        "version": "0.1.39",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -13956,6 +13956,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.39",
+          "commit": "ae107141d51be93d440ac37042bbd61d37c801db",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Report why a Git action failed with its error code.",
+            "locales": {
+              "zh-CN": "- Git 操作失败时上报对应的错误码。",
+              "zh-TW": "- Git 操作失敗時回報對應的錯誤碼。",
+              "ja": "- Git 操作が失敗したとき、そのエラーコードを報告します。",
+              "ko": "- Git 작업이 실패하면 해당 오류 코드를 보고합니다.",
+              "fr": "- Signale le code d’erreur lorsqu’une action Git échoue.",
+              "de": "- Meldet den Fehlercode, wenn eine Git-Aktion fehlschlägt.",
+              "es": "- Informa el código de error cuando falla una acción de Git.",
+              "pt-BR": "- Informa o código de erro quando uma ação do Git falha.",
+              "ru": "- Сообщать код ошибки при сбое действия Git."
+            }
+          }
+        },
+        {
           "version": "0.1.38",
           "commit": "ff752b9c35a8340f598112aedbd0ed4759c37825",
           "api_version": "v1",
@@ -14355,17 +14375,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Hide the changes badge when Git is not installed on the host.",
+        "text": "- Report why a Git action failed with its error code.",
         "locales": {
-          "zh-CN": "- 主机未安装 Git 时隐藏变更徽标。",
-          "zh-TW": "- 主機未安裝 Git 時隱藏變更徽章。",
-          "ja": "- ホストに Git がない場合は変更バッジを非表示にします。",
-          "ko": "- 호스트에 Git이 없으면 변경 배지를 숨깁니다.",
-          "fr": "- Masque le badge des modifications si Git n’est pas installé sur l’hôte.",
-          "de": "- Änderungsabzeichen ausblenden, wenn Git auf dem Host fehlt.",
-          "es": "- Oculta la insignia de cambios si Git no está instalado en el host.",
-          "pt-BR": "- Oculta o selo de alterações quando o Git não está instalado no host.",
-          "ru": "- Скрывать значок изменений, если Git не установлен на хосте."
+          "zh-CN": "- Git 操作失败时上报对应的错误码。",
+          "zh-TW": "- Git 操作失敗時回報對應的錯誤碼。",
+          "ja": "- Git 操作が失敗したとき、そのエラーコードを報告します。",
+          "ko": "- Git 작업이 실패하면 해당 오류 코드를 보고합니다.",
+          "fr": "- Signale le code d’erreur lorsqu’une action Git échoue.",
+          "de": "- Meldet den Fehlercode, wenn eine Git-Aktion fehlschlägt.",
+          "es": "- Informa el código de error cuando falla una acción de Git.",
+          "pt-BR": "- Informa o código de erro quando uma ação do Git falha.",
+          "ru": "- Сообщать код ошибки при сбое действия Git."
         }
       }
     },
