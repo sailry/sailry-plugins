@@ -10360,7 +10360,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.30",
+        "version": "0.1.31",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -10864,7 +10864,7 @@
               {
                 "name": "edit_file",
                 "presentation": "details",
-                "description": "Edit an existing UTF-8 file using its full revision from read_file. Provide old_text and new_text for one replacement, or edits for several replacements in the same file; the two forms are mutually exclusive. Every old_text is matched against the original file and must occur exactly once unless its replace_all is true. replace_all replaces non-overlapping occurrences from left to right. Overlaps between edits, missing text or stale revisions fail without writing any change. The original file, the edited file and all old_text and new_text together are each limited to 64 MiB. Preserve exact whitespace and line endings; a conflict requires reading the current file before another edit. Success returns the new revision and numbered edited regions with nearby context, so do not read the file again to verify the edit. Use apply_patch for related changes across several files.",
+                "description": "Edit one UTF-8 file. Supply old_text/new_text or edits, never both. Match exact whitespace and line endings in the original file. Each old_text must match once unless replace_all takes all non-overlapping matches left to right. Overlaps, missing text or stale revisions fail without writing any change. Reread on conflict. The original, result and combined old/new texts each allow 64 MiB. Verify using the returned revision and numbered edited regions with context, without rereading. Use apply_patch across files.",
                 "handler": {
                   "name": "edit",
                   "operation": "files.edit",
@@ -11050,7 +11050,7 @@
               {
                 "name": "apply_patch",
                 "presentation": "details",
-                "description": "Apply a patch that adds, updates, moves or deletes related files with one approval. Use it for changes across several files or to add, move or delete files; use edit_file or write_file for a single file. input is the whole patch, for example:\n*** Begin Patch\n*** Add File: src/new.rs\n+pub fn new() {}\n*** Update File: src/lib.rs\n@@ fn main() {\n     setup();\n-    run();\n+    run_all();\n*** Delete File: src/old.rs\n*** End Patch\nPrefix every line of an added file with +. In an update, a leading space marks context, - a removed line and + an added line. An optional @@ line names a line to search after; added lines with no context or removed lines go right after that line, or at the end of the file under a bare @@. *** Move to: renames the file and creates missing folders, and *** End of File anchors a hunk at the end. Context, removed and @@ lines must match the current file exactly, including whitespace, and identify one place. Read every file you update, move or delete first; a file you wrote counts, and a file changed since then needs another read. Up to 16 files are validated before anything is written, counting a moved and edited file twice, and any failure rejects the whole patch with a reason per file. Files are then written in order; a later failure stops without rolling back earlier files, and each file reports applied, failed, unknown or not_attempted. Inspect an unknown file before retrying.",
+                "description": "Add, update, move or delete files under one approval. Prefer edit_file or write_file for a single-file edit.\n*** Begin Patch\n*** Add File: a\n+one\n*** Update File: b\n@@ anchor\n context\n-old\n+new\n*** Delete File: c\n*** End Patch\nPrefix added lines with +, including every line of a new file. Update context (space), removals (-) and optional @@ anchors must match the current file exactly at one location, including whitespace. An additions-only hunk inserts right after that line, or at EOF with bare @@. *** Move to: renames and creates missing directories. *** End of File anchors a hunk at EOF. Read every file you update, move or delete first. A prior write counts. Reread changed files. Up to 16 files are validated before anything is written, counting a moved and edited file twice. Validation failure rejects all with per-file reasons. Writes then proceed in order and stop on failure without rolling back earlier files. Each file reports applied, failed, unknown or not_attempted. Inspect an unknown file before retrying.",
                 "handler": {
                   "name": "apply",
                   "operation": "files.apply",
@@ -11564,7 +11564,7 @@
               {
                 "name": "search_files",
                 "presentation": "summary",
-                "description": "Search UTF-8 files within path (default worktree root) using embedded ripgrep, respecting .gitignore, .ignore and Git excludes without following symlinks. An explicit ignored path is searched. Globs without / match basenames at any depth; other globs are relative to path. Prefix a glob with ! to exclude it; later globs take precedence. Binary and non-UTF-8 files are skipped and counted. mode defaults to files; choose content for matching/context rows or count for matching line counts. Content rows use matched=true for matches and false for neighbors; context adds surrounding lines. type uses ripgrep language names, and multiline matches across newlines. limit defaults to 100, with at most 200 rows including context. Model output has about a 32 KiB total budget and 500-character line previews; read_tool_output with its output reference reads the original captured result. Use next_offset for complete-scan pages; it cannot recover a shortened line. Incomplete scans have no continuation: narrow path before retrying. Scans stop after 20 seconds and skip files above 64 MiB; diagnostics report these bounds, and lines over 16 KiB are marked truncated. No shell approval is needed.",
+                "description": "Search UTF-8 with embedded ripgrep without shell approval. Honor .gitignore, .ignore and Git excludes except for an explicitly named ignored path. Never follow symlinks. Count skipped binary and non-UTF-8 files. Globs without / match basenames at any depth, others are relative to path. ! excludes and later globs win. Files mode lists matching paths. Content rows mark matches (matched=true) and neighbors (false). Count mode gives matching-line counts per file. Multiline matches across newlines. Pages hold up to 200 rows including context. Model previews have about a 32 KiB total budget and 500 characters per line. Read the original captured result via read_tool_output and its output reference. next_offset pages completed scans but cannot recover a shortened line. Incomplete scans have no continuation. Narrow path. Scans stop after 20 seconds and skip files over 64 MiB. Diagnostics report both limits. Lines over 16 KiB are marked truncated.",
                 "handler": {
                   "name": "search",
                   "operation": "files.search",
@@ -11574,7 +11574,7 @@
                       "query": {
                         "type": "string",
                         "minLength": 1,
-                        "description": "Non-empty text or regular expression to search inside files; globs only filter which files are searched"
+                        "description": "Text or regex to match in files. Globs filter paths."
                       },
                       "regex": {
                         "type": "boolean",
@@ -12202,6 +12202,18 @@
       ],
       "versions": [
         {
+          "version": "0.1.31",
+          "commit": "70a1a4013e9e172a69a46b9702897b62aabab53f",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Shorten the agent's search, edit and patch tool descriptions to reduce request size.",
+            "locales": {
+              "zh-CN": "- 精简 Agent 的搜索、编辑和补丁工具说明，减少请求占用的上下文。"
+            }
+          }
+        },
+        {
           "version": "0.1.30",
           "commit": "686f5e9a3507ba33c16f984d5a8e62bd4d654a36",
           "api_version": "v1",
@@ -12531,9 +12543,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove generic preview-limit notices from conversation tool results.",
+        "text": "- Shorten the agent's search, edit and patch tool descriptions to reduce request size.",
         "locales": {
-          "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
+          "zh-CN": "- 精简 Agent 的搜索、编辑和补丁工具说明，减少请求占用的上下文。"
         }
       }
     },
@@ -22878,7 +22890,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.44",
+        "version": "0.1.45",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23015,6 +23027,18 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.45",
+          "commit": "c8470e0d307de4bbe3ed6553d3aea2b6a22ee72c",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Distinguish unreported cache reads from zero hits and show cache write counts in request tooltips.",
+            "locales": {
+              "zh-CN": "- 区分请求未报告的缓存读取和明确报告的零命中，并在缓存列提示中显示已报告的写入量。"
+            }
+          }
+        },
         {
           "version": "0.1.44",
           "commit": "16d82b113352ced050a1aa9b437c827004e14e98",
@@ -23645,17 +23669,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Show available cache token counts and response coverage when the overall hit rate is unknown.",
+        "text": "- Distinguish unreported cache reads from zero hits and show cache write counts in request tooltips.",
         "locales": {
-          "zh-CN": "- 缓存总命中率未知时，仍可查看已报告的缓存 Token 数及响应覆盖情况。",
-          "zh-TW": "- 整體快取命中率未知時，仍可查看已回報的快取 Token 數及回應涵蓋情況。",
-          "ja": "- 全体のキャッシュヒット率が不明な場合も、取得できたトークン数と集計対象の応答数を表示します。",
-          "ko": "- 전체 캐시 적중률을 알 수 없을 때에도 확인된 캐시 토큰 수와 집계된 응답 수를 표시합니다.",
-          "fr": "- Affiche les compteurs de jetons du cache disponibles et le nombre de réponses prises en compte lorsque le taux de succès global est inconnu.",
-          "de": "- Bei unbekannter Gesamttrefferquote werden die verfügbaren Cache-Tokenzahlen und die Anzahl der erfassten Antworten angezeigt.",
-          "es": "- Muestra los recuentos de tokens de caché disponibles y la cobertura de respuestas cuando se desconoce la tasa global de aciertos.",
-          "pt-BR": "- Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.",
-          "ru": "- Если общая доля попаданий в кеш неизвестна, отображаются доступные счётчики токенов и число учтённых ответов."
+          "zh-CN": "- 区分请求未报告的缓存读取和明确报告的零命中，并在缓存列提示中显示已报告的写入量。"
         }
       }
     },
