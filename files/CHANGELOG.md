@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.31
+
+- Shorten the agent's search, edit and patch tool descriptions to reduce request size.
+
 ## 0.1.30
 
 - Remove generic preview-limit notices from conversation tool results.
