@@ -348,3 +348,24 @@ test('request tables fill the session column and split cache hits',async()=>{
   assert.equal(nodes.get('usage-requests').props.empty_icon,'chart-pie');
   assert.equal(nodes.get('usage-pages').kind,'Pagination');
 });
+
+test('request table distinguishes cache reads and shows cache writes',async()=>{
+  const {nodes,context}=elements();
+  const {requests}=vm.runInNewContext(`${await viewSource()}\n({requests})`,context);
+  const item={position:{node,timestamp_ms:'1',sequence:'1'},model:'Model',provider_name:'Provider'};
+  const tokens={input:'1200',output:'340',reasoning:'20'};
+  const items=[
+    {...item,tokens:{...tokens,input:'9007199254741000',cached_input:null,cache_write:'9007199254740993'}},
+    {...item,cached_input_reported:true,tokens:{...tokens,cached_input:'0',cache_write:'0'}},
+    {...item,tokens:{...tokens,cached_input:'0'}},
+  ].map((request,index)=>({...request,position:{...item.position,sequence:String(index+1)}}));
+  requests({state:new State(node),text:messages('en')},{totals:{responses:'3'},requests:{items,has_more:false}});
+  const {rows,cells,details}=nodes.get('usage-requests').props;
+  assert.deepEqual(plain(rows.map(row=>row[4])),['—','0%','—']);
+  assert.deepEqual(plain(cells.map(row=>row[4].primary)),[
+    {text:'—',text_tone:'muted'},{text:'0%',text_tone:'warning'},{text:'—',text_tone:'muted'},
+  ]);
+  assert.deepEqual(plain(details.map(row=>row[4])),[
+    'Cached: —\nCache write: 9007199254740993','Cached: 0\nCache write: 0','Cached: —',
+  ]);
+});

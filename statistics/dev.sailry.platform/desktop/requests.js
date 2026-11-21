@@ -22,7 +22,7 @@ function exactTime(value) {
   const offset=-date.getTimezoneOffset(),zone=`${offset<0?'-':'+'}${pad(Math.floor(Math.abs(offset)/60))}:${pad(Math.abs(offset)%60)}`;
   return `${date.getFullYear()}/${pad(date.getMonth()+1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(),3)} ${zone}`;
 }
-/** Whole-percent cache hit rate for one response, or null without input. */
+/** Whole-percent cache hit rate, or null without a cache read count or positive input. */
 export function hits(tokens) {
   if(tokens?.input==null || tokens.cached_input==null)return null;
   const input=integer(tokens.input),cached=integer(tokens.cached_input);
@@ -39,7 +39,12 @@ export function formatRows(items,text,now = Date.now()) {
   const missing={text:unknown,text_tone:'muted'};
   const rows=[],cells=[],details=[],row_ids=[];
   for(const request of items) {
-    const tokens=request.tokens ?? {},rate=hits(tokens),low=rate!=null&&rate<LOW_CACHE;
+    const tokens=request.tokens ?? {};
+    const cached=tokens.cached_input==='0' && request.cached_input_reported!==true ? null : tokens.cached_input;
+    const rate=hits({input:tokens.input,cached_input:cached});
+    const low=rate!=null&&rate<LOW_CACHE;
+    const cacheDetails=[`${text.usage_column_cached}: ${exact(cached)}`];
+    if (tokens.cache_write!=null) cacheDetails.push(`${text.usage_cache_write}: ${exact(tokens.cache_write)}`);
     const title=request.session_title||text.usage_untitled,scope=request.scope_name||text.usage_unassigned;
     const time=when(request.position.timestamp_ms,now)??unknown,full=exactTime(request.position.timestamp_ms)??unknown;
     const first=request.first_token_us,elapsed=request.elapsed_us;
@@ -49,7 +54,7 @@ export function formatRows(items,text,now = Date.now()) {
       exact(tokens.input),rate==null?unknown:`${rate}%`,exact(tokens.output),timing[0],timing[1],cost]);
     details.push([full,`${title}\n${scope}`,
       `${text.usage_column_model}: ${request.model}\n${text.usage_column_provider}: ${request.provider_name}`,
-      `${text.usage_column_input}: ${exact(tokens.input)}`,`${text.usage_column_cached}: ${exact(tokens.cached_input)}`,
+      `${text.usage_column_input}: ${exact(tokens.input)}`,cacheDetails.join('\n'),
       `${text.usage_column_output}: ${exact(tokens.output)}\n${text.usage_column_reasoning}: ${exact(tokens.reasoning)}`,
       `${text.usage_column_first_token}: ${timing[0]}`,`${text.usage_column_duration}: ${timing[1]}`,cost]);
     cells.push([

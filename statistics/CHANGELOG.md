@@ -1,3 +1,7 @@
+## 0.1.45
+
+- Distinguish unreported cache reads from zero hits and show cache write counts in request tooltips.
+
 ## 0.1.44
 
 - Show available cache token counts and response coverage when the overall hit rate is unknown.
