@@ -22890,7 +22890,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.45",
+        "version": "0.1.46",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -22918,17 +22918,17 @@
                 "slot": "statistics",
                 "kind": "metric",
                 "label": {
-                  "label": "Generation speed",
+                  "label": "End-to-end TPS",
                   "locales": {
-                    "zh-CN": "生成速度",
-                    "zh-TW": "生成速度",
-                    "de": "Generierungsgeschwindigkeit",
-                    "es": "Velocidad de generación",
-                    "fr": "Vitesse de génération",
-                    "ja": "生成速度",
-                    "ko": "생성 속도",
-                    "pt-BR": "Velocidade de geração",
-                    "ru": "Скорость генерации"
+                    "zh-CN": "全程 TPS",
+                    "zh-TW": "全程 TPS",
+                    "de": "End-to-End-TPS",
+                    "es": "TPS de extremo a extremo",
+                    "fr": "TPS de bout en bout",
+                    "ja": "応答全体の TPS",
+                    "ko": "전체 응답 TPS",
+                    "pt-BR": "TPS de ponta a ponta",
+                    "ru": "TPS за всё время запроса"
                   }
                 },
                 "icon": "gauge",
@@ -23027,6 +23027,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.46",
+          "commit": "252ea0ae28c35acd45a6c0bbff8cc5742301365f",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Show end-to-end TPS in the composer footer and Usage report, including time to first token. Show `—` when throughput is unavailable.",
+            "locales": {
+              "zh-CN": "- 输入栏页脚和用量报表显示全程 TPS，计入等待首个 Token 的时间。缺少测速数据时显示 `—`。",
+              "zh-TW": "- 輸入欄頁尾與用量報表顯示全程 TPS，計入等待第一個 Token 的時間。缺少測速資料時顯示 `—`。",
+              "ja": "- 入力欄のフッターと使用量レポートに、最初のトークンを待つ時間を含む応答全体の TPS を表示します。計測データがない場合は `—` を表示します。",
+              "ko": "- 입력란 하단과 사용량 보고서에서 첫 토큰까지의 대기 시간을 포함한 전체 응답 TPS를 표시합니다. 측정 데이터가 없으면 `—`를 표시합니다.",
+              "fr": "- Le pied de la zone de saisie et le rapport d’utilisation affichent le TPS de bout en bout, y compris le délai avant le premier jeton. En l’absence de mesure, ils affichent `—`.",
+              "de": "- Die Fußleiste der Eingabe und der Nutzungsbericht zeigen End-to-End-TPS einschließlich der Wartezeit bis zum ersten Token. Fehlen Messdaten, wird `—` angezeigt.",
+              "es": "- El pie del cuadro de entrada y el informe de uso muestran los TPS de extremo a extremo, incluida la espera hasta el primer token. Si no hay datos, se muestra `—`.",
+              "pt-BR": "- O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.",
+              "ru": "- В нижней панели поля ввода и в отчёте об использовании отображается TPS за всё время запроса с учётом ожидания первого токена. Если данных измерения нет, отображается `—`."
+            }
+          }
+        },
         {
           "version": "0.1.45",
           "commit": "c8470e0d307de4bbe3ed6553d3aea2b6a22ee72c",
@@ -23669,9 +23689,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Distinguish unreported cache reads from zero hits and show cache write counts in request tooltips.",
+        "text": "- Show end-to-end TPS in the composer footer and Usage report, including time to first token. Show `—` when throughput is unavailable.",
         "locales": {
-          "zh-CN": "- 区分请求未报告的缓存读取和明确报告的零命中，并在缓存列提示中显示已报告的写入量。"
+          "zh-CN": "- 输入栏页脚和用量报表显示全程 TPS，计入等待首个 Token 的时间。缺少测速数据时显示 `—`。",
+          "zh-TW": "- 輸入欄頁尾與用量報表顯示全程 TPS，計入等待第一個 Token 的時間。缺少測速資料時顯示 `—`。",
+          "ja": "- 入力欄のフッターと使用量レポートに、最初のトークンを待つ時間を含む応答全体の TPS を表示します。計測データがない場合は `—` を表示します。",
+          "ko": "- 입력란 하단과 사용량 보고서에서 첫 토큰까지의 대기 시간을 포함한 전체 응답 TPS를 표시합니다. 측정 데이터가 없으면 `—`를 표시합니다.",
+          "fr": "- Le pied de la zone de saisie et le rapport d’utilisation affichent le TPS de bout en bout, y compris le délai avant le premier jeton. En l’absence de mesure, ils affichent `—`.",
+          "de": "- Die Fußleiste der Eingabe und der Nutzungsbericht zeigen End-to-End-TPS einschließlich der Wartezeit bis zum ersten Token. Fehlen Messdaten, wird `—` angezeigt.",
+          "es": "- El pie del cuadro de entrada y el informe de uso muestran los TPS de extremo a extremo, incluida la espera hasta el primer token. Si no hay datos, se muestra `—`.",
+          "pt-BR": "- O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.",
+          "ru": "- В нижней панели поля ввода и в отчёте об использовании отображается TPS за всё время запроса с учётом ожидания первого токена. Если данных измерения нет, отображается `—`."
         }
       }
     },
