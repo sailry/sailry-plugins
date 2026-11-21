@@ -22878,7 +22878,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.43",
+        "version": "0.1.44",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23015,6 +23015,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.44",
+          "commit": "16d82b113352ced050a1aa9b437c827004e14e98",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Show available cache token counts and response coverage when the overall hit rate is unknown.",
+            "locales": {
+              "zh-CN": "- 缓存总命中率未知时，仍可查看已报告的缓存 Token 数及响应覆盖情况。",
+              "zh-TW": "- 整體快取命中率未知時，仍可查看已回報的快取 Token 數及回應涵蓋情況。",
+              "ja": "- 全体のキャッシュヒット率が不明な場合も、取得できたトークン数と集計対象の応答数を表示します。",
+              "ko": "- 전체 캐시 적중률을 알 수 없을 때에도 확인된 캐시 토큰 수와 집계된 응답 수를 표시합니다.",
+              "fr": "- Affiche les compteurs de jetons du cache disponibles et le nombre de réponses prises en compte lorsque le taux de succès global est inconnu.",
+              "de": "- Bei unbekannter Gesamttrefferquote werden die verfügbaren Cache-Tokenzahlen und die Anzahl der erfassten Antworten angezeigt.",
+              "es": "- Muestra los recuentos de tokens de caché disponibles y la cobertura de respuestas cuando se desconoce la tasa global de aciertos.",
+              "pt-BR": "- Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.",
+              "ru": "- Если общая доля попаданий в кеш неизвестна, отображаются доступные счётчики токенов и число учтённых ответов."
+            }
+          }
+        },
         {
           "version": "0.1.43",
           "commit": "3d8ef1a4040e20488474b6ab27fd56befebeb12e",
@@ -23625,17 +23645,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Distinguish known token subtotals from complete totals when a response omits token counts.",
+        "text": "- Show available cache token counts and response coverage when the overall hit rate is unknown.",
         "locales": {
-          "zh-CN": "- 部分响应未报告 token 数时，区分已知用量小计和完整总量。",
-          "zh-TW": "- 部分回應未回報 token 數時，區分已知用量小計與完整總量。",
-          "ja": "- トークン数を報告しない応答がある場合、判明している小計と全体の合計を区別します。",
-          "ko": "- 일부 응답에 토큰 수가 없을 때 확인된 소계와 전체 합계를 구분합니다.",
-          "fr": "- Les sous-totaux connus sont distingués des totaux complets lorsqu’une réponse ne précise pas le nombre de tokens.",
-          "de": "- Fehlen Tokenzahlen für einzelne Antworten, werden bekannte Teilsummen von vollständigen Summen unterschieden.",
-          "es": "- Se distinguen los subtotales conocidos de los totales completos cuando alguna respuesta no informa del número de tokens.",
-          "pt-BR": "- Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.",
-          "ru": "- Если в ответе не указано число токенов, известная сумма отмечается как неполная."
+          "zh-CN": "- 缓存总命中率未知时，仍可查看已报告的缓存 Token 数及响应覆盖情况。",
+          "zh-TW": "- 整體快取命中率未知時，仍可查看已回報的快取 Token 數及回應涵蓋情況。",
+          "ja": "- 全体のキャッシュヒット率が不明な場合も、取得できたトークン数と集計対象の応答数を表示します。",
+          "ko": "- 전체 캐시 적중률을 알 수 없을 때에도 확인된 캐시 토큰 수와 집계된 응답 수를 표시합니다.",
+          "fr": "- Affiche les compteurs de jetons du cache disponibles et le nombre de réponses prises en compte lorsque le taux de succès global est inconnu.",
+          "de": "- Bei unbekannter Gesamttrefferquote werden die verfügbaren Cache-Tokenzahlen und die Anzahl der erfassten Antworten angezeigt.",
+          "es": "- Muestra los recuentos de tokens de caché disponibles y la cobertura de respuestas cuando se desconoce la tasa global de aciertos.",
+          "pt-BR": "- Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.",
+          "ru": "- Если общая доля попаданий в кеш неизвестна, отображаются доступные счётчики токенов и число учтённых ответов."
         }
       }
     },
