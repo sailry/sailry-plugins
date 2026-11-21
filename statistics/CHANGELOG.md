@@ -1,3 +1,7 @@
+## 0.1.46
+
+- Show end-to-end TPS in the composer footer and Usage report, including time to first token. Show `—` when throughput is unavailable.
+
 ## 0.1.45
 
 - Distinguish unreported cache reads from zero hits and show cache write counts in request tooltips.

@@ -1,3 +1,7 @@
+## 0.1.46
+
+- O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.
+
 ## 0.1.44
 
 - Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.

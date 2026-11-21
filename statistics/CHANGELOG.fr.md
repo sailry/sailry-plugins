@@ -1,3 +1,7 @@
+## 0.1.46
+
+- Le pied de la zone de saisie et le rapport d’utilisation affichent le TPS de bout en bout, y compris le délai avant le premier jeton. En l’absence de mesure, ils affichent `—`.
+
 ## 0.1.44
 
 - Affiche les compteurs de jetons du cache disponibles et le nombre de réponses prises en compte lorsque le taux de succès global est inconnu.

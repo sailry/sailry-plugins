@@ -38,9 +38,9 @@ export function cache(usage) {
   if (!usage || integer(usage.input) === 0n) return null;
   return (100 * Number(usage.cached_input) / Number(usage.input)).toFixed(0) + '%';
 }
-export function speed(generation) {
-  return generation && integer(generation.elapsed_us) > 0n
-    ? (Number(generation.output_tokens) * 1000000 / Number(generation.elapsed_us)).toFixed(1) : null;
+export function speed(throughput) {
+  const output = throughput?.output_tokens, elapsed = integer(throughput?.elapsed_us ?? 0n);
+  return output != null && elapsed > 0n ? (Number(output) * 1000000 / Number(elapsed)).toFixed(1) : null;
 }
 export function duration(value,text) {
   return value == null ? text.composer_metric_unknown : Number(value) < 1000000

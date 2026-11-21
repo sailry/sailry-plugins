@@ -9,7 +9,7 @@ export function tokenCoverage(metrics) {
   return {tokens, responses, reported};
 }
 
-/** Token composition, cache hit rate, speed and estimated cost for one report. */
+/** Token composition, cache hit rate, end-to-end TPS and estimated cost for one report. */
 export function overview(totals) {
   const {tokens, responses, reported} = tokenCoverage(totals), values = parts(tokens);
   const sum = values ? values.reduce((sum, value) => sum + value, 0n) : null;
@@ -22,7 +22,7 @@ export function overview(totals) {
     hit:tokens && reported === responses ? ratio(values[0], integer(tokens.input)) : null,
     responses,
     reported,
-    speed:speed(totals?.generation),
+    speed:speed(totals?.throughput),
     cost:totals?.cost ? amount(totals.cost.usd_micros) : null,
     priced,
     partial:!!totals?.cost && priced < responses,

@@ -1,3 +1,7 @@
+## 0.1.46
+
+- Die Fußleiste der Eingabe und der Nutzungsbericht zeigen End-to-End-TPS einschließlich der Wartezeit bis zum ersten Token. Fehlen Messdaten, wird `—` angezeigt.
+
 ## 0.1.44
 
 - Bei unbekannter Gesamttrefferquote werden die verfügbaren Cache-Tokenzahlen und die Anzahl der erfassten Antworten angezeigt.

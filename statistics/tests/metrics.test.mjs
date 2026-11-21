@@ -13,6 +13,15 @@ const locales={
   'zh-CN':{subtotal:value=>`小计：${value}`,coverage:(reported,responses)=>`${reported} / ${responses} 个响应报告了输入和输出 Token`},
 };
 
+test('composer shows unknown TPS and coverage when only legacy generation timing is available',()=>{
+  const statistics={responses:'1',generation:{responses:'1',output_tokens:'90',elapsed_us:'1000000'}};
+  const text=messages('en');
+  const speed=metric(metrics({statistics},text),'composer_speed');
+  assert.equal(speed.visible,true);
+  assert.equal(speed.value,'—');
+  assert.deepEqual(speed.details.map(detail=>detail.value),['—','—','—']);
+});
+
 test('complete own and delegated tokens stay exact without coverage',()=>{
   for(const locale of Object.keys(locales)) {
     const statistics={turns:'1',responses:'2',usage:own,delegated:{responses:'3',tokens:child}};

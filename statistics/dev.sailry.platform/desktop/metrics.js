@@ -15,7 +15,7 @@ function tokens(value,responses,incomplete) {
 }
 
 export function metrics(state,text) {
-  const statistics = state.statistics, usage = statistics?.usage, generation = statistics?.generation;
+  const statistics = state.statistics, usage = statistics?.usage, throughput = statistics?.throughput;
   const delegated = statistics?.delegated;
   // Message pages may still be loading; persisted statistics cover the whole session.
   const recorded = state.has_messages || [statistics?.turns,statistics?.responses,delegated?.responses,
@@ -37,16 +37,17 @@ export function metrics(state,text) {
   const combined = cost({responses:sum(statistics?.responses,delegated?.responses),
     cost:micros == null ? null : {usd_micros:micros,
       responses:sum(statistics?.cost?.responses,delegated?.cost?.responses)}});
-  const rate = speed(generation);
+  const rate = speed(throughput);
   const partial = own.partial || child.partial;
   const tokenDetails = [row('composer_this_session',subtotal(own.total,own.partial)),
     row('composer_subagents',subtotal(child.total,child.partial)),
     ...partial ? [coverage(own.reported+child.reported,own.responses+child.responses)] : []];
   const values = [
     ['composer_tokens',subtotal(sum(own.total,child.total),partial),tokenDetails],
-    ['composer_speed',rate == null ? null : rate+'/s',[
-      row('composer_timed_responses',number(generation?.responses)),row('composer_timed_output',number(generation?.output_tokens)),
-      row('composer_first_token',statistics?.first_token_us == null ? text.composer_metric_unknown : duration(statistics.first_token_us,text))]],
+    ['composer_speed',rate == null ? text.composer_metric_unknown : `${rate} ${text.usage_speed_unit}`,[
+      row('composer_timed_responses',number(throughput?.responses)),
+      row('composer_timed_output',number(throughput?.output_tokens)),
+      row('composer_first_token',duration(statistics?.first_token_us,text))]],
     ['composer_cost',combined,[
       row('composer_this_session',charge(cost(statistics))),
       row('composer_subagents',charge(cost(delegated)))]],

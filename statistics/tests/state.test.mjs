@@ -5,18 +5,25 @@ import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.p
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('separates host generation speed from latest own first-token latency',async()=>{
+test('shows host throughput and latest own TTFT on separate tooltip rows',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const label=manifest.extensions['dev.sailry.platform'].ui.find(item=>item.id==='composer_speed').label;
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
     assert.equal(label.locales[locale] ?? label.label,text.usage_speed);
     for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
-      const statistics={first_token_us:first,generation:{output_tokens:'20',elapsed_us:'1000000',responses:'1'},
-        delegated:{first_token_us:'1',generation:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};
-      const before=structuredClone(statistics),speed=metrics({has_messages:true,statistics},text).find(value=>value.id==='composer_speed');
-      assert.equal(speed.value,'20.0/s');
-      assert.deepEqual(speed.details[2],{label:{label:text.composer_first_token},value});
+      const statistics={responses:'4',first_token_us:first,
+        generation:{output_tokens:'90',elapsed_us:'1000000',responses:'2'},
+        throughput:{output_tokens:'120',elapsed_us:'4000000',responses:'3'},
+        delegated:{first_token_us:'1',throughput:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};
+      const before=structuredClone(statistics),speed=metrics({statistics},text).find(value=>value.id==='composer_speed');
+      assert.equal(speed.visible,true);
+      assert.equal(speed.value,'30.0 tok/s');
+      assert.deepEqual(speed.details,[
+        {label:{label:text.composer_timed_responses},value:'3'},
+        {label:{label:text.composer_timed_output},value:'120'},
+        {label:{label:text.composer_first_token},value},
+      ]);
       assert.deepEqual(statistics,before);
       assert.ok(text.composer_first_token);
     }
@@ -143,10 +150,10 @@ test('footer keeps units counts and unknown prices',async()=>{
   const icons=Object.fromEntries(manifest.extensions['dev.sailry.platform'].ui.map(entry=>[entry.id,entry.icon]));
   assert.equal(icons.composer_speed,'gauge');assert.equal(icons.composer_cost,'dollar-sign');assert.equal(icons.composer_turns,'messages-square');
   for(const locale of ['en','zh-CN']) {
-    const text=messages(locale),statistics={turns:'7',responses:'12',generation:{output_tokens:'43',elapsed_us:'2000000',responses:'3'},cost:null};
+    const text=messages(locale),statistics={turns:'7',responses:'12',throughput:{output_tokens:'43',elapsed_us:'2000000',responses:'3'},cost:null};
     const before=structuredClone(statistics),values=metrics({has_messages:true,statistics},text);
     const metric=id=>values.find(value=>value.id===id);
-    assert.equal(metric('composer_speed').value,'21.5/s');assert.equal(metric('composer_turns').value,'7');
+    assert.equal(metric('composer_speed').value,'21.5 tok/s');assert.equal(metric('composer_turns').value,'7');
     assert.equal(metric('composer_turns').details[0].value,'12');assert.equal(metric('composer_cost').value,text.composer_metric_unknown);
     assert.deepEqual(metric('composer_cost').details,[
       {label:{label:text.composer_this_session},value:text.composer_metric_unknown},
@@ -160,11 +167,11 @@ test('footer keeps units counts and unknown prices',async()=>{
 test('composer combines child totals and preserves own metrics',()=>{
   const statistics={turns:'7',responses:'2',context_tokens:'60',context_limit:100,
     usage:{input:'100',output:'20',cached_input:'25',reasoning:'5'},
-    generation:{output_tokens:'43',elapsed_us:'2000000',responses:'2'},
+    throughput:{output_tokens:'43',elapsed_us:'2000000',responses:'2'},
     cost:{usd_micros:'15000',responses:'2'},
     delegated:{responses:'3',tokens:{input:'200',output:'80',cached_input:'200',reasoning:'50'},
       cost:{usd_micros:'15000',responses:'3'},
-      generation:{output_tokens:'4000',elapsed_us:'1',responses:'3'}}};
+      throughput:{output_tokens:'4000',elapsed_us:'1',responses:'3'}}};
   const before=structuredClone(statistics);
   for(const locale of ['en','zh-CN']) {
     const text=messages(locale),values=metrics({has_messages:true,statistics,context_limit:100},text);
@@ -177,7 +184,7 @@ test('composer combines child totals and preserves own metrics',()=>{
     assert.deepEqual(metric('composer_cost').details,[
       {label:{label:text.composer_this_session},value:'$0.01'},
       {label:{label:text.composer_subagents},value:'$0.01'}]);
-    assert.equal(metric('composer_speed').value,'21.5/s');
+    assert.equal(metric('composer_speed').value,'21.5 tok/s');
     assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43',text.composer_metric_unknown]);
     assert.equal(metric('composer_cache').value,'25%');
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);

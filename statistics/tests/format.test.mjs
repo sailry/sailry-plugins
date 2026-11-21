@@ -9,8 +9,13 @@ test('missing usage and prices stay unknown while reported zero remains zero',()
   assert.equal(format.amount(null),null);
   assert.equal(format.cost({responses:'4',cost:null}),null);
   assert.equal(format.amount('0'),'0.00');
-  assert.equal(format.speed({elapsed_us:'0',output_tokens:'9'}),null);
   assert.equal(format.cache({input:'0',cached_input:'0'}),null);
+});
+test('TPS requires reported output and positive elapsed time',()=>{
+  for(const value of [undefined,{}, {elapsed_us:'2000000'}, {output_tokens:'9'}, {elapsed_us:'0',output_tokens:'9'}]) {
+    assert.equal(format.speed(value),null);
+  }
+  assert.equal(format.speed({elapsed_us:'2000000',output_tokens:'0'}),'0.0');
 });
 test('money and aggregate counts preserve integers beyond the script number limit',()=>{
   assert.equal(format.amount('9007199254740991'),'9007199254.74');

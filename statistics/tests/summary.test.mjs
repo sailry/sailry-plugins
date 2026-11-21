@@ -8,7 +8,8 @@ import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {overview,percent} from '../dev.sailry.platform/desktop/summary.js';
 
 const totals=(cost)=>({responses:'4',tokens:{input:'100',output:'25',cached_input:'60',reasoning:'7'},
-  generation:{output_tokens:'50',elapsed_us:'2000000'},...cost ? {cost} : {}});
+  generation:{output_tokens:'25',elapsed_us:'500000',responses:'2'},
+  throughput:{output_tokens:'25',elapsed_us:'1000000',responses:'2'},...cost ? {cost} : {}});
 
 test('composition splits cached, uncached and output tokens',()=>{
   const values=overview(totals());
@@ -42,30 +43,49 @@ test('reported zero differs from missing token usage',()=>{
   assert.deepEqual([zero.total,zero.reported,zero.parts,zero.reasoning],[0n,1n,[0n,0n,0n],0n]);
 });
 
-test('overview marks a subtotal zero but not a complete zero',async()=>{
+async function reportSummary() {
   const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
     .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
-  const nodes=new Map();
+  const nodes=new Map(),children=new WeakMap();
   function element() {
     const items=[];
     const node=new Proxy({},{get:(_,key)=>value=>{
       if(key==='id')nodes.set(value,items);
       if(key==='child')items.push(value);
+      if(key==='children')items.push(...value);
       return node;
     }});
+    children.set(node,items);
     return node;
   }
   const {summary}=vm.runInNewContext(`${source}\n({summary})`,{
     div:element,theme:()=>({colors:{}}),window:{viewport_size:()=>({width:1040})},ProgressBar:{new:element},
     overview,percent,SERIES,compact,grouped,
   });
-  const view={text:messages('en')},tokens={input:'0',output:'0',cached_input:'0',reasoning:'0'};
-  summary(view,{responses:'1',tokens});
-  assert.deepEqual(nodes.get('usage-total'),['0']);
-  assert.equal(nodes.has('usage-token-coverage'),false);
-  summary(view,{responses:'2',tokens:null,token_subtotal:tokens,incomplete_token_responses:'1'});
-  assert.deepEqual(nodes.get('usage-total'),['Subtotal: 0']);
-  assert.deepEqual(nodes.get('usage-token-coverage'),['1 of 2 responses reported both token counts']);
+  const contents=items=>items.flatMap(item=>typeof item==='string' ? [item] : contents(children.get(item) ?? []));
+  return totals=>{
+    nodes.clear();
+    summary({text:messages('en')},totals);
+    return id=>nodes.has(id) ? contents(nodes.get(id)) : null;
+  };
+}
+
+test('overview marks a subtotal zero but not a complete zero',async()=>{
+  const render=await reportSummary(),tokens={input:'0',output:'0',cached_input:'0',reasoning:'0'};
+  const complete=render({responses:'1',tokens});
+  assert.deepEqual(complete('usage-total'),['0']);
+  assert.equal(complete('usage-token-coverage'),null);
+  const partial=render({responses:'2',tokens:null,token_subtotal:tokens,incomplete_token_responses:'1'});
+  assert.deepEqual(partial('usage-total'),['Subtotal: 0']);
+  assert.deepEqual(partial('usage-token-coverage'),['1 of 2 responses reported both token counts']);
+});
+
+test('Usage overview renders end-to-end TPS with units only for a measured rate',async()=>{
+  const render=await reportSummary(),report=totals();
+  assert.deepEqual(render(report)('usage-stat-speed'),['End-to-end TPS','25.0','tok/s']);
+  assert.deepEqual(render({...report,throughput:undefined})('usage-stat-speed'),['End-to-end TPS','—']);
+  assert.deepEqual(render({...report,throughput:{...report.throughput,output_tokens:'0'}})('usage-stat-speed'),
+    ['End-to-end TPS','0.0','tok/s']);
 });
 
 test('cost is partial when some responses lack prices',()=>{

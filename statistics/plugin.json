@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "statistics",
-  "version": "0.1.45",
+  "version": "0.1.46",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
@@ -29,17 +29,17 @@
           "slot": "statistics",
           "kind": "metric",
           "label": {
-            "label": "Generation speed",
+            "label": "End-to-end TPS",
             "locales": {
-              "zh-CN": "生成速度",
-              "zh-TW": "生成速度",
-              "de": "Generierungsgeschwindigkeit",
-              "es": "Velocidad de generación",
-              "fr": "Vitesse de génération",
-              "ja": "生成速度",
-              "ko": "생성 속도",
-              "pt-BR": "Velocidade de geração",
-              "ru": "Скорость генерации"
+              "zh-CN": "全程 TPS",
+              "zh-TW": "全程 TPS",
+              "de": "End-to-End-TPS",
+              "es": "TPS de extremo a extremo",
+              "fr": "TPS de bout en bout",
+              "ja": "応答全体の TPS",
+              "ko": "전체 응답 TPS",
+              "pt-BR": "TPS de ponta a ponta",
+              "ru": "TPS за всё время запроса"
             }
           },
           "icon": "gauge",

@@ -1,3 +1,7 @@
+## 0.1.46
+
+- El pie del cuadro de entrada y el informe de uso muestran los TPS de extremo a extremo, incluida la espera hasta el primer token. Si no hay datos, se muestra `—`.
+
 ## 0.1.44
 
 - Muestra los recuentos de tokens de caché disponibles y la cobertura de respuestas cuando se desconoce la tasa global de aciertos.
