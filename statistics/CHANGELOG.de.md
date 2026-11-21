@@ -1,3 +1,7 @@
+## 0.1.44
+
+- Bei unbekannter Gesamttrefferquote werden die verfügbaren Cache-Tokenzahlen und die Anzahl der erfassten Antworten angezeigt.
+
 ## 0.1.43
 
 - Fehlen Tokenzahlen für einzelne Antworten, werden bekannte Teilsummen von vollständigen Summen unterschieden.

@@ -1,3 +1,7 @@
+## 0.1.44
+
+- Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.
+
 ## 0.1.43
 
 - Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.

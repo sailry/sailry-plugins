@@ -1,3 +1,7 @@
+## 0.1.44
+
+- Muestra los recuentos de tokens de caché disponibles y la cobertura de respuestas cuando se desconoce la tasa global de aciertos.
+
 ## 0.1.43
 
 - Se distinguen los subtotales conocidos de los totales completos cuando alguna respuesta no informa del número de tokens.

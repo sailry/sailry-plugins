@@ -51,7 +51,7 @@ export function metrics(state,text) {
       row('composer_this_session',charge(cost(statistics))),
       row('composer_subagents',charge(cost(delegated)))]],
     // Like the usage page's hit rate, a ratio over a token subtotal is not reported.
-    ['composer_cache',own.partial ? null : cache(usage),[
+    ['composer_cache',own.partial && usage ? text.composer_metric_unknown : cache(usage),[
       row('composer_cached_input',number(cached)),row('composer_uncached_input',number(uncached)),row('composer_input_tokens',number(input)),
       ...own.partial ? [coverage(own.reported,own.responses)] : []]],
     ['composer_turns',recorded ? compact(statistics?.turns) : null,[row('composer_responses',number(statistics?.responses))]],

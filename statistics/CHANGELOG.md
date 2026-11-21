@@ -1,3 +1,7 @@
+## 0.1.44
+
+- Show available cache token counts and response coverage when the overall hit rate is unknown.
+
 ## 0.1.43
 
 - Distinguish known token subtotals from complete totals when a response omits token counts.

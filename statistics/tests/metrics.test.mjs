@@ -35,7 +35,7 @@ test('incomplete own tokens render as a subtotal with coverage and no cache rate
       {label:{label:text.composer_this_session},value:expect.subtotal('120')},
       {label:{label:text.composer_subagents},value:'280'},
       {label:{label:expect.coverage('5','6')},value:''}]);
-    assert.equal(rate.value,text.composer_metric_unknown);assert.equal(rate.visible,false);
+    assert.equal(rate.value,text.composer_metric_unknown);assert.equal(rate.visible,true);
     assert.deepEqual(rate.details.map(detail=>detail.value),['25','75','100','']);
     assert.equal(rate.details[3].label.label,expect.coverage('2','3'));
     assert.deepEqual(unfilled(values),[]);

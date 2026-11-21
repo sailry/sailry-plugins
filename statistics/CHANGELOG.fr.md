@@ -1,3 +1,7 @@
+## 0.1.44
+
+- Affiche les compteurs de jetons du cache disponibles et le nombre de réponses prises en compte lorsque le taux de succès global est inconnu.
+
 ## 0.1.43
 
 - Les sous-totaux connus sont distingués des totaux complets lorsqu’une réponse ne précise pas le nombre de tokens.
