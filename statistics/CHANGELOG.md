@@ -1,3 +1,7 @@
+## 0.1.43
+
+- Distinguish known token subtotals from complete totals when a response omits token counts.
+
 ## 0.1.42
 
 - Remove the stale-host notice from the Usage page.

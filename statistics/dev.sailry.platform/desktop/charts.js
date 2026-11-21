@@ -10,7 +10,17 @@ const calendarDate = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() 
 const clock = date => `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
 const monthDay = date => `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
 const timestamp = (value,offset) => new Date(Number(value)+offset*MINUTE);
-const valueOf = point => total(point.metrics.tokens) ?? (integer(point.metrics.responses) === 0n ? 0n : null);
+
+function incompleteResponses(metrics) {
+  const incomplete = integer(metrics.incomplete_token_responses) ?? 0n;
+  if (incomplete > 0n || metrics.tokens != null) return incomplete;
+  return integer(metrics.responses) ?? 0n;
+}
+
+function valueOf({metrics}) {
+  if (incompleteResponses(metrics) > 0n) return null;
+  return total(metrics.tokens) ?? (integer(metrics.responses) === 0n ? 0n : null);
+}
 
 export const SERIES = [{id:'cache', color:'chart_3', label:'usage_cache_hits'},
   {id:'input', color:'chart_2', label:'usage_uncached_input'}, {id:'output', color:'chart_4', label:'usage_column_output'}];
@@ -28,7 +38,7 @@ export const heatmapColumns = width => Math.max(1, Math.ceil(width / 18));
 /** Days to read for the grid, within the Node's usage query limit. */
 export const heatmapDays = width => Math.min(366, heatmapColumns(width) * 7);
 
-/** Sums day points of several Nodes, preserving measured tokens when available. */
+/** Sums day points of several Nodes, keeping incomplete totals as subtotals. */
 export function mergeDays(lists) {
   const add = (a, b) => a == null || b == null ? a ?? b ?? null : {input:String(integer(a.input)+integer(b.input)),
     output:String(integer(a.output)+integer(b.output)),cached_input:String(integer(a.cached_input)+integer(b.cached_input)),
@@ -37,8 +47,15 @@ export function mergeDays(lists) {
   for (const point of lists.flat()) {
     const key = String(point.start_ms), current = days.get(key);
     if (!current) { days.set(key, {...point, metrics:{...point.metrics}, models:Object.assign(Object.create(null),point.models)}); continue; }
-    current.metrics.responses = String(integer(current.metrics.responses) + integer(point.metrics.responses));
-    current.metrics.tokens = add(current.metrics.tokens, point.metrics.tokens);
+    const {metrics} = point, combined = current.metrics;
+    const incomplete = incompleteResponses(combined) + incompleteResponses(metrics);
+    const known = add(combined.tokens ?? combined.token_subtotal, metrics.tokens ?? metrics.token_subtotal);
+    combined.responses = String(integer(combined.responses) + integer(metrics.responses));
+    combined.tokens = incomplete > 0n ? null : known;
+    if (incomplete > 0n) {
+      combined.incomplete_token_responses = String(incomplete);
+      if (known != null) combined.token_subtotal = known;
+    }
     for (const [name, tokens] of Object.entries(point.models)) current.models[name] = add(current.models[name], tokens);
   }
   return [...days.values()].sort((a, b) => Number(a.start_ms) - Number(b.start_ms));
@@ -53,14 +70,15 @@ export function heatmap(points, text, {width, start, end, offset=0}) {
   for (const point of points) {
     const day = calendarDay(timestamp(point.start_ms,offset));
     if (!Number.isFinite(day) || day < first || day > last) continue;
-    const models = Object.entries(point.models).map(([name, tokens]) => [name, total(tokens)])
+    const tokens = valueOf(point);
+    const models = tokens == null ? [] : Object.entries(point.models).map(([name, usage]) => [name, total(usage)])
       .filter(([, value]) => value > 0n)
       .sort(([a, av], [b, bv]) => av !== bv ? (av > bv ? -1 : 1) : a < b ? -1 : a > b ? 1 : 0);
     if (models.length > 8) {
       const other = models.splice(8).reduce((sum, [, value]) => sum + value, 0n);
       models.push([text('usage_other_models'), other]);
     }
-    days.set(day,{models, tokens:valueOf(point)});
+    days.set(day,{models, tokens});
   }
   const maximum = [...days.values()].reduce((maximum, day) => day.tokens > maximum ? day.tokens : maximum, 0n);
   // Work back from the final cell so resizing only moves the beginning.
@@ -102,9 +120,9 @@ export function buckets(points, unit, offset=0) {
     }
     if (date < bucket.first) bucket.first = date;
     if (date > bucket.last) bucket.last = date;
-    const values = parts(point.metrics.tokens);
-    if (values && bucket.values) values.forEach((value, index) => { bucket.values[index] += value; });
-    else if (!values && integer(point.metrics.responses) > 0n) bucket.values = null;
+    if (!bucket.values) continue;
+    if (incompleteResponses(point.metrics) > 0n) bucket.values = null;
+    else parts(point.metrics.tokens)?.forEach((value, index) => { bucket.values[index] += value; });
   }
   return [...grouped.values()].sort((a, b) => a.start - b.start);
 }

@@ -1,3 +1,7 @@
+## 0.1.43
+
+- Les sous-totaux connus sont distingués des totaux complets lorsqu’une réponse ne précise pas le nombre de tokens.
+
 ## 0.1.42
 
 - Retire l’avis de données d’hôtes obsolètes de la page Utilisation.

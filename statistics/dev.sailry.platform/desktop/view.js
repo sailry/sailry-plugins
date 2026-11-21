@@ -17,6 +17,15 @@ const dot = color => div().flex_shrink_0().w_2().h_2().rounded_sm().bg(theme().c
 const swatches = text => div().h_flex().flex_wrap().gap_3().children(SERIES.map(series=>div().h_flex().gap_1p5().items_center()
   .child(dot(series.color)).child(muted(text[series.label]).text_xs())));
 const missing = text => ({text:text.composer_metric_unknown,text_tone:'muted'});
+
+function coverageLabel(text,{reported,responses}) {
+  return reported<responses ? text.usage_token_coverage.replace('%{reported}',grouped(reported)).replace('%{responses}',grouped(responses)) : null;
+}
+
+function tokenLabel(text,value,partial) {
+  return value==null ? text.composer_metric_unknown : partial ? text.usage_token_subtotal.replace('%{value}',value) : value;
+}
+
 /** Table row and header heights; a table showing every row adds FRAME for its header divider and border. */
 const ROW=36,HEADER=32,FRAME=3;
 /** Ranges that display the activity calendar. */
@@ -39,7 +48,7 @@ function composition(parts,sum) {
   // Kit Progress shows one value; flexible divs keep the three token parts proportional.
   return div().id('usage-composition').h_flex().w_full().h_2().mt_3().gap(2).rounded_full().overflow_hidden()
     .bg(theme().colors.muted)
-    .children(sum>0n ? SERIES.map((series,index)=>[series,parts[index],index]).filter(([,value])=>value>0n)
+    .children(sum!=null&&sum>0n ? SERIES.map((series,index)=>[series,parts[index],index]).filter(([,value])=>value>0n)
       .map(([series,value,index])=>div().h_full().flex_basis(0).flex_grow(Number(value)/Number(sum))
         .min_w(index===2?3:0).bg(theme().colors[series.color])) : []);
 }
@@ -63,16 +72,19 @@ function stat(id,name,value,extra=[]) {
 
 function summary(view,totals) {
   const {text}=view,colors=theme().colors,unknown=text.composer_metric_unknown,values=overview(totals);
+  const coverage=coverageLabel(text,values),partial=coverage!=null;
   const narrow=window.viewport_size().width<1000;
   const tokens=column().flex_1().min_w_0().gap_0()
     .child(muted(text.composer_tokens).text_xs())
-    .child(div().id('usage-total').mt_1().text_3xl().font_semibold().tooltip(grouped(values.total)??unknown).child(compact(values.total)??unknown))
-    .child(composition(values.parts,values.total??0n))
+    .child(div().id('usage-total').mt_1().text_3xl().font_semibold().tooltip(tokenLabel(text,grouped(values.total),partial))
+      .child(tokenLabel(text,compact(values.total),partial)))
+    .children(partial ? [muted(coverage).id('usage-token-coverage').text_xs()] : [])
+    .child(composition(values.parts,values.total))
     .child(legend(text,values));
   const priced=text.usage_cost_priced.replace('%{priced}',grouped(values.priced)).replace('%{responses}',grouped(values.responses));
   const stats=[
     stat('hit',text.usage_hit_rate,values.hit==null?unknown:`${Math.round(values.hit)}%`)
-      .child(div().w(96).child(ProgressBar.new('usage-hit-bar',{value:values.hit??0,color:'chart_3',label:text.usage_hit_rate}))),
+      .children(partial ? [] : [div().w(96).child(ProgressBar.new('usage-hit-bar',{value:values.hit??0,color:'chart_3',label:text.usage_hit_rate}))]),
     stat('responses',text.usage_responses,grouped(values.responses)),
     stat('speed',text.usage_speed,values.speed??unknown,values.speed==null?[]:[muted(text.usage_speed_unit).text_xs()]),
     stat('cost',text.usage_cost,values.cost==null?unknown:`$${values.cost}`,values.partial?[div().id('usage-cost-partial').tooltip(priced)
@@ -107,29 +119,40 @@ function activity(view,data) {
       .children(grid ? [Heatmap.new('usage-heatmap-plot',grid)] : []));
 }
 
+function breakdownRow(row,text,notes) {
+  const unknown=text.composer_metric_unknown,coverage=coverageLabel(text,row),partial=coverage!=null;
+  const share=percent(row.share),hit=row.hit==null ? null : `${Math.round(row.hit)}%`,cost=row.cost==null ? null : `$${row.cost}`;
+  const count=tokenLabel(text,row.total==null ? null : String(row.total),partial);
+  const tokens={text:tokenLabel(text,compact(row.total),partial),...partial ? {note:`${grouped(row.reported)}/${grouped(row.responses)}`} : {}};
+  const values=[row.note ? `${row.name} · ${row.note}` : row.name,share??unknown,count,hit??unknown,String(row.responses),cost??unknown];
+  const cells=[
+    {primary:{text:row.name,...notes&&row.note ? {note:row.note} : {}}},
+    // End-aligned, the bars line up at the column's edge after their percentages.
+    {primary:share==null ? missing(text) : {text:share,meter:{value:Math.min(row.share,100),label:share,width:72}}},
+    {primary:tokens},
+    {primary:hit==null ? missing(text) : {text:hit}},
+    {primary:{text:grouped(row.responses)}},
+    {primary:cost==null ? missing(text) : {text:cost}},
+  ];
+  const details=partial ? values.map((value,index)=>index===2 ? `${value}\n${coverage}` : value) : values;
+  return {id:row.id,values,cells,details};
+}
+
 function distribution(view,data) {
-  const {state,text}=view,unknown=text.composer_metric_unknown;
+  const {state,text}=view;
   const names=catalog(view,data);
   // A grouping change keeps the previous report until the regrouped report arrives.
   const pending=(data.query?.dimension ?? 'model')!==state.query.dimension;
   const rows=pending ? [] : breakdown(data.groups,state.breakdown,names,text);
-  const shown=state.expanded ? rows : rows.slice(0,VISIBLE),notes=annotated(rows);
-  const fields=['name','share','tokens','hit','responses','cost'];
+  const notes=annotated(rows),shown=(state.expanded ? rows : rows.slice(0,VISIBLE)).map(row=>breakdownRow(row,text,notes));
+  const subtotal=rows.some(row=>row.reported<row.responses);
+  const fields=['name',subtotal ? 'subtotal_share' : 'share','tokens','hit','responses','cost'];
   const table=pending ? div().id('usage-breakdown-pending').relative().w_full().h(160).child(Loading.new('usage-breakdown-loading'))
     : div().id('usage-breakdown-table').w_full().min_w_0().h(HEADER+(shown.length ? FRAME+shown.length*ROW : 160))
       .child(DataTable.new('usage-breakdown',{revision:`${state.generation}:${state.breakdown}`,columns:fields.map(key=>text[`usage_column_${key}`]),
-        rows:shown.map(row=>[row.note ? `${row.name} · ${row.note}` : row.name,percent(row.share)??unknown,row.total==null ? unknown : String(row.total),
-          row.hit==null ? unknown : `${Math.round(row.hit)}%`,String(row.responses),row.cost==null ? unknown : `$${row.cost}`]),
-        cells:shown.map(row=>[
-          {primary:{text:row.name,...notes&&row.note ? {note:row.note} : {}}},
-          // End-aligned, the bars line up at the column's edge after their percentages.
-          {primary:row.share==null ? missing(text) : {text:percent(row.share),meter:{value:Math.min(row.share,100),label:percent(row.share),width:72}}},
-          {primary:{text:compact(row.total)??unknown}},
-          {primary:row.hit==null ? missing(text) : {text:`${Math.round(row.hit)}%`}},
-          {primary:{text:grouped(row.responses)}},
-          {primary:row.cost==null ? missing(text) : {text:`$${row.cost}`}},
-        ]),
-        row_ids:shown.map(row=>row.id),row_height:ROW,header_height:HEADER,widths:[NAME_WIDTH,150,80,90,90,90],fill:0,
+        rows:shown.map(row=>row.values),cells:shown.map(row=>row.cells),
+        ...subtotal ? {details:shown.map(row=>row.details)} : {},
+        row_ids:shown.map(row=>row.id),row_height:ROW,header_height:HEADER,widths:[NAME_WIDTH,150,subtotal?200:80,90,90,90],fill:0,
         alignments:fields.map((_,index)=>index<1 ? 'start' : 'end'),resizable:false,empty:text.usage_empty,empty_icon:'chart-pie'}));
   return column().id('usage-breakdown-section')
     .child(div().h_flex().justify_between().items_center().gap_3().child(label(text.usage_breakdown))

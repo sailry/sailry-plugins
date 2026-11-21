@@ -1,3 +1,7 @@
+## 0.1.43
+
+- Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.
+
 ## 0.1.42
 
 - Remove o aviso de dados desatualizados de hosts da página de uso.

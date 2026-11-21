@@ -1,3 +1,7 @@
+## 0.1.43
+
+- Fehlen Tokenzahlen für einzelne Antworten, werden bekannte Teilsummen von vollständigen Summen unterschieden.
+
 ## 0.1.42
 
 - Den Hinweis zu veralteten Hostdaten von der Nutzungsseite entfernt.

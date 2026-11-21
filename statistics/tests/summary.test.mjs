@@ -1,5 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {SERIES} from '../dev.sailry.platform/desktop/charts.js';
+import {compact,grouped} from '../dev.sailry.platform/desktop/format.js';
+import {messages} from '../dev.sailry.platform/desktop/locales.js';
 import {overview,percent} from '../dev.sailry.platform/desktop/summary.js';
 
 const totals=(cost)=>({responses:'4',tokens:{input:'100',output:'25',cached_input:'60',reasoning:'7'},
@@ -13,7 +18,54 @@ test('composition splits cached, uncached and output tokens',()=>{
   assert.equal(values.reasoning,7n);
   assert.equal(values.hit,60);
   assert.equal(values.responses,4n);
+  assert.equal(values.reported,4n);
   assert.equal(values.speed,'25.0');
+});
+
+test('subtotal composition uses only reporting responses',()=>{
+  const report=totals();
+  const values=overview({...report,responses:'9007199254740993',tokens:null,token_subtotal:report.tokens,
+    incomplete_token_responses:'9007199254740992'});
+  assert.deepEqual([values.total,values.reported,values.responses],[125n,1n,9007199254740993n]);
+  assert.deepEqual(values.parts,[60n,40n,25n]);
+  assert.deepEqual(values.shares.map(percent),['48.0%','32.0%','20.0%']);
+  assert.equal(values.reasoning,7n);
+  assert.equal(values.hit,null);
+  assert.equal(values.speed,'25.0');
+});
+
+test('reported zero differs from missing token usage',()=>{
+  const report={responses:'2',tokens:null,incomplete_token_responses:'2'};
+  const unknown=overview(report);
+  const zero=overview({...report,incomplete_token_responses:'1',token_subtotal:{input:'0',output:'0',cached_input:'0',reasoning:'0'}});
+  assert.deepEqual([unknown.total,unknown.reported,unknown.parts,unknown.reasoning],[null,0n,null,null]);
+  assert.deepEqual([zero.total,zero.reported,zero.parts,zero.reasoning],[0n,1n,[0n,0n,0n],0n]);
+});
+
+test('overview marks a subtotal zero but not a complete zero',async()=>{
+  const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
+    .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+  const nodes=new Map();
+  function element() {
+    const items=[];
+    const node=new Proxy({},{get:(_,key)=>value=>{
+      if(key==='id')nodes.set(value,items);
+      if(key==='child')items.push(value);
+      return node;
+    }});
+    return node;
+  }
+  const {summary}=vm.runInNewContext(`${source}\n({summary})`,{
+    div:element,theme:()=>({colors:{}}),window:{viewport_size:()=>({width:1040})},ProgressBar:{new:element},
+    overview,percent,SERIES,compact,grouped,
+  });
+  const view={text:messages('en')},tokens={input:'0',output:'0',cached_input:'0',reasoning:'0'};
+  summary(view,{responses:'1',tokens});
+  assert.deepEqual(nodes.get('usage-total'),['0']);
+  assert.equal(nodes.has('usage-token-coverage'),false);
+  summary(view,{responses:'2',tokens:null,token_subtotal:tokens,incomplete_token_responses:'1'});
+  assert.deepEqual(nodes.get('usage-total'),['Subtotal: 0']);
+  assert.deepEqual(nodes.get('usage-token-coverage'),['1 of 2 responses reported both token counts']);
 });
 
 test('cost is partial when some responses lack prices',()=>{

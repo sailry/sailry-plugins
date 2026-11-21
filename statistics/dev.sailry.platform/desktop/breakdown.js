@@ -1,6 +1,7 @@
 // Breakdown rows: models and their providers come from model groups; owners from project groups.
 import {integer, ratio, amount} from './format.js';
 import {parts} from './charts.js';
+import {tokenCoverage} from './summary.js';
 
 /** Rows shown before the list is expanded. */
 export const VISIBLE = 6;
@@ -15,10 +16,12 @@ const width = text => Array.from(text).reduce((sum, char) => sum + (char.codePoi
 export const annotated = rows => rows.every(row => !row.note || width(row.name) + 6 + width(row.note) <= NAME_ROOM);
 
 function add(row, metrics) {
-  row.responses += integer(metrics.responses);
-  if (metrics.tokens) {
+  const {tokens, responses, reported} = tokenCoverage(metrics);
+  row.responses += responses;
+  row.reported += reported;
+  if (tokens) {
     if (!row.tokens) row.tokens = {input:0n, output:0n, cached_input:0n, reasoning:0n};
-    for (const key of Object.keys(row.tokens)) row.tokens[key] += integer(metrics.tokens[key]);
+    for (const key of Object.keys(row.tokens)) row.tokens[key] += integer(tokens[key]);
   }
   if (metrics.cost) {
     if (!row.cost) row.cost = {usd_micros:0n, responses:0n};
@@ -46,23 +49,23 @@ function identity(group, mode, names, text) {
   return null;
 }
 
-/** Breakdown rows sorted by token totals, with shares of the listed total. */
+/** Breakdown rows sorted by known token counts, with shares of their known sum. */
 export function breakdown(groups, mode, names, text) {
   const rows = new Map();
   for (const group of groups) {
     const key = identity(group, mode, names, text);
     if (!key) continue;
-    if (!rows.has(key.id)) rows.set(key.id, {...key, responses:0n, tokens:null, cost:null});
+    if (!rows.has(key.id)) rows.set(key.id, {...key, responses:0n, reported:0n, tokens:null, cost:null});
     add(rows.get(key.id), group.metrics);
   }
   const list = [...rows.values()].map(row => {
     const values = parts(row.tokens);
     return {...row,
       total:values ? values.reduce((sum, value) => sum + value, 0n) : null,
-      hit:values ? ratio(values[0], row.tokens.input) : null,
+      hit:values && row.reported === row.responses ? ratio(values[0], row.tokens.input) : null,
       cost:row.cost ? amount(row.cost.usd_micros) + (row.cost.responses < row.responses ? '+' : '') : null};
   });
-  const sum = list.reduce((sum, row) => sum + (row.total ?? 0n), 0n);
+  const sum = list.reduce((sum, row) => row.total == null ? sum : sum + row.total, 0n);
   for (const row of list) row.share = ratio(row.total, sum);
   return list.sort((left, right) => {
     if (left.total !== right.total) {

@@ -5,10 +5,17 @@ import {heatmap, heatmapDays, mergeDays, trend, buckets, axis, parts} from '../d
 const labels = {usage_other_models:'Other models',usage_month:'Month %{month}',composer_metric_unknown:'Unknown',composer_tokens:'Token',usage_cache_hits:'Cache hits',usage_uncached_input:'Uncached input',usage_column_output:'Output'};
 const text = key => labels[key] ?? key;
 const usage = (input = '12', output = '3', cached_input = '4') => ({input,output,cached_input,reasoning:'2'});
+const ZERO = {input:'0',output:'0',cached_input:'0',reasoning:'0'};
 const MINUTE = 60000, DAY = 86400000, HALF_HOUR = 1800000;
 // Node points are UTC instants whose calendar boundaries use the captured fixed offset.
 function point(start, tokens = usage(), responses = tokens ? '1' : '0') {
   return {start_ms:String(start),metrics:{responses,tokens},models:{}};
+}
+function incompletePoint(start, responses, incomplete, subtotal) {
+  const value = point(start,null,responses);
+  value.metrics.incomplete_token_responses = incomplete;
+  if (subtotal != null) value.metrics.token_subtotal = subtotal;
+  return value;
 }
 const at = (year, month, day, hour = 0, minute = 0, offset = 0) => Date.UTC(year,month-1,day,hour,minute)-offset*MINUTE;
 const days = (from, count, tokens = () => usage()) => Array.from({length:count}, (_, index) => {
@@ -85,6 +92,24 @@ test('keeps empty and unknown distinct and poisons incomplete weeks', () => {
   const empty = trend(report(), 'half_hour', text);
   assert.deepEqual(empty.buckets, []);
   assert.deepEqual(empty.ticks, [{value:0,label:'0'},{value:1,label:'1'}]);
+});
+
+test('excludes incomplete token subtotals from trend values and scales', () => {
+  const start = at(2024,1,1);
+  for (const [unit, field, step] of [['half_hour','recent',HALF_HOUR], ['day','days',DAY]]) {
+    const points = [incompletePoint(start,'2','1',usage('9000','0')),
+      incompletePoint(start+step,'2','1',ZERO),point(start+2*step,ZERO),point(start+3*step,usage('4','0','0'))];
+    const data = report({[field]:points}), chart = trend(data,unit,text);
+    assert.deepEqual(chart.buckets.map(bucket => bucket.values), [null,null,[0,0,0],[0,4,0]]);
+    assert.deepEqual(footers(chart), ['Unknown','Unknown','0','4']);
+    assert.deepEqual(chart.buckets[0].tooltip.rows.map(row => row.value), ['Unknown','Unknown','Unknown']);
+    assert.equal(chart.maximum, 4);
+    if (unit === 'day') {
+      const weekly = trend(data,'week',text);
+      assert.deepEqual(weekly.buckets.map(bucket => bucket.values), [null]);
+      assert.deepEqual(footers(weekly), ['Unknown']);
+    }
+  }
 });
 
 test('rounds axis ticks to readable steps', () => {
@@ -172,6 +197,17 @@ test('keeps intensity and pads days before the range', () => {
   assert.doesNotThrow(() => JSON.stringify(chart));
 });
 
+test('hides partial model counts and keeps measured heatmap zero', () => {
+  const start = at(2024,1,1), partial = incompletePoint(start,'2','1',usage('999','1'));
+  partial.models = {m:partial.metrics.token_subtotal};
+  const points = mergeDays([[partial,incompletePoint(start+DAY,'2','1',ZERO)],
+    [point(start),point(start+2*DAY,ZERO),point(start+3*DAY,usage('4','0'))]]);
+  const chart = heatmap(points,text,{width:108,start,end:start+4*DAY}), cells = chart.cells.slice(-4);
+  assert.deepEqual(cells.map(({intensity,tooltip}) => [intensity,tooltip.title]),
+    [[0,'Unknown Token'],[0,'Unknown Token'],[0,'0 Token'],[1,'4 Token']]);
+  assert.deepEqual(cells[0].tooltip.rows, []);
+});
+
 test('fills the measured width and keeps the newest date last', () => {
   const latest=point(at(2024,1,30),usage('1','0'));
   for(const width of [250,900]) {
@@ -214,4 +250,27 @@ test('merges day points across Nodes without losing measured usage', () => {
   assert.deepEqual([day.metrics.responses, day.metrics.tokens.input, day.models.m.output, day.models.__proto__.input], ['3','15','3','1']);
   assert.equal(next.metrics.tokens, null);
   assert.equal(a.metrics.responses, '1');
+});
+
+test('preserves incomplete coverage and exact subtotals across Nodes', () => {
+  const start = at(2024,1,1);
+  const lists = [
+    [incompletePoint(start,'9007199254740994','9007199254740993',usage('10','2','3')),
+      incompletePoint(start+DAY,'2','2'),point(start+2*DAY,null)],
+    [point(start,usage('5','1','2')),point(start+DAY,null,'1'),point(start+2*DAY,ZERO),point(start+3*DAY,ZERO)],
+    [incompletePoint(start,'3','2',usage('2','1','1')),incompletePoint(start+3*DAY,'1','1')],
+  ];
+  const original = JSON.stringify(lists);
+  for (const sources of [lists,[...lists].reverse()]) {
+    const points = mergeDays(sources);
+    assert.deepEqual(points.map(day => day.metrics), [
+      {responses:'9007199254740998',tokens:null,incomplete_token_responses:'9007199254740995',
+        token_subtotal:{input:'17',output:'4',cached_input:'6',reasoning:'6'}},
+      {responses:'3',tokens:null,incomplete_token_responses:'3'},
+      {responses:'1',tokens:ZERO},
+      {responses:'2',tokens:null,incomplete_token_responses:'1',token_subtotal:ZERO},
+    ]);
+    assert.deepEqual(buckets(points,'day').map(bucket => bucket.values), [null,null,[0n,0n,0n],null]);
+  }
+  assert.equal(JSON.stringify(lists), original);
 });

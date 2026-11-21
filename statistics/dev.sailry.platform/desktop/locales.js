@@ -24,6 +24,8 @@ const locales = {
     "usage_speed_unit": "tok/s",
     "usage_cost_partial": "Partial",
     "usage_cost_priced": "%{priced} of %{responses} responses priced",
+    "usage_token_subtotal": "Subtotal: %{value}",
+    "usage_token_coverage": "%{reported} of %{responses} responses reported both token counts",
     "usage_heatmap": "Activity heatmap",
     "usage_breakdown": "Breakdown",
     "usage_show_all": "Show all",
@@ -33,6 +35,7 @@ const locales = {
     "usage_column_session": "Session",
     "usage_column_name": "Name",
     "usage_column_share": "Share",
+    "usage_column_subtotal_share": "Share of subtotal",
     "usage_column_tokens": "Tokens",
     "usage_column_hit": "Cache hits",
     "usage_column_responses": "Responses",
@@ -137,6 +140,8 @@ const locales = {
     "usage_speed_unit": "tok/s",
     "usage_cost_partial": "部分",
     "usage_cost_priced": "已计价 %{priced} / %{responses} 个响应",
+    "usage_token_subtotal": "小计：%{value}",
+    "usage_token_coverage": "%{reported} / %{responses} 个响应报告了输入和输出 Token",
     "usage_heatmap": "活跃热力图",
     "usage_breakdown": "分布",
     "usage_show_all": "显示全部",
@@ -146,6 +151,7 @@ const locales = {
     "usage_column_session": "会话",
     "usage_column_name": "名称",
     "usage_column_share": "占比",
+    "usage_column_subtotal_share": "小计占比",
     "usage_column_tokens": "Token",
     "usage_column_hit": "缓存命中",
     "usage_column_responses": "响应",
@@ -226,6 +232,9 @@ const locales = {
     "context_no_data": "暂无数据"
   },
   "de": {
+    "usage_token_subtotal": "Teilsumme: %{value}",
+    "usage_token_coverage": "%{reported} von %{responses} Antworten meldeten Eingabe- und Ausgabetoken",
+    "usage_column_subtotal_share": "Teilsummenanteil",
     "usage_speed": "Generierungsgeschwindigkeit",
     "usage_speed_help": "Aktualisierte Hosts messen ab dem ersten Token. Messungen älterer Hosts können die Wartezeit bis dahin enthalten.",
     "composer_speed": "Generierungsgeschwindigkeit",
@@ -247,6 +256,9 @@ const locales = {
     "context_no_data": "Keine Daten"
   },
   "es": {
+    "usage_token_subtotal": "Subtotal: %{value}",
+    "usage_token_coverage": "%{reported} de %{responses} respuestas indicaron tokens de entrada y salida",
+    "usage_column_subtotal_share": "Parte del subtotal",
     "usage_speed": "Velocidad de generación",
     "usage_speed_help": "Los hosts actualizados excluyen la espera hasta el primer token. Las mediciones de hosts anteriores pueden incluirla.",
     "composer_speed": "Velocidad de generación",
@@ -268,6 +280,9 @@ const locales = {
     "context_no_data": "Sin datos"
   },
   "fr": {
+    "usage_token_subtotal": "Sous-total : %{value}",
+    "usage_token_coverage": "%{reported} réponses sur %{responses} indiquent les nombres de jetons d’entrée et de sortie",
+    "usage_column_subtotal_share": "Part du sous-total",
     "usage_speed": "Vitesse de génération",
     "usage_speed_help": "Les hôtes à jour excluent le délai avant le premier token. Les mesures des anciens hôtes peuvent l’inclure.",
     "composer_speed": "Vitesse de génération",
@@ -289,6 +304,9 @@ const locales = {
     "context_no_data": "Aucune donnée"
   },
   "ja": {
+    "usage_token_subtotal": "小計：%{value}",
+    "usage_token_coverage": "%{responses} 件中 %{reported} 件の応答で入出力トークン数を報告",
+    "usage_column_subtotal_share": "小計の割合",
     "usage_speed": "生成速度",
     "usage_speed_help": "更新済みのホストでは最初のトークンが届くまでの待ち時間を除きます。旧版ホストの記録ではこの待ち時間が含まれる場合があります。",
     "composer_speed": "生成速度",
@@ -310,6 +328,9 @@ const locales = {
     "context_no_data": "データなし"
   },
   "ko": {
+    "usage_token_subtotal": "소계: %{value}",
+    "usage_token_coverage": "응답 %{responses}건 중 %{reported}건에서 입출력 토큰 수 보고",
+    "usage_column_subtotal_share": "소계 비율",
     "usage_speed": "생성 속도",
     "usage_speed_help": "업데이트된 호스트는 첫 토큰까지의 대기 시간을 제외합니다. 이전 버전 호스트의 측정값에는 이 시간이 포함될 수 있습니다.",
     "composer_speed": "생성 속도",
@@ -331,6 +352,9 @@ const locales = {
     "context_no_data": "데이터 없음"
   },
   "pt-BR": {
+    "usage_token_subtotal": "Subtotal: %{value}",
+    "usage_token_coverage": "%{reported} de %{responses} respostas informaram tokens de entrada e saída",
+    "usage_column_subtotal_share": "Parte do subtotal",
     "usage_speed": "Velocidade de geração",
     "usage_speed_help": "Hosts atualizados excluem a espera pelo primeiro token. Medições de hosts antigos podem incluí-la.",
     "composer_speed": "Velocidade de geração",
@@ -352,6 +376,9 @@ const locales = {
     "context_no_data": "Sem dados"
   },
   "ru": {
+    "usage_token_subtotal": "Подытог: %{value}",
+    "usage_token_coverage": "Из %{responses} ответов в %{reported} указано число входных и выходных токенов",
+    "usage_column_subtotal_share": "Доля подытога",
     "usage_speed": "Скорость генерации",
     "usage_speed_help": "Обновлённые хосты исключают время ожидания первого токена. В измерениях старых хостов оно может учитываться.",
     "composer_speed": "Скорость генерации",
@@ -373,6 +400,9 @@ const locales = {
     "context_no_data": "Нет данных"
   },
   "zh-TW": {
+    "usage_token_subtotal": "小計：%{value}",
+    "usage_token_coverage": "%{reported} / %{responses} 個回應回報了輸入和輸出 Token",
+    "usage_column_subtotal_share": "小計占比",
     "composer_subagents": "子智能體",
     "usage_speed": "生成速度",
     "usage_speed_help": "新版主機從收到第一個 Token 後開始計時。舊版主機的紀錄可能包含等待第一個 Token 的時間。",

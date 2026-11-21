@@ -1,3 +1,7 @@
+## 0.1.43
+
+- Se distinguen los subtotales conocidos de los totales completos cuando alguna respuesta no informa del número de tokens.
+
 ## 0.1.42
 
 - Se elimina el aviso de datos desactualizados de servidores en la página de uso.

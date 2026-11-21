@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {breakdown,annotated,VISIBLE} from '../dev.sailry.platform/desktop/breakdown.js';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {breakdown,annotated,VISIBLE,NAME_WIDTH} from '../dev.sailry.platform/desktop/breakdown.js';
+import {compact,grouped} from '../dev.sailry.platform/desktop/format.js';
+import {percent} from '../dev.sailry.platform/desktop/summary.js';
+import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 test('provider notes show only when every row fits its name and note',()=>{
   assert(annotated([{name:'gpt-5',note:'OpenAI'},{name:'Unassigned',note:null}]));
@@ -31,12 +36,53 @@ test('providers aggregate their models and mark partial costs',()=>{
   assert.equal(rows[0].hit,12.5);
 });
 
+test('providers aggregate known tokens without inventing coverage',()=>{
+  const rows=breakdown([
+    model('p1','complete',metrics('5','8','1')),
+    model('p1','partial',{responses:'3',tokens:null,token_subtotal:metrics('20','3','4').tokens,incomplete_token_responses:'2'}),
+    model('p1','legacy',{responses:'1',tokens:null}),
+    model('p2','complete',metrics('4','0','2')),
+    model('p2','empty',{responses:'0',tokens:null}),
+    model('p3','unknown',{responses:'2',tokens:null,incomplete_token_responses:'2'}),
+  ],'provider',names,text);
+  assert.deepEqual(rows.map(row=>[row.id,row.total,row.reported,row.responses,row.share,row.hit]),[
+    ['p1',36n,3n,6n,90,null],['p2',4n,2n,2n,10,50],['p3',null,0n,2n,null,null],
+  ]);
+});
+
 test('projects merge unowned conversations and ignore models',()=>{
   const rows=breakdown([{key:{kind:'project',data:'proj'},metrics:metrics('5','0')},
     {key:{kind:'session',data:'s1'},metrics:metrics('1','0')},{key:{kind:'session',data:'s2'},metrics:metrics('2','0')},
     {key:{kind:'connection',data:{id:'c'}},name:'Prod DB',metrics:metrics('4','0')},model('p1','a',metrics('9','0'))],'project',names,text);
   assert.deepEqual(rows.map(row=>[row.name,row.total]),[['Web',5n],['Prod DB',4n],['Unassigned',3n]]);
   assert.deepEqual(breakdown([{key:{kind:'project',data:'proj'},metrics:metrics('5','0')}],'model',names,text),[]);
+});
+
+test('merged unassigned rows show zero subtotals and exact coverage',async()=>{
+  const source=(await readFile(new URL('../dev.sailry.platform/desktop/view.js',import.meta.url),'utf8'))
+    .replace(/^import .*;\n/gm,'').replace(/^export /gm,'');
+  const element=new Proxy({},{get:()=>()=>element}), control=function(){return element;};
+  let table;
+  const {distribution}=vm.runInNewContext(`${source}\n({distribution})`,{
+    div:()=>element,theme:()=>({colors:{muted_foreground:'muted'}}),Tab:control,TabBar:control,DIMENSIONS:['model','provider','project'],
+    DataTable:{new:(_,props)=>{table=props;return element;}},breakdown,annotated,VISIBLE,NAME_WIDTH,compact,grouped,percent,
+  });
+  const view={state:{breakdown:'project',query:{dimension:'project'}},text:messages('en')};
+  distribution(view,{query:{dimension:'project'},groups:[
+    {node:'a',key:{kind:'project',data:'complete'},metrics:metrics('10','0')},
+    {node:'a',key:{kind:'session',data:'measured'},metrics:metrics('0','0')},
+    {node:'b',key:{kind:'session',data:'missing'},metrics:{responses:'3',tokens:null,incomplete_token_responses:'3'}},
+    {node:'b',key:{kind:'project',data:'unknown'},metrics:{responses:'1',tokens:null,incomplete_token_responses:'1'}},
+  ]});
+  assert.equal(table.columns[1],'Share of subtotal');
+  assert.equal(table.rows[0][2],'10');
+  assert.equal(table.rows[1][1],'0.0%');
+  assert.equal(table.rows[1][2],'Subtotal: 0');
+  assert.equal(table.cells[1][2].primary.text,'Subtotal: 0');
+  assert.equal(table.cells[1][2].primary.note,'2/5');
+  assert.equal(table.details[1][2],'Subtotal: 0\n2 of 5 responses reported both token counts');
+  assert.equal(table.cells[2][2].primary.text,'—');
+  assert.equal(table.cells[2][2].primary.note,'0/1');
 });
 
 test('ties sort by name and the first rows stay visible',()=>{
