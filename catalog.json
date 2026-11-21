@@ -22878,7 +22878,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.42",
+        "version": "0.1.43",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23015,6 +23015,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.43",
+          "commit": "3d8ef1a4040e20488474b6ab27fd56befebeb12e",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Distinguish known token subtotals from complete totals when a response omits token counts.",
+            "locales": {
+              "zh-CN": "- 部分响应未报告 token 数时，区分已知用量小计和完整总量。",
+              "zh-TW": "- 部分回應未回報 token 數時，區分已知用量小計與完整總量。",
+              "ja": "- トークン数を報告しない応答がある場合、判明している小計と全体の合計を区別します。",
+              "ko": "- 일부 응답에 토큰 수가 없을 때 확인된 소계와 전체 합계를 구분합니다.",
+              "fr": "- Les sous-totaux connus sont distingués des totaux complets lorsqu’une réponse ne précise pas le nombre de tokens.",
+              "de": "- Fehlen Tokenzahlen für einzelne Antworten, werden bekannte Teilsummen von vollständigen Summen unterschieden.",
+              "es": "- Se distinguen los subtotales conocidos de los totales completos cuando alguna respuesta no informa del número de tokens.",
+              "pt-BR": "- Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.",
+              "ru": "- Если в ответе не указано число токенов, известная сумма отмечается как неполная."
+            }
+          }
+        },
         {
           "version": "0.1.42",
           "commit": "cfbb4b7fe3b3fa96bd6ab2104f3bf9d291b5a055",
@@ -23605,17 +23625,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove the stale-host notice from the Usage page.",
+        "text": "- Distinguish known token subtotals from complete totals when a response omits token counts.",
         "locales": {
-          "zh-CN": "- 移除用量页面的主机数据未更新提示。",
-          "zh-TW": "- 移除用量頁面的主機資料未更新提示。",
-          "ja": "- 使用量ページからホストのデータが未更新であることを示す通知を削除しました。",
-          "ko": "- 사용량 페이지에서 호스트 데이터 미갱신 안내를 제거했습니다.",
-          "fr": "- Retire l’avis de données d’hôtes obsolètes de la page Utilisation.",
-          "de": "- Den Hinweis zu veralteten Hostdaten von der Nutzungsseite entfernt.",
-          "es": "- Se elimina el aviso de datos desactualizados de servidores en la página de uso.",
-          "pt-BR": "- Remove o aviso de dados desatualizados de hosts da página de uso.",
-          "ru": "- Удалено уведомление об устаревших данных хостов со страницы использования."
+          "zh-CN": "- 部分响应未报告 token 数时，区分已知用量小计和完整总量。",
+          "zh-TW": "- 部分回應未回報 token 數時，區分已知用量小計與完整總量。",
+          "ja": "- トークン数を報告しない応答がある場合、判明している小計と全体の合計を区別します。",
+          "ko": "- 일부 응답에 토큰 수가 없을 때 확인된 소계와 전체 합계를 구분합니다.",
+          "fr": "- Les sous-totaux connus sont distingués des totaux complets lorsqu’une réponse ne précise pas le nombre de tokens.",
+          "de": "- Fehlen Tokenzahlen für einzelne Antworten, werden bekannte Teilsummen von vollständigen Summen unterschieden.",
+          "es": "- Se distinguen los subtotales conocidos de los totales completos cuando alguna respuesta no informa del número de tokens.",
+          "pt-BR": "- Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.",
+          "ru": "- Если в ответе не указано число токенов, известная сумма отмечается как неполная."
         }
       }
     },
