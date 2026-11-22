@@ -22890,7 +22890,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.47",
+        "version": "0.1.48",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23027,6 +23027,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.48",
+          "commit": "2a941bb132d7d70066ae712743f0f2bbdd790d0c",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- The composer speed tooltip shows generation TPS and TTFT for the latest model request and labels the session's average TTFT.",
+            "locales": {
+              "zh-CN": "- 输入栏的速度浮层显示最近一次模型请求的生成 TPS 和 TTFT，并标明会话平均 TTFT。",
+              "zh-TW": "- 輸入欄的速度浮層顯示最近一次模型請求的生成 TPS 與 TTFT，並標示工作階段的平均 TTFT。",
+              "ja": "- 入力欄の速度ツールチップに直近のモデルリクエストの生成 TPS と TTFT を表示し、セッションの平均 TTFT を明示します。",
+              "ko": "- 입력란의 속도 툴팁에 최근 모델 요청의 생성 TPS와 TTFT를 표시하고 세션의 평균 TTFT를 명시합니다.",
+              "fr": "- L’infobulle de vitesse affiche le TPS de génération et le TTFT de la dernière requête au modèle et indique le TTFT moyen de la session.",
+              "de": "- Der Geschwindigkeits-Tooltip im Eingabebereich zeigt die Generierungs-TPS und TTFT der letzten Modellanfrage und kennzeichnet die mittlere TTFT der Sitzung.",
+              "es": "- La información emergente de velocidad muestra los TPS de generación y el TTFT de la última solicitud al modelo, e identifica el TTFT medio de la sesión.",
+              "pt-BR": "- A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.",
+              "ru": "- Подсказка о скорости показывает TPS генерации и TTFT последнего запроса к модели, а также обозначает средний TTFT сеанса."
+            }
+          }
+        },
         {
           "version": "0.1.47",
           "commit": "a4c958673af9b25e324ac88a28a047572c8d066d",
@@ -23709,17 +23729,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show only end-to-end TPS and time to first token (TTFT) in the composer speed tooltip.",
+        "text": "- The composer speed tooltip shows generation TPS and TTFT for the latest model request and labels the session's average TTFT.",
         "locales": {
-          "zh-CN": "- 输入栏的速度浮层仅显示全程 TPS 和首个 Token 的等待时间（TTFT）。",
-          "zh-TW": "- 輸入欄的速度浮層僅顯示全程 TPS 與等待第一個 Token 的時間（TTFT）。",
-          "ja": "- 入力欄の速度ツールチップには、応答全体の TPS と最初のトークンまでの待ち時間（TTFT）のみを表示します。",
-          "ko": "- 입력란의 속도 툴팁에는 전체 응답 TPS와 첫 토큰까지 걸린 시간(TTFT)만 표시합니다.",
-          "fr": "- L’infobulle de vitesse de la zone de saisie affiche uniquement le TPS de bout en bout et le délai avant le premier jeton (TTFT).",
-          "de": "- Der Tooltip zur Geschwindigkeit im Eingabebereich zeigt nur End-to-End-TPS und die Wartezeit bis zum ersten Token (TTFT).",
-          "es": "- La información emergente de velocidad del cuadro de entrada solo muestra los TPS de extremo a extremo y el tiempo hasta el primer token (TTFT).",
-          "pt-BR": "- A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).",
-          "ru": "- Подсказка о скорости в поле ввода показывает только TPS за всё время запроса и время ожидания первого токена (TTFT)."
+          "zh-CN": "- 输入栏的速度浮层显示最近一次模型请求的生成 TPS 和 TTFT，并标明会话平均 TTFT。",
+          "zh-TW": "- 輸入欄的速度浮層顯示最近一次模型請求的生成 TPS 與 TTFT，並標示工作階段的平均 TTFT。",
+          "ja": "- 入力欄の速度ツールチップに直近のモデルリクエストの生成 TPS と TTFT を表示し、セッションの平均 TTFT を明示します。",
+          "ko": "- 입력란의 속도 툴팁에 최근 모델 요청의 생성 TPS와 TTFT를 표시하고 세션의 평균 TTFT를 명시합니다.",
+          "fr": "- L’infobulle de vitesse affiche le TPS de génération et le TTFT de la dernière requête au modèle et indique le TTFT moyen de la session.",
+          "de": "- Der Geschwindigkeits-Tooltip im Eingabebereich zeigt die Generierungs-TPS und TTFT der letzten Modellanfrage und kennzeichnet die mittlere TTFT der Sitzung.",
+          "es": "- La información emergente de velocidad muestra los TPS de generación y el TTFT de la última solicitud al modelo, e identifica el TTFT medio de la sesión.",
+          "pt-BR": "- A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.",
+          "ru": "- Подсказка о скорости показывает TPS генерации и TTFT последнего запроса к модели, а также обозначает средний TTFT сеанса."
         }
       }
     },
