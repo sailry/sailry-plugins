@@ -1,3 +1,7 @@
+## 0.1.48
+
+- L’infobulle de vitesse affiche le TPS de génération et le TTFT de la dernière requête au modèle et indique le TTFT moyen de la session.
+
 ## 0.1.47
 
 - L’infobulle de vitesse de la zone de saisie affiche uniquement le TPS de bout en bout et le délai avant le premier jeton (TTFT).

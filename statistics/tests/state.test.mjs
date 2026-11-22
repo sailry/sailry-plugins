@@ -5,14 +5,21 @@ import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.p
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('shows host TPS with only the latest own TTFT',async()=>{
+test('speed uses localized labels for aggregate and latest measurements',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const label=manifest.extensions['dev.sailry.platform'].ui.find(item=>item.id==='composer_speed').label;
+  const keys=['composer_average_ttft','composer_latest_tps','composer_latest_ttft'];
+  const en=messages('en');
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
     const text=messages(locale);
     assert.equal(label.locales[locale] ?? label.label,text.usage_speed);
+    for (const key of keys) {
+      assert.ok(text[key],`${locale}: ${key}`);
+      if (locale!=='en') assert.notEqual(text[key],en[key],`${locale}: ${key}`);
+    }
     for (const [first,value] of [[null,text.composer_metric_unknown],['0','0.0 ms'],['125000','125.0 ms'],['2000000','2.00 s']]) {
-      const statistics={responses:'4',first_token_us:first,
+      const statistics={responses:'4',first_token_us:'1',
+        observations:{latency:{first_token_us:first},recent:[{attempts:[{first_token_us:'250000',elapsed_us:'1250000',usage:{output:'20'}}]}]},
         generation:{output_tokens:'90',elapsed_us:'1000000',responses:'2'},
         throughput:{output_tokens:'120',elapsed_us:'4000000',responses:'3'},
         delegated:{first_token_us:'1',throughput:{output_tokens:'10000',elapsed_us:'1',responses:'2'}}};
@@ -20,10 +27,11 @@ test('shows host TPS with only the latest own TTFT',async()=>{
       assert.equal(speed.visible,true);
       assert.equal(speed.value,'30.0 tok/s');
       assert.deepEqual(speed.details,[
-        {label:{label:text.composer_first_token},value},
+        {label:{label:text.composer_average_ttft},value},
+        {label:{label:text.composer_latest_tps},value:'20.0 tok/s'},
+        {label:{label:text.composer_latest_ttft},value:'250.0 ms'},
       ]);
       assert.deepEqual(statistics,before);
-      assert.ok(text.composer_first_token);
     }
   }
 });
@@ -137,7 +145,7 @@ test('composer preserves unknown measurements',()=>{
   const state={has_messages:true},before=structuredClone(state),unknown=metrics(state,text);
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.details.map(detail=>detail.value)),
-    [2,1,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
+    [2,3,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
   assert.equal(unknown.length,5);
   assert.deepEqual(state,before);
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
@@ -183,7 +191,7 @@ test('composer combines child totals and preserves own metrics',()=>{
       {label:{label:text.composer_this_session},value:'$0.01'},
       {label:{label:text.composer_subagents},value:'$0.01'}]);
     assert.equal(metric('composer_speed').value,'21.5 tok/s');
-    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),[text.composer_metric_unknown]);
+    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),Array(3).fill(text.composer_metric_unknown));
     assert.equal(metric('composer_cache').value,'25%');
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
     assert.equal(metric('composer_turns').value,'7');

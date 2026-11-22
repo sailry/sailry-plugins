@@ -1,3 +1,7 @@
+## 0.1.48
+
+- A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.
+
 ## 0.1.47
 
 - A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).

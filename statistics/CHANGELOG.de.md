@@ -1,3 +1,7 @@
+## 0.1.48
+
+- Der Geschwindigkeits-Tooltip im Eingabebereich zeigt die Generierungs-TPS und TTFT der letzten Modellanfrage und kennzeichnet die mittlere TTFT der Sitzung.
+
 ## 0.1.47
 
 - Der Tooltip zur Geschwindigkeit im Eingabebereich zeigt nur End-to-End-TPS und die Wartezeit bis zum ersten Token (TTFT).

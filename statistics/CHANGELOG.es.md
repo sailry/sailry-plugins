@@ -1,3 +1,7 @@
+## 0.1.48
+
+- La información emergente de velocidad muestra los TPS de generación y el TTFT de la última solicitud al modelo, e identifica el TTFT medio de la sesión.
+
 ## 0.1.47
 
 - La información emergente de velocidad del cuadro de entrada solo muestra los TPS de extremo a extremo y el tiempo hasta el primer token (TTFT).

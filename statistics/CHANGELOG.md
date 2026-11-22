@@ -1,3 +1,7 @@
+## 0.1.48
+
+- The composer speed tooltip shows generation TPS and TTFT for the latest model request and labels the session's average TTFT.
+
 ## 0.1.47
 
 - Show only end-to-end TPS and time to first token (TTFT) in the composer speed tooltip.

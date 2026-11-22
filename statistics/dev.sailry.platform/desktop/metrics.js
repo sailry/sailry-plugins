@@ -14,8 +14,18 @@ function tokens(value,responses,incomplete) {
   return {total:total(value),responses:count,reported,partial:reported < count};
 }
 
+function generationSpeed(attempt) {
+  const first = integer(attempt?.first_token_us), elapsed = integer(attempt?.elapsed_us);
+  const output = integer(attempt?.usage?.output);
+  if (first == null || elapsed == null || elapsed <= first || output == null) return null;
+  const hiddenReasoning = attempt.reasoning_streamed ? 0n : integer(attempt.usage.reasoning ?? 0n);
+  return speed({output_tokens:output > hiddenReasoning ? output-hiddenReasoning : 0n,elapsed_us:elapsed-first});
+}
+
 export function metrics(state,text) {
   const statistics = state.statistics, usage = statistics?.usage, throughput = statistics?.throughput;
+  const observations = statistics?.observations;
+  const latest = observations?.recent?.at(-1)?.attempts?.at(-1);
   const delegated = statistics?.delegated;
   // Message pages may still be loading; persisted statistics cover the whole session.
   const recorded = state.has_messages || [statistics?.turns,statistics?.responses,delegated?.responses,
@@ -37,15 +47,17 @@ export function metrics(state,text) {
   const combined = cost({responses:sum(statistics?.responses,delegated?.responses),
     cost:micros == null ? null : {usd_micros:micros,
       responses:sum(statistics?.cost?.responses,delegated?.cost?.responses)}});
-  const rate = speed(throughput);
+  const formatRate = value => value == null ? text.composer_metric_unknown : `${value} ${text.usage_speed_unit}`;
   const partial = own.partial || child.partial;
   const tokenDetails = [row('composer_this_session',subtotal(own.total,own.partial)),
     row('composer_subagents',subtotal(child.total,child.partial)),
     ...partial ? [coverage(own.reported+child.reported,own.responses+child.responses)] : []];
   const values = [
     ['composer_tokens',subtotal(sum(own.total,child.total),partial),tokenDetails],
-    ['composer_speed',rate == null ? text.composer_metric_unknown : `${rate} ${text.usage_speed_unit}`,[
-      row('composer_first_token',duration(statistics?.first_token_us,text))]],
+    ['composer_speed',formatRate(speed(throughput)),[
+      row('composer_average_ttft',duration(observations?.latency?.first_token_us,text)),
+      row('composer_latest_tps',formatRate(generationSpeed(latest))),
+      row('composer_latest_ttft',duration(latest?.first_token_us,text))]],
     ['composer_cost',combined,[
       row('composer_this_session',charge(cost(statistics))),
       row('composer_subagents',charge(cost(delegated)))]],

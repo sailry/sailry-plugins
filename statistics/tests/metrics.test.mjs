@@ -4,6 +4,8 @@ import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 
 const metric=(values,id)=>values.find(value=>value.id===id);
+const composerSpeed=statistics=>metric(metrics({statistics},messages('en')),'composer_speed');
+const detailValues=speed=>speed.details.map(detail=>detail.value);
 const own={input:'100',output:'20',cached_input:'25',reasoning:'0'};
 const child={input:'200',output:'80',cached_input:'0',reasoning:'0'};
 const unfilled=values=>values.flatMap(value=>[value.value,...value.details.flatMap(detail=>[detail.label.label,detail.value])])
@@ -13,13 +15,48 @@ const locales={
   'zh-CN':{subtotal:value=>`小计：${value}`,coverage:(reported,responses)=>`${reported} / ${responses} 个响应报告了输入和输出 Token`},
 };
 
-test('composer shows unknown TPS and TTFT with only legacy generation timing',()=>{
-  const statistics={responses:'1',generation:{responses:'1',output_tokens:'90',elapsed_us:'1000000'}};
-  const text=messages('en');
-  const speed=metric(metrics({statistics},text),'composer_speed');
+test('legacy timing leaves speed measurements unknown',()=>{
+  const statistics={responses:'1',first_token_us:'250000',generation:{responses:'1',output_tokens:'90',elapsed_us:'1000000'}};
+  const speed=composerSpeed(statistics);
   assert.equal(speed.visible,true);
   assert.equal(speed.value,'—');
-  assert.deepEqual(speed.details,[{label:{label:'TTFT'},value:'—'}]);
+  assert.deepEqual(detailValues(speed),['—','—','—']);
+});
+
+test('speed uses only the last request and its last attempt',()=>{
+  const earlier={usage:{output:'60',reasoning:'10'},first_token_us:'500000',elapsed_us:'1500000'};
+  const complete={usage:{output:'90',reasoning:'10'},first_token_us:'1000000',elapsed_us:'3000000'};
+  const statistics={responses:'3',first_token_us:'900000',throughput:{output_tokens:'120',elapsed_us:'4000000'},
+    observations:{latency:{first_token_us:'750000'},recent:[{attempts:[earlier]},{attempts:[earlier,complete]}]}};
+  assert.deepEqual(detailValues(composerSpeed(statistics)),['750.0 ms','40.0 tok/s','1.00 s']);
+
+  const recent=statistics.observations.recent;
+  for (const attempts of [[],[earlier,{usage:null,first_token_us:null,elapsed_us:'2000000'}]]) {
+    const next={...statistics,observations:{...statistics.observations,recent:[...recent,{attempts}]}};
+    const speed=composerSpeed(next);
+    assert.equal(speed.value,'30.0 tok/s');
+    assert.deepEqual(detailValues(speed),['750.0 ms','—','—']);
+  }
+});
+
+test('latest generation TPS requires paired timing and reported output',()=>{
+  const attempt={usage:{output:'90',reasoning:'15'},first_token_us:'500000',elapsed_us:'2000000'};
+  for (const [changes,tps,ttft] of [
+    [{},'50.0 tok/s','500.0 ms'],
+    [{reasoning_streamed:true},'60.0 tok/s','500.0 ms'],
+    [{usage:{output:'0',reasoning:'0'},first_token_us:'0'},'0.0 tok/s','0.0 ms'],
+    [{usage:{output:'10',reasoning:'15'}},'0.0 tok/s','500.0 ms'],
+    [{usage:{output:'90'}},'60.0 tok/s','500.0 ms'],
+    [{usage:{output:null,reasoning:'0'}},'—','500.0 ms'],
+    [{elapsed_us:null},'—','500.0 ms'],
+    [{elapsed_us:'500000'},'—','500.0 ms'],
+    [{elapsed_us:'490000'},'—','500.0 ms'],
+    [{first_token_us:null},'—','—'],
+  ]) {
+    const speed=composerSpeed({responses:'1',observations:{recent:[{attempts:[{...attempt,...changes}]}]}});
+    assert.equal(speed.value,'—');
+    assert.deepEqual(detailValues(speed),['—',tps,ttft]);
+  }
 });
 
 test('complete own and delegated tokens stay exact without coverage',()=>{
