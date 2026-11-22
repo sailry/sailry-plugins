@@ -22890,7 +22890,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.46",
+        "version": "0.1.47",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23027,6 +23027,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.47",
+          "commit": "a4c958673af9b25e324ac88a28a047572c8d066d",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- Show only end-to-end TPS and time to first token (TTFT) in the composer speed tooltip.",
+            "locales": {
+              "zh-CN": "- 输入栏的速度浮层仅显示全程 TPS 和首个 Token 的等待时间（TTFT）。",
+              "zh-TW": "- 輸入欄的速度浮層僅顯示全程 TPS 與等待第一個 Token 的時間（TTFT）。",
+              "ja": "- 入力欄の速度ツールチップには、応答全体の TPS と最初のトークンまでの待ち時間（TTFT）のみを表示します。",
+              "ko": "- 입력란의 속도 툴팁에는 전체 응답 TPS와 첫 토큰까지 걸린 시간(TTFT)만 표시합니다.",
+              "fr": "- L’infobulle de vitesse de la zone de saisie affiche uniquement le TPS de bout en bout et le délai avant le premier jeton (TTFT).",
+              "de": "- Der Tooltip zur Geschwindigkeit im Eingabebereich zeigt nur End-to-End-TPS und die Wartezeit bis zum ersten Token (TTFT).",
+              "es": "- La información emergente de velocidad del cuadro de entrada solo muestra los TPS de extremo a extremo y el tiempo hasta el primer token (TTFT).",
+              "pt-BR": "- A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).",
+              "ru": "- Подсказка о скорости в поле ввода показывает только TPS за всё время запроса и время ожидания первого токена (TTFT)."
+            }
+          }
+        },
         {
           "version": "0.1.46",
           "commit": "252ea0ae28c35acd45a6c0bbff8cc5742301365f",
@@ -23689,17 +23709,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Show end-to-end TPS in the composer footer and Usage report, including time to first token. Show `—` when throughput is unavailable.",
+        "text": "- Show only end-to-end TPS and time to first token (TTFT) in the composer speed tooltip.",
         "locales": {
-          "zh-CN": "- 输入栏页脚和用量报表显示全程 TPS，计入等待首个 Token 的时间。缺少测速数据时显示 `—`。",
-          "zh-TW": "- 輸入欄頁尾與用量報表顯示全程 TPS，計入等待第一個 Token 的時間。缺少測速資料時顯示 `—`。",
-          "ja": "- 入力欄のフッターと使用量レポートに、最初のトークンを待つ時間を含む応答全体の TPS を表示します。計測データがない場合は `—` を表示します。",
-          "ko": "- 입력란 하단과 사용량 보고서에서 첫 토큰까지의 대기 시간을 포함한 전체 응답 TPS를 표시합니다. 측정 데이터가 없으면 `—`를 표시합니다.",
-          "fr": "- Le pied de la zone de saisie et le rapport d’utilisation affichent le TPS de bout en bout, y compris le délai avant le premier jeton. En l’absence de mesure, ils affichent `—`.",
-          "de": "- Die Fußleiste der Eingabe und der Nutzungsbericht zeigen End-to-End-TPS einschließlich der Wartezeit bis zum ersten Token. Fehlen Messdaten, wird `—` angezeigt.",
-          "es": "- El pie del cuadro de entrada y el informe de uso muestran los TPS de extremo a extremo, incluida la espera hasta el primer token. Si no hay datos, se muestra `—`.",
-          "pt-BR": "- O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.",
-          "ru": "- В нижней панели поля ввода и в отчёте об использовании отображается TPS за всё время запроса с учётом ожидания первого токена. Если данных измерения нет, отображается `—`."
+          "zh-CN": "- 输入栏的速度浮层仅显示全程 TPS 和首个 Token 的等待时间（TTFT）。",
+          "zh-TW": "- 輸入欄的速度浮層僅顯示全程 TPS 與等待第一個 Token 的時間（TTFT）。",
+          "ja": "- 入力欄の速度ツールチップには、応答全体の TPS と最初のトークンまでの待ち時間（TTFT）のみを表示します。",
+          "ko": "- 입력란의 속도 툴팁에는 전체 응답 TPS와 첫 토큰까지 걸린 시간(TTFT)만 표시합니다.",
+          "fr": "- L’infobulle de vitesse de la zone de saisie affiche uniquement le TPS de bout en bout et le délai avant le premier jeton (TTFT).",
+          "de": "- Der Tooltip zur Geschwindigkeit im Eingabebereich zeigt nur End-to-End-TPS und die Wartezeit bis zum ersten Token (TTFT).",
+          "es": "- La información emergente de velocidad del cuadro de entrada solo muestra los TPS de extremo a extremo y el tiempo hasta el primer token (TTFT).",
+          "pt-BR": "- A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).",
+          "ru": "- Подсказка о скорости в поле ввода показывает только TPS за всё время запроса и время ожидания первого токена (TTFT)."
         }
       }
     },
