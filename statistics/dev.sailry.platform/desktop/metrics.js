@@ -45,8 +45,6 @@ export function metrics(state,text) {
   const values = [
     ['composer_tokens',subtotal(sum(own.total,child.total),partial),tokenDetails],
     ['composer_speed',rate == null ? text.composer_metric_unknown : `${rate} ${text.usage_speed_unit}`,[
-      row('composer_timed_responses',number(throughput?.responses)),
-      row('composer_timed_output',number(throughput?.output_tokens)),
       row('composer_first_token',duration(statistics?.first_token_us,text))]],
     ['composer_cost',combined,[
       row('composer_this_session',charge(cost(statistics))),

@@ -1,3 +1,7 @@
+## 0.1.47
+
+- La información emergente de velocidad del cuadro de entrada solo muestra los TPS de extremo a extremo y el tiempo hasta el primer token (TTFT).
+
 ## 0.1.46
 
 - El pie del cuadro de entrada y el informe de uso muestran los TPS de extremo a extremo, incluida la espera hasta el primer token. Si no hay datos, se muestra `—`.

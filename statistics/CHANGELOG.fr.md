@@ -1,3 +1,7 @@
+## 0.1.47
+
+- L’infobulle de vitesse de la zone de saisie affiche uniquement le TPS de bout en bout et le délai avant le premier jeton (TTFT).
+
 ## 0.1.46
 
 - Le pied de la zone de saisie et le rapport d’utilisation affichent le TPS de bout en bout, y compris le délai avant le premier jeton. En l’absence de mesure, ils affichent `—`.

@@ -1,3 +1,7 @@
+## 0.1.47
+
+- A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).
+
 ## 0.1.46
 
 - O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.

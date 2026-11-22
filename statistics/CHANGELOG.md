@@ -1,3 +1,7 @@
+## 0.1.47
+
+- Show only end-to-end TPS and time to first token (TTFT) in the composer speed tooltip.
+
 ## 0.1.46
 
 - Show end-to-end TPS in the composer footer and Usage report, including time to first token. Show `—` when throughput is unavailable.

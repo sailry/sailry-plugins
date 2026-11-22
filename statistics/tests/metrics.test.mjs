@@ -13,13 +13,13 @@ const locales={
   'zh-CN':{subtotal:value=>`小计：${value}`,coverage:(reported,responses)=>`${reported} / ${responses} 个响应报告了输入和输出 Token`},
 };
 
-test('composer shows unknown TPS and coverage when only legacy generation timing is available',()=>{
+test('composer shows unknown TPS and TTFT with only legacy generation timing',()=>{
   const statistics={responses:'1',generation:{responses:'1',output_tokens:'90',elapsed_us:'1000000'}};
   const text=messages('en');
   const speed=metric(metrics({statistics},text),'composer_speed');
   assert.equal(speed.visible,true);
   assert.equal(speed.value,'—');
-  assert.deepEqual(speed.details.map(detail=>detail.value),['—','—','—']);
+  assert.deepEqual(speed.details,[{label:{label:'TTFT'},value:'—'}]);
 });
 
 test('complete own and delegated tokens stay exact without coverage',()=>{
@@ -33,7 +33,7 @@ test('complete own and delegated tokens stay exact without coverage',()=>{
   }
 });
 
-test('incomplete own tokens render as a subtotal with coverage and no cache rate',()=>{
+test('partial own tokens show subtotal and coverage without a cache rate',()=>{
   for(const [locale,expect] of Object.entries(locales)) {
     const text=messages(locale),statistics={turns:'1',responses:'3',incomplete_token_responses:'1',usage:own,
       delegated:{responses:'3',tokens:child}};

@@ -1,3 +1,7 @@
+## 0.1.47
+
+- Der Tooltip zur Geschwindigkeit im Eingabebereich zeigt nur End-to-End-TPS und die Wartezeit bis zum ersten Token (TTFT).
+
 ## 0.1.46
 
 - Die Fußleiste der Eingabe und der Nutzungsbericht zeigen End-to-End-TPS einschließlich der Wartezeit bis zum ersten Token. Fehlen Messdaten, wird `—` angezeigt.

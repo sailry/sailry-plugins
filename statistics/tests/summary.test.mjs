@@ -80,7 +80,7 @@ test('overview marks a subtotal zero but not a complete zero',async()=>{
   assert.deepEqual(partial('usage-token-coverage'),['1 of 2 responses reported both token counts']);
 });
 
-test('Usage overview renders end-to-end TPS with units only for a measured rate',async()=>{
+test('end-to-end TPS shows units only for measured rates',async()=>{
   const render=await reportSummary(),report=totals();
   assert.deepEqual(render(report)('usage-stat-speed'),['End-to-end TPS','25.0','tok/s']);
   assert.deepEqual(render({...report,throughput:undefined})('usage-stat-speed'),['End-to-end TPS','—']);

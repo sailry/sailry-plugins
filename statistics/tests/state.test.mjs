@@ -5,7 +5,7 @@ import {State,query,choices,nodeId,resourceId,unit,offset} from '../dev.sailry.p
 import {metrics} from '../dev.sailry.platform/desktop/metrics.js';
 import {messages} from '../dev.sailry.platform/desktop/locales.js';
 const text=messages('en');
-test('shows host throughput and latest own TTFT on separate tooltip rows',async()=>{
+test('shows host TPS with only the latest own TTFT',async()=>{
   const manifest=JSON.parse(await readFile(new URL('../plugin.json',import.meta.url),'utf8'));
   const label=manifest.extensions['dev.sailry.platform'].ui.find(item=>item.id==='composer_speed').label;
   for (const locale of ['en','zh-CN','de','es','fr','ja','ko','pt-BR','ru','zh-TW']) {
@@ -20,8 +20,6 @@ test('shows host throughput and latest own TTFT on separate tooltip rows',async(
       assert.equal(speed.visible,true);
       assert.equal(speed.value,'30.0 tok/s');
       assert.deepEqual(speed.details,[
-        {label:{label:text.composer_timed_responses},value:'3'},
-        {label:{label:text.composer_timed_output},value:'120'},
         {label:{label:text.composer_first_token},value},
       ]);
       assert.deepEqual(statistics,before);
@@ -139,7 +137,7 @@ test('composer preserves unknown measurements',()=>{
   const state={has_messages:true},before=structuredClone(state),unknown=metrics(state,text);
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.value),Array(5).fill(text.composer_metric_unknown));
   assert.deepEqual(unknown.slice(0,5).map(metric=>metric.details.map(detail=>detail.value)),
-    [2,3,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
+    [2,1,2,3,1].map(count=>Array(count).fill(text.composer_metric_unknown)));
   assert.equal(unknown.length,5);
   assert.deepEqual(state,before);
   const zero=metrics({has_messages:true,statistics:{usage:{input:'0',output:'0',cached_input:'0',reasoning:'0'},context_tokens:'100',context_limit:100},context_limit:100,compacting:true},text);
@@ -185,7 +183,7 @@ test('composer combines child totals and preserves own metrics',()=>{
       {label:{label:text.composer_this_session},value:'$0.01'},
       {label:{label:text.composer_subagents},value:'$0.01'}]);
     assert.equal(metric('composer_speed').value,'21.5 tok/s');
-    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),['2','43',text.composer_metric_unknown]);
+    assert.deepEqual(metric('composer_speed').details.map(detail=>detail.value),[text.composer_metric_unknown]);
     assert.equal(metric('composer_cache').value,'25%');
     assert.deepEqual(metric('composer_cache').details.map(detail=>detail.value),['25','75','100']);
     assert.equal(metric('composer_turns').value,'7');
