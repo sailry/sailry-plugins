@@ -22890,7 +22890,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "statistics",
-        "version": "0.1.48",
+        "version": "0.1.49",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
@@ -23027,6 +23027,26 @@
         "conversation.read"
       ],
       "versions": [
+        {
+          "version": "0.1.49",
+          "commit": "82feb2f1ea4b6ed893d40d466b0d03b0b63668c6",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.0-alpha.1",
+          "release_notes": {
+            "text": "- The latest request TPS includes the wait for the first token, so buffered replies use the full elapsed time.",
+            "locales": {
+              "zh-CN": "- 最近请求全程 TPS 包含首个 Token 的等待时间，集中返回的回复也按整次请求耗时计算。",
+              "zh-TW": "- 最近請求全程 TPS 包含首個 Token 的等待時間，集中傳回的回覆也按整次請求耗時計算。",
+              "ja": "- 直近のリクエストの TPS に最初のトークンまでの待ち時間を含めました。",
+              "ko": "- 최근 요청의 TPS에 첫 토큰 대기 시간이 포함됩니다.",
+              "fr": "- Le TPS de la dernière requête inclut l’attente du premier token.",
+              "de": "- Die TPS der letzten Anfrage berücksichtigen die Wartezeit bis zum ersten Token.",
+              "es": "- Los TPS de la última solicitud incluyen la espera hasta el primer token.",
+              "pt-BR": "- Os TPS da última solicitação incluem a espera pelo primeiro token.",
+              "ru": "- TPS последнего запроса учитывает время ожидания первого токена."
+            }
+          }
+        },
         {
           "version": "0.1.48",
           "commit": "2a941bb132d7d70066ae712743f0f2bbdd790d0c",
@@ -23729,17 +23749,17 @@
         }
       ],
       "release_notes": {
-        "text": "- The composer speed tooltip shows generation TPS and TTFT for the latest model request and labels the session's average TTFT.",
+        "text": "- The latest request TPS includes the wait for the first token, so buffered replies use the full elapsed time.",
         "locales": {
-          "zh-CN": "- 输入栏的速度浮层显示最近一次模型请求的生成 TPS 和 TTFT，并标明会话平均 TTFT。",
-          "zh-TW": "- 輸入欄的速度浮層顯示最近一次模型請求的生成 TPS 與 TTFT，並標示工作階段的平均 TTFT。",
-          "ja": "- 入力欄の速度ツールチップに直近のモデルリクエストの生成 TPS と TTFT を表示し、セッションの平均 TTFT を明示します。",
-          "ko": "- 입력란의 속도 툴팁에 최근 모델 요청의 생성 TPS와 TTFT를 표시하고 세션의 평균 TTFT를 명시합니다.",
-          "fr": "- L’infobulle de vitesse affiche le TPS de génération et le TTFT de la dernière requête au modèle et indique le TTFT moyen de la session.",
-          "de": "- Der Geschwindigkeits-Tooltip im Eingabebereich zeigt die Generierungs-TPS und TTFT der letzten Modellanfrage und kennzeichnet die mittlere TTFT der Sitzung.",
-          "es": "- La información emergente de velocidad muestra los TPS de generación y el TTFT de la última solicitud al modelo, e identifica el TTFT medio de la sesión.",
-          "pt-BR": "- A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.",
-          "ru": "- Подсказка о скорости показывает TPS генерации и TTFT последнего запроса к модели, а также обозначает средний TTFT сеанса."
+          "zh-CN": "- 最近请求全程 TPS 包含首个 Token 的等待时间，集中返回的回复也按整次请求耗时计算。",
+          "zh-TW": "- 最近請求全程 TPS 包含首個 Token 的等待時間，集中傳回的回覆也按整次請求耗時計算。",
+          "ja": "- 直近のリクエストの TPS に最初のトークンまでの待ち時間を含めました。",
+          "ko": "- 최근 요청의 TPS에 첫 토큰 대기 시간이 포함됩니다.",
+          "fr": "- Le TPS de la dernière requête inclut l’attente du premier token.",
+          "de": "- Die TPS der letzten Anfrage berücksichtigen die Wartezeit bis zum ersten Token.",
+          "es": "- Los TPS de la última solicitud incluyen la espera hasta el primer token.",
+          "pt-BR": "- Os TPS da última solicitação incluem a espera pelo primeiro token.",
+          "ru": "- TPS последнего запроса учитывает время ожидания первого токена."
         }
       }
     },
