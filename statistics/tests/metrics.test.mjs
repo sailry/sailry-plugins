@@ -28,7 +28,7 @@ test('speed uses only the last request and its last attempt',()=>{
   const complete={usage:{output:'90',reasoning:'10'},first_token_us:'1000000',elapsed_us:'3000000'};
   const statistics={responses:'3',first_token_us:'900000',throughput:{output_tokens:'120',elapsed_us:'4000000'},
     observations:{latency:{first_token_us:'750000'},recent:[{attempts:[earlier]},{attempts:[earlier,complete]}]}};
-  assert.deepEqual(detailValues(composerSpeed(statistics)),['750.0 ms','40.0 tok/s','1.00 s']);
+  assert.deepEqual(detailValues(composerSpeed(statistics)),['750.0 ms','30.0 tok/s','1.00 s']);
 
   const recent=statistics.observations.recent;
   for (const attempts of [[],[earlier,{usage:null,first_token_us:null,elapsed_us:'2000000'}]]) {
@@ -39,19 +39,21 @@ test('speed uses only the last request and its last attempt',()=>{
   }
 });
 
-test('latest generation TPS requires paired timing and reported output',()=>{
+test('latest request TPS uses measured output and the full elapsed time',()=>{
   const attempt={usage:{output:'90',reasoning:'15'},first_token_us:'500000',elapsed_us:'2000000'};
   for (const [changes,tps,ttft] of [
-    [{},'50.0 tok/s','500.0 ms'],
-    [{reasoning_streamed:true},'60.0 tok/s','500.0 ms'],
+    [{},'45.0 tok/s','500.0 ms'],
+    [{reasoning_streamed:true},'45.0 tok/s','500.0 ms'],
     [{usage:{output:'0',reasoning:'0'},first_token_us:'0'},'0.0 tok/s','0.0 ms'],
-    [{usage:{output:'10',reasoning:'15'}},'0.0 tok/s','500.0 ms'],
-    [{usage:{output:'90'}},'60.0 tok/s','500.0 ms'],
+    [{usage:{output:'10',reasoning:'15'}},'5.0 tok/s','500.0 ms'],
+    [{usage:{output:'90'}},'45.0 tok/s','500.0 ms'],
     [{usage:{output:null,reasoning:'0'}},'—','500.0 ms'],
     [{elapsed_us:null},'—','500.0 ms'],
-    [{elapsed_us:'500000'},'—','500.0 ms'],
+    [{elapsed_us:'500000'},'180.0 tok/s','500.0 ms'],
     [{elapsed_us:'490000'},'—','500.0 ms'],
-    [{first_token_us:null},'—','—'],
+    [{first_token_us:null},'45.0 tok/s','—'],
+    [{elapsed_us:'0',first_token_us:null},'—','—'],
+    [{elapsed_us:'59898074',first_token_us:'59880000',usage:{output:'517'}},'8.6 tok/s','59.88 s'],
   ]) {
     const speed=composerSpeed({responses:'1',observations:{recent:[{attempts:[{...attempt,...changes}]}]}});
     assert.equal(speed.value,'—');

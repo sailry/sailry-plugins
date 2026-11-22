@@ -1,3 +1,7 @@
+## 0.1.49
+
+- Die TPS der letzten Anfrage berücksichtigen die Wartezeit bis zum ersten Token.
+
 ## 0.1.48
 
 - Der Geschwindigkeits-Tooltip im Eingabebereich zeigt die Generierungs-TPS und TTFT der letzten Modellanfrage und kennzeichnet die mittlere TTFT der Sitzung.

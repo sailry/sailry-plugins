@@ -1,3 +1,7 @@
+## 0.1.49
+
+- The latest request TPS includes the wait for the first token, so buffered replies use the full elapsed time.
+
 ## 0.1.48
 
 - The composer speed tooltip shows generation TPS and TTFT for the latest model request and labels the session's average TTFT.

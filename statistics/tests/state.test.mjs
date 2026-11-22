@@ -28,7 +28,7 @@ test('speed uses localized labels for aggregate and latest measurements',async()
       assert.equal(speed.value,'30.0 tok/s');
       assert.deepEqual(speed.details,[
         {label:{label:text.composer_average_ttft},value},
-        {label:{label:text.composer_latest_tps},value:'20.0 tok/s'},
+        {label:{label:text.composer_latest_tps},value:'16.0 tok/s'},
         {label:{label:text.composer_latest_ttft},value:'250.0 ms'},
       ]);
       assert.deepEqual(statistics,before);

@@ -1,3 +1,7 @@
+## 0.1.49
+
+- Os TPS da última solicitação incluem a espera pelo primeiro token.
+
 ## 0.1.48
 
 - A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.

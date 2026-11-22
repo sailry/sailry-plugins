@@ -1,3 +1,7 @@
+## 0.1.49
+
+- Le TPS de la dernière requête inclut l’attente du premier token.
+
 ## 0.1.48
 
 - L’infobulle de vitesse affiche le TPS de génération et le TTFT de la dernière requête au modèle et indique le TTFT moyen de la session.

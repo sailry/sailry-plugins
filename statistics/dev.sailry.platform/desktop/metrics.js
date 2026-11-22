@@ -14,12 +14,10 @@ function tokens(value,responses,incomplete) {
   return {total:total(value),responses:count,reported,partial:reported < count};
 }
 
-function generationSpeed(attempt) {
-  const first = integer(attempt?.first_token_us), elapsed = integer(attempt?.elapsed_us);
-  const output = integer(attempt?.usage?.output);
-  if (first == null || elapsed == null || elapsed <= first || output == null) return null;
-  const hiddenReasoning = attempt.reasoning_streamed ? 0n : integer(attempt.usage.reasoning ?? 0n);
-  return speed({output_tokens:output > hiddenReasoning ? output-hiddenReasoning : 0n,elapsed_us:elapsed-first});
+function requestSpeed(attempt) {
+  const elapsed = integer(attempt?.elapsed_us), first = integer(attempt?.first_token_us);
+  if (elapsed == null || (first != null && first > elapsed)) return null;
+  return speed({output_tokens:attempt?.usage?.output,elapsed_us:elapsed});
 }
 
 export function metrics(state,text) {
@@ -56,7 +54,7 @@ export function metrics(state,text) {
     ['composer_tokens',subtotal(sum(own.total,child.total),partial),tokenDetails],
     ['composer_speed',formatRate(speed(throughput)),[
       row('composer_average_ttft',duration(observations?.latency?.first_token_us,text)),
-      row('composer_latest_tps',formatRate(generationSpeed(latest))),
+      row('composer_latest_tps',formatRate(requestSpeed(latest))),
       row('composer_latest_ttft',duration(latest?.first_token_us,text))]],
     ['composer_cost',combined,[
       row('composer_this_session',charge(cost(statistics))),

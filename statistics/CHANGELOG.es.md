@@ -1,3 +1,7 @@
+## 0.1.49
+
+- Los TPS de la última solicitud incluyen la espera hasta el primer token.
+
 ## 0.1.48
 
 - La información emergente de velocidad muestra los TPS de generación y el TTFT de la última solicitud al modelo, e identifica el TTFT medio de la sesión.
