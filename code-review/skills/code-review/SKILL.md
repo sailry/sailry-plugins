@@ -17,31 +17,33 @@ description: Review local changes, commits or GitHub pull requests for concrete 
 
 # Code review
 
-Review the requested change and report actionable regressions. An ordinary review authorizes analysis and private review records. Fixes, commits, approvals, merges and external publication require the corresponding request. Scope creation, findings and receipts require Code or Flagship mode. Plan mode can read a published capture or prepare a review plan.
+Review the requested change and report concrete, actionable regressions. A review request authorizes inspection and analysis only; do not modify files, commit, approve, merge, or publish external comments unless explicitly requested.
 
-## Capture and read
+## Scope and rules
 
-Start with `review_scope` for the current worktree, or set the target to a commit or base/head range. For a pull request, use the base and head SHAs from its metadata and consider its description and existing discussions. Delegated reviewers reuse their frozen assignment.
+1. Establish the exact review target using native Git tools (`git_status`, `git_diff`, `git_log`) or Git commands when authorized:
+   - Local worktree changes (staged, unstaged, and untracked files as requested)
+   - A specific commit or `base..head` commit range
+   - A pull request: read its description, existing review threads, checks, and exact base/head SHAs before inspecting the diff
+2. Read `rules/index.md` via `read_skill_resource` for `code-review:code-review`, map the changed file paths to rule files, and load each applicable `rules/<name>.md` once. Also apply repository instructions (such as `AGENTS.md`) scoped to the changed paths.
+3. Inspect diffs and surrounding context directly with native `read_file` and `search_files` in parallel batches. Check relevant unchanged callers, interfaces, and tests when verifying a suspected bug. Note generated, binary, oversized, or inaccessible files that were skipped.
 
-Follow the returned capture or inventory cursor until the scope opens and the inventory is complete. Apply repository instructions to the eligible paths. Use the selected rules supplied in `rules` and load any missing `file.rule.path` through `read_skill_resource` for `code-review:code-review`. Read each selected rule once.
+## Review and delegation
 
-Batch the frozen diffs by `group` or `paths` with `read_review_change`. Put independent reads in the same tool batch. Follow the outer `next` for remaining files, and each file's `next` with a single `path` for remaining diff rows. Read full saved source context as needed with `part:"old"` and `part:"new"`. Never use live Git or file reads for captured changes. Relevant unchanged callers or tests may be read under current permissions and cited as live evidence. Respect captured skips and their reasons.
+Keep small or cohesive reviews in a single reviewer. For large multi-area changes, optionally delegate disjoint file groups with `spawn_agent` using clear file lists, diff ranges, and applicable rule paths. Verify delegated findings against the actual code before reporting.
 
-## Review and delegate
+Prioritize demonstrated correctness bugs, security issues, data loss, concurrency/resource leaks, and scoped repository-rule violations:
+- Verify the trigger, consequence, and exact changed-line location (`path:line`).
+- Check for existing guards, upstream checks, or contrary evidence before reporting.
+- Combine multiple symptoms that share one root cause.
+- Exclude unrelated pre-existing issues, speculation, style preferences, and generic requests for more tests.
+- Run a focused existing check only if authorized and needed to resolve uncertainty.
 
-Keep a small review with one reviewer. Delegate only when independent groups justify another reviewer, such as groups with substantial diffs or separate areas of expertise. Use `delegate_review` for disjoint whole groups, match the exact role when a roster is offered, and combine independent assignments in one batch. Prefer `record_receipt:true` with a writable, tool-capable role so each child records its findings and group coverage. Read-only roles can gather evidence with `record_receipt:false`; the parent must verify their evidence and attest coverage. Use the rules and diffs supplied in the assignment, and read any pages still missing.
+## Severity and report
 
-Prioritize demonstrated correctness, security, data loss and scoped repository-rule violations. A removal is reportable when it breaks something still in use. Verify the trigger, consequence and changed-line anchor, check for existing guards or contrary evidence, and combine issues with the same cause. Exclude unrelated old defects, speculation, style preferences and generic requests for tests. Run a focused existing check only if authorized and needed to resolve an uncertainty.
+- `P0`: data loss, security vulnerability, certain crash, or corruption.
+- `P1`: likely incorrect behavior during normal use.
+- `P2`: defect limited to edge cases or specific inputs.
+- `P3`: minor concrete defect.
 
-## Record and finish
-
-Send established findings together in `report_finding({review_id,findings:[...]})`. Each needs the exact scoped path and revision, side (`new` for an added line, `old` for a deleted line), one-based changed line, severity, concise title, explanation and concrete evidence. Include a snippet when it helps pinpoint the change. Use the canonical returned line, and correct only failed entries.
-
-- `P0` for data loss, a security flaw or certain crash or corruption.
-- `P1` for likely incorrect behavior during normal use.
-- `P2` for a defect limited to edge cases.
-- `P3` for a minor concrete defect.
-
-Use `review_complete({review_id,reviewed_groups,delivery_token,finalize:true})` to attest the creator's remaining reviewed groups and finish. Use the token with the highest `delivery_sequence` for this review. A child uses `finalize:false` and follows its assignment for inline evidence. When stored receipts already cover the entire scope, the creator can finalize with an empty group list. Complete groups only after reviewing every diff page, even for zero findings. Follow any recovery detail returned by the tool for an interrupted or delegated review. Skip uncovered groups in the receipt and identify them in the report.
-
-List findings first by impact and canonical location, with the trigger and consequence. Give the frozen scope, coverage, meaningful skips and checks actually run. If the review is incomplete, name the gaps. For authorized external publication, recheck the head and existing threads before posting. Inspect the remote outcome before retrying an uncertain post.
+List findings first, ordered by severity, with exact `path:line`, concise title, trigger, consequence, and concrete evidence. Follow with a brief summary of the reviewed scope (commit/range or worktree), coverage, meaningful skips, and checks actually run. If coverage is partial, state the gaps clearly. For authorized external publication, recheck the current head SHA and existing review threads before posting, and inspect the remote state before retrying an uncertain write.

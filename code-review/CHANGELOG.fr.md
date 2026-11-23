@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.0
+
+- Transforme le paquet en un ensemble pur de compétences et de règles utilisant les outils natifs Git, fichiers, recherche et sous-agents, en supprimant les outils hôtes JavaScript personnalisés et leur stockage.
+
 ## 0.1.21
 
 - Les petites revues incluent les règles sélectionnées dès la première réponse. Les changements et les constats peuvent être traités par lots, et la dernière attestation peut clôturer la revue.

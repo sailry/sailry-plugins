@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.0
+
+- Auf ein reines Skill- und Regelpaket umgestellt, das native Git-, Datei-, Such- und Subagenten-Werkzeuge nutzt; eigene JavaScript-Host-Werkzeuge und die Prüfspeicherung wurden entfernt.
+
 ## 0.1.21
 
 - Kleine Prüfumfänge liefern die ausgewählten Regeln direkt. Änderungen und Befunde lassen sich gebündelt verarbeiten, und die letzte Gruppenbestätigung kann die Prüfung abschließen.

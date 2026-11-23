@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.0
+
+- Converte o pacote em habilidades e regras puras usando ferramentas nativas de Git, arquivos, busca e subagentes, removendo as ferramentas personalizadas de host em JavaScript e seu armazenamento.
+
 ## 0.1.21
 
 - Revisões pequenas incluem as regras selecionadas na primeira resposta. É possível agrupar alterações e achados e concluir com a última confirmação de grupo.

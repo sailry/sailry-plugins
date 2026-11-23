@@ -1,5 +1,9 @@
 # Changes
 
+## 0.2.0
+
+- Convert the package to pure skills and rule resources using native Git, file, search, and subagent tools, removing the custom JavaScript host tools and storage layer.
+
 ## 0.1.23
 
 - Checkpoint review capture progress in batches instead of after every Git step.
