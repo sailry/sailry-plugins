@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.31
+
+- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.
+
 ## 0.1.29
 
 - Encabezado de archivos remotos ordenado: un clic en el espacio libre edita la ruta y salir del campo cancela

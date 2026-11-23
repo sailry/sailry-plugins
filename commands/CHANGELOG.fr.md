@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Supprime les gestionnaires d'outils de commande redondants désormais intégrés à Node tout en conservant le terminal bureau et la compétence Python.
+
 ## 0.1.21
 
 - Icônes au trait rétablies dans la navigation et les outils

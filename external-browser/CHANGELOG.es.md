@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.
+
 ## 0.1.5
 
 - La ruta de carga se describe como relativa al worktree; las rutas absolutas nunca se aceptaron

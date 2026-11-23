@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Reference Sailry's native code-index module instead of the retired Code plugin.
+
 ## 0.1.19
 
 - Document bounded tool composition and validate the code graph permission during preflight.

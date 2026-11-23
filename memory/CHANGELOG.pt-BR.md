@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.21
 
 - Ícones de contorno restaurados na navegação e nas ferramentas

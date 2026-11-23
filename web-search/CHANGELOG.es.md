@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Elimina las declaraciones redundantes de herramientas de búsqueda ahora en Node y conserva la habilidad de investigación y la configuración.
+
 ## 0.1.21
 
 - Sin un modelo elegido, la búsqueda con modelo usa el de la conversación

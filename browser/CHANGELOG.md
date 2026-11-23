@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.
+
 ## 0.1.9
 
 - Use a new plugin icon

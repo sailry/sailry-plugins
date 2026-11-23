@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.32
+
+- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.
+
 ## 0.1.31
 
 - Shorten the agent's search, edit and patch tool descriptions to reduce request size.

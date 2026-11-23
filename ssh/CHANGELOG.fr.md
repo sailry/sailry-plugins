@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.31
+
+- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.
+
 ## 0.1.29
 
 - En-tête des fichiers distants épuré : un clic dans l'espace vide modifie le chemin, quitter le champ annule

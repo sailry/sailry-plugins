@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.32
+
+- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.
+
 ## 0.1.29
 
 - Icônes au trait rétablies dans la navigation et les outils

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.
+
 ## 0.1.5
 
 - Describe the upload path as worktree-relative; absolute paths were never accepted

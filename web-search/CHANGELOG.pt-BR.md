@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Remove declarações redundantes de ferramentas de busca agora no módulo nativo Node, mantendo a habilidade e as configurações.
+
 ## 0.1.21
 
 - Sem um modelo escolhido, a pesquisa com modelo usa o da conversa

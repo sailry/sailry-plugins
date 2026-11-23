@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Entfernt redundante Befehlstool-Handler; Desktop-Terminal und Python-Skill bleiben erhalten.
+
 ## 0.1.21
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

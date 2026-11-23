@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.40
+
+- Supprime les gestionnaires d'outils Git redondants fournis nativement par le module Node tout en conservant le panneau bureau et le badge.
+
 ## 0.1.39
 
 - Signale le code d’erreur lorsqu’une action Git échoue.

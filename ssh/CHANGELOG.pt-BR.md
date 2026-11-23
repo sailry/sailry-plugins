@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.31
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.29
 
 - Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela

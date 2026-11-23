@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.
+
 ## 0.1.23
 
 - Mantener pendiente la búsqueda de claves primarias para evitar que otra consulta sustituya su solicitud o sus resultados.

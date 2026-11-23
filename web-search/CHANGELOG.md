@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Remove redundant search tool declarations now provided natively by the Node module; keep research skill and search settings.
+
 ## 0.1.21
 
 - Model search follows the conversation's model unless another is chosen

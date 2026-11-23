@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Actualiza la referencia del complemento Code retirado al módulo nativo de índice de código.
+
 ## 0.1.18
 
 - Actualizar la guía de ejecución y las referencias del SDK para moejs y MyGo/Kit

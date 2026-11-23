@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Atualiza a referência do plugin Code aposentado para o módulo nativo de índice de código.
+
 ## 0.1.18
 
 - Atualizar as orientações de execução e as referências do SDK para moejs e MyGo/Kit

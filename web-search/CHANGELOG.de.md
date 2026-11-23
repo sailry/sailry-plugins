@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Entfernt redundante Suchtool-Deklarationen; Research-Skill und Sucheinstellungen bleiben erhalten.
+
 ## 0.1.21
 
 - Ohne gewähltes Modell nutzt die Modellsuche das Modell der Unterhaltung

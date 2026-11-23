@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.
+
 ## 0.1.19
 
 - Orienter le développement dans un nouvel arbre de travail vers la délégation ou le sélecteur du compositeur

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.
+
 ## 0.1.19
 
 - Entwicklung in einem neuen Worktree an Delegation oder die Worktree-Auswahl im Eingabefeld verweisen

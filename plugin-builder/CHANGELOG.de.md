@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Aktualisiert den Verweis vom eingestellten Code-Plugin auf das native Code-Index-Modul.
+
 ## 0.1.18
 
 - Laufzeithinweise und SDK-Referenzen an moejs und MyGo/Kit anpassen

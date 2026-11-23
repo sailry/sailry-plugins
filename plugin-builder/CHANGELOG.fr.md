@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Met à jour la référence vers le module natif d'indexation de code au lieu du plugin Code retiré.
+
 ## 0.1.18
 
 - Aligner la documentation du runtime et les références SDK sur moejs et MyGo/Kit

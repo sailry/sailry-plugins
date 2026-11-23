@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.31
+
+- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.
+
 ## 0.1.29
 
 - Kopfzeile der entfernten Dateien aufgeräumt: Klick auf freie Fläche bearbeitet den Pfad, Verlassen des Felds bricht ab

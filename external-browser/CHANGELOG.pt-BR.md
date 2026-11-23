@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.6
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.5
 
 - O caminho de envio é descrito como relativo ao worktree; caminhos absolutos nunca foram aceitos

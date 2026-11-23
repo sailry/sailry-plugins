@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.19
 
 - Orientar o desenvolvimento em uma nova worktree para delegação ou o seletor do compositor

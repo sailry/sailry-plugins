@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.20
+
+- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.
+
 ## 0.1.19
 
 - Guide development in a new worktree to delegation or the composer's worktree selector

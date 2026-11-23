@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.10
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.9
 
 - Novo ícone do plugin

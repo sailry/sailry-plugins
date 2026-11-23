@@ -98,11 +98,14 @@ export async function fixture() {
     })());
     return pendingModules.get(key);
   }
-  const main=await module('main.js');
-  await main.link((name,parent)=>module(name === 'sailry/sdk' ? name : new URL(name,parent.identifier).href));
-  await main.evaluate();
-  const namespace=name=>modules.get(new URL(name,new URL('../dev.sailry.platform/host/',import.meta.url)).href).namespace;
+  const entry = new vm.SourceTextModule(
+    "export * as mutations from './mutations.js'; export * as storage from './storage.js'; export * as settings from './settings.js'; export * as retrieval from './retrieval.js';",
+    {context, identifier: new URL('bundle.mjs', new URL('../dev.sailry.platform/host/', import.meta.url)).href},
+  );
+  await entry.link((specifier,parent)=>module(specifier === 'sailry/sdk' ? specifier : new URL(specifier,parent.identifier).href));
+  await entry.evaluate();
+  const {mutations, storage, settings, retrieval} = entry.namespace;
   return {records,indexes,sdk,prepared,completed,forgotten,reads,searches,catalogReads,get,store,configure,seed,apply,search,
-    main:main.namespace,mutations:namespace('mutations.js'),storage:namespace('storage.js'),settings:namespace('settings.js'),retrieval:namespace('retrieval.js'),
+    mutations,storage,settings,retrieval,
     get state(){return clone(state);},set state(value){state=clone(value);},set now(value){now=value;},set onRead(value){onRead=value;}};
 }

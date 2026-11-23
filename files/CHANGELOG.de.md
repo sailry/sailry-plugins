@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.32
+
+- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.
+
 ## 0.1.29
 
 - Umrisssymbole in Navigation und Werkzeugen wiederhergestellt

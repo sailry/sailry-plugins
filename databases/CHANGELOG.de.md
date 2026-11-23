@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.
+
 ## 0.1.23
 
 - Die Primärschlüsselsuche bleibt ausstehend, damit eine andere Abfrage ihre Anfrage oder Ergebnisse nicht überschreibt.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Supprime les déclarations d'outils de recherche redondantes fournies nativement par le module Node tout en conservant la compétence et les paramètres.
+
 ## 0.1.21
 
 - Sans modèle choisi, la recherche par modèle utilise celui de la conversation

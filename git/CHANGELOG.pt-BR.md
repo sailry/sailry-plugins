@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.40
+
+- Remove manipuladores redundantes de ferramentas Git agora no módulo nativo Node, mantendo o painel desktop e o badge.
+
 ## 0.1.39
 
 - Informa o código de erro quando uma ação do Git falha.

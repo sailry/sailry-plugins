@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.
+
 ## 0.1.23
 
 - Manter a busca de chaves primárias pendente para impedir que outra consulta substitua sua solicitação ou seus resultados.

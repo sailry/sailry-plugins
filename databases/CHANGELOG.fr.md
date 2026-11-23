@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.
+
 ## 0.1.23
 
 - Conserver la recherche des clés primaires en attente pour empêcher une autre requête de remplacer sa demande ou ses résultats.

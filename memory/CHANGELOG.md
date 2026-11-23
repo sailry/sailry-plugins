@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.
+
 ## 0.1.23
 
 - Reserve save reminders for explicit memory requests and standing guidance, not routine implementation instructions or plan approvals.

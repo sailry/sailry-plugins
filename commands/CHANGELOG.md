@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Remove redundant command tool handlers now built into the Node; keep desktop terminal UI and Python skill.
+
 ## 0.1.23
 
 - Describe waiting for a new output match when reading a running command

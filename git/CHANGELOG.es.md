@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.40
+
+- Elimina los controladores redundantes de herramientas Git que ahora provee Node y conserva el panel de escritorio y la insignia.
+
 ## 0.1.39
 
 - Informa el código de error cuando falla una acción de Git.

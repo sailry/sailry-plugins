@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.24
+
+- Elimina los controladores redundantes de herramientas de comandos ya integrados en Node y conserva la terminal y la habilidad de Python.
+
 ## 0.1.21
 
 - Iconos de contorno restaurados en la navegación y las herramientas

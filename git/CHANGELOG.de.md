@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.40
+
+- Entfernt redundante Git-Tool-Handler aus dem Plugin; Desktop-Ansicht und Status-Badge bleiben erhalten.
+
 ## 0.1.39
 
 - Meldet den Fehlercode, wenn eine Git-Aktion fehlschlägt.
