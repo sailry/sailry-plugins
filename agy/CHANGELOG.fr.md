@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Un appel d’outil mal formé est réparé si possible ou redemandé jusqu’à deux fois dans la même session avant l’échec de la réponse.
+
 ## 0.1.4
 
 - Un processus agy traite jusqu’à huit requêtes à la fois, chaque conversation dans sa propre session agy ; les délégations parallèles supplémentaires attendent au lieu d’échouer.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- A malformed tool call is repaired where possible or asked for again in the same session, up to twice, before the reply fails.
+
 ## 0.1.4
 
 - One agy process serves up to eight requests at once, each conversation in its own agy session; parallel delegations beyond that wait instead of failing.

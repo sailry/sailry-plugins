@@ -21,7 +21,9 @@ disabled or removed.
   says so; no model is invented. `-low`, `-medium`, `-high` and `-xhigh` variants of one
   model appear as its effort levels.
 - Tool calls travel as text, because `agy` has no function-call channel a client
-  can fill. A malformed call is a model error, never assistant text.
+  can fill. The Node repairs common JSON slips and asks again in the same
+  session for a call it still cannot read, at most twice; after that the call
+  is a model error, never assistant text.
 - Each Sailry conversation keeps one `agy` session, which receives only new
   messages. After `agy` stops or restarts, the Node resumes that session with
   `session/resume` or `session/load`.

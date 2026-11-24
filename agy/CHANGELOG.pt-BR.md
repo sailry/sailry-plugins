@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Uma chamada de ferramenta malformada é corrigida quando possível ou pedida novamente até duas vezes na mesma sessão antes de a resposta falhar.
+
 ## 0.1.4
 
 - Um processo do agy atende até oito solicitações ao mesmo tempo, cada conversa em sua própria sessão do agy; delegações paralelas além disso aguardam em vez de falhar.

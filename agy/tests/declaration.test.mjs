@@ -65,7 +65,7 @@ test('declares the vendor differences', () => {
 
 test('warns before a channel is added', () => {
   // The channel has no sign-in, so the preset carries the warning.
-  assert.equal(manifest.version, '0.1.4');
+  assert.equal(manifest.version, '0.1.5');
   assert.equal(extension.model_auth, undefined);
   assert.match(provider.warning.text, /your own account/);
   assert.deepEqual(Object.keys(provider.warning.locales).sort(), ['de', 'es', 'fr', 'ja', 'ko', 'pt-BR', 'ru', 'zh-CN', 'zh-TW']);

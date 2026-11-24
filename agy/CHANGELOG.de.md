@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.5
+
+- Ein fehlerhafter Werkzeugaufruf wird nach Möglichkeit repariert oder bis zu zweimal in derselben Sitzung erneut angefordert, bevor die Antwort fehlschlägt.
+
 ## 0.1.4
 
 - Ein agy-Prozess bearbeitet bis zu acht Anfragen gleichzeitig, jede Unterhaltung in ihrer eigenen agy-Sitzung; weitere parallele Delegationen warten, statt fehlzuschlagen.
