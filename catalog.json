@@ -140,7 +140,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "agy",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "Antigravity models through the installed agy CLI",
         "homepage": "https://antigravity.google",
         "license": "MIT",
@@ -271,6 +271,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.3",
+          "commit": "f3ad5ef000a9517f4faf40752066a34950c0b919",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Resume the agy session after a restart and compact it with /compact where offered; compaction follows the model’s context window.",
+            "locales": {
+              "zh-CN": "- 重启后恢复 agy 会话，支持时以 /compact 压缩；压缩时机遵循模型的上下文窗口。",
+              "zh-TW": "- 重新啟動後恢復 agy 工作階段，支援時以 /compact 壓縮；壓縮時機依循模型的上下文視窗。",
+              "ja": "- 再起動後に agy セッションを再開し、対応時は /compact で圧縮します。圧縮のタイミングはモデルのコンテキストウィンドウに従います。",
+              "ko": "- 재시작 후 agy 세션을 이어가고, 지원되면 /compact로 압축합니다. 압축 시점은 모델의 컨텍스트 창을 따릅니다.",
+              "fr": "- Reprend la session agy après un redémarrage et la compacte avec /compact lorsqu’il est proposé ; la compaction suit la fenêtre de contexte du modèle.",
+              "de": "- Setzt die agy-Sitzung nach einem Neustart fort und verdichtet sie mit /compact, wo angeboten; die Verdichtung folgt dem Kontextfenster des Modells.",
+              "es": "- Reanuda la sesión de agy tras un reinicio y la compacta con /compact cuando está disponible; la compactación sigue la ventana de contexto del modelo.",
+              "pt-BR": "- Retoma a sessão do agy após reiniciar e a compacta com /compact quando disponível; a compactação segue a janela de contexto do modelo.",
+              "ru": "- Возобновляет сессию agy после перезапуска и сжимает её через /compact, если команда доступна; сжатие следует окну контекста модели."
+            }
+          }
+        },
+        {
           "version": "0.1.2",
           "commit": "8823f3963352e6f7cb86394d6fdb6da650fea612",
           "api_version": "v1",
@@ -332,17 +352,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Group reported xhigh variants under their model’s reasoning levels.",
+        "text": "- Resume the agy session after a restart and compact it with /compact where offered; compaction follows the model’s context window.",
         "locales": {
-          "zh-CN": "- 将 CLI 返回的 xhigh 变体归入对应模型的推理强度。",
-          "zh-TW": "- 將 CLI 回傳的 xhigh 變體歸入對應模型的推理強度。",
-          "ja": "- CLI が返した xhigh バリアントを対応するモデルの推論レベルにまとめます。",
-          "ko": "- CLI가 반환한 xhigh 변형을 해당 모델의 추론 수준으로 묶습니다.",
-          "fr": "- Les variantes xhigh disponibles figurent parmi les niveaux de raisonnement de leur modèle.",
-          "de": "- Gemeldete xhigh-Varianten erscheinen als Denkstufe des jeweiligen Modells.",
-          "es": "- Las variantes xhigh disponibles se agrupan con los niveles de razonamiento de su modelo.",
-          "pt-BR": "- As variantes xhigh disponíveis aparecem entre os níveis de raciocínio do modelo correspondente.",
-          "ru": "- Варианты xhigh, возвращаемые CLI, отображаются среди уровней рассуждения соответствующей модели."
+          "zh-CN": "- 重启后恢复 agy 会话，支持时以 /compact 压缩；压缩时机遵循模型的上下文窗口。",
+          "zh-TW": "- 重新啟動後恢復 agy 工作階段，支援時以 /compact 壓縮；壓縮時機依循模型的上下文視窗。",
+          "ja": "- 再起動後に agy セッションを再開し、対応時は /compact で圧縮します。圧縮のタイミングはモデルのコンテキストウィンドウに従います。",
+          "ko": "- 재시작 후 agy 세션을 이어가고, 지원되면 /compact로 압축합니다. 압축 시점은 모델의 컨텍스트 창을 따릅니다.",
+          "fr": "- Reprend la session agy après un redémarrage et la compacte avec /compact lorsqu’il est proposé ; la compaction suit la fenêtre de contexte du modèle.",
+          "de": "- Setzt die agy-Sitzung nach einem Neustart fort und verdichtet sie mit /compact, wo angeboten; die Verdichtung folgt dem Kontextfenster des Modells.",
+          "es": "- Reanuda la sesión de agy tras un reinicio y la compacta con /compact cuando está disponible; la compactación sigue la ventana de contexto del modelo.",
+          "pt-BR": "- Retoma a sessão do agy após reiniciar e a compacta com /compact quando disponível; a compactação segue a janela de contexto do modelo.",
+          "ru": "- Возобновляет сессию agy после перезапуска и сжимает её через /compact, если команда доступна; сжатие следует окну контекста модели."
         }
       }
     },
