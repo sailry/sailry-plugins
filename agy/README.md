@@ -22,9 +22,18 @@ disabled or removed.
   model appear as its effort levels.
 - Tool calls travel as text, because `agy` has no function-call channel a client
   can fill. A malformed call is a model error, never assistant text.
-- A history that `agy` has not seen is replayed in one prompt of at most
-  112 KiB. A larger history fails with a context-overflow error; nothing is
-  silently truncated.
+- Each Sailry conversation keeps one `agy` session, which receives only new
+  messages. After `agy` stops or restarts, the Node resumes that session with
+  `session/resume` or `session/load`.
+- Compaction starts at the model's window and the compaction setting, as on
+  other routes. Where the session advertises `/compact`, Sailry records its
+  own handoff and then sends `/compact` into the same session.
+- `replay_bytes` (112 KiB) bounds only a prompt that replays the whole history
+  into a new session: when resuming fails or earlier history changed. A larger
+  replay is a context overflow that compaction recovers; nothing is silently
+  truncated. The value has not been measured against `agy`. A live test that
+  replays growing synthetic histories into new sessions until `agy` rejects
+  one would establish it.
 
 Using a subscription through a client other than the vendor's own may be against
 the vendor's terms and may lead to limits on the account. That choice and its

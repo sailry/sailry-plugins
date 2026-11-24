@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.3
+
+- Retoma a sessão do agy após reiniciar e a compacta com /compact quando disponível; a compactação segue a janela de contexto do modelo.
+
 ## 0.1.2
 
 - As variantes xhigh disponíveis aparecem entre os níveis de raciocínio do modelo correspondente.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.3
+
+- Resume the agy session after a restart and compact it with /compact where offered; compaction follows the model’s context window.
+
 ## 0.1.2
 
 - Group reported xhigh variants under their model’s reasoning levels.

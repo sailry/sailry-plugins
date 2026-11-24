@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.3
+
+- Setzt die agy-Sitzung nach einem Neustart fort und verdichtet sie mit /compact, wo angeboten; die Verdichtung folgt dem Kontextfenster des Modells.
+
 ## 0.1.2
 
 - Gemeldete xhigh-Varianten erscheinen als Denkstufe des jeweiligen Modells.
