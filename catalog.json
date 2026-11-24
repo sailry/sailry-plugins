@@ -140,7 +140,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "agy",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "description": "Antigravity models through the installed agy CLI",
         "homepage": "https://antigravity.google",
         "license": "MIT",
@@ -272,6 +272,26 @@
       ],
       "versions": [
         {
+          "version": "0.1.5",
+          "commit": "854b41f534f3e52fe55b5f49e04bba53c3c1a819",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.12",
+          "release_notes": {
+            "text": "- A malformed tool call is repaired where possible or asked for again in the same session, up to twice, before the reply fails.",
+            "locales": {
+              "zh-CN": "- 格式错误的工具调用会尽量自动修复，否则在同一会话中最多要求重写 2 次，之后才判定回复失败。",
+              "zh-TW": "- 格式錯誤的工具呼叫會盡量自動修復，否則在同一工作階段中最多要求重寫 2 次，之後才判定回覆失敗。",
+              "ja": "- 形式が崩れたツール呼び出しは可能なら修復し、それ以外は同じセッションで最大 2 回書き直しを求めてから応答を失敗にします。",
+              "ko": "- 형식이 잘못된 도구 호출은 가능하면 복구하고, 아니면 응답을 실패로 처리하기 전에 같은 세션에서 최대 두 번 다시 요청합니다.",
+              "fr": "- Un appel d’outil mal formé est réparé si possible ou redemandé jusqu’à deux fois dans la même session avant l’échec de la réponse.",
+              "de": "- Ein fehlerhafter Werkzeugaufruf wird nach Möglichkeit repariert oder bis zu zweimal in derselben Sitzung erneut angefordert, bevor die Antwort fehlschlägt.",
+              "es": "- Una llamada a herramienta mal formada se repara cuando es posible o se vuelve a pedir hasta dos veces en la misma sesión antes de que falle la respuesta.",
+              "pt-BR": "- Uma chamada de ferramenta malformada é corrigida quando possível ou pedida novamente até duas vezes na mesma sessão antes de a resposta falhar.",
+              "ru": "- Некорректный вызов инструмента по возможности исправляется или до двух раз запрашивается повторно в той же сессии, прежде чем ответ завершится ошибкой."
+            }
+          }
+        },
+        {
           "version": "0.1.4",
           "commit": "4cf7fa8661eb4142f7dd91e4a2624a812178f532",
           "api_version": "v1",
@@ -373,17 +393,17 @@
         }
       ],
       "release_notes": {
-        "text": "- One agy process serves up to eight requests at once, each conversation in its own agy session; parallel delegations beyond that wait instead of failing.",
+        "text": "- A malformed tool call is repaired where possible or asked for again in the same session, up to twice, before the reply fails.",
         "locales": {
-          "zh-CN": "- 一个 agy 进程最多同时处理 8 个请求，每个会话使用各自的 agy 会话；超出的并行子任务排队等待，不再失败。",
-          "zh-TW": "- 一個 agy 程序最多同時處理 8 個請求，每個對話使用各自的 agy 工作階段；超出的平行子任務排隊等候，不再失敗。",
-          "ja": "- 1 つの agy プロセスが最大 8 件のリクエストを同時に処理し、会話ごとに専用の agy セッションを使います。それを超える並列の委任は失敗せずに待機します。",
-          "ko": "- agy 프로세스 하나가 요청을 동시에 최대 8개까지 처리하며, 대화마다 별도의 agy 세션을 사용합니다. 이를 넘는 병렬 위임은 실패하지 않고 대기합니다.",
-          "fr": "- Un processus agy traite jusqu’à huit requêtes à la fois, chaque conversation dans sa propre session agy ; les délégations parallèles supplémentaires attendent au lieu d’échouer.",
-          "de": "- Ein agy-Prozess bearbeitet bis zu acht Anfragen gleichzeitig, jede Unterhaltung in ihrer eigenen agy-Sitzung; weitere parallele Delegationen warten, statt fehlzuschlagen.",
-          "es": "- Un proceso de agy atiende hasta ocho solicitudes a la vez, cada conversación en su propia sesión de agy; las delegaciones paralelas adicionales esperan en lugar de fallar.",
-          "pt-BR": "- Um processo do agy atende até oito solicitações ao mesmo tempo, cada conversa em sua própria sessão do agy; delegações paralelas além disso aguardam em vez de falhar.",
-          "ru": "- Один процесс agy обслуживает до восьми запросов одновременно, каждый разговор — в своей сессии agy; параллельные делегирования сверх этого ждут, а не завершаются ошибкой."
+          "zh-CN": "- 格式错误的工具调用会尽量自动修复，否则在同一会话中最多要求重写 2 次，之后才判定回复失败。",
+          "zh-TW": "- 格式錯誤的工具呼叫會盡量自動修復，否則在同一工作階段中最多要求重寫 2 次，之後才判定回覆失敗。",
+          "ja": "- 形式が崩れたツール呼び出しは可能なら修復し、それ以外は同じセッションで最大 2 回書き直しを求めてから応答を失敗にします。",
+          "ko": "- 형식이 잘못된 도구 호출은 가능하면 복구하고, 아니면 응답을 실패로 처리하기 전에 같은 세션에서 최대 두 번 다시 요청합니다.",
+          "fr": "- Un appel d’outil mal formé est réparé si possible ou redemandé jusqu’à deux fois dans la même session avant l’échec de la réponse.",
+          "de": "- Ein fehlerhafter Werkzeugaufruf wird nach Möglichkeit repariert oder bis zu zweimal in derselben Sitzung erneut angefordert, bevor die Antwort fehlschlägt.",
+          "es": "- Una llamada a herramienta mal formada se repara cuando es posible o se vuelve a pedir hasta dos veces en la misma sesión antes de que falle la respuesta.",
+          "pt-BR": "- Uma chamada de ferramenta malformada é corrigida quando possível ou pedida novamente até duas vezes na mesma sessão antes de a resposta falhar.",
+          "ru": "- Некорректный вызов инструмента по возможности исправляется или до двух раз запрашивается повторно в той же сессии, прежде чем ответ завершится ошибкой."
         }
       }
     },
