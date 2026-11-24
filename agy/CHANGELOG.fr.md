@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.4
+
+- Un processus agy traite jusqu’à huit requêtes à la fois, chaque conversation dans sa propre session agy ; les délégations parallèles supplémentaires attendent au lieu d’échouer.
+
 ## 0.1.3
 
 - Reprend la session agy après un redémarrage et la compacte avec /compact lorsqu’il est proposé ; la compaction suit la fenêtre de contexte du modèle.

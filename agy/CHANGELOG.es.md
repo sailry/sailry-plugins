@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.4
+
+- Un proceso de agy atiende hasta ocho solicitudes a la vez, cada conversación en su propia sesión de agy; las delegaciones paralelas adicionales esperan en lugar de fallar.
+
 ## 0.1.3
 
 - Reanuda la sesión de agy tras un reinicio y la compacta con /compact cuando está disponible; la compactación sigue la ventana de contexto del modelo.

@@ -1,14 +1,14 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agy",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Antigravity models through the installed agy CLI",
   "homepage": "https://antigravity.google",
   "license": "MIT",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.12",
       "scope": "host",
       "actions": [
         "models.provide",
@@ -81,6 +81,7 @@
               "xhigh": "-xhigh"
             },
             "replay_bytes": 114688,
+            "concurrency": 8,
             "sign_in": "Run agy in a terminal and sign in, then try again",
             "failure_markers": [
               "Agent execution terminated due to error."

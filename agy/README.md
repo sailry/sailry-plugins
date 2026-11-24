@@ -25,6 +25,10 @@ disabled or removed.
 - Each Sailry conversation keeps one `agy` session, which receives only new
   messages. After `agy` stops or restarts, the Node resumes that session with
   `session/resume` or `session/load`.
+- One `agy` process serves up to eight requests at once, each conversation in
+  its own `agy` session; a user runs at most four processes. A request beyond
+  that, such as one of several parallel delegations, waits until another
+  finishes its model step.
 - Compaction starts at the model's window and the compaction setting, as on
   other routes. Where the session advertises `/compact`, Sailry records its
   own handoff and then sends `/compact` into the same session.

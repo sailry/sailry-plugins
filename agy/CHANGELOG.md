@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.4
+
+- One agy process serves up to eight requests at once, each conversation in its own agy session; parallel delegations beyond that wait instead of failing.
+
 ## 0.1.3
 
 - Resume the agy session after a restart and compact it with /compact where offered; compaction follows the model’s context window.
