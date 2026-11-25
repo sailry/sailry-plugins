@@ -2546,7 +2546,8 @@
             "locales": {
               "zh-CN": "- 产品与原生数据库模块声明最低需要 Harness 平台 0.2.14。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.25",
@@ -2579,7 +2580,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -2599,7 +2601,8 @@
               "pt-BR": "- Manter a busca de chaves primárias pendente para impedir que outra consulta substitua sua solicitação ou seus resultados.",
               "ru": "- Поиск первичных ключей остаётся в состоянии ожидания, чтобы другой запрос не заменил его запрос или результаты."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -2619,7 +2622,8 @@
               "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
               "ru": "- Сократить названия тестов без изменения проверок"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -2639,7 +2643,8 @@
               "pt-BR": "- Mostrar o histórico de execução na mesma tabela dos resultados e abrir uma consulta com dois cliques ou Enter",
               "ru": "- Показывать историю выполнения в той же таблице, что и результаты, и открывать запрос двойным щелчком или клавишей Enter"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -2659,7 +2664,8 @@
               "pt-BR": "- Escrever SQL em um editor destacado com números de linha, executá-lo com Command-Enter e escolher Cancelar ou Executar no rodapé do diálogo",
               "ru": "- Писать SQL в редакторе с подсветкой и номерами строк, выполнять по Command-Enter и выбирать «Отмена» или «Выполнить» внизу диалога"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -2679,7 +2685,8 @@
               "pt-BR": "- Mostrar resultados em uma tabela sem moldura com a contagem de linhas no rodapé, abrir o SQL em uma caixa de diálogo a partir de Nova consulta e mostrar ícones de bancos e tabelas no catálogo",
               "ru": "- Показывать результаты в таблице без рамки со счётчиком строк внизу, открывать SQL в диалоге по кнопке «Новый запрос» и показывать значки баз данных и таблиц в каталоге"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -2699,7 +2706,8 @@
               "pt-BR": "- Mover a atualização do catálogo para o cabeçalho do espaço de trabalho\n- Mostrar resultados com linhas alternadas e estado vazio traduzido\n- Alinhar as colunas do histórico SQL preservando seleção, navegação por teclado e menus de contexto",
               "ru": "- Перенести обновление каталога в заголовок рабочего пространства\n- Показывать результаты с чередующимися строками и переведённым пустым состоянием\n- Выровнять столбцы истории SQL, сохранив выбор, навигацию с клавиатуры и контекстные меню"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -2719,7 +2727,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -2739,7 +2748,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -2747,7 +2757,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep dynamic connection schemas aligned with compact tool declarations"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -2755,7 +2766,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Remove redundant numeric schema bounds while preserving host validation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -2763,7 +2775,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Ignore catalog read failures after their connection tab closes or is replaced.\n- Keep active catalog and database operation failures visible."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -2782,7 +2795,8 @@
               "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
               "ru": "- Увеличить расстояние между подписями и полями форм"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -2790,7 +2804,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Remove unused tool definition copies and retain the manifest declarations"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -2798,7 +2813,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show catalog queries as concise activity while retaining SQL results and changes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -2806,7 +2822,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Load connection inventories, project choices and database catalogs concurrently"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -2825,47 +2842,56 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
           "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "6dc11a3a09d8bcdce418bac635c9b85345fe8a8d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "2c103ec8f491fb3ebbc76d890c870d16d2661fdc",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "5f1695eb98ad65ef8a092a4978c3feee00dad15e",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "baa6c453e8d08f0f2a0b7e2905e329eb5b7fd8ea",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "3738d94b9376e927d619bea4803cd3707b33d086",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "version_requirements": {
@@ -15073,7 +15099,8 @@
             "locales": {
               "zh-CN": "- 产品与原生工作区模块声明最低需要 Harness 平台 0.2.14。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -15106,7 +15133,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -15126,7 +15154,8 @@
               "pt-BR": "- Orientar o desenvolvimento em uma nova worktree para delegação ou o seletor do compositor",
               "ru": "- Направлять разработку в новом рабочем дереве в делегирование или выбор дерева в поле ввода"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -15146,7 +15175,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -15166,7 +15196,8 @@
               "pt-BR": "- Projetos com caracteres de controle no nome continuam disponíveis com rótulos legíveis",
               "ru": "- Проекты с управляющими символами в имени остаются доступными с читаемыми названиями в меню"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -15175,7 +15206,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- New worktree forms label their fields and submit with a plain Submit button"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -15184,7 +15216,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -15193,7 +15226,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- List chats and projects in the project chip; worktree actions stay in the project menu\n- Fork from another branch starts the new worktree at that branch without copying changes\n- Manage worktrees opens the searchable command list\n- Worktree management moves from the project menu to the Git panel"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -15202,7 +15236,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Render project choices with native Kit menus and a single hover surface"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -15222,7 +15257,8 @@
               "pt-BR": "- Manter a troca de projeto e a navegação de volta no painel suspenso com nomes legíveis de árvores de trabalho\n- Gerenciar árvores de trabalho em diálogos comuns e evitar alertas de leituras em segundo plano sem conexão",
               "ru": "- Переключать проекты и возвращаться назад внутри всплывающего списка с понятными названиями рабочих деревьев\n- Управлять рабочими деревьями в обычных диалогах без уведомлений об ошибках фонового чтения вне сети"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -15242,7 +15278,8 @@
               "pt-BR": "- Atualizar menus de localização quando projetos ou árvores de trabalho mudarem\n- Ajustar menus grandes aos limites do aplicativo mantendo os seletores completos",
               "ru": "- Обновлять меню расположения при изменении проектов или рабочих деревьев\n- Учитывать пределы меню приложения, сохраняя доступ к полному выбору"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -15262,7 +15299,8 @@
               "pt-BR": "- Selecionar projetos e árvores de trabalho registradas no menu do editor\n- Compartilhar dados de árvores de trabalho entre o menu e a janela de gerenciamento",
               "ru": "- Выбор проектов и зарегистрированных рабочих деревьев в меню поля ввода\n- Повторное использование данных рабочих деревьев в меню и окне управления"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -15270,7 +15308,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Label conversations without a project consistently across supported languages"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -15289,7 +15328,8 @@
               "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
               "ru": "- Увеличить расстояние между подписями и полями форм"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -15297,7 +15337,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show worktree lists as concise activity while retaining changes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
@@ -15305,7 +15346,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Start registered and native worktree discovery together while showing registered choices first"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
@@ -15313,7 +15355,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show registered worktrees before Git discovery and reuse active refreshes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
@@ -15332,27 +15375,32 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "5cd73bd5af0a31774ccc4954859402bab25f676e",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "76ad207cc71ba97150e02bcc670557821553f256",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "version_requirements": {
