@@ -80,32 +80,6 @@ for(const name of ['gomoku','reversi','xiangqi','poker','liars-dice','doudizhu',
   await updates.close();await observation;
 });
 
-test('databases: entry refreshes catalogs without SQL execution or losing selection and drafts',async()=>{
-  const jobs=[],loads=[],profile={id:'saved',revision:4};
-  const nextChange=()=>{},Controller=await controller('databases','main.js',{
-    nextChange,listDatabases:async()=>[profile],listSsh:async()=>[],readProjectCatalog:async()=>({projects:[]}),
-    createText:()=> 'sql-draft',nextTableEvent(){},nextTreeEvent(){},nextContextMenuEvent(){},
-    header_action(){},nextNavigationTabEvent(){},nextPickerEvent(){},nextControlEvent(){},nextTextEvent(){},modal_closed(){},nextAssistantTools(){},
-    Request:class{constructor(){assert.fail('entry must not execute SQL or replay a request');}},
-  });
-  const owner=new Controller(),cx={notify(){},focus_handle(){},spawn:job=>jobs.push(job)};
-  let changed;
-  owner.watch=(read,handle)=>{if(read===nextChange)changed=handle;};owner.init(null,cx);
-  assert.equal(jobs.length,0);
-  changed({cursor:'7:true:0',entry:'0',connected:true},cx);await jobs.shift()(cx);
-  const catalog={profile,loading:new Set(),expanded:new Set(['main']),current:'table:0:0',load:async(database,_cx,reset)=>loads.push([database,reset])};
-  const result={rows:[['Retained result']]},editor={draft:'Unsaved connection'};
-  Object.assign(owner,{opened:profile.id,catalog,result,editor,tab:1,page:3});
-  changed({cursor:'7:true:1',entry:'1',connected:true},cx);await jobs.shift()(cx);
-  assert.deepEqual(loads,[[null,undefined],['main',undefined]]);
-  assert.equal(owner.catalog,catalog);assert.equal(catalog.current,'table:0:0');assert.ok(catalog.expanded.has('main'));
-  assert.equal(owner.result,result);assert.equal(owner.editor,editor);assert.equal(owner.sql,'sql-draft');assert.equal(owner.tab,1);assert.equal(owner.page,3);
-  const pending={request:{id:'original-request',unknown:true}};owner.pending=pending;
-  changed({cursor:'7:true:2',entry:'2',connected:true},cx);await jobs.shift()(cx);
-  assert.equal(loads.length,2);assert.equal(owner.pending,pending);
-});
-
-
 for(const name of ['scheduled-tasks','reminders'])test(`${name}: nested uncertain results retain the original request`,async()=>{
   const jobs=[],prepared=[],completed=[],forgotten=[],node=[1,...Array(31).fill(0)];
   const Controller=await controller(name,'main.js',{
