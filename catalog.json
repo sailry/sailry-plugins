@@ -1714,7 +1714,8 @@
               "pt-BR": "- O plugin passa a se chamar Terminal e a descrição foi simplificada.",
               "ru": "- Плагин переименован в «Terminal», описание упрощено."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -1734,7 +1735,8 @@
               "pt-BR": "- Remove manipuladores redundantes de comandos já integrados ao Node, mantendo o terminal desktop e a habilidade Python.",
               "ru": "- Удалены дублирующиеся обработчики командных инструментов; терминал и навык Python сохранены."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -1746,7 +1748,8 @@
             "locales": {
               "zh-CN": "- 明确等待命令在本次读取开始后输出的新匹配内容"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -1758,7 +1761,8 @@
             "locales": {
               "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -1778,7 +1782,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -1798,7 +1803,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -1818,7 +1824,8 @@
               "pt-BR": "- Remover entradas CLI duplicadas do espaço de trabalho e a atualização permanente do menu do projeto, preservando as ações de recuperação",
               "ru": "- Удалить повторяющиеся CLI-пункты рабочего пространства и постоянное обновление из меню проекта, сохранив действия восстановления"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -1827,7 +1834,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Reject empty command wait text so output waits do not return immediately."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -1836,7 +1844,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Wait for command output, matching text or exit with read_command, up to 30 seconds\n- Clarify background execution and require Sailry 0.1.5 for command waits\n- Keep terminal splits associated with the requested terminal creation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -1856,7 +1865,8 @@
               "pt-BR": "- Os agentes ativam follow_up ao aguardar um comando em segundo plano",
               "ru": "- Агенты включают follow_up, когда ждут результата фоновой команды"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -1865,7 +1875,8 @@
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
             "text": "- Make conversation follow-up for background commands opt in\n- Close terminals when their shell exits, collapsing split panes; report only non-zero exits"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -1874,7 +1885,8 @@
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
             "text": "- Close terminals when their shell exits, collapsing split panes; report only non-zero exits"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -1883,7 +1895,8 @@
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
             "text": "- Keep background command starts as activities without empty output expansion"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -1892,7 +1905,8 @@
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
             "text": "- Refresh stable catalogs only when their settings or repository references change."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -1901,7 +1915,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Keep command access guidance in one parameter description\n- Declare a 600000 ms timeout maximum without changing execution validation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -1910,7 +1925,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Coalesce terminal refreshes and preserve loaded content after background failures\n- Page retained command streams and original tool results without starting a process"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -1919,7 +1935,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -1927,7 +1944,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Release terminal input before closing and retain uncertain close requests"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -1935,7 +1953,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep switching terminals free of transient stopped text and spinners"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
@@ -1943,7 +1962,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep terminal panes loading until their terminal metadata arrives"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
@@ -1962,32 +1982,38 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "b0829f738063d35e8e371c852a67734227b2b2af",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "c621dbe372c2a22253a6ccd906bb2487f7ad9c26",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "375d13c18f699896fed8c4fd6a95596cbd271118",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "c4f4ec8a51c5bf3e372cb0f0e59f25adc7772ea5",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "ba6eef51171bced91716afa6f7d01c1891dae6ce",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "release_notes": {
