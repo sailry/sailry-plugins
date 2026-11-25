@@ -330,12 +330,12 @@ class History(unittest.TestCase):
             publish(root)
             self.assertEqual(catalog.catalog(root), before)
 
-    def test_retains_v0213_candidates_before_native_modules(self):
+    def test_keeps_legacy_packages_compatible_on_v0213(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             repository(root)
             compatible = release(root, "0.1.0", "0.1.6")
-            native = release(root, "0.1.1", "0.1.6")
+            legacy = release(root, "0.1.1", "0.1.6")
             publish(root)
             data = {"name": "sample", "version": "0.1.2", "extensions": {"dev.sailry.platform": {
                 "api_version": "v1", "min_sailry_version": "0.2.14",
@@ -343,7 +343,9 @@ class History(unittest.TestCase):
             }}}
             (root / "sample" / "plugin.json").write_text(json.dumps(data))
             latest = commit(root, "Require the native module platform")
-            (root / "catalog-withdrawn.json").write_text('{"sample":["0.1.1"]}')
+            (root / "catalog-requirements.json").write_text(json.dumps({
+                "sample": {"versions": ["0.1.1", "0.1.0"], "requires_modules": ["files"]},
+            }))
             feed = json.loads(json.dumps(catalog.catalog(root)))
             entry = feed["packages"][0]
             allowed = {"version", "commit", "api_version", "min_sailry_version", "release_notes",
@@ -352,18 +354,18 @@ class History(unittest.TestCase):
                 self.assertFalse(set(record) - allowed)
             self.assertEqual(entry["versions"], [
                 {"version": "0.1.2", "commit": latest, "api_version": "v1", "min_sailry_version": "0.2.14"},
-                {"version": "0.1.1", "commit": native, "api_version": "v1", "min_sailry_version": "0.1.6", "withdrawn": True},
+                {"version": "0.1.1", "commit": legacy, "api_version": "v1", "min_sailry_version": "0.1.6"},
                 {"version": "0.1.0", "commit": compatible, "api_version": "v1", "min_sailry_version": "0.1.6"},
             ])
             self.assertEqual(entry["version_requirements"], {
                 "0.1.2": {"products": ["harness", "code"], "requires_modules": ["files"]},
-                "0.1.1": {}, "0.1.0": {},
+                "0.1.1": {"requires_modules": ["files"]}, "0.1.0": {"requires_modules": ["files"]},
             })
             minimum = catalog.precedence("0.2.13")
             candidates = [record for record in entry["versions"]
                           if not record.get("withdrawn")
                           and catalog.precedence(record.get("min_sailry_version", "0.0.0")) <= minimum]
-            self.assertEqual([record["version"] for record in candidates], ["0.1.0"])
+            self.assertEqual([record["version"] for record in candidates], ["0.1.1", "0.1.0"])
             projected = entry["manifest"]["extensions"]["dev.sailry.platform"]
             self.assertNotIn("products", projected)
             self.assertNotIn("requires_modules", projected)
@@ -678,12 +680,11 @@ class PublishedCatalog(unittest.TestCase):
         history = {entry["id"]: entry["versions"] for entry in feed["packages"]}
         supplemental = catalog.legacy_requirements(root, history)
         withdrawals = catalog.withdrawn(root)
-        expected = {"databases": "0.1.23", "files": "0.1.31", "git": "0.1.39",
-                    "ssh": "0.1.30", "worktrees": "0.1.19"}
-        legacy = {"databases": "0.1.24", "files": "0.1.32", "git": "0.1.40",
-                  "ssh": "0.1.31", "worktrees": "0.1.20"}
+        expected = {"databases": "0.1.24", "files": "0.1.32", "git": "0.1.40",
+                    "ssh": "0.1.31", "worktrees": "0.1.20"}
         for name, version in expected.items():
             with self.subTest(package=name):
+                self.assertNotIn(version, withdrawals.get(name, ()))
                 candidates = [record for record in history[name]
                               if record["version"] not in withdrawals.get(name, ())
                               and not record.get("withdrawn")
@@ -693,7 +694,7 @@ class PublishedCatalog(unittest.TestCase):
                 self.assertEqual(supplemental[name][version], {"requires_modules": [name]})
                 self.assertEqual(set(supplemental[name]),
                                  {record["version"] for record in history[name]
-                                  if catalog.precedence(record["version"]) <= catalog.precedence(legacy[name])})
+                                  if catalog.precedence(record["version"]) <= catalog.precedence(version)})
 
 
 if __name__ == "__main__":
