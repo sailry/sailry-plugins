@@ -2533,8 +2533,7 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          },
-          "withdrawn": true
+          }
         },
         {
           "version": "0.1.23",
@@ -4333,8 +4332,7 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          },
-          "withdrawn": true
+          }
         },
         {
           "version": "0.1.31",
@@ -5066,8 +5064,7 @@
               "pt-BR": "- Remove manipuladores redundantes de ferramentas Git agora no módulo nativo Node, mantendo o painel desktop e o badge.",
               "ru": "- Удалены дублирующиеся обработчики Git-инструментов; панель Git и индикатор статуса сохранены."
             }
-          },
-          "withdrawn": true
+          }
         },
         {
           "version": "0.1.39",
@@ -11737,8 +11734,7 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          },
-          "withdrawn": true
+          }
         },
         {
           "version": "0.1.30",
@@ -15031,8 +15027,7 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          },
-          "withdrawn": true
+          }
         },
         {
           "version": "0.1.19",
