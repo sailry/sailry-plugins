@@ -6,11 +6,10 @@ live in [sailry-harness](https://github.com/sailry/sailry-harness).
 
 Each top-level package is an ordinary Agent Plugins package with Sailry's v1
 extension manifest. `examples/` contains optional developer examples. Package
-sources are maintained here only; the application pins this repository as a Git
-submodule and embeds its reviewed package snapshot for offline installation.
-Startup adds missing default packages and refreshes newer bundled versions,
-preserving configuration and enable choices. It does not reinstall packages
-removed by the user.
+sources are maintained here. Harness and Code build without a recursive plugin
+checkout and start new profiles without installing official packages. Native
+modules are assembled from the product's source; marketplace releases are
+installed separately from their recorded commits.
 
 ## Versions and immutable packages
 
@@ -101,49 +100,18 @@ Withdrawn records remain in `versions` with `withdrawn: true`, retaining their
 original commit and metadata. The latest version can also be withdrawn. Versions
 omitted by older withdrawal catalogs recover their last recorded identities from
 committed catalog history. Withdrawals leave installed packages and captured
-resources intact; the next compatible historical version remains available to
-older applications.
+resources intact. If every version is withdrawn, no client can select a new
+installation from the official catalog. The package directory can then be
+removed from the active checkout: generation retains its published identities,
+requirements and notes, but no longer indexes its skills. Use `git archive`
+with a recorded release commit to obtain a historical fixture.
 
-## Working with the application submodule
+## Working with the plugin repository
 
-This repository has its own Git history. The application's `plugins/` directory
-is a Git submodule that records a reviewed commit, not a symbolic link. Clone the
-application with its pinned submodules:
-
-```sh
-git clone --recurse-submodules https://github.com/sailry/sailry-harness.git
-```
-
-For an existing application checkout, run this from its root after pulling parent
-changes, preserving any local work first:
-
-```sh
-git submodule update --init --recursive
-```
-
-A submodule checkout commonly has a detached HEAD. Before committing plugin
-changes, select an existing owned branch or create one from the pinned commit:
-
-```sh
-git -C plugins status --short
-git -C plugins switch -c feature/plugin-change
-```
-
-Commit plugin changes inside this repository, then commit the updated `plugins/`
-pointer separately in the application repository. A parent commit or ordinary
-push does not commit or publish plugin files. When publication is requested,
-push the plugin commit first, then push the parent commit that references it.
-This keeps the recorded plugin snapshot available to recursive checkouts.
-
-After both repositories have their changes committed on branches, Git can push
-required plugin commits before the parent in one command:
-
-```sh
-git push --recurse-submodules=on-demand
-```
-
-This does not commit pending file changes. Repository-local
-`push.recurseSubmodules=on-demand` can make it the default for future pushes.
+Use a separate checkout with full Git history. A `plugins/` checkout inside an
+application worktree is still a separate repository. Commit verified plugin and
+catalog changes there; do not add a Gitlink to the application. A local commit
+does not publish packages or change clients' cached catalogs.
 
 ## Checks and catalog
 
