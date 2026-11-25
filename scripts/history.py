@@ -25,6 +25,23 @@ def precedence(version):
     return int(major), int(minor), int(patch), preview is None, identifiers
 
 
+def runtime_requirements(extension):
+    result = {}
+    for field in ("products", "requires_modules"):
+        if field not in extension:
+            continue
+        values = extension[field]
+        if (not isinstance(values, list)
+                or field == "products" and not values
+                or any(not isinstance(value, str) or not 1 <= len(value) <= 64
+                       or re.fullmatch(r"(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?", value) is None
+                       for value in values)
+                or len(values) != len(set(values))):
+            raise ValueError(f"Invalid Sailry {field} declaration")
+        result[field] = list(values)
+    return result
+
+
 def section(text, version):
     if text is None:
         return None
@@ -241,6 +258,7 @@ def versions(root, packages, withdrawals=None):
                 if not isinstance(extension, dict) or not isinstance(extension.get("api_version"), str):
                     raise ValueError("Sailry extension API versions must be strings")
                 record["api_version"] = extension["api_version"]
+                record.update(runtime_requirements(extension))
                 if "min_sailry_version" in extension:
                     minimum = extension["min_sailry_version"]
                     precedence(minimum)

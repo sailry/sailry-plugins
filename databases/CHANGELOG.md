@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Declare supported products and the required native databases module.
+
 ## 0.1.24
 
 - Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.

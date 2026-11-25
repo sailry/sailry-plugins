@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Produktanforderungen und Anforderungen an native Module prüfen und dokumentieren.
+
 ## 0.1.20
 
 - Aktualisiert den Verweis vom eingestellten Code-Plugin auf das native Code-Index-Modul.

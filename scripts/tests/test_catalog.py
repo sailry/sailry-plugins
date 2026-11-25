@@ -26,6 +26,27 @@ def manifest(root, name, **metadata):
 
 
 class Catalog(unittest.TestCase):
+    def test_runtime_requirements(self):
+        self.assertEqual(catalog.runtime_requirements({}), {})
+        declaration = {"products": ["harness", "code"], "requires_modules": ["files", "git"]}
+        self.assertEqual(catalog.runtime_requirements(declaration), declaration)
+        self.assertEqual(catalog.runtime_requirements({"requires_modules": []}), {"requires_modules": []})
+        for invalid in [{"products": []}, {"products": None}, {"products": ["harness", "harness"]},
+                        {"products": ["Harness"]}, {"requires_modules": None}, {"requires_modules": "files"},
+                        {"requires_modules": ["files", "files"]}, {"requires_modules": ["files/host"]}]:
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                catalog.runtime_requirements(invalid)
+
+    def test_runtime_requirements_survive_immutable_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            declaration = {"api_version": "v1", "products": ["harness"], "requires_modules": ["files"]}
+            manifest(root, "sample", version="1.0.0", extensions={"dev.sailry.platform": declaration})
+            revision = commit(root, "Add product requirements")
+            records = catalog.versions(root, ["sample"])["sample"]
+            self.assertEqual(records, [{"version": "1.0.0", "commit": revision, **declaration}])
+
     def test_preserves_metadata(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -1,10 +1,12 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ssh",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "extensions": {
     "dev.sailry.platform": {
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.13",
+      "products": ["harness", "code"],
+      "requires_modules": ["ssh"],
       "api_version": "v1",
       "actions": [
         "ssh.read",

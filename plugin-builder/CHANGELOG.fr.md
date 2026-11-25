@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Valider et documenter les exigences de produit et de modules natifs.
+
 ## 0.1.20
 
 - Met à jour la référence vers le module natif d'indexation de code au lieu du plugin Code retiré.

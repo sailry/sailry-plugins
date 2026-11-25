@@ -19,6 +19,19 @@ function fixture(t, extension = {}) {
   return {temp, directory, manifest, data};
 }
 
+test('product and native module declarations preserve legacy defaults', t => {
+  for (const extension of [{}, {products: ['harness', 'code'], requires_modules: ['files', 'git']}, {requires_modules: []}]) {
+    assert.equal(checkPackage(fixture(t, extension).manifest), 0);
+  }
+  for (const extension of [
+    {products: []}, {products: null}, {products: ['harness', 'harness']}, {products: ['Harness']},
+    {requires_modules: null}, {requires_modules: 'files'}, {requires_modules: ['files', 'files']},
+    {requires_modules: ['files/host']}, {requires_modules: ['code..index']},
+  ]) {
+    assert.throws(() => checkPackage(fixture(t, extension).manifest));
+  }
+});
+
 test('syntax parsing never executes package initialization', () => {
   assert.deepEqual(dependencies("import {thing} from './helper.js'; throw Error('must not run');", 'main.js'), ['./helper.js']);
   assert.throws(() => dependencies('export function broken(', 'broken.js'), SyntaxError);

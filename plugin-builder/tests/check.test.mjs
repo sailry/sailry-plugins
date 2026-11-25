@@ -72,6 +72,25 @@ test('rejects invalid minimum Sailry versions', () => {
   }
 });
 
+test('accepts product and module requirements', () => {
+  for (const declaration of [{}, {products: ['harness', 'code'], requires_modules: ['files', 'git']}, {requires_modules: []}]) {
+    const result = check(fixture({'plugin.json': manifest(declaration)}));
+    assert.equal(result.code, 0, result.output);
+  }
+});
+
+test('rejects invalid product and module requirements', () => {
+  for (const [field, value] of [
+    ['products', []], ['products', null], ['products', 'harness'], ['products', ['harness', 'harness']],
+    ['products', ['Harness']], ['requires_modules', null], ['requires_modules', ['files', 'files']],
+    ['requires_modules', ['files/host']], ['requires_modules', ['code..index']], ['requires_modules', ['x'.repeat(65)]],
+  ]) {
+    const result = check(fixture({'plugin.json': manifest({[field]: value})}));
+    assert.equal(result.code, 1, result.output);
+    assert.match(result.output, new RegExp(field));
+  }
+});
+
 test('accepts declared conversation modes', () => {
   const result = check(fixture({'plugin.json': manifest({
     scope: 'host',

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Validar y documentar los requisitos de productos y módulos nativos.
+
 ## 0.1.20
 
 - Actualiza la referencia del complemento Code retirado al módulo nativo de índice de código.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.32
+
+- Declare supported products and the required native SSH module.
+
 ## 0.1.31
 
 - Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.

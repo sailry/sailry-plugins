@@ -14,6 +14,7 @@ from pathlib import Path
 EXTENSION = "dev.sailry.platform"
 PREFIX = EXTENSION + "/"
 NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+RUNTIME_ID = re.compile(r"(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
 NUMBER = r"(?:0|[1-9]\d*)"
 PART = r"(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)"
 VERSION = re.compile(
@@ -29,7 +30,8 @@ MODULES = {
     "sailry/settings", "sailry/installations",
 }
 FIELDS = {
-    "api_version", "min_sailry_version", "scope", "actions", "display", "description", "icon", "instructions",
+    "api_version", "min_sailry_version", "products", "requires_modules", "scope", "actions",
+    "display", "description", "icon", "instructions",
     "settings_schema", "settings_page", "storage", "tools", "host",
     "desktop", "ui", "artifact_view", "continuation_marker", "continuation_markers", "credential_source",
     "enabled_service", "oauth", "registration", "permissions", "connectors", "cards", "category", "tint",
@@ -371,6 +373,14 @@ def check(root):
         report.error("min_sailry_version must be a semantic version, for example 0.1.0-alpha.4")
     for field in sorted(set(extension) - FIELDS):
         report.error(f"unknown extension field: {field}")
+    for field in ("products", "requires_modules"):
+        if field not in extension:
+            continue
+        values = check_names(extension[field], field, report)
+        if field == "products" and not values:
+            report.error("products must not be empty")
+        if any(len(value) > 64 or not RUNTIME_ID.fullmatch(value) for value in values):
+            report.error(f"{field} must contain lowercase product or module IDs, up to 64 characters")
     for field, choices in (
         ("category", {"development", "documents", "data", "automation", "entertainment"}),
         ("tint", {"blue", "violet", "teal", "amber", "gray"}),

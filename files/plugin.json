@@ -1,11 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "files",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.13",
+      "products": ["harness", "code"],
+      "requires_modules": ["files"],
       "actions": [
         "files.read",
         "files.write"

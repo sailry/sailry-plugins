@@ -59,6 +59,14 @@ export function checkPackage(manifest) {
       && (typeof extension.min_sailry_version !== 'string' || !version.test(extension.min_sailry_version))) {
     throw new Error('Minimum Sailry version must be a semantic version');
   }
+  for (const key of ['products', 'requires_modules']) {
+    if (extension[key] === undefined) continue;
+    distinct(extension[key], key);
+    if (key === 'products' && extension[key].length === 0
+        || extension[key].some(id => id.length > 64 || !/^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(id))) {
+      throw new Error(`Invalid Sailry ${key} declaration`);
+    }
+  }
   distinct(extension.actions ?? [], 'Actions');
   checkConnectors(extension, directory);
   const sections = [extension.host, extension.desktop, extension.settings_page].filter(Boolean);

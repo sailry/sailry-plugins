@@ -46,7 +46,9 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 | Field | Purpose |
 | --- | --- |
 | `api_version` | Extension API supported by the target application, currently `"v1"` |
-| `min_sailry_version` | Optional exact SemVer floor, such as `"0.1.0-alpha.4"`; omission or `null` imposes no minimum |
+| `min_sailry_version` | Optional exact Harness platform capability version, such as `"0.2.13"`; not the downstream product's marketing version. Omission or `null` imposes no minimum |
+| `products` | Optional nonempty list of supported execution product IDs, such as `["harness", "code"]`; omission supports every product |
+| `requires_modules` | Optional list of native module IDs that must all be assembled on the execution Node, such as `["files", "git"]`; omission or `[]` requires none |
 | `scope` | `"host"` (default): runs on the execution Node and works from every controller. `"desktop"`: bound to the desktop's local Node |
 | `actions` | Capabilities the package needs; see below |
 | `enabled_service` | Optional `"code_index"` binding for a Host package with `code.index.read`; follows the package's enabled choice |
@@ -64,6 +66,12 @@ Unknown fields are rejected anywhere in the extension. Only include the sections
 | `host` | Headless callback entry; see `host.md` |
 | `desktop`, `ui` | Panels, navigation, assistants and controls; see `desktop.md` |
 | `cards` | Controller-rendered content cards owned by the package |
+
+Product and native module declarations require Harness platform 0.2.13 or later;
+set `min_sailry_version` accordingly when using them. IDs must be distinct,
+lowercase package-style identifiers of at most 64 characters. These constraints
+match the execution Node, not the controller, telemetry labels or plugin names.
+Historical packages without these fields retain unrestricted defaults.
 
 ### Localized text
 

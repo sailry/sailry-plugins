@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Validate and document product and native module requirements.
+
 ## 0.1.20
 
 - Reference Sailry's native code-index module instead of the retired Code plugin.

@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from history import LOCALES, notes, section, versions
+from history import LOCALES, notes, runtime_requirements, section, versions
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -75,6 +75,7 @@ def catalog(root=ROOT, version_history=None):
         if name != manifest.parent.name:
             raise ValueError("Package name must match its directory")
         extension = data.get("extensions", {}).get("dev.sailry.platform", {})
+        runtime_requirements(extension)
         entry = {
             "id": name,
             "manifest": data,

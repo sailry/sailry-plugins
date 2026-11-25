@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.41
+
+- Declare supported products and the required native Git module.
+
 ## 0.1.40
 
 - Remove redundant Git agent tool handlers now provided natively by the Node module; keep desktop Git panel and status badge handler.

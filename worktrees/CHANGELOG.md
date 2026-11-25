@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Declare supported products and the required native worktrees module.
+
 ## 0.1.20
 
 - Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.

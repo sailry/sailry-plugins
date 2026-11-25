@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.21
+
+- Validar e documentar os requisitos de produtos e módulos nativos.
+
 ## 0.1.20
 
 - Atualiza a referência do plugin Code aposentado para o módulo nativo de índice de código.
