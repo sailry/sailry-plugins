@@ -47,6 +47,95 @@ class Catalog(unittest.TestCase):
             records = catalog.versions(root, ["sample"])["sample"]
             self.assertEqual(records, [{"version": "1.0.0", "commit": revision, **declaration}])
 
+    def test_projects_requirements_outside_strict_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            requirements = {"products": ["harness", "code"], "requires_modules": ["files"]}
+            data = manifest(root, "sample", extensions={"dev.sailry.platform": {
+                "api_version": "v1", "min_sailry_version": "0.2.14", **requirements,
+            }})
+            record = {"version": data["version"], "commit": "a" * 40, "api_version": "v1",
+                      "min_sailry_version": "0.2.14", **requirements}
+            entry = catalog.catalog(root, version_history={"sample": [record]})["packages"][0]
+            self.assertEqual(entry["version_requirements"], {data["version"]: requirements})
+            self.assertEqual(entry["versions"], [{key: value for key, value in record.items()
+                                                  if key not in requirements}])
+            projected = entry["manifest"]["extensions"]["dev.sailry.platform"]
+            self.assertEqual(projected, {"api_version": "v1", "min_sailry_version": "0.2.14"})
+            self.assertEqual(json.loads((root / "sample" / "plugin.json").read_text()), data)
+            self.assertEqual(record["products"], requirements["products"])
+            empty = catalog.catalog(root, version_history={})["packages"][0]
+            self.assertEqual(empty["version_requirements"], {data["version"]: requirements})
+
+    def test_supplements_only_selected_legacy_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample", extensions={"dev.sailry.platform": {
+                "api_version": "v1", "actions": ["git.read"],
+            }})
+            history = {"sample": [
+                {"version": "1.10.0", "commit": "a" * 40},
+                {"version": "1.9.0", "commit": "b" * 40},
+                {"version": "1.8.0", "commit": "c" * 40},
+            ]}
+            requirements = {"requires_modules": ["files"]}
+            (root / "catalog-requirements.json").write_text(json.dumps({
+                "sample": {**requirements, "versions": ["1.10.0", "1.9.0"]},
+            }))
+            entry = catalog.catalog(root, version_history=history)["packages"][0]
+            self.assertEqual(entry["version_requirements"], {
+                "1.10.0": requirements, "1.9.0": requirements, "1.8.0": {},
+            })
+            self.assertEqual(entry["versions"], history["sample"])
+            projected = entry["manifest"]["extensions"]["dev.sailry.platform"]
+            self.assertEqual(projected, {"api_version": "v1", "actions": ["git.read"]})
+
+    def test_marks_unrestricted_capability_era_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample", extensions={"dev.sailry.platform": {
+                "api_version": "v1", "min_sailry_version": "0.2.14",
+            }})
+            path = root / "sample" / "plugin.json"
+            for current, historical in [("0.2.14", "0.1.0"), ("0.1.0", "0.2.14"), ("0.1.0", "0.1.0")]:
+                with self.subTest(current=current, historical=historical):
+                    data = json.loads(path.read_text())
+                    data["extensions"]["dev.sailry.platform"]["min_sailry_version"] = current
+                    path.write_text(json.dumps(data))
+                    history = {"sample": [
+                        {"version": "1.10.0", "commit": "a" * 40, "min_sailry_version": current},
+                        {"version": "1.9.0", "commit": "b" * 40, "min_sailry_version": historical},
+                    ]}
+                    entry = catalog.catalog(root, version_history=history)["packages"][0]
+                    if current == "0.2.14" or historical == "0.2.14":
+                        self.assertEqual(entry["version_requirements"], {"1.10.0": {}, "1.9.0": {}})
+                    else:
+                        self.assertNotIn("version_requirements", entry)
+
+    def test_rejects_invalid_legacy_supplements(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest(root, "sample")
+            history = {"sample": [{"version": "1.0.0", "requires_modules": ["git"]}]}
+            path = root / "catalog-requirements.json"
+            for invalid in [[], {"other": {"versions": ["1.0.0"], "requires_modules": ["files"]}},
+                            {"sample": {"versions": ["2.0.0"], "requires_modules": ["files"]}},
+                            {"sample": {"versions": ["1.0.0", "1.0.0"], "requires_modules": ["git"]}},
+                            {"sample": {"versions": ["1.0.0"]}},
+                            {"sample": {"versions": ["1.0.0"], "requires_modules": ["files"]}},
+                            {"sample": {"versions": ["1.0.0"], "requires_modules": ["git"], "unknown": True}}]:
+                with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                    path.write_text(json.dumps(invalid))
+                    catalog.catalog(root, version_history=history)
+
+    def test_official_legacy_modules_are_feature_scoped(self):
+        declarations = json.loads((SCRIPT.parents[1] / "catalog-requirements.json").read_text())
+        self.assertEqual(set(declarations), {"files", "git", "databases", "ssh", "worktrees"})
+        for name, declaration in declarations.items():
+            self.assertEqual(declaration["requires_modules"], [name])
+        self.assertIn("0.1.40", declarations["git"]["versions"])
+        self.assertIn("0.1.32", declarations["files"]["versions"])
+
     def test_preserves_metadata(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -181,6 +270,104 @@ def publish(root, records=None):
 
 
 class History(unittest.TestCase):
+    def test_preserves_requirements_for_each_immutable_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            first_requirements = {"products": ["harness"], "requires_modules": ["files"]}
+            manifest(root, "sample", version="1.0.0", extensions={"dev.sailry.platform": {
+                "api_version": "v1", "min_sailry_version": "0.2.14", **first_requirements,
+            }})
+            first = commit(root, "Release first product declaration")
+            publish(root)
+            latest_requirements = {"products": ["code"], "requires_modules": []}
+            path = root / "sample" / "plugin.json"
+            data = json.loads(path.read_text())
+            data["version"] = "1.1.0"
+            data["extensions"]["dev.sailry.platform"].update(latest_requirements)
+            path.write_text(json.dumps(data))
+            latest = commit(root, "Release another product declaration")
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0"]}')
+            before = catalog.catalog(root)
+            entry = before["packages"][0]
+            self.assertEqual(entry["version_requirements"], {
+                "1.1.0": latest_requirements, "1.0.0": first_requirements,
+            })
+            self.assertEqual([(record["version"], record["commit"]) for record in entry["versions"]],
+                             [("1.1.0", latest), ("1.0.0", first)])
+            self.assertTrue(entry["versions"][1]["withdrawn"])
+            publish(root)
+            self.assertEqual(catalog.catalog(root), before)
+
+    def test_withdraws_bad_floor_without_rewriting_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0", "0.1.6")
+            path = root / "sample" / "plugin.json"
+            data = json.loads(path.read_text())
+            data["version"] = "1.0.1"
+            requirements = {"products": ["harness", "code"], "requires_modules": ["git"]}
+            data["extensions"]["dev.sailry.platform"].update({"min_sailry_version": "0.2.13", **requirements})
+            path.write_text(json.dumps(data))
+            incorrect = commit(root, "Record the unsupported declaration floor")
+            publish(root)
+            data["version"] = "1.0.2"
+            data["extensions"]["dev.sailry.platform"]["min_sailry_version"] = "0.2.14"
+            path.write_text(json.dumps(data))
+            corrected = commit(root, "Correct the declaration floor in a new patch")
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.1"]}')
+            before = catalog.catalog(root)
+            entry = before["packages"][0]
+            self.assertEqual(entry["versions"][1], {
+                "version": "1.0.1", "commit": incorrect, "api_version": "v1",
+                "min_sailry_version": "0.2.13", "withdrawn": True,
+            })
+            self.assertEqual(entry["versions"][0]["commit"], corrected)
+            self.assertEqual(entry["version_requirements"], {
+                "1.0.2": requirements, "1.0.1": requirements, "1.0.0": {},
+            })
+            publish(root)
+            self.assertEqual(catalog.catalog(root), before)
+
+    def test_retains_v0213_candidates_before_native_modules(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            compatible = release(root, "0.1.0", "0.1.6")
+            native = release(root, "0.1.1", "0.1.6")
+            publish(root)
+            data = {"name": "sample", "version": "0.1.2", "extensions": {"dev.sailry.platform": {
+                "api_version": "v1", "min_sailry_version": "0.2.14",
+                "products": ["harness", "code"], "requires_modules": ["files"],
+            }}}
+            (root / "sample" / "plugin.json").write_text(json.dumps(data))
+            latest = commit(root, "Require the native module platform")
+            (root / "catalog-withdrawn.json").write_text('{"sample":["0.1.1"]}')
+            feed = json.loads(json.dumps(catalog.catalog(root)))
+            entry = feed["packages"][0]
+            allowed = {"version", "commit", "api_version", "min_sailry_version", "release_notes",
+                       "withdrawn", "compatibility"}
+            for record in entry["versions"]:
+                self.assertFalse(set(record) - allowed)
+            self.assertEqual(entry["versions"], [
+                {"version": "0.1.2", "commit": latest, "api_version": "v1", "min_sailry_version": "0.2.14"},
+                {"version": "0.1.1", "commit": native, "api_version": "v1", "min_sailry_version": "0.1.6", "withdrawn": True},
+                {"version": "0.1.0", "commit": compatible, "api_version": "v1", "min_sailry_version": "0.1.6"},
+            ])
+            self.assertEqual(entry["version_requirements"], {
+                "0.1.2": {"products": ["harness", "code"], "requires_modules": ["files"]},
+                "0.1.1": {}, "0.1.0": {},
+            })
+            minimum = catalog.precedence("0.2.13")
+            candidates = [record for record in entry["versions"]
+                          if not record.get("withdrawn")
+                          and catalog.precedence(record.get("min_sailry_version", "0.0.0")) <= minimum]
+            self.assertEqual([record["version"] for record in candidates], ["0.1.0"])
+            projected = entry["manifest"]["extensions"]["dev.sailry.platform"]
+            self.assertNotIn("products", projected)
+            self.assertNotIn("requires_modules", projected)
+
     def test_uses_first_matching_content_commit(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -465,6 +652,48 @@ class History(unittest.TestCase):
             git(root, "clone", "--quiet", "--depth", "1", root.resolve().as_uri(), str(checkout))
             with self.assertRaisesRegex(ValueError, "complete Git checkout"):
                 catalog.catalog(checkout)
+
+
+class PublishedCatalog(unittest.TestCase):
+    def test_keeps_v0213_strict_version_shape(self):
+        feed = json.loads((SCRIPT.parents[1] / "catalog.json").read_text())
+        allowed = {"version", "commit", "api_version", "min_sailry_version", "release_notes",
+                   "withdrawn", "compatibility"}
+        for entry in feed["packages"]:
+            with self.subTest(package=entry["id"]):
+                extension = entry["manifest"].get("extensions", {}).get("dev.sailry.platform", {})
+                self.assertNotIn("products", extension)
+                self.assertNotIn("requires_modules", extension)
+                if "version_requirements" in entry:
+                    self.assertEqual(set(entry["version_requirements"]),
+                                     {record["version"] for record in entry["versions"]})
+                for record in entry["versions"]:
+                    self.assertFalse(set(record) - allowed)
+                    if catalog.precedence(record.get("min_sailry_version", "0.0.0")) >= catalog.precedence("0.2.14"):
+                        self.assertIn("version_requirements", entry)
+
+    def test_preserves_real_v0213_fallbacks(self):
+        root = SCRIPT.parents[1]
+        feed = json.loads((root / "catalog.json").read_text())
+        history = {entry["id"]: entry["versions"] for entry in feed["packages"]}
+        supplemental = catalog.legacy_requirements(root, history)
+        withdrawals = catalog.withdrawn(root)
+        expected = {"databases": "0.1.23", "files": "0.1.31", "git": "0.1.39",
+                    "ssh": "0.1.30", "worktrees": "0.1.19"}
+        legacy = {"databases": "0.1.24", "files": "0.1.32", "git": "0.1.40",
+                  "ssh": "0.1.31", "worktrees": "0.1.20"}
+        for name, version in expected.items():
+            with self.subTest(package=name):
+                candidates = [record for record in history[name]
+                              if record["version"] not in withdrawals.get(name, ())
+                              and not record.get("withdrawn")
+                              and catalog.precedence(record.get("min_sailry_version", "0.0.0")) <= catalog.precedence("0.2.13")]
+                selected = max(candidates, key=lambda record: catalog.precedence(record["version"]))
+                self.assertEqual(selected["version"], version)
+                self.assertEqual(supplemental[name][version], {"requires_modules": [name]})
+                self.assertEqual(set(supplemental[name]),
+                                 {record["version"] for record in history[name]
+                                  if catalog.precedence(record["version"]) <= catalog.precedence(legacy[name])})
 
 
 if __name__ == "__main__":

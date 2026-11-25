@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Produkt- und native Modulanforderungen benötigen Harness-Plattform 0.2.14.
+
 ## 0.1.21
 
 - Produktanforderungen und Anforderungen an native Module prüfen und dokumentieren.

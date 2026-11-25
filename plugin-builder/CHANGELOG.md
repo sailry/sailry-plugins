@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Require Harness platform 0.2.14 for product and native module declarations.
+
 ## 0.1.21
 
 - Validate and document product and native module requirements.

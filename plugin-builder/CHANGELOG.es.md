@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Exigir la plataforma Harness 0.2.14 para las declaraciones de productos y módulos nativos.
+
 ## 0.1.21
 
 - Validar y documentar los requisitos de productos y módulos nativos.

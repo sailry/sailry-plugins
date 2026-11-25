@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.42
+
+- Require Harness platform 0.2.14 for product and native Git module declarations.
+
 ## 0.1.41
 
 - Declare supported products and the required native Git module.

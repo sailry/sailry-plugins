@@ -54,7 +54,25 @@ precedence. A version records one immutable package-content commit, its declared
 strings are preserved even when the current application does not support them.
 Build metadata does not affect precedence; equal-precedence records retain
 newest-commit order. The current `manifest` and notes remain available alongside
-the history.
+the history. Product and native module declarations are stored separately in
+`version_requirements[version]`, copied from each immutable package manifest.
+The catalog's projected `manifest` omits `products` and `requires_modules`, and
+`versions` keeps its original fields so applications with strict older decoders
+can still read the feed. When present, `version_requirements` covers every version;
+`{}` explicitly marks an unrestricted version. A package with any requirement or
+any version requiring platform `0.2.14` or later emits the complete map. Entirely
+legacy packages without restrictions can omit it. These projections do not change
+installable package contents or commit identities. A package using either declaration requires
+Harness platform `0.2.14` or later, independent of a downstream product's marketing
+version (for example, Code `0.1.0`).
+
+`catalog-requirements.json` supplements known native module dependencies for
+explicitly listed legacy package versions. The generator adds these only to
+`version_requirements`; it preserves the immutable manifests and original host
+version floors. A supplement cannot contradict an authored declaration. Module
+dependencies belong to the package feature, not every permission it requests:
+Files needs `files`, not `git`, and an optional SSH connection does not make SSH a
+requirement of Databases. Older readers ignore the supplemental outer field.
 
 Catalog generation needs complete Git history. Commit package changes first,
 then run the generator and commit `catalog.json` separately so every version

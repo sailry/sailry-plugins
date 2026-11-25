@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.33
+
+- Require Harness platform 0.2.14 for product and native SSH module declarations.
+
 ## 0.1.32
 
 - Declare supported products and the required native SSH module.

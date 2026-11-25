@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.22
+
+- Require Harness platform 0.2.14 for product and native worktrees module declarations.
+
 ## 0.1.21
 
 - Declare supported products and the required native worktrees module.

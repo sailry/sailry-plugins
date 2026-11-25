@@ -67,6 +67,13 @@ export function checkPackage(manifest) {
       throw new Error(`Invalid Sailry ${key} declaration`);
     }
   }
+  if (['products', 'requires_modules'].some(key => extension[key] !== undefined)) {
+    const minimum = extension.min_sailry_version?.split('+')[0];
+    const [major, minor, patch] = (minimum?.split('-')[0] ?? '').split('.').map(Number);
+    if (!(major > 0 || minor > 2 || minor === 2 && (patch > 14 || patch === 14 && !minimum.includes('-')))) {
+      throw new Error('Product and module requirements need min_sailry_version 0.2.14 or later');
+    }
+  }
   distinct(extension.actions ?? [], 'Actions');
   checkConnectors(extension, directory);
   const sections = [extension.host, extension.desktop, extension.settings_page].filter(Boolean);

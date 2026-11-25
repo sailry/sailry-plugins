@@ -20,7 +20,10 @@ function fixture(t, extension = {}) {
 }
 
 test('product and native module declarations preserve legacy defaults', t => {
-  for (const extension of [{}, {products: ['harness', 'code'], requires_modules: ['files', 'git']}, {requires_modules: []}]) {
+  for (const extension of [{},
+    {min_sailry_version: '0.2.14', products: ['harness', 'code'], requires_modules: ['files', 'git']},
+    {min_sailry_version: '0.2.14', requires_modules: []},
+  ]) {
     assert.equal(checkPackage(fixture(t, extension).manifest), 0);
   }
   for (const extension of [
@@ -29,6 +32,17 @@ test('product and native module declarations preserve legacy defaults', t => {
     {requires_modules: ['files/host']}, {requires_modules: ['code..index']},
   ]) {
     assert.throws(() => checkPackage(fixture(t, extension).manifest));
+  }
+});
+
+test('new requirement fields need the first supporting platform release', t => {
+  for (const requirements of [{products: ['code']}, {requires_modules: []}]) {
+    for (const minimum of [undefined, '0.2.13', '0.2.14-alpha.1', '0.2.14-rc.1+build.1']) {
+      assert.throws(() => checkPackage(fixture(t, {...requirements, min_sailry_version: minimum}).manifest), /0.2.14 or later/);
+    }
+    for (const minimum of ['0.2.14', '0.2.14+build.1', '0.2.15-alpha.1', '0.3.0', '1.0.0']) {
+      assert.equal(checkPackage(fixture(t, {...requirements, min_sailry_version: minimum}).manifest), 0);
+    }
   }
 });
 

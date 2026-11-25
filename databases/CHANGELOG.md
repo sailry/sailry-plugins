@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.26
+
+- Require Harness platform 0.2.14 for product and native databases module declarations.
+
 ## 0.1.25
 
 - Declare supported products and the required native databases module.

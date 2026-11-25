@@ -381,6 +381,14 @@ def check(root):
             report.error("products must not be empty")
         if any(len(value) > 64 or not RUNTIME_ID.fullmatch(value) for value in values):
             report.error(f"{field} must contain lowercase product or module IDs, up to 64 characters")
+    if any(field in extension for field in ("products", "requires_modules")):
+        supported = False
+        if isinstance(minimum, str) and minimum.isascii() and VERSION.fullmatch(minimum):
+            core, preview, _ = minimum.split("+")[0].partition("-")
+            base = tuple(int(part) for part in core.split("."))
+            supported = base > (0, 2, 14) or base == (0, 2, 14) and not preview
+        if not supported:
+            report.error("product and module requirements need min_sailry_version 0.2.14 or later")
     for field, choices in (
         ("category", {"development", "documents", "data", "automation", "entertainment"}),
         ("tint", {"blue", "violet", "teal", "amber", "gray"}),

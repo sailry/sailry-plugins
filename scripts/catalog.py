@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from history import LOCALES, notes, runtime_requirements, section, versions
+from history import LOCALES, notes, precedence, runtime_requirements, section, versions
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -62,11 +62,35 @@ def withdrawn(root):
     return result
 
 
+def legacy_requirements(root, version_history):
+    text = read(root / "catalog-requirements.json")
+    declarations = json.loads(text) if text is not None else {}
+    if not isinstance(declarations, dict):
+        raise ValueError("Legacy catalog requirements must name packages")
+    result = {}
+    for name, declaration in declarations.items():
+        if (name not in version_history or not isinstance(declaration, dict)
+                or set(declaration) - {"versions", "products", "requires_modules"}):
+            raise ValueError(f"Invalid legacy catalog requirements for {name}")
+        selected = declaration.get("versions")
+        available = {record["version"] for record in version_history[name]}
+        if (not isinstance(selected, list) or not selected
+                or any(not isinstance(version, str) for version in selected)
+                or len(selected) != len(set(selected)) or not set(selected) <= available):
+            raise ValueError(f"Invalid legacy catalog requirements for {name}")
+        requirements = runtime_requirements(declaration)
+        if not requirements:
+            raise ValueError(f"Missing legacy catalog requirements for {name}")
+        result[name] = {version: requirements for version in selected}
+    return result
+
+
 def catalog(root=ROOT, version_history=None):
     manifests = sorted(root.glob("*/plugin.json"))
     withdrawals = withdrawn(root)
     if version_history is None:
         version_history = versions(root, [path.parent.name for path in manifests], withdrawals)
+    supplemental = legacy_requirements(root, version_history)
     packages = []
     entries = []
     for manifest in manifests:
@@ -75,14 +99,35 @@ def catalog(root=ROOT, version_history=None):
         if name != manifest.parent.name:
             raise ValueError("Package name must match its directory")
         extension = data.get("extensions", {}).get("dev.sailry.platform", {})
-        runtime_requirements(extension)
+        requirements = runtime_requirements(extension)
+        for field in requirements:
+            del extension[field]
+        history = version_history.get(name, [])
+        minimum = extension.get("min_sailry_version")
+        include_requirements = bool(requirements) or minimum is not None and precedence(minimum) >= precedence("0.2.14")
+        by_version = {}
+        records = []
+        for record in history:
+            declared = runtime_requirements(record)
+            legacy = supplemental.get(name, {}).get(record["version"], {})
+            if any(field in declared and declared[field] != value for field, value in legacy.items()):
+                raise ValueError(f"Legacy requirements conflict with {name} {record['version']}")
+            minimum = record.get("min_sailry_version")
+            include_requirements = (include_requirements or bool(declared or legacy)
+                                    or minimum is not None and precedence(minimum) >= precedence("0.2.14"))
+            by_version[record["version"]] = {**legacy, **declared}
+            records.append({key: value for key, value in record.items()
+                            if key not in declared})
+        by_version[data["version"]] = {**by_version.get(data["version"], {}), **requirements}
         entry = {
             "id": name,
             "manifest": data,
             "provides_models": bool(extension.get("model_providers") or extension.get("model_adapters")),
             "permissions": extension.get("actions", []),
-            "versions": version_history.get(name, []),
+            "versions": records,
         }
+        if include_requirements:
+            entry["version_requirements"] = by_version
         release_notes = notes(lambda filename: read(manifest.parent / filename), data.get("version"))
         if release_notes:
             entry["release_notes"] = release_notes

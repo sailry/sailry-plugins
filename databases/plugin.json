@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "databases",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.2.13",
+      "min_sailry_version": "0.2.14",
       "products": ["harness", "code"],
       "requires_modules": ["databases"],
       "actions": [

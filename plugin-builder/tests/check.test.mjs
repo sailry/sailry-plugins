@@ -73,9 +73,26 @@ test('rejects invalid minimum Sailry versions', () => {
 });
 
 test('accepts product and module requirements', () => {
-  for (const declaration of [{}, {products: ['harness', 'code'], requires_modules: ['files', 'git']}, {requires_modules: []}]) {
+  for (const declaration of [{},
+    {min_sailry_version: '0.2.14', products: ['harness', 'code'], requires_modules: ['files', 'git']},
+    {min_sailry_version: '0.2.14', requires_modules: []},
+  ]) {
     const result = check(fixture({'plugin.json': manifest(declaration)}));
     assert.equal(result.code, 0, result.output);
+  }
+});
+
+test('requires the first platform release supporting requirement fields', () => {
+  for (const declaration of [{products: ['code']}, {requires_modules: []}]) {
+    for (const minimum of [undefined, null, '0.1.0', '0.2.13', '0.2.14-alpha.1', '0.2.14-rc.1+build.1']) {
+      const result = check(fixture({'plugin.json': manifest({...declaration, min_sailry_version: minimum})}));
+      assert.equal(result.code, 1, result.output);
+      assert.match(result.output, /0.2.14 or later/);
+    }
+    for (const minimum of ['0.2.14', '0.2.14+build.1', '0.2.15-alpha.1', '0.3.0', '1.0.0']) {
+      const result = check(fixture({'plugin.json': manifest({...declaration, min_sailry_version: minimum})}));
+      assert.equal(result.code, 0, result.output);
+    }
   }
 });
 

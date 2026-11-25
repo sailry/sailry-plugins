@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.34
+
+- Require Harness platform 0.2.14 for product and native files module declarations.
+
 ## 0.1.33
 
 - Declare supported products and the required native files module.
