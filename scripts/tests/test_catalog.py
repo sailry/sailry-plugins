@@ -789,13 +789,21 @@ class PublishedCatalog(unittest.TestCase):
                     "ssh": "0.1.31", "worktrees": "0.1.20"}
         for name, version in expected.items():
             with self.subTest(package=name):
-                self.assertNotIn(version, withdrawals.get(name, ()))
                 candidates = [record for record in history[name]
                               if record["version"] not in withdrawals.get(name, ())
                               and not record.get("withdrawn")
                               and catalog.precedence(record.get("min_sailry_version", "0.0.0")) <= catalog.precedence("0.2.13")]
-                selected = max(candidates, key=lambda record: catalog.precedence(record["version"]))
-                self.assertEqual(selected["version"], version)
+                if (root / name / "plugin.json").is_file():
+                    self.assertNotIn(version, withdrawals.get(name, ()))
+                    selected = max(candidates, key=lambda record: catalog.precedence(record["version"]))
+                    self.assertEqual(selected["version"], version)
+                else:
+                    self.assertEqual(candidates, [])
+                    self.assertEqual(withdrawals[name], {r["version"] for r in history[name]})
+                    self.assertTrue(all(r.get("withdrawn") for r in history[name]))
+                    for record in history[name]:
+                        manifest = json.loads(git(root, "show", f"{record['commit']}:{name}/plugin.json"))
+                        self.assertEqual((manifest["name"], manifest["version"]), (name, record["version"]))
                 self.assertEqual(supplemental[name][version], {"requires_modules": [name]})
                 self.assertEqual(set(supplemental[name]),
                                  {record["version"] for record in history[name]
