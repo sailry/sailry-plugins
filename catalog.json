@@ -2391,11 +2391,18 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.13",
+            "products": [
+              "harness",
+              "code"
+            ],
+            "requires_modules": [
+              "databases"
+            ],
             "actions": [
               "databases.read",
               "databases.control",
@@ -2490,6 +2497,25 @@
         "ssh.read"
       ],
       "versions": [
+        {
+          "version": "0.1.25",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "databases"
+          ],
+          "min_sailry_version": "0.2.13",
+          "release_notes": {
+            "text": "- Declare supported products and the required native databases module.",
+            "locales": {
+              "zh-CN": "- 声明支持的产品和必需的原生数据库模块。"
+            }
+          }
+        },
         {
           "version": "0.1.24",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -2798,17 +2824,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.",
+        "text": "- Declare supported products and the required native databases module.",
         "locales": {
-          "zh-CN": "- 移除已由 Node 原生模块提供的冗余工具处理器，保留桌面端管理界面与包配置。",
-          "zh-TW": "- 移除已由 Node 原生模組提供的冗餘工具處理器，保留桌面端管理介面與套件設定。",
-          "ja": "- Node のネイティブモジュールへ移行した冗長なツールハンドラーを削除し、デスクトップ UI と設定を維持しました。",
-          "ko": "- Node 네이티브 모듈로 이전된 중복 도구 핸들러를 제거하고 데스크톱 UI와 설정을 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.",
-          "de": "- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.",
-          "es": "- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.",
-          "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
-          "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
+          "zh-CN": "- 声明支持的产品和必需的原生数据库模块。"
         }
       }
     },
@@ -4044,11 +4062,18 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.32",
+        "version": "0.1.33",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.13",
+            "products": [
+              "harness",
+              "code"
+            ],
+            "requires_modules": [
+              "files"
+            ],
             "actions": [
               "files.read",
               "files.write"
@@ -4127,6 +4152,25 @@
         "files.write"
       ],
       "versions": [
+        {
+          "version": "0.1.33",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "files"
+          ],
+          "min_sailry_version": "0.2.13",
+          "release_notes": {
+            "text": "- Declare supported products and the required native files module.",
+            "locales": {
+              "zh-CN": "- 声明支持的产品和必需的原生文件模块。"
+            }
+          }
+        },
         {
           "version": "0.1.32",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -4489,17 +4533,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.",
+        "text": "- Declare supported products and the required native files module.",
         "locales": {
-          "zh-CN": "- 移除已由 Node 原生模块提供的冗余工具处理器，保留桌面端管理界面与包配置。",
-          "zh-TW": "- 移除已由 Node 原生模組提供的冗餘工具處理器，保留桌面端管理介面與套件設定。",
-          "ja": "- Node のネイティブモジュールへ移行した冗長なツールハンドラーを削除し、デスクトップ UI と設定を維持しました。",
-          "ko": "- Node 네이티브 모듈로 이전된 중복 도구 핸들러를 제거하고 데스크톱 UI와 설정을 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.",
-          "de": "- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.",
-          "es": "- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.",
-          "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
-          "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
+          "zh-CN": "- 声明支持的产品和必需的原生文件模块。"
         }
       }
     },
@@ -4508,11 +4544,18 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.40",
+        "version": "0.1.41",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.13",
+            "products": [
+              "harness",
+              "code"
+            ],
+            "requires_modules": [
+              "git"
+            ],
             "actions": [
               "git.read",
               "git.write",
@@ -4657,6 +4700,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.41",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ],
+          "min_sailry_version": "0.2.13",
+          "release_notes": {
+            "text": "- Declare supported products and the required native Git module.",
+            "locales": {
+              "zh-CN": "- 声明支持的产品和必需的原生 Git 模块。"
+            }
+          }
+        },
         {
           "version": "0.1.40",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -5097,17 +5159,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant Git agent tool handlers now provided natively by the Node module; keep desktop Git panel and status badge handler.",
+        "text": "- Declare supported products and the required native Git module.",
         "locales": {
-          "zh-CN": "- 移除已由 Node 原生模块提供的冗余 Git 工具处理器，保留桌面端 Git 面板与状态徽章处理器。",
-          "zh-TW": "- 移除已由 Node 原生模組提供的冗餘 Git 工具處理器，保留桌面端 Git 面板與狀態徽章處理器。",
-          "ja": "- Node のネイティブモジュールへ移行した冗長な Git ツールハンドラーを削除し、デスクトップパネルとステータスバッジを維持しました。",
-          "ko": "- Node 네이티브 모듈로 이전된 중복 Git 도구 핸들러를 제거하고 데스크톱 패널과 상태 배지를 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils Git redondants fournis nativement par le module Node tout en conservant le panneau bureau et le badge.",
-          "de": "- Entfernt redundante Git-Tool-Handler aus dem Plugin; Desktop-Ansicht und Status-Badge bleiben erhalten.",
-          "es": "- Elimina los controladores redundantes de herramientas Git que ahora provee Node y conserva el panel de escritorio y la insignia.",
-          "pt-BR": "- Remove manipuladores redundantes de ferramentas Git agora no módulo nativo Node, mantendo o painel desktop e o badge.",
-          "ru": "- Удалены дублирующиеся обработчики Git-инструментов; панель Git и индикатор статуса сохранены."
+          "zh-CN": "- 声明支持的产品和必需的原生 Git 模块。"
         }
       }
     },
@@ -7961,7 +8015,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -7990,6 +8044,26 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.21",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Validate and document product and native module requirements.",
+            "locales": {
+              "zh-CN": "- 校验并说明产品与原生模块要求。",
+              "zh-TW": "- 驗證並說明產品與原生模組需求。",
+              "ja": "- 製品とネイティブモジュールの要件を検証し、説明を追加しました。",
+              "ko": "- 제품 및 네이티브 모듈 요구 사항을 검증하고 설명합니다.",
+              "fr": "- Valider et documenter les exigences de produit et de modules natifs.",
+              "de": "- Produktanforderungen und Anforderungen an native Module prüfen und dokumentieren.",
+              "es": "- Validar y documentar los requisitos de productos y módulos nativos.",
+              "pt-BR": "- Validar e documentar os requisitos de produtos e módulos nativos.",
+              "ru": "- Проверка и описание требований к продуктам и нативным модулям."
+            }
+          }
+        },
         {
           "version": "0.1.20",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -8235,17 +8309,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Reference Sailry's native code-index module instead of the retired Code plugin.",
+        "text": "- Validate and document product and native module requirements.",
         "locales": {
-          "zh-CN": "- 将参考文档中的已退役 Code 插件说明更新为 Sailry 原生代码索引模块。",
-          "zh-TW": "- 將參考文件中的已退役 Code 外掛說明更新為 Sailry 原生程式碼索引模組。",
-          "ja": "- 廃止された Code プラグインの記述を Sailry ネイティブのコードインデックスモジュールに更新しました。",
-          "ko": "- 폐기된 Code 플러그인 설명을 Sailry 네이티브 코드 인덱스 모듈로 업데이트했습니다.",
-          "fr": "- Met à jour la référence vers le module natif d'indexation de code au lieu du plugin Code retiré.",
-          "de": "- Aktualisiert den Verweis vom eingestellten Code-Plugin auf das native Code-Index-Modul.",
-          "es": "- Actualiza la referencia del complemento Code retirado al módulo nativo de índice de código.",
-          "pt-BR": "- Atualiza a referência do plugin Code aposentado para o módulo nativo de índice de código.",
-          "ru": "- Обновлена ссылка с устаревшего плагина Code на нативный модуль индексации кода."
+          "zh-CN": "- 校验并说明产品与原生模块要求。",
+          "zh-TW": "- 驗證並說明產品與原生模組需求。",
+          "ja": "- 製品とネイティブモジュールの要件を検証し、説明を追加しました。",
+          "ko": "- 제품 및 네이티브 모듈 요구 사항을 검증하고 설명합니다.",
+          "fr": "- Valider et documenter les exigences de produit et de modules natifs.",
+          "de": "- Produktanforderungen und Anforderungen an native Module prüfen und dokumentieren.",
+          "es": "- Validar y documentar los requisitos de productos y módulos nativos.",
+          "pt-BR": "- Validar e documentar os requisitos de produtos e módulos nativos.",
+          "ru": "- Проверка и описание требований к продуктам и нативным модулям."
         }
       }
     },
@@ -10953,10 +11027,17 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.31",
+        "version": "0.1.32",
         "extensions": {
           "dev.sailry.platform": {
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.13",
+            "products": [
+              "harness",
+              "code"
+            ],
+            "requires_modules": [
+              "ssh"
+            ],
             "api_version": "v1",
             "actions": [
               "ssh.read",
@@ -11045,6 +11126,25 @@
         "projects.read"
       ],
       "versions": [
+        {
+          "version": "0.1.32",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "ssh"
+          ],
+          "min_sailry_version": "0.2.13",
+          "release_notes": {
+            "text": "- Declare supported products and the required native SSH module.",
+            "locales": {
+              "zh-CN": "- 声明支持的产品和必需的原生 SSH 模块。"
+            }
+          }
+        },
         {
           "version": "0.1.31",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -11442,17 +11542,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.",
+        "text": "- Declare supported products and the required native SSH module.",
         "locales": {
-          "zh-CN": "- 移除已由 Node 原生模块提供的冗余工具处理器，保留桌面端管理界面与包配置。",
-          "zh-TW": "- 移除已由 Node 原生模組提供的冗餘工具處理器，保留桌面端管理介面與套件設定。",
-          "ja": "- Node のネイティブモジュールへ移行した冗長なツールハンドラーを削除し、デスクトップ UI と設定を維持しました。",
-          "ko": "- Node 네이티브 모듈로 이전된 중복 도구 핸들러를 제거하고 데스크톱 UI와 설정을 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.",
-          "de": "- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.",
-          "es": "- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.",
-          "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
-          "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
+          "zh-CN": "- 声明支持的产品和必需的原生 SSH 模块。"
         }
       }
     },
@@ -14029,11 +14121,18 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.20",
+        "version": "0.1.21",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.13",
+            "products": [
+              "harness",
+              "code"
+            ],
+            "requires_modules": [
+              "worktrees"
+            ],
             "actions": [
               "worktrees.read",
               "worktrees.write",
@@ -14141,6 +14240,25 @@
         "conversation.control"
       ],
       "versions": [
+        {
+          "version": "0.1.21",
+          "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
+          "api_version": "v1",
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "worktrees"
+          ],
+          "min_sailry_version": "0.2.13",
+          "release_notes": {
+            "text": "- Declare supported products and the required native worktrees module.",
+            "locales": {
+              "zh-CN": "- 声明支持的产品和必需的原生工作区模块。"
+            }
+          }
+        },
         {
           "version": "0.1.20",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -14409,17 +14527,9 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant agent tool handlers now provided natively by the Node module; keep desktop UI and package configuration.",
+        "text": "- Declare supported products and the required native worktrees module.",
         "locales": {
-          "zh-CN": "- 移除已由 Node 原生模块提供的冗余工具处理器，保留桌面端管理界面与包配置。",
-          "zh-TW": "- 移除已由 Node 原生模組提供的冗餘工具處理器，保留桌面端管理介面與套件設定。",
-          "ja": "- Node のネイティブモジュールへ移行した冗長なツールハンドラーを削除し、デスクトップ UI と設定を維持しました。",
-          "ko": "- Node 네이티브 모듈로 이전된 중복 도구 핸들러를 제거하고 데스크톱 UI와 설정을 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils redondants désormais fournis nativement par le module Node tout en conservant l'interface bureau.",
-          "de": "- Entfernt redundante Tool-Handler, die nun nativ vom Node-Modul bereitgestellt werden; Desktop-Oberfläche bleibt erhalten.",
-          "es": "- Elimina los controladores de herramientas redundantes que ahora provee el módulo nativo de Node y conserva la interfaz de escritorio.",
-          "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
-          "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
+          "zh-CN": "- 声明支持的产品和必需的原生工作区模块。"
         }
       }
     },
