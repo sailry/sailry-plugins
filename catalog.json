@@ -1578,7 +1578,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "commands",
-        "version": "0.1.24",
+        "version": "0.1.25",
         "extensions": {
           "dev.sailry.platform": {
             "min_sailry_version": "0.1.6",
@@ -1588,16 +1588,16 @@
               "terminals.control"
             ],
             "display": {
-              "label": "Commands",
+              "label": "Terminal",
               "locales": {
-                "zh-CN": "命令"
+                "zh-CN": "终端"
               },
               "icon": "phosphor:terminal"
             },
             "description": {
-              "label": "Run commands and manage terminals",
+              "label": "Project terminals and CLI tools",
               "locales": {
-                "zh-CN": "执行命令与管理终端"
+                "zh-CN": "项目终端与 CLI 工具"
               }
             },
             "desktop": {
@@ -1696,6 +1696,26 @@
         "terminals.control"
       ],
       "versions": [
+        {
+          "version": "0.1.25",
+          "commit": "d128792765d5601b596fc9484d2bb4eb271a65ab",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Rename the plugin to Terminal and simplify its description.",
+            "locales": {
+              "zh-CN": "- 插件更名为“终端”，并精简简介。",
+              "zh-TW": "- 外掛更名為「終端」，並精簡簡介。",
+              "ja": "- プラグイン名を「Terminal」に変更し、説明を簡潔にしました。",
+              "ko": "- 플러그인 이름을 Terminal로 바꾸고 설명을 간결하게 했습니다.",
+              "fr": "- Le plugin est renommé Terminal et sa description simplifiée.",
+              "de": "- Plugin in „Terminal“ umbenannt und Beschreibung vereinfacht.",
+              "es": "- El plugin pasa a llamarse Terminal y se simplifica su descripción.",
+              "pt-BR": "- O plugin passa a se chamar Terminal e a descrição foi simplificada.",
+              "ru": "- Плагин переименован в «Terminal», описание упрощено."
+            }
+          }
+        },
         {
           "version": "0.1.24",
           "commit": "98dab7c6c034a47030b02bb624aa11ec0bc06bac",
@@ -1971,17 +1991,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Remove redundant command tool handlers now built into the Node; keep desktop terminal UI and Python skill.",
+        "text": "- Rename the plugin to Terminal and simplify its description.",
         "locales": {
-          "zh-CN": "- 移除已内置于 Node 的冗余命令工具处理器，保留桌面端终端界面与 Python 技能。",
-          "zh-TW": "- 移除已內建於 Node 的冗餘命令工具處理器，保留桌面端終端介面與 Python 技能。",
-          "ja": "- Node に組み込まれた冗長なコマンドツールハンドラーを削除し、デスクトップ端末 UI と Python スキルを維持しました。",
-          "ko": "- Node에 내장된 중복 명령 도구 핸들러를 제거하고 데스크톱 터미널 UI와 Python 스킬을 유지했습니다.",
-          "fr": "- Supprime les gestionnaires d'outils de commande redondants désormais intégrés à Node tout en conservant le terminal bureau et la compétence Python.",
-          "de": "- Entfernt redundante Befehlstool-Handler; Desktop-Terminal und Python-Skill bleiben erhalten.",
-          "es": "- Elimina los controladores redundantes de herramientas de comandos ya integrados en Node y conserva la terminal y la habilidad de Python.",
-          "pt-BR": "- Remove manipuladores redundantes de comandos já integrados ao Node, mantendo o terminal desktop e a habilidade Python.",
-          "ru": "- Удалены дублирующиеся обработчики командных инструментов; терминал и навык Python сохранены."
+          "zh-CN": "- 插件更名为“终端”，并精简简介。",
+          "zh-TW": "- 外掛更名為「終端」，並精簡簡介。",
+          "ja": "- プラグイン名を「Terminal」に変更し、説明を簡潔にしました。",
+          "ko": "- 플러그인 이름을 Terminal로 바꾸고 설명을 간결하게 했습니다.",
+          "fr": "- Le plugin est renommé Terminal et sa description simplifiée.",
+          "de": "- Plugin in „Terminal“ umbenannt und Beschreibung vereinfacht.",
+          "es": "- El plugin pasa a llamarse Terminal y se simplifica su descripción.",
+          "pt-BR": "- O plugin passa a se chamar Terminal e a descrição foi simplificada.",
+          "ru": "- Плагин переименован в «Terminal», описание упрощено."
         }
       }
     },
