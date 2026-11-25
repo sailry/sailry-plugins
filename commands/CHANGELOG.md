@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Rename the plugin to Terminal and simplify its description.
+
 ## 0.1.24
 
 - Remove redundant command tool handlers now built into the Node; keep desktop terminal UI and Python skill.

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- Plugin in „Terminal“ umbenannt und Beschreibung vereinfacht.
+
 ## 0.1.24
 
 - Entfernt redundante Befehlstool-Handler; Desktop-Terminal und Python-Skill bleiben erhalten.

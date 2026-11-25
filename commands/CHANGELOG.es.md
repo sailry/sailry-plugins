@@ -1,5 +1,9 @@
 # Changes
 
+## 0.1.25
+
+- El plugin pasa a llamarse Terminal y se simplifica su descripción.
+
 ## 0.1.24
 
 - Elimina los controladores redundantes de herramientas de comandos ya integrados en Node y conserva la terminal y la habilidad de Python.

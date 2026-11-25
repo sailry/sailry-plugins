@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "commands",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "extensions": {
     "dev.sailry.platform": {
       "min_sailry_version": "0.1.6",
@@ -11,16 +11,16 @@
         "terminals.control"
       ],
       "display": {
-        "label": "Commands",
+        "label": "Terminal",
         "locales": {
-          "zh-CN": "命令"
+          "zh-CN": "终端"
         },
         "icon": "phosphor:terminal"
       },
       "description": {
-        "label": "Run commands and manage terminals",
+        "label": "Project terminals and CLI tools",
         "locales": {
-          "zh-CN": "执行命令与管理终端"
+          "zh-CN": "项目终端与 CLI 工具"
         }
       },
       "desktop": {
