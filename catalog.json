@@ -5103,7 +5103,8 @@
             "locales": {
               "zh-CN": "- 产品与原生 Git 模块声明最低需要 Harness 平台 0.2.14。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.41",
@@ -5136,7 +5137,8 @@
               "pt-BR": "- Remove manipuladores redundantes de ferramentas Git agora no módulo nativo Node, mantendo o painel desktop e o badge.",
               "ru": "- Удалены дублирующиеся обработчики Git-инструментов; панель Git и индикатор статуса сохранены."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.39",
@@ -5156,7 +5158,8 @@
               "pt-BR": "- Informa o código de erro quando uma ação do Git falha.",
               "ru": "- Сообщать код ошибки при сбое действия Git."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.38",
@@ -5176,7 +5179,8 @@
               "pt-BR": "- Oculta o selo de alterações quando o Git não está instalado no host.",
               "ru": "- Скрывать значок изменений, если Git не установлен на хосте."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.37",
@@ -5188,7 +5192,8 @@
             "locales": {
               "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.36",
@@ -5208,7 +5213,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.35",
@@ -5228,7 +5234,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.34",
@@ -5248,7 +5255,8 @@
               "pt-BR": "- Atualiza as branches da conversa após mudanças nas referências, sem verificar o estado dos arquivos\n- Impede que leituras antigas substituam as opções mais recentes\n- Distingue branches locais e remotas com o mesmo nome ao criar uma conversa derivada",
               "ru": "- Ветки диалога обновляются при изменении ссылок без проверки состояния файлов\n- Устаревшие результаты чтения больше не заменяют новые варианты\n- При ответвлении диалога различаются одноимённые локальные и удалённые ветки"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.33",
@@ -5257,7 +5265,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Form dialogs submit with a plain Submit button"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.32",
@@ -5266,7 +5275,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- The branch chip shows only the branch name\n- Starting from a new branch opens its name form instead of failing"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.31",
@@ -5275,7 +5285,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel\n- Ask for confirmation before switching the branch of a shared worktree"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.30",
@@ -5284,7 +5295,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Choose where a new conversation starts from the branch chip; another branch runs in a new worktree on send and the checkout is never switched\n- Copy the branch name or fork from another branch in a running conversation\n- Show branch choices in the shared Kit menu with a remote branches submenu; the current branch keeps its check\n- Branch management moves from the project menu to the Git panel\n- Ask for confirmation before switching the branch of a shared worktree"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.29",
@@ -5293,7 +5305,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Render branch choices with native Kit menus and a single hover surface"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.28",
@@ -5313,7 +5326,8 @@
               "pt-BR": "- Selecionar branches locais e remotos no painel suspenso com indicação do branch atual\n- Manter a navegação entre branches no painel e reutilizar os formulários de criação",
               "ru": "- Выбирать локальные и удалённые ветки во всплывающем списке с отметкой текущей ветки\n- Переходить между ветками внутри списка и использовать существующие формы создания"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.27",
@@ -5333,7 +5347,8 @@
               "pt-BR": "- Preservar o deslocamento de linhas nos cursores do histórico para evitar repetir comparações de caminhos nas próximas páginas",
               "ru": "- Сохранять смещение строк в курсорах истории, чтобы не повторять сравнение путей на следующих страницах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.26",
@@ -5342,7 +5357,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Keep the captured path filter in history cursors and reject cross-path continuation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.25",
@@ -5351,7 +5367,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Page history with exact commit cursors and preserve the original head when returning to earlier pages\n- Filter history by starting revision and literal path\n- Require Sailry 0.1.5 for the updated history contract"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -5363,7 +5380,8 @@
             "locales": {
               "zh-CN": "- 普通目录中显示其中的 Git 仓库，在外层初始化前先确认"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -5372,7 +5390,8 @@
           "min_sailry_version": "0.1.0-alpha.9",
           "release_notes": {
             "text": "- Read status counts on the execution Node and share localized change details across controllers\n- Keep clean repository counts visible without duplicate Desktop status scans"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -5381,7 +5400,8 @@
           "min_sailry_version": "0.1.0-alpha.7",
           "release_notes": {
             "text": "- Refresh stable catalogs only when their settings or repository references change."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -5390,7 +5410,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Keep captured Git targets and snapshots opaque in model schemas\n- Preserve host validation while removing redundant numeric schema bounds"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -5399,7 +5420,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Refresh repository views only for relevant changes and pause hidden controllers\n- Reuse collected line statistics for badges and report bounded counts as incomplete"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -5407,7 +5429,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Add an initialization button to the Git sidebar for plain directories"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -5426,7 +5449,8 @@
               "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
               "ru": "- Сохранять обычную страницу при загрузке исходных данных"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -5434,7 +5458,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show ordinary repository queries as concise activity while retaining actual differences"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -5442,7 +5467,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read branches only after confirming the directory contains a repository"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -5450,7 +5476,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Load independent repository, document, history and diff reads concurrently"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -5458,7 +5485,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "Hide the branch control until repository information is available."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -5466,7 +5494,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep branch controls visible while repository inspection recovers"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -5474,7 +5503,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep the session Git sidebar compact until a diff is opened\n- Preserve open diffs when reopening the sidebar"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -5482,7 +5512,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Open branch choices immediately and share active reads without blocking unrelated requests"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -5490,7 +5521,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Align package contract tests with the current release metadata"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -5509,52 +5541,62 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
           "commit": "65e0f9eef333339b8c9f0f891e64d64006ff8f26",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
           "commit": "95ddadd946a672e02f4511af291f14962a541bc9",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "5e386d2b9098db3e58d2076707459d85df6a69de",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "46d500be3838664fa6c9cd39059c2cb54650fbab",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "6dc11a3a09d8bcdce418bac635c9b85345fe8a8d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "d19a80c0b6d52f71fde51c948813852980ff3a43",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "version_requirements": {
