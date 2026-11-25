@@ -4371,7 +4371,8 @@
             "locales": {
               "zh-CN": "- 产品与原生文件模块声明最低需要 Harness 平台 0.2.14。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.33",
@@ -4404,7 +4405,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.31",
@@ -4416,7 +4418,8 @@
             "locales": {
               "zh-CN": "- 精简 Agent 的搜索、编辑和补丁工具说明，减少请求占用的上下文。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.30",
@@ -4428,7 +4431,8 @@
             "locales": {
               "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.29",
@@ -4448,7 +4452,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.28",
@@ -4468,7 +4473,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.27",
@@ -4477,7 +4483,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Explain basename globs, ordered exclusions, explicit ignored paths and skipped encodings\n- Distinguish captured output from source lines clipped at the native page limit\n- Describe non-overlapping replace_all matches and conflicts between edits"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.26",
@@ -4486,7 +4493,8 @@
           "min_sailry_version": "0.1.5",
           "release_notes": {
             "text": "- Read PNG, JPEG, GIF, WebP and BMP files with read_file so models with image input can see them; other models receive the format, dimensions and size\n- Keep only the most recent read images in model requests"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.25",
@@ -4506,7 +4514,8 @@
               "pt-BR": "- Adiciona apply_patch: um patch altera vários arquivos com uma única aprovação; o contexto deve corresponder exatamente e os arquivos alterados devem ser lidos antes\n- Descreve os limites de tamanho reais de edit_file",
               "ru": "- Добавлен apply_patch: один патч изменяет несколько файлов после одного подтверждения; контекст должен совпадать точно, а изменяемые файлы нужно сначала прочитать\n- Описание edit_file указывает фактические ограничения размера"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -4547,7 +4556,8 @@
               "pt-BR": "- Manter a largura e o espaçamento interno do seletor de visualização e código-fonte em barras estreitas",
               "ru": "- Переключатель просмотра и исходного кода сохраняет полную ширину и отступы на узкой панели инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -4567,7 +4577,8 @@
               "pt-BR": "- Orientar o modelo a ler arquivos inteiros e usar o resultado da edição sem reler",
               "ru": "- Модель читает файлы целиком и использует результат правки без повторного чтения"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -4579,7 +4590,8 @@
             "locales": {
               "zh-CN": "- 文件搜索默认返回 100 条结果，并说明模型预览的长度限制"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -4591,7 +4603,8 @@
             "locales": {
               "zh-CN": "- 编辑器工具栏新增 Markdown 格式、段落类型、插入、链接和自动换行\n- 代码文件新增查找替换和自动换行\n- 模式切换改为图标，窄宽度时控件收入“更多”\n- 工具栏移除复制、剪切和粘贴"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -4600,7 +4613,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Show confirmed file writes and edits as line-numbered diffs"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -4609,7 +4623,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Remove the redundant written notice from file write and edit results"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -4618,7 +4633,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Align declaration checks with the current paged-read guidance"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -4627,7 +4643,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Default file reads to 2000 lines and searches to matching paths\n- Clarify bounded model text, exact continuations and retained original results\n- Remove repeated editing guidance and redundant numeric schema bounds"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -4636,7 +4653,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Remove the editing file-size limit from the paged-read description"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -4645,7 +4663,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Read omitted file text through the native canonical result reader without requiring command tools"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -4653,7 +4672,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read smaller file pages and keep original tool output available through retained output references"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -4661,7 +4681,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Ignore canceled document opens after their read is invalidated.\n- Preserve genuine read errors and save feedback."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -4669,7 +4690,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Report each save failure once while retaining conflict and uncertain outcomes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -4677,7 +4699,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show OCR model lists as concise activity while retaining file and notebook changes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -4685,7 +4708,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read file capabilities and directories together\n- Run independent opens, trash requests and confirmed transfers concurrently while preserving per-item recovery"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -4704,47 +4728,56 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
           "commit": "c62b4852aa32f796c806e7bd32565c6ba5c2f393",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "d0cb7d6407f3ac712f09cbf3435cb60b3807f717",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "8a7b7e6b8e2077ce01b764b7fc9624da054750e0",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "5bca5804ff2adffc7c4fa86b9d193f5df222ab33",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "8ffc50d07ee1e6b05db84c1666fb8d02fc58d691",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "618aef76b7630a87b90432da84487c58226aedd7",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "version_requirements": {
