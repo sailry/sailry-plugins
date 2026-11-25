@@ -16050,11 +16050,6 @@
       "frontmatter": "---\nname: pull-requests\ndescription: Poll a configured GitHub repository for new or changed pull requests, review their pinned changes, and publish authorized findings without duplicate reviews.\nmetadata:\n  display-name.en: \"Pull request reviews\"\n  display-name.zh-CN: \"拉取请求审查\"\n  display-name.zh-TW: \"提取請求審查\"\n  display-name.ja: \"プルリクエストのレビュー\"\n  display-name.ko: \"풀 리퀘스트 검토\"\n  display-name.fr: \"Révision des pull requests\"\n  display-name.de: \"Pull-Request-Prüfung\"\n  display-name.es: \"Revisión de pull requests\"\n  display-name.pt-BR: \"Revisão de pull requests\"\n  display-name.ru: \"Проверка запросов на слияние\"\n  display-name: Pull request reviews\n---\n"
     },
     {
-      "package": "commands",
-      "path": "skills/python/SKILL.md",
-      "frontmatter": "---\nname: python\ndescription: Run Python scripts with Sailry's bundled interpreter and a session-local environment when additional dependencies are needed.\nmetadata:\n  display-name: \"Python\"\n  display-name.en: \"Python\"\n  display-name.zh-CN: \"Python\"\n  display-name.zh-TW: \"Python\"\n  display-name.ja: \"Python\"\n  display-name.ko: \"Python\"\n  display-name.fr: \"Python\"\n  display-name.de: \"Python\"\n  display-name.es: \"Python\"\n  display-name.pt-BR: \"Python\"\n  display-name.ru: \"Python\"\n---\n"
-    },
-    {
       "package": "context7",
       "path": "skills/docs/SKILL.md",
       "frontmatter": "---\nname: docs\ndescription: Fetch current, version-aware library, framework, SDK, API and CLI documentation with Context7 for setup, configuration, API usage, migrations and library-specific debugging. Not needed for general programming, business logic or code review without an API question.\nmetadata:\n  display-name.en: \"Context7\"\n  display-name.zh-CN: \"库文档\"\n  display-name.zh-TW: \"程式庫文件\"\n  display-name.ja: \"ライブラリのドキュメント\"\n  display-name.ko: \"라이브러리 문서\"\n  display-name.fr: \"Documentation des bibliothèques\"\n  display-name.de: \"Bibliotheksdokumentation\"\n  display-name.es: \"Documentación de bibliotecas\"\n  display-name.pt-BR: \"Documentação de bibliotecas\"\n  display-name.ru: \"Документация библиотек\"\n  display-name: Context7\n---\n"
