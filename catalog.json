@@ -2391,18 +2391,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "databases",
-        "version": "0.1.25",
+        "version": "0.1.26",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.2.13",
-            "products": [
-              "harness",
-              "code"
-            ],
-            "requires_modules": [
-              "databases"
-            ],
+            "min_sailry_version": "0.2.14",
             "actions": [
               "databases.read",
               "databases.control",
@@ -2498,23 +2491,29 @@
       ],
       "versions": [
         {
+          "version": "0.1.26",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native databases module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生数据库模块声明最低需要 Harness 平台 0.2.14。"
+            }
+          }
+        },
+        {
           "version": "0.1.25",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
           "api_version": "v1",
-          "products": [
-            "harness",
-            "code"
-          ],
-          "requires_modules": [
-            "databases"
-          ],
           "min_sailry_version": "0.2.13",
           "release_notes": {
             "text": "- Declare supported products and the required native databases module.",
             "locales": {
               "zh-CN": "- 声明支持的产品和必需的原生数据库模块。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -2534,7 +2533,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -2823,10 +2823,155 @@
           "api_version": "v1"
         }
       ],
+      "version_requirements": {
+        "0.1.26": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.25": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.24": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.23": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.22": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.21": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.20": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.19": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.18": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.17": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.16": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.15": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.14": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.13": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.12": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.11": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.10": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.9": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.8": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.7": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.6": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.5": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.4": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.3": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.2": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.1": {
+          "requires_modules": [
+            "databases"
+          ]
+        },
+        "0.1.0": {
+          "requires_modules": [
+            "databases"
+          ]
+        }
+      },
       "release_notes": {
-        "text": "- Declare supported products and the required native databases module.",
+        "text": "- Require Harness platform 0.2.14 for product and native databases module declarations.",
         "locales": {
-          "zh-CN": "- 声明支持的产品和必需的原生数据库模块。"
+          "zh-CN": "- 产品与原生数据库模块声明最低需要 Harness 平台 0.2.14。"
         }
       }
     },
@@ -4062,18 +4207,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "files",
-        "version": "0.1.33",
+        "version": "0.1.34",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.2.13",
-            "products": [
-              "harness",
-              "code"
-            ],
-            "requires_modules": [
-              "files"
-            ],
+            "min_sailry_version": "0.2.14",
             "actions": [
               "files.read",
               "files.write"
@@ -4153,23 +4291,29 @@
       ],
       "versions": [
         {
+          "version": "0.1.34",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native files module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生文件模块声明最低需要 Harness 平台 0.2.14。"
+            }
+          }
+        },
+        {
           "version": "0.1.33",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
           "api_version": "v1",
-          "products": [
-            "harness",
-            "code"
-          ],
-          "requires_modules": [
-            "files"
-          ],
           "min_sailry_version": "0.2.13",
           "release_notes": {
             "text": "- Declare supported products and the required native files module.",
             "locales": {
               "zh-CN": "- 声明支持的产品和必需的原生文件模块。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.32",
@@ -4189,7 +4333,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.31",
@@ -4532,10 +4677,195 @@
           "api_version": "v1"
         }
       ],
+      "version_requirements": {
+        "0.1.34": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.33": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.32": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.31": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.30": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.29": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.28": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.27": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.26": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.25": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.24": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.23": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.22": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.21": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.20": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.19": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.18": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.17": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.16": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.15": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.14": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.13": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.12": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.11": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.10": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.9": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.8": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.7": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.6": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.5": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.4": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.3": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.2": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.1": {
+          "requires_modules": [
+            "files"
+          ]
+        },
+        "0.1.0": {
+          "requires_modules": [
+            "files"
+          ]
+        }
+      },
       "release_notes": {
-        "text": "- Declare supported products and the required native files module.",
+        "text": "- Require Harness platform 0.2.14 for product and native files module declarations.",
         "locales": {
-          "zh-CN": "- 声明支持的产品和必需的原生文件模块。"
+          "zh-CN": "- 产品与原生文件模块声明最低需要 Harness 平台 0.2.14。"
         }
       }
     },
@@ -4544,18 +4874,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "git",
-        "version": "0.1.41",
+        "version": "0.1.42",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.2.13",
-            "products": [
-              "harness",
-              "code"
-            ],
-            "requires_modules": [
-              "git"
-            ],
+            "min_sailry_version": "0.2.14",
             "actions": [
               "git.read",
               "git.write",
@@ -4701,23 +5024,29 @@
       ],
       "versions": [
         {
+          "version": "0.1.42",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native Git module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生 Git 模块声明最低需要 Harness 平台 0.2.14。"
+            }
+          }
+        },
+        {
           "version": "0.1.41",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
           "api_version": "v1",
-          "products": [
-            "harness",
-            "code"
-          ],
-          "requires_modules": [
-            "git"
-          ],
           "min_sailry_version": "0.2.13",
           "release_notes": {
             "text": "- Declare supported products and the required native Git module.",
             "locales": {
               "zh-CN": "- 声明支持的产品和必需的原生 Git 模块。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.40",
@@ -4737,7 +5066,8 @@
               "pt-BR": "- Remove manipuladores redundantes de ferramentas Git agora no módulo nativo Node, mantendo o painel desktop e o badge.",
               "ru": "- Удалены дублирующиеся обработчики Git-инструментов; панель Git и индикатор статуса сохранены."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.39",
@@ -5158,10 +5488,235 @@
           "api_version": "v1"
         }
       ],
+      "version_requirements": {
+        "0.1.42": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.41": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.40": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.39": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.38": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.37": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.36": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.35": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.34": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.33": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.32": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.31": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.30": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.29": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.28": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.27": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.26": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.25": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.24": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.23": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.22": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.21": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.20": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.19": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.18": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.17": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.16": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.15": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.14": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.13": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.12": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.11": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.10": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.9": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.8": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.7": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.6": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.5": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.4": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.3": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.2": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.1": {
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.0": {
+          "requires_modules": [
+            "git"
+          ]
+        }
+      },
       "release_notes": {
-        "text": "- Declare supported products and the required native Git module.",
+        "text": "- Require Harness platform 0.2.14 for product and native Git module declarations.",
         "locales": {
-          "zh-CN": "- 声明支持的产品和必需的原生 Git 模块。"
+          "zh-CN": "- 产品与原生 Git 模块声明最低需要 Harness 平台 0.2.14。"
         }
       }
     },
@@ -8015,7 +8570,7 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "plugin-builder",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "description": "Create and update Sailry plugins in a conversation",
         "extensions": {
           "dev.sailry.platform": {
@@ -8044,6 +8599,26 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.1.22",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.1.6",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生模块声明最低需要 Harness 平台 0.2.14。",
+              "zh-TW": "- 產品與原生模組宣告最低需要 Harness 平台 0.2.14。",
+              "ja": "- 製品とネイティブモジュールの宣言には Harness プラットフォーム 0.2.14 を必須にしました。",
+              "ko": "- 제품 및 네이티브 모듈 선언에 Harness 플랫폼 0.2.14가 필요합니다.",
+              "fr": "- Exiger la plateforme Harness 0.2.14 pour les déclarations de produit et de modules natifs.",
+              "de": "- Produkt- und native Modulanforderungen benötigen Harness-Plattform 0.2.14.",
+              "es": "- Exigir la plataforma Harness 0.2.14 para las declaraciones de productos y módulos nativos.",
+              "pt-BR": "- Exigir a plataforma Harness 0.2.14 para as declarações de produtos e módulos nativos.",
+              "ru": "- Для объявлений продуктов и нативных модулей требуется платформа Harness 0.2.14."
+            }
+          }
+        },
         {
           "version": "0.1.21",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
@@ -8309,17 +8884,17 @@
         }
       ],
       "release_notes": {
-        "text": "- Validate and document product and native module requirements.",
+        "text": "- Require Harness platform 0.2.14 for product and native module declarations.",
         "locales": {
-          "zh-CN": "- 校验并说明产品与原生模块要求。",
-          "zh-TW": "- 驗證並說明產品與原生模組需求。",
-          "ja": "- 製品とネイティブモジュールの要件を検証し、説明を追加しました。",
-          "ko": "- 제품 및 네이티브 모듈 요구 사항을 검증하고 설명합니다.",
-          "fr": "- Valider et documenter les exigences de produit et de modules natifs.",
-          "de": "- Produktanforderungen und Anforderungen an native Module prüfen und dokumentieren.",
-          "es": "- Validar y documentar los requisitos de productos y módulos nativos.",
-          "pt-BR": "- Validar e documentar os requisitos de produtos e módulos nativos.",
-          "ru": "- Проверка и описание требований к продуктам и нативным модулям."
+          "zh-CN": "- 产品与原生模块声明最低需要 Harness 平台 0.2.14。",
+          "zh-TW": "- 產品與原生模組宣告最低需要 Harness 平台 0.2.14。",
+          "ja": "- 製品とネイティブモジュールの宣言には Harness プラットフォーム 0.2.14 を必須にしました。",
+          "ko": "- 제품 및 네이티브 모듈 선언에 Harness 플랫폼 0.2.14가 필요합니다.",
+          "fr": "- Exiger la plateforme Harness 0.2.14 pour les déclarations de produit et de modules natifs.",
+          "de": "- Produkt- und native Modulanforderungen benötigen Harness-Plattform 0.2.14.",
+          "es": "- Exigir la plataforma Harness 0.2.14 para las declaraciones de productos y módulos nativos.",
+          "pt-BR": "- Exigir a plataforma Harness 0.2.14 para as declarações de produtos e módulos nativos.",
+          "ru": "- Для объявлений продуктов и нативных модулей требуется платформа Harness 0.2.14."
         }
       }
     },
@@ -11027,17 +11602,10 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "ssh",
-        "version": "0.1.32",
+        "version": "0.1.33",
         "extensions": {
           "dev.sailry.platform": {
-            "min_sailry_version": "0.2.13",
-            "products": [
-              "harness",
-              "code"
-            ],
-            "requires_modules": [
-              "ssh"
-            ],
+            "min_sailry_version": "0.2.14",
             "api_version": "v1",
             "actions": [
               "ssh.read",
@@ -11127,23 +11695,29 @@
       ],
       "versions": [
         {
+          "version": "0.1.33",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native SSH module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生 SSH 模块声明最低需要 Harness 平台 0.2.14。"
+            }
+          }
+        },
+        {
           "version": "0.1.32",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
           "api_version": "v1",
-          "products": [
-            "harness",
-            "code"
-          ],
-          "requires_modules": [
-            "ssh"
-          ],
           "min_sailry_version": "0.2.13",
           "release_notes": {
             "text": "- Declare supported products and the required native SSH module.",
             "locales": {
               "zh-CN": "- 声明支持的产品和必需的原生 SSH 模块。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.31",
@@ -11163,7 +11737,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.30",
@@ -11541,10 +12116,190 @@
           "api_version": "v1"
         }
       ],
+      "version_requirements": {
+        "0.1.33": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.32": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.31": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.30": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.29": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.28": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.27": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.26": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.25": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.24": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.23": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.22": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.21": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.20": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.19": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.18": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.17": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.16": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.15": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.14": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.13": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.12": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.11": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.10": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.9": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.8": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.7": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.6": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.5": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.4": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.3": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.2": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.1": {
+          "requires_modules": [
+            "ssh"
+          ]
+        },
+        "0.1.0": {
+          "requires_modules": [
+            "ssh"
+          ]
+        }
+      },
       "release_notes": {
-        "text": "- Declare supported products and the required native SSH module.",
+        "text": "- Require Harness platform 0.2.14 for product and native SSH module declarations.",
         "locales": {
-          "zh-CN": "- 声明支持的产品和必需的原生 SSH 模块。"
+          "zh-CN": "- 产品与原生 SSH 模块声明最低需要 Harness 平台 0.2.14。"
         }
       }
     },
@@ -14121,18 +14876,11 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "worktrees",
-        "version": "0.1.21",
+        "version": "0.1.22",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.2.13",
-            "products": [
-              "harness",
-              "code"
-            ],
-            "requires_modules": [
-              "worktrees"
-            ],
+            "min_sailry_version": "0.2.14",
             "actions": [
               "worktrees.read",
               "worktrees.write",
@@ -14241,23 +14989,29 @@
       ],
       "versions": [
         {
+          "version": "0.1.22",
+          "commit": "bd42d9cb2ff77a4257dd91693928276ccd6a5820",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Require Harness platform 0.2.14 for product and native worktrees module declarations.",
+            "locales": {
+              "zh-CN": "- 产品与原生工作区模块声明最低需要 Harness 平台 0.2.14。"
+            }
+          }
+        },
+        {
           "version": "0.1.21",
           "commit": "f842a50c5d89a7dfa7039eb7e002c9c85b5b566b",
           "api_version": "v1",
-          "products": [
-            "harness",
-            "code"
-          ],
-          "requires_modules": [
-            "worktrees"
-          ],
           "min_sailry_version": "0.2.13",
           "release_notes": {
             "text": "- Declare supported products and the required native worktrees module.",
             "locales": {
               "zh-CN": "- 声明支持的产品和必需的原生工作区模块。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -14277,7 +15031,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -14526,10 +15281,135 @@
           "api_version": "v1"
         }
       ],
+      "version_requirements": {
+        "0.1.22": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.21": {
+          "products": [
+            "harness",
+            "code"
+          ],
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.20": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.19": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.18": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.17": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.16": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.15": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.14": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.13": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.12": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.11": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.10": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.9": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.8": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.7": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.6": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.5": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.4": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.3": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.2": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.1": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        },
+        "0.1.0": {
+          "requires_modules": [
+            "worktrees"
+          ]
+        }
+      },
       "release_notes": {
-        "text": "- Declare supported products and the required native worktrees module.",
+        "text": "- Require Harness platform 0.2.14 for product and native worktrees module declarations.",
         "locales": {
-          "zh-CN": "- 声明支持的产品和必需的原生工作区模块。"
+          "zh-CN": "- 产品与原生工作区模块声明最低需要 Harness 平台 0.2.14。"
         }
       }
     },
