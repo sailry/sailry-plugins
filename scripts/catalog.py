@@ -86,18 +86,25 @@ def legacy_requirements(root, version_history):
 
 
 def catalog(root=ROOT, version_history=None):
-    manifests = sorted(root.glob("*/plugin.json"))
+    manifests = {path.parent.name: path for path in root.glob("*/plugin.json")}
     withdrawals = withdrawn(root)
+    archived = {}
     if version_history is None:
-        version_history = versions(root, [path.parent.name for path in manifests], withdrawals)
+        version_history, archived = versions(root, manifests, withdrawals)
     supplemental = legacy_requirements(root, version_history)
     packages = []
     entries = []
-    for manifest in manifests:
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-        name = data["name"]
-        if name != manifest.parent.name:
-            raise ValueError("Package name must match its directory")
+    for name in sorted(manifests.keys() | archived.keys()):
+        if name in manifests:
+            path = manifests[name]
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if data["name"] != name:
+                raise ValueError("Package name must match its directory")
+            release_notes = notes(lambda filename: read(path.parent / filename), data.get("version"))
+            entries.extend(skills(path.parent, name))
+        else:
+            data, record = archived[name]
+            release_notes = record.get("release_notes")
         extension = data.get("extensions", {}).get("dev.sailry.platform", {})
         requirements = runtime_requirements(extension)
         for field in requirements:
@@ -128,11 +135,9 @@ def catalog(root=ROOT, version_history=None):
         }
         if include_requirements:
             entry["version_requirements"] = by_version
-        release_notes = notes(lambda filename: read(manifest.parent / filename), data.get("version"))
         if release_notes:
             entry["release_notes"] = release_notes
         packages.append(entry)
-        entries.extend(skills(manifest.parent, name))
     names = {package["id"] for package in packages}
     for name, requested in withdrawals.items():
         available = {record["version"] for record in version_history.get(name, [])}

@@ -104,7 +104,7 @@ def objects(root, names):
     return contents
 
 
-def lineage(history, manifests, name):
+def lineage(history, manifests, name, tip):
     graph = {row[0]: row[1:] for row in history}
     parsed = {}
 
@@ -121,9 +121,9 @@ def lineage(history, manifests, name):
                 parsed[commit] = None
         return parsed[commit]
 
-    if not history or manifest(history[0][0]) is None:
+    if tip not in graph or manifest(tip) is None:
         raise ValueError("Current package history requires a valid manifest")
-    pending = [history[0][0]]
+    pending = [tip]
     selected = set()
     while pending:
         commit = pending.pop()
@@ -157,45 +157,72 @@ def recorded(root, packages, withdrawals):
     commits = git(root, "log", "--first-parent", "--format=%H", "--",
                   "catalog.json").splitlines()
     if not commits:
-        return {}, None
+        return {}, None, set()
     current = objects(root, ["HEAD:catalog.json"])["HEAD:catalog.json"]
     if current is None:
         raise ValueError("Restore the committed catalog before generating package history")
+    entries = json.loads(current).get("packages", [])
+    known = {package["id"] for package in entries}
     selected = {(package["id"], record["version"]): record["commit"]
-                for package in json.loads(current).get("packages", [])
-                if package["id"] in packages for record in package.get("versions", [])}
-    # Older generators removed withdrawn releases; recover only those explicit identities.
+                for package in entries for record in package.get("versions", [])}
+    # An explicit withdrawal can recover a package omitted by an older catalog.
+    omitted = withdrawals.keys() - packages - known
     pending = {(name, version) for name, versions in withdrawals.items()
-               for version in versions if name in packages and (name, version) not in selected}
-    for offset in range(0, len(commits), 16):
-        if not pending:
+               for version in versions if (name, version) not in selected}
+    for offset in range(1, len(commits), 16):
+        if not (pending or omitted):
             break
         snapshots = objects(root, [f"{commit}:catalog.json" for commit in commits[offset:offset + 16]])
         for text in snapshots.values():
             if text is None:
                 continue
             for package in json.loads(text).get("packages", []):
+                name = package["id"]
+                restore = name in omitted
+                if restore:
+                    known.add(name)
+                    omitted.remove(name)
                 for record in package.get("versions", []):
-                    key = package["id"], record["version"]
-                    if key in pending:
+                    key = name, record["version"]
+                    if restore or key in pending:
                         selected[key] = record["commit"]
-                        pending.remove(key)
-    return selected, commits[0]
+                        pending.discard(key)
+    return selected, commits[0], known - packages
+
+
+def before_removal(root, name):
+    deletion = git(root, "log", "--first-parent", "--diff-filter=D", "--format=%H",
+                   "-1", "HEAD", "--", f"{name}/plugin.json")
+    if not deletion:
+        raise ValueError(f"Missing committed package history for {name}")
+    return git(root, "rev-list", "--full-history", "--topo-order", "-1",
+               f"{deletion}^", "--", name + "/")
 
 
 def versions(root, packages, withdrawals=None):
     if git(root, "rev-parse", "--is-shallow-repository") == "true":
         raise ValueError("Catalog history requires a complete Git checkout")
-    if git(root, "status", "--porcelain", "--untracked-files=all", "--", *packages):
+    withdrawals = withdrawals or {}
+    canonical, publication, retired = recorded(root, set(packages), withdrawals)
+    packages = sorted(set(packages) | retired)
+    if packages and git(root, "status", "--porcelain", "--untracked-files=all", "--", *packages):
         raise ValueError("Commit package changes before generating catalog history")
+    if retired:
+        present = git(root, "ls-tree", "--name-only", "HEAD", "--", *sorted(retired))
+        if present:
+            raise ValueError(f"Missing package manifest for {', '.join(present.splitlines())}")
+    for name in sorted(retired):
+        if not withdrawals.get(name):
+            raise ValueError(f"Withdraw every version of {name} before removing its directory")
     commits = {name: [line.split() for line in git(
         root, "rev-list", "--full-history", "--topo-order", "--parents",
         "HEAD", "--", name + "/").splitlines()]
                for name in packages}
     manifests = objects(root, [f"{row[0]}:{name}/plugin.json"
                                for name, history in commits.items() for row in history])
-    histories = {name: lineage(history, manifests, name) for name, history in commits.items()}
-    canonical, publication = recorded(root, packages, withdrawals or {})
+    histories = {name: lineage(history, manifests, name, before_removal(root, name)
+                               if name in retired else history[0][0] if history else None)
+                 for name, history in commits.items()}
     # The committed catalog owns legacy identities; newly introduced content must match them.
     published = set(git(root, "rev-list", publication).splitlines()) if publication else set()
     recent = {}
@@ -216,7 +243,9 @@ def versions(root, packages, withdrawals=None):
     references.update(f"{commit}:{name}" for (name, _), commit in canonical.items())
     contents = trees(root, sorted(references))
     result = {}
+    archived = {}
     for name, history in histories.items():
+        current = history[0][1]["version"]
         candidates = {}
         for commit, manifest in [*history, *recent[name]]:
             candidates.setdefault(manifest["version"], set()).add(commit)
@@ -229,7 +258,7 @@ def versions(root, packages, withdrawals=None):
             if version in selected:
                 expected = contents[f"{selected[version]}:{name}"]
                 checked = [commit for commit, manifest in recent[name] if manifest["version"] == version]
-                if version == history[0][1]["version"]:
+                if version == current:
                     checked.append(history[0][0])
             else:
                 if len(identities[precedence(version)]) > 1:
@@ -242,6 +271,8 @@ def versions(root, packages, withdrawals=None):
                 checked = entries
             if any(contents[f"{commit}:{name}"] != expected for commit in checked):
                 raise ValueError(f"Package {name} {version} changed content; increase the package version")
+        if name in retired and selected.keys() - withdrawals[name]:
+            raise ValueError(f"Withdraw every version of {name} before removing its directory")
         records = []
         for version, commit in selected.items():
             source = f"{commit}:{name}/plugin.json"
@@ -264,6 +295,8 @@ def versions(root, packages, withdrawals=None):
                     precedence(minimum)
                     record["min_sailry_version"] = minimum
             records.append(record)
+            if name in retired and version == current:
+                archived[name] = manifest, record
         order = {row[0]: index for index, row in enumerate(commits[name])}
         result[name] = sorted(records, key=lambda record: (
             precedence(record["version"]), -order.get(record["commit"], len(order))), reverse=True)
@@ -277,4 +310,4 @@ def versions(root, packages, withdrawals=None):
             release_notes = notes(lambda filename: snapshots[prefix + filename], record["version"])
             if release_notes:
                 record["release_notes"] = release_notes
-    return result
+    return result, archived

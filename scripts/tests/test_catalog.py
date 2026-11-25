@@ -44,8 +44,9 @@ class Catalog(unittest.TestCase):
             declaration = {"api_version": "v1", "products": ["harness"], "requires_modules": ["files"]}
             manifest(root, "sample", version="1.0.0", extensions={"dev.sailry.platform": declaration})
             revision = commit(root, "Add product requirements")
-            records = catalog.versions(root, ["sample"])["sample"]
-            self.assertEqual(records, [{"version": "1.0.0", "commit": revision, **declaration}])
+            records, archived = catalog.versions(root, ["sample"])
+            self.assertEqual(records["sample"], [{"version": "1.0.0", "commit": revision, **declaration}])
+            self.assertEqual(archived, {})
 
     def test_projects_requirements_outside_strict_versions(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -642,6 +643,110 @@ class History(unittest.TestCase):
             })
             publish(root)
             self.assertEqual(catalog.catalog(root)["packages"][0]["versions"], records)
+
+    def test_preserves_removed_package_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            legacy = release(root, "1.0.0", "0.1.0", "## 1.0.0\n- Published legacy notes\n")
+            publish(root, [{"version": "1.0.0", "commit": legacy}])
+            requirements = {"products": ["harness"], "requires_modules": ["files"]}
+            package = root / "sample"
+            data = {"name": "sample", "version": "1.1.0", "description": "Released package",
+                    "extensions": {"dev.sailry.platform": {
+                        "api_version": "v1", "min_sailry_version": "0.2.14", **requirements,
+                    }}}
+            (package / "plugin.json").write_text(json.dumps(data))
+            (package / "CHANGELOG.md").write_text("## 1.1.0\n- Current notes\n")
+            (package / "CHANGELOG.zh-CN.md").write_text("## 1.1.0\n- 本次说明\n", encoding="utf-8")
+            skill = package / "skills" / "sample"
+            skill.mkdir(parents=True)
+            (skill / "SKILL.md").write_text("---\nname: sample\n---\n")
+            manifest(root, "active")
+            latest = commit(root, "Release package with requirements and a skill")
+            (root / "catalog-requirements.json").write_text(json.dumps({
+                "sample": {"versions": ["1.0.0"], "requires_modules": ["files"]},
+            }))
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0","1.1.0"]}')
+            before = publish(root)
+            self.assertEqual([entry["package"] for entry in before["skills"]], ["sample"])
+            archived = before["packages"][1]
+            self.assertEqual(archived["version_requirements"], {
+                "1.1.0": requirements, "1.0.0": {"requires_modules": ["files"]},
+            })
+            self.assertEqual(archived["versions"], [
+                {"version": "1.1.0", "commit": latest, "api_version": "v1", "min_sailry_version": "0.2.14",
+                 "release_notes": {"text": "- Current notes", "locales": {"zh-CN": "- 本次说明"}}, "withdrawn": True},
+                {"version": "1.0.0", "commit": legacy, "api_version": "v1", "min_sailry_version": "0.1.0",
+                 "release_notes": {"text": "- Published legacy notes"}, "withdrawn": True},
+            ])
+            git(root, "rm", "-r", "sample")
+            with self.assertRaisesRegex(ValueError, "Commit package changes"):
+                catalog.catalog(root)
+            commit(root, "Remove withdrawn package sources")
+            expected = {**before, "skills": []}
+            (root / "catalog.json").write_text("{}")
+            self.assertEqual(catalog.catalog(root), expected)
+            self.assertEqual(publish(root), expected)
+            self.assertEqual(catalog.catalog(root), expected)
+
+    def test_recovers_omitted_removed_package(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0", text="## 1.0.0\n- Unindexed notes\n")
+            legacy = release(root, "1.0.0", text="## 1.0.0\n- Published notes\n")
+            publish(root, [{"version": "1.0.0", "commit": legacy}])
+            latest = release(root, "1.1.0")
+            publish(root, [{"version": "1.1.0", "commit": latest}])
+            withdrawals = root / "catalog-withdrawn.json"
+            withdrawals.write_text('{"sample":["1.1.0","1.0.0"]}')
+            before = catalog.catalog(root)
+            git(root, "rm", "-r", "sample")
+            (root / "catalog.json").write_text('{"version":1,"packages":[],"skills":[]}')
+            commit(root, "Record a legacy catalog that omitted a withdrawn package")
+            self.assertEqual(catalog.catalog(root), before)
+
+    def test_rejects_removal_with_installable_versions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            publish(root)
+            release(root, "1.1.0")
+            git(root, "rm", "-r", "sample")
+            commit(root, "Remove a package with an unpublished version")
+            with self.assertRaisesRegex(ValueError, "Withdraw every version of sample"):
+                catalog.catalog(root)
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0"]}')
+            with self.assertRaisesRegex(ValueError, "Withdraw every version of sample"):
+                catalog.catalog(root)
+
+    def test_rejects_partial_package_removal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0", text="## 1.0.0\n- Notes\n")
+            publish(root)
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0"]}')
+            git(root, "rm", "sample/plugin.json")
+            commit(root, "Remove only the manifest")
+            with self.assertRaisesRegex(ValueError, "Missing package manifest for sample"):
+                catalog.catalog(root)
+
+    def test_rejects_removal_without_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repository(root)
+            release(root, "1.0.0")
+            unpublished = catalog.catalog(root)
+            git(root, "rm", "-r", "sample")
+            commit(root, "Remove a package before its first publication")
+            (root / "catalog.json").write_text(json.dumps(unpublished))
+            (root / "catalog-withdrawn.json").write_text('{"sample":["1.0.0"]}')
+            with self.assertRaisesRegex(ValueError, "Invalid catalog withdrawal for sample"):
+                catalog.catalog(root)
 
     def test_rejects_incomplete_checkouts(self):
         with tempfile.TemporaryDirectory() as directory:
