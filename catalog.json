@@ -11747,7 +11747,8 @@
             "locales": {
               "zh-CN": "- 产品与原生 SSH 模块声明最低需要 Harness 平台 0.2.14。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.32",
@@ -11780,7 +11781,8 @@
               "pt-BR": "- Remove manipuladores de ferramentas redundantes agora fornecidos nativamente pelo módulo Node, mantendo a interface desktop.",
               "ru": "- Удалены дублирующиеся обработчики инструментов, перенесённые в нативный модуль Node; интерфейс рабочего стола сохранён."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.30",
@@ -11792,7 +11794,8 @@
             "locales": {
               "zh-CN": "- 移除会话工具结果里的通用预览限制提示。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.29",
@@ -11812,7 +11815,8 @@
               "pt-BR": "- Cabeçalho de arquivos remotos organizado: clicar no espaço vazio edita o caminho e sair do campo cancela",
               "ru": "- Заголовок удалённых файлов упрощён: щелчок по пустому месту открывает правку пути, уход из поля отменяет её"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.28",
@@ -11832,7 +11836,8 @@
               "pt-BR": "- Usar o host SSH principal como padrão e permitir usar, criar e editar outras conexões salvas",
               "ru": "- Использовать основной SSH-хост по умолчанию и разрешить работу с другими сохранёнными подключениями, их создание и изменение"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.27",
@@ -11852,7 +11857,8 @@
               "pt-BR": "- O painel de arquivos remotos ganha um cabeçalho com caminho, edição e atualização, e mostra no painel o carregamento, pastas vazias e falhas de leitura",
               "ru": "- Панель удалённых файлов получает заголовок с путём, правкой и обновлением, а загрузка, пустые папки и ошибки чтения показываются в панели"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.26",
@@ -11872,7 +11878,8 @@
               "pt-BR": "- Selecionar um arquivo remoto com um clique e pré-visualizá-lo com dois cliques",
               "ru": "- Выбирать удалённый файл щелчком и открывать предпросмотр двойным щелчком"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.25",
@@ -11892,7 +11899,8 @@
               "pt-BR": "- Abrir um arquivo remoto na pré-visualização ao clicar",
               "ru": "- Открывать удалённый файл в предпросмотре по щелчку"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -11912,7 +11920,8 @@
               "pt-BR": "- Mostrar o caminho remoto como texto e abrir pastas vazias sem linha de espaço reservado",
               "ru": "- Показывать удалённый путь текстом и открывать пустые папки без строки-заполнителя"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -11932,7 +11941,8 @@
               "pt-BR": "- Mostrar arquivos remotos com ícones de arquivo e pasta, como o pacote Arquivos",
               "ru": "- Показывать удалённые файлы со значками файлов и папок, как в пакете «Файлы»"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -11952,7 +11962,8 @@
               "pt-BR": "- Navegar por arquivos remotos em diretórios expansíveis com cache e paginação\n- Navegar pelo caminho ou editar o caminho remoto diretamente\n- Manter menus, seleção múltipla, envios nativos e ações de substituição nas transferências",
               "ru": "- Просмотр удалённых файлов в раскрываемом дереве каталогов с кэшем и постраничной загрузкой\n- Переход по цепочке пути или прямое редактирование удалённого пути\n- Сохранены меню файлов, множественный выбор, загрузка системных файлов и замена при передаче"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -11961,7 +11972,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Show only connection progress while opening an SSH terminal\n- Return failed connections to the saved connection list without recovery buttons\n- Check an unconfirmed opening from its saved connection before starting another shell"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -11981,7 +11993,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -12001,7 +12014,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -12010,7 +12024,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Close SSH terminal tabs when their shell exits; report only non-zero exits"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -12019,7 +12034,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Keep dynamic connection schemas aligned with compact tool declarations\n- Limit SSH command timeouts to ten minutes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -12028,7 +12044,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Remove redundant numeric schema bounds while preserving host validation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -12037,7 +12054,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Require Sailry 0.1.0-alpha.4 for terminal lifecycle support"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -12045,7 +12063,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Release terminal input before closing and restore observation after a confirmed failure"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -12064,7 +12083,8 @@
               "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários\n- Manter a página normal enquanto os dados iniciais carregam",
               "ru": "- Увеличить расстояние между подписями и полями форм\n- Сохранять обычную страницу при загрузке исходных данных"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -12072,7 +12092,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Remove unused tool definition copies and retain the manifest declarations"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -12080,7 +12101,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show connection lists as concise activity while retaining command and transfer details"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -12088,7 +12110,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Run independent file changes concurrently while retaining every request outcome"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -12096,7 +12119,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Load connection inventories and terminal lists concurrently without duplicate startup reads"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -12115,47 +12139,56 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
           "commit": "af7c9c27bb6ef75ed33f3a383714e0e0b149560e",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "d40679f8b25259b4b4c1b006f276a7cb54d3b90c",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "2c103ec8f491fb3ebbc76d890c870d16d2661fdc",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "555c4d9173d3048cd024e36bd95a243494b1ee90",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "3738d94b9376e927d619bea4803cd3707b33d086",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "version_requirements": {
