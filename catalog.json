@@ -601,7 +601,8 @@
               "pt-BR": "- Restaura formulários opcionais em documentos; o Desktop envia as respostas para a conversa",
               "ru": "- Возвращены необязательные формы в документах; Desktop отправляет ответы в беседу"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -621,7 +622,8 @@
               "pt-BR": "- Entregar os arquivos HTML solicitados com present_files",
               "ru": "- Передавать запрошенные HTML-файлы через present_files"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -641,7 +643,8 @@
               "pt-BR": "- O modelo não é mais informado de que documentos aceitam formulários; eles não enviam nada",
               "ru": "- Модели больше не сообщается, что документы поддерживают формы; они ничего не отправляют"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -661,7 +664,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -680,7 +684,8 @@
               "pt-BR": "- Permitir um pequeno visual de pré-visualização sem pedido quando ajudar claramente\n- Pré-visualizações usam fundo transparente, conteúdo centralizado e variáveis de tema do host",
               "ru": "- Небольшой наглядный макет можно создать без запроса, если он явно помогает\n- Макеты используют прозрачный фон, центрированное содержимое и переменные темы хоста"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -699,7 +704,8 @@
               "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
               "ru": "- Сохранять обычную страницу при загрузке исходных данных"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -707,7 +713,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Align package contract tests with the current release metadata"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -726,42 +733,50 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos\n- Adiciona nomes de habilidades traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов\n- Добавлены переводы названий навыков"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "44e4866d92d4177339afcd8452adb0802657c096",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "5e386d2b9098db3e58d2076707459d85df6a69de",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "b28897d6617a974932748e95d2c894829308528b",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "4182be238a21599596b07cbc54ef3cd212863c81",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "4c58af66987916536627f9be59b74d0543dae6da",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "d1bf248e17d016b6f97a4d9a01257293e5ace402",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "4079ee8ca5e92eaed03989a0c2cb4c0ba1d03158",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "release_notes": {
@@ -16296,11 +16311,6 @@
     }
   ],
   "skills": [
-    {
-      "package": "brief",
-      "path": "skills/brief/SKILL.md",
-      "frontmatter": "---\nname: brief\ndescription: Create session-owned HTML documents, reports, diagrams, demos and interactive previews requested or accepted by the user, and small preview visuals that clearly help an answer. HTML does not authorize executing a plan.\nmetadata:\n  display-name: \"HTML documents\"\n  display-name.en: \"HTML documents\"\n  display-name.zh-CN: \"HTML 文档\"\n  display-name.zh-TW: \"HTML 文件\"\n  display-name.ja: \"HTML ドキュメント\"\n  display-name.ko: \"HTML 문서\"\n  display-name.fr: \"Documents HTML\"\n  display-name.de: \"HTML-Dokumente\"\n  display-name.es: \"Documentos HTML\"\n  display-name.pt-BR: \"Documentos HTML\"\n  display-name.ru: \"HTML-документы\"\n---\n"
-    },
     {
       "package": "code-review",
       "path": "skills/code-review/SKILL.md",
