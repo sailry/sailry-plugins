@@ -1262,12 +1262,12 @@
       "manifest": {
         "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
         "name": "code-review",
-        "version": "0.2.0",
+        "version": "0.2.1",
         "description": "Review code changes and pull requests with evidence-backed findings",
         "extensions": {
           "dev.sailry.platform": {
             "api_version": "v1",
-            "min_sailry_version": "0.1.6",
+            "min_sailry_version": "0.2.14",
             "scope": "host",
             "actions": [],
             "display": {
@@ -1291,6 +1291,15 @@
       "provides_models": false,
       "permissions": [],
       "versions": [
+        {
+          "version": "0.2.1",
+          "commit": "c9f473abd605550a1fe764408a427fae5ab03fb3",
+          "api_version": "v1",
+          "min_sailry_version": "0.2.14",
+          "release_notes": {
+            "text": "- Limit the package to Sailry Code and require Sailry platform 0.2.14 or later.\n- Use the available read-only evidence for each review target without requiring Git history tools or shell access. Report gaps when the exact diff is unavailable."
+          }
+        },
         {
           "version": "0.2.0",
           "commit": "311c369354d043d556cfe2b7beb72eaa3bff0394",
@@ -1558,19 +1567,204 @@
           "api_version": "v1"
         }
       ],
-      "release_notes": {
-        "text": "- Convert the package to pure skills and rule resources using native Git, file, search, and subagent tools, removing the custom JavaScript host tools and storage layer.",
-        "locales": {
-          "zh-CN": "- 瘦身为纯技能与规则资源包，直接结合原生 Git、文件、搜索与子代理工具完成代码审查，移除自定义 JavaScript 宿主工具与审查存储层。",
-          "zh-TW": "- 精簡為純技能與規則資源套件，直接結合原生 Git、檔案、搜尋與子代理工具完成程式碼審查，移除自訂 JavaScript 宿主工具與審查儲存層。",
-          "ja": "- ネイティブの Git・ファイル・検索・サブエージェントツールを使う純粋なスキルとルール集に軽量化し、独自の JavaScript ホストツールとレビュー保存層を削除しました。",
-          "ko": "- 기본 Git, 파일, 검색, 서브에이전트 도구를 사용하는 순수 스킬 및 규칙 패키지로 경량화하고, 사용자 정의 JavaScript 호스트 도구와 리뷰 저장소를 제거했습니다.",
-          "fr": "- Transforme le paquet en un ensemble pur de compétences et de règles utilisant les outils natifs Git, fichiers, recherche et sous-agents, en supprimant les outils hôtes JavaScript personnalisés et leur stockage.",
-          "de": "- Auf ein reines Skill- und Regelpaket umgestellt, das native Git-, Datei-, Such- und Subagenten-Werkzeuge nutzt; eigene JavaScript-Host-Werkzeuge und die Prüfspeicherung wurden entfernt.",
-          "es": "- Convierte el paquete en un conjunto puro de habilidades y reglas que usa herramientas nativas de Git, archivos, búsqueda y subagentes, eliminando las herramientas personalizadas de host en JavaScript y su almacenamiento.",
-          "pt-BR": "- Converte o pacote em habilidades e regras puras usando ferramentas nativas de Git, arquivos, busca e subagentes, removendo as ferramentas personalizadas de host em JavaScript e seu armazenamento.",
-          "ru": "- Пакет облегчён до набора навыков и правил, использующих встроенные инструменты Git, файлов, поиска и субагентов; пользовательские JavaScript-инструменты хоста и хранилище проверок удалены."
+      "version_requirements": {
+        "0.2.1": {
+          "products": [
+            "code"
+          ]
+        },
+        "0.2.0": {
+          "products": [
+            "code"
+          ]
+        },
+        "0.1.23": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.22": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.21": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.20": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.19": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.18": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.17": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.16": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.15": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.14": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.13": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.12": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.11": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.10": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.9": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.8": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.7": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.6": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.5": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.4": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.3": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.1": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
+        },
+        "0.1.0": {
+          "products": [
+            "code"
+          ],
+          "requires_modules": [
+            "git"
+          ]
         }
+      },
+      "release_notes": {
+        "text": "- Limit the package to Sailry Code and require Sailry platform 0.2.14 or later.\n- Use the available read-only evidence for each review target without requiring Git history tools or shell access. Report gaps when the exact diff is unavailable."
       }
     },
     {
