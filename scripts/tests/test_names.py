@@ -20,7 +20,7 @@ class Ownership(unittest.TestCase):
                      "examples/summary/generated/localizations.js"):
             with self.subTest(path=path):
                 self.assertFalse(checking.owned(Path(path)))
-        self.assertTrue(checking.owned(Path("files/dev.sailry.platform/desktop/main.js")))
+        self.assertTrue(checking.owned(Path("examples/task-notes/dev.sailry.platform/desktop/main.js")))
 
 
 class Identifiers(unittest.TestCase):
