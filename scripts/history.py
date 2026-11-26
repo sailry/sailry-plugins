@@ -191,8 +191,12 @@ def recorded(root, packages, withdrawals):
 
 
 def before_removal(root, name):
-    deletion = git(root, "log", "--first-parent", "--diff-filter=D", "--format=%H",
-                   "-1", "HEAD", "--", f"{name}/plugin.json")
+    # A merge may carry a retirement already completed on its second parent.
+    # Simplify merges that merely adopted that parent's tree so its original
+    # deletion identifies the last live package, including branch-only releases.
+    deletion = git(root, "log", "--full-history", "--simplify-merges", "--topo-order",
+                   "--no-patch", "--diff-merges=first-parent", "--diff-filter=D",
+                   "--format=%H", "-1", "HEAD", "--", f"{name}/plugin.json")
     if not deletion:
         raise ValueError(f"Missing committed package history for {name}")
     return git(root, "rev-list", "--full-history", "--topo-order", "-1",

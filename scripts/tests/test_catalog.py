@@ -691,6 +691,31 @@ class History(unittest.TestCase):
             self.assertEqual(publish(root), expected)
             self.assertEqual(catalog.catalog(root), expected)
 
+    def test_merged_retirement_keeps_final_manifest(self):
+        for previously_present in (False, True):
+            with self.subTest(previously_present=previously_present), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                repository(root)
+                manifest(root, "active")
+                commit(root, "Add active package")
+                withdrawn = []
+                if previously_present:
+                    release(root, "1.0.0")
+                    withdrawn.append("1.0.0")
+                publish(root)
+                git(root, "switch", "-c", "retirement")
+                release(root, "1.1.0", text="## 1.1.0\n- Final release\n")
+                withdrawn.append("1.1.0")
+                (root / "catalog-withdrawn.json").write_text(json.dumps({"sample": withdrawn}))
+                expected = publish(root)
+                git(root, "rm", "-r", "sample")
+                commit(root, "Retire sample")
+                git(root, "switch", "main")
+                (root / "README.md").write_text("Catalog fixture")
+                commit(root, "Update readme")
+                git(root, "merge", "--no-ff", "retirement", "-m", "Merge retirement")
+                self.assertEqual(catalog.catalog(root), expected)
+
     def test_recovers_omitted_removed_package(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
