@@ -1,11 +1,14 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
+      "min_sailry_version": "0.2.14",
+      "products": ["code"],
+      "requires_modules": ["git"],
       "scope": "host",
       "actions": [
         "git.read",
@@ -26,7 +29,7 @@
           "zh-CN": "审查代码变更与拉取请求"
         }
       },
-      "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages and use its immutable revisions, selected rule resources and whole-file groups. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict requires a fresh tool invocation and re-reading current scope; do not retry within a failed flow. These tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
+      "instructions": "For a requested code review, load code-review:code-review and establish review_scope before reading patches. Exhaust its pages, use its selected rule resources and whole-file groups, and read each patch with review_read_change using the frozen revision on every page. Report only demonstrated findings with report_finding. Each reviewer submits explicit whole-group review_complete receipts, including zero findings; only the creator finalizes after all coverage receipts. A revision_conflict requires a fresh tool invocation and re-reading current scope; do not retry within a failed flow. The scope, finding and completion tools write private review records and are unavailable in Plan mode. A review request does not authorize edits, commits or publication.",
       "storage": {
         "collections": [
           {
@@ -72,6 +75,7 @@
         ],
         "handlers": [
           "scope",
+          "readChange",
           "finding",
           "complete"
         ]
@@ -209,6 +213,51 @@
             "label": "Review scope",
             "locales": {
               "zh-CN": "审查范围"
+            },
+            "icon": "reicon:it/code"
+          }
+        },
+        {
+          "name": "review_read_change",
+          "contexts": [
+            "workspace"
+          ],
+          "presentation": "details",
+          "description": "Read a mapped diff page for an eligible file from review_scope. Pass the scope's snapshot, the file's path, metadata_revision as expected_metadata_revision, and its non-null frozen revision as expected_revision on every request, including the first page. Start at offset 0 and follow next using the same revisions until null. Do not drop the revision to retry a conflict.",
+          "handler": {
+            "name": "readChange",
+            "read_only": true,
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "worktree": {
+                  "type": ["string", "null"],
+                  "description": "Use null for the session worktree."
+                },
+                "snapshot": {
+                  "type": "object",
+                  "description": "Pass the complete snapshot returned by review_scope unchanged.",
+                  "properties": {
+                    "target": {"type": "object"},
+                    "metadata_revision": {"type": "string", "minLength": 1, "maxLength": 256}
+                  },
+                  "required": ["target", "metadata_revision"],
+                  "additionalProperties": false
+                },
+                "path": {"type": "string"},
+                "expected_metadata_revision": {"type": "string", "minLength": 1, "maxLength": 256},
+                "expected_revision": {"type": "string", "minLength": 1, "maxLength": 256},
+                "offset": {"type": "integer", "minimum": 0},
+                "limit": {"type": "integer", "minimum": 1}
+              },
+              "required": ["worktree", "snapshot", "path", "expected_metadata_revision", "expected_revision", "offset", "limit"],
+              "additionalProperties": false
+            }
+          },
+          "display": {
+            "label": "Read review change",
+            "locales": {
+              "zh-CN": "读取审查变更"
             },
             "icon": "reicon:it/code"
           }

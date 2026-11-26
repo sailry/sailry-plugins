@@ -7,7 +7,7 @@ description: Review local changes, commits or GitHub pull requests for concrete 
 
 # Code review
 
-Produce actionable findings grounded in the captured change. A review request does not authorize fixing files, committing, approving, merging or publishing feedback. These tools store private review records; they are unavailable in Plan mode. Answer questions or prepare a review plan there without claiming a completed structured review.
+Produce actionable findings grounded in the captured change. A review request does not authorize fixing files, committing, approving, merging or publishing feedback. The scope, finding and completion tools store private review records and are unavailable in Plan mode. Answer questions or prepare a review plan there without claiming a completed structured review.
 
 ## Freeze the scope
 
@@ -19,7 +19,7 @@ Read repository instructions applicable to the eligible paths. Read `rules/index
 
 ## Review every group
 
-Read each eligible patch with the Git plugin's `read_git_change` tool using the scope's `snapshot`, `path`, `metadata_revision` as `expected_metadata_revision`, and strong `revision` as `expected_revision`. Follow every diff page using its `next` offset and the same expected revision. Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read relevant surrounding source, callers and existing tests with available read-only tools when a finding needs them; keep those reads within the task and current permissions.
+Read each eligible patch with this package's `review_read_change` tool. Use `worktree:null` for the session worktree, the scope's unmodified `snapshot`, the file's `path`, its `metadata_revision` as `expected_metadata_revision`, and its strong `revision` as `expected_revision`. The tool rejects a missing or empty frozen revision before reading any page. Start with `offset:0` and `limit:200`; follow `next` until null using the same revisions. On a revision conflict, stop and establish a fresh scope; never retry without the frozen revision. If the reader is unavailable, report incomplete coverage rather than substituting an unfrozen diff. Do not fetch whole commit patches or inspect excluded credential bodies to establish coverage. Read relevant surrounding source, callers and existing tests with available read-only tools when a finding needs them; keep those reads within the task and current permissions.
 
 Groups connect directory peers, source/test or source/header counterparts and locale variants. If delegation is available, assign complete disjoint groups to direct children, giving a self-contained task with `review_id`, group IDs, exact paths/revisions, selected rule resources, constraints and expected evidence. Children share the worktree and private review store but do not see the parent conversation. Each child must return findings and complete group receipts; only the creator can finalize. The creator independently assesses delegated evidence before keeping a finding.
 

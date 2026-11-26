@@ -1,5 +1,5 @@
-import {prepareRequest, completeRequest, forgetRequest} from 'sailry/sdk';
-import {equal, fail, limits, path, revision, size} from './policy.js';
+import {context, prepareRequest, completeRequest, forgetRequest} from 'sailry/sdk';
+import {equal, fail, fields, limits, path, revision, size} from './policy.js';
 
 async function read(kind, data, expected) {
   const request = prepareRequest({kind, data});
@@ -9,6 +9,14 @@ async function read(kind, data, expected) {
     if (outcome?.Ok?.kind !== expected) fail('Unexpected Git result', 'internal');
     return outcome.Ok.data;
   } finally { forgetRequest(request); }
+}
+export function frozenPage(input) {
+  const keys = ['worktree','snapshot','path','expected_metadata_revision','expected_revision','offset','limit'];
+  const args = fields(input, keys, keys);
+  revision(args.expected_revision);
+  revision(args.expected_metadata_revision);
+  revision(args.snapshot?.metadata_revision);
+  return read('read_git_change', {...args,worktree:args.worktree ?? context().worktree}, 'git_change');
 }
 export async function inventory(worktree, target, snapshot = null) {
   const entries = [], seen = new Set();

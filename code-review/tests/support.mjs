@@ -105,6 +105,7 @@ export async function fixture(files = [file('src/main.js')], options = {}) {
   }
   return {values,calls,captured,sessions,start,finish,commit,
     invoke:async (name,args) => finish(await start(name,args)),
+    invokeRead:async (name,args) => plain(await entry.namespace[name](plain(args))),
     actor(id,parent = null,scope = worktree) {
       captured.session = id;
       captured.worktree = scope;

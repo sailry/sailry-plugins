@@ -1,5 +1,6 @@
 import {fail, result} from './policy.js';
 import {committed, identity} from './records.js';
+import {frozenPage} from './git.js';
 import {prepare as scopeRequest} from './scope.js';
 import {prepare as findingRequest} from './findings.js';
 import {prepare as completionRequest} from './complete.js';
@@ -14,5 +15,9 @@ function flow(prepare) {
   };
 }
 export const scope = flow(scopeRequest);
+export async function readChange(input) {
+  try { return await frozenPage(input); }
+  catch (error) { return result(error); }
+}
 export const finding = flow(findingRequest);
 export const complete = flow(completionRequest);
