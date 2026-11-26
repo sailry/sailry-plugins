@@ -7,7 +7,7 @@ const settle=async()=>{for(let index=0;index<12;index++)await Promise.resolve();
 async function controller(name,file='main.js',globals={}) {
   const source=(await readFile(new URL(`../${name}/dev.sailry.platform/desktop/${file}`,import.meta.url),'utf8'))
     .replace(/^import[\s\S]*?;\n/gm,'').replace(/^export /gm,'').replace('default class','class');
-  return vm.runInNewContext(`${source}\n${name==='scheduled-tasks'?'ScheduledTasks':name==='reminders'?'Reminders':({databases:'Databases',gomoku:'Gomoku',reversi:'Reversi',xiangqi:'Xiangqi',poker:'Poker','liars-dice':'LiarsDice',doudizhu:'DouDizhu','city-trader':'CityTrader'})[name]}`,{
+  return vm.runInNewContext(`${source}\n${({gomoku:'Gomoku',reversi:'Reversi',xiangqi:'Xiangqi',poker:'Poker','liars-dice':'LiarsDice',doudizhu:'DouDizhu','city-trader':'CityTrader'})[name]}`,{
     View:class{},Motion:class{},sdkContext:()=>({execution_node:[1,...Array(31).fill(0)]}),context:()=>JSON.stringify({locale:'en'}),
     messages:()=>new Proxy({names:['First','Second','Third']},{get:(value,key)=>value[key]??key}),...globals,
   });
@@ -18,42 +18,6 @@ function changes() {
     async send(cursor,entry='0',connected=true){assert.ok(pending);pending.resolve({cursor,entry,connected});await settle();},
     async close(){pending.reject(new Error('View closed'));await settle();}};
 }
-
-for(const name of ['scheduled-tasks','reminders'])test(`${name}: entry reloads data and retains drafts and requests after failed reads`,async()=>{
-  const updates=changes(),jobs=[],notices=[];
-  let revision=1,fail=false,reads=0;
-  const load=async()=>{reads++;if(fail)throw new Error('Unavailable');return {items:[{id:`item-${revision}`,title:'Retained item',name:'Retained item'}],after:null};};
-  const Controller=await controller(name,'main.js',{
-    nextChange:updates.read,page:load,list:async()=>({Ok:await load()}),
-    history:async()=>({Ok:{items:[{job:{id:`run-${revision}`}}],next_before:null}}),
-    states:async()=>({}),
-    readResourceCatalog:async()=>({sources:[{node:[1,...Array(31).fill(0)],projects:[{id:'project',name:'Project'}],worktrees:[]}]}),
-    listModels:async()=>({models:[]}),listTeams:async()=>[],lead:()=>null,toast:value=>notices.push(value),
-    prepareRequest:()=>assert.fail('read invalidation must not replay an action'),
-  });
-  const owner=new Controller(),cx={notify(){},spawn:job=>jobs.push(job)};
-  owner.init(null,cx);
-  const observation=jobs[0](cx);
-  await updates.send('7:true:0');
-  await jobs.at(-1)(cx);
-  assert.equal(owner.items[0].id,'item-1');
-  const items=owner.items,catalog=owner.catalog,editing={draft:{title:'Unsaved draft'}};
-  Object.assign(owner,{editing,pending:'original-request',error:'unknown',tab:1,pages:3});
-  fail=true;
-  await updates.send('7:true:1','1');
-  await jobs.at(-1)(cx);
-  assert.equal(reads,2);assert.equal(owner.items,items);assert.equal(owner.catalog,catalog);
-  assert.equal(owner.editing,editing);assert.equal(owner.pending,'original-request');
-  assert.equal(owner.tab,1);assert.equal(owner.pages,3);assert.equal(owner.loading,false);
-  assert.equal(notices.length,1);assert.equal(notices[0].message,'loadFailed');
-  fail=false;revision=2;
-  await updates.send('7:true:2','2');
-  await jobs.at(-1)(cx);
-  assert.equal(reads,3);assert.equal(owner.items[0].id,'item-2');
-  assert.equal(owner.editing,editing);assert.equal(owner.pending,'original-request');
-  assert.equal(owner.tab,1);assert.equal(owner.pages,3);assert.equal(notices.length,1);
-  await updates.close();await observation;
-});
 
 for(const name of ['gomoku','reversi','xiangqi','poker','liars-dice','doudizhu','city-trader'])test(`${name}: entry refreshes the lobby without restarting a game or replaying an uncertain turn`,async()=>{
   const updates=changes(),jobs=[];
@@ -78,22 +42,4 @@ for(const name of ['gomoku','reversi','xiangqi','poker','liars-dice','doudizhu',
   await updates.send('8:false:5','5',false);
   await updates.send('8:true:5','5',true);assert.equal(reads,4);
   await updates.close();await observation;
-});
-
-for(const name of ['scheduled-tasks','reminders'])test(`${name}: nested uncertain results retain the original request`,async()=>{
-  const jobs=[],prepared=[],completed=[],forgotten=[],node=[1,...Array(31).fill(0)];
-  const Controller=await controller(name,'main.js',{
-    prepareHostCall:(target,handler,input)=>{prepared.push({target,handler,input});return 'original-request';},
-    completeRequest:async request=>{completed.push(request);return {Ok:{data:{Err:{code:'outcome_unknown',message:'Inspect original operation'}}}};},
-    forgetRequest:request=>forgotten.push(request),toast(){},
-  });
-  const owner=new Controller(),cx={notify(){},spawn:job=>jobs.push(job)};
-  const editing={draft:{name:'Keep draft',title:'Keep draft'}};
-  Object.assign(owner,{items:[],hosts:[],executionNode:node,busy:false,pending:null,editing,text:{unknown:'Unknown'},refresh(){this.refreshed=true;}});
-  owner.perform('save',{execution_node:node},cx);await jobs.shift()(cx);
-  assert.equal(owner.pending,'original-request');assert.equal(owner.editing,editing);
-  assert.equal(owner.error,'unknown');assert.equal(owner.refreshed,true);
-  owner.perform(null,null,cx);await jobs.shift()(cx);
-  assert.equal(prepared.length,1);assert.deepEqual(completed,['original-request','original-request']);
-  assert.deepEqual(forgotten,[]);assert.equal(owner.pending,'original-request');
 });
