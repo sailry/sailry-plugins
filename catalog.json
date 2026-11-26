@@ -9609,7 +9609,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Use a new plugin icon"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -9618,7 +9619,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Resume refresh requests deferred by account cooldowns without periodic polling\n- Coalesce deferred reads and discard them when their view is hidden or account changes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -9627,7 +9629,8 @@
           "min_sailry_version": "0.1.0-alpha.4",
           "release_notes": {
             "text": "- Refresh account usage on visible activity and completed work instead of periodic timers\n- Preserve account results and in-flight reads across unchanged model contexts"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -9635,7 +9638,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Pause account refresh timers while their views are hidden and reuse unexpired results on reveal"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
@@ -9643,7 +9647,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read provider accounts and new contexts concurrently"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
@@ -9651,7 +9656,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Label 5-hour and 7-day usage windows as 5h and 7d"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
@@ -9659,7 +9665,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show remaining usage and shared account measurements in channel rows\n- Hide unavailable percentages and keep queries silent"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
@@ -9667,7 +9674,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show reset times in the device local time zone with a concise shared label\n- Share usage reads across sessions using the current account credential"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
@@ -9675,7 +9683,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep account usage reads silent and hide unavailable measurements\n- Preserve zero for successful nullable measurements"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
@@ -9683,7 +9692,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Fix package metadata and localized catalog descriptions"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
@@ -9691,7 +9701,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read configured GPT and Claude OAuth account usage in the shared footer"
-          }
+          },
+          "withdrawn": true
         }
       ],
       "release_notes": {
@@ -10151,7 +10162,8 @@
             "locales": {
               "zh-CN": "- 跨主机操作先核对提醒原内容，再使用执行主机的本地版本提交\n- 保留编辑草稿，拒绝并发内容变更，不重复创建定时计划\n- 同步确认仅改变版本号时，待执行通知仍可正常送达"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -10160,7 +10172,8 @@
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Retain the original request when a nested operation has an uncertain outcome."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -10169,7 +10182,8 @@
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -10181,7 +10195,8 @@
             "locales": {
               "zh-CN": "- 要求支持执行主机回调路由的 Sailry 版本"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -10193,7 +10208,8 @@
             "locales": {
               "zh-CN": "- 提醒的编辑、删除和通知记录始终由原执行主机处理\n- 新建提醒可从主控资源目录选择执行主机\n- 旧记录归属不明时保留数据，不重复创建定时计划"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -10202,7 +10218,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Keep the card border on rows that are not open in the details panel"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -10211,7 +10228,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Preserve the originating conversation scope when scheduling reminders\n- Register notification handlers before their schedules in the same transaction"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -10220,7 +10238,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Allow conversations without a project to manage unassigned reminders\n- Preserve project isolation when listing or changing reminders"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -10240,7 +10259,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -10260,7 +10280,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -10268,7 +10289,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep scheduling concurrency checks aligned with team execution"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -10276,7 +10298,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Remove redundant numeric schema bounds while preserving host validation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -10295,7 +10318,8 @@
               "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
               "ru": "- Увеличить расстояние между подписями и полями форм"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -10303,7 +10327,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read reminders, delivery records and project choices concurrently"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
@@ -10311,7 +10336,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Reduce status tags in lists and details by one size"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
@@ -10330,32 +10356,38 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "ae1093e699b4ab937cfa7db960f45468ad0db9bf",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "3f1e40f8efa050c81d1655bdddb9af47a053544d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "4b0484623a1f4f00f6c136dbdfff5701df26e709",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "release_notes": {
@@ -11282,7 +11314,8 @@
             "locales": {
               "zh-CN": "- 定时任务使用会话轮次的时钟，工具说明保持稳定"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -11294,7 +11327,8 @@
             "locales": {
               "zh-CN": "- 跨主机编辑或运行任务前核对原内容\n- 使用执行主机的本地版本提交，保留过期草稿，避免覆盖后续修改\n- 手动入队与个人数据同步并发时使用同一事务校验"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -11303,7 +11337,8 @@
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Retain the original request when a nested operation has an uncertain outcome."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -11312,7 +11347,8 @@
           "min_sailry_version": "0.2.0-alpha.2",
           "release_notes": {
             "text": "- Read remote records and edit revisions from their execution Node.\n- Keep unavailable copies visible without allowing stale edits."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -11324,7 +11360,8 @@
             "locales": {
               "zh-CN": "- 新建定时任务可从主控目录选择执行主机\n- 编辑、运行、队列控制与记录始终由原主机处理\n- 从所选执行主机读取模型和团队选项"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -11333,7 +11370,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Keep the card border on rows that are not open in the details panel"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -11342,7 +11380,8 @@
           "min_sailry_version": "0.1.6",
           "release_notes": {
             "text": "- Keep scheduled callbacks within their originating conversation's resource and permission scope"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -11362,7 +11401,8 @@
               "pt-BR": "- Escolha o modelo e o nível em um só seletor",
               "ru": "- Модель и уровень выбираются в одном списке"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -11382,7 +11422,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -11402,7 +11443,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -11411,7 +11453,8 @@
           "min_sailry_version": "0.1.0",
           "release_notes": {
             "text": "- Require Sailry 0.1.0 for team selection and associated task sessions"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -11423,7 +11466,8 @@
             "locales": {
               "zh-CN": "- 定时任务支持选择模型执行、默认团队或指定团队\n- Agent 创建任务时继承已捕获的执行配置，每次运行关联原任务"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -11431,7 +11475,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Remove redundant numeric schema bounds while preserving host validation"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -11450,7 +11495,8 @@
               "pt-BR": "- Aumentar o espaço entre rótulos e controles dos formulários",
               "ru": "- Увеличить расстояние между подписями и полями форм"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -11458,7 +11504,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Align the last-run failure icon with its title and remove its open-session shortcut"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -11466,7 +11513,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Read tasks, job records, models and project choices concurrently"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -11474,7 +11522,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Reduce status tags in lists and details by one size"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -11493,42 +11542,50 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo\n- Adiciona nomes de ferramentas traduzidos",
               "ru": "- Добавлены категория каталога и цвет значка\n- Добавлены переводы названий инструментов"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
           "commit": "1bdf518f2844c1bf90fd91d6ce6a2dd299551961",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "ae1093e699b4ab937cfa7db960f45468ad0db9bf",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "3b194ec3ae004840fe0b5bbd165438678453cfe2",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "d705412c0da6ce6c9b509bfd2cec84d7d4ca924a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "5e386d2b9098db3e58d2076707459d85df6a69de",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "96c8e4e84d4ff2dd23a8f5b3dc0b5ed5d809cf92",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "37565e7db5ae02daf50bd764c5211a7db6b05c7d",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "release_notes": {
@@ -12639,7 +12696,8 @@
               "pt-BR": "- Os TPS da última solicitação incluem a espera pelo primeiro token.",
               "ru": "- TPS последнего запроса учитывает время ожидания первого токена."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.48",
@@ -12659,7 +12717,8 @@
               "pt-BR": "- A dica de velocidade mostra o TPS de geração e o TTFT da última solicitação ao modelo e identifica o TTFT médio da sessão.",
               "ru": "- Подсказка о скорости показывает TPS генерации и TTFT последнего запроса к модели, а также обозначает средний TTFT сеанса."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.47",
@@ -12679,7 +12738,8 @@
               "pt-BR": "- A dica de velocidade no campo de entrada mostra apenas o TPS de ponta a ponta e o tempo até o primeiro token (TTFT).",
               "ru": "- Подсказка о скорости в поле ввода показывает только TPS за всё время запроса и время ожидания первого токена (TTFT)."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.46",
@@ -12699,7 +12759,8 @@
               "pt-BR": "- O rodapé do campo de entrada e o relatório de uso mostram o TPS de ponta a ponta, incluindo a espera pelo primeiro token. Quando não há dados de medição, mostram `—`.",
               "ru": "- В нижней панели поля ввода и в отчёте об использовании отображается TPS за всё время запроса с учётом ожидания первого токена. Если данных измерения нет, отображается `—`."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.45",
@@ -12711,7 +12772,8 @@
             "locales": {
               "zh-CN": "- 区分请求未报告的缓存读取和明确报告的零命中，并在缓存列提示中显示已报告的写入量。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.44",
@@ -12731,7 +12793,8 @@
               "pt-BR": "- Exibe as contagens de tokens de cache disponíveis e a cobertura das respostas quando a taxa geral de acertos é desconhecida.",
               "ru": "- Если общая доля попаданий в кеш неизвестна, отображаются доступные счётчики токенов и число учтённых ответов."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.43",
@@ -12751,7 +12814,8 @@
               "pt-BR": "- Os subtotais conhecidos são diferenciados dos totais completos quando uma resposta não informa a contagem de tokens.",
               "ru": "- Если в ответе не указано число токенов, известная сумма отмечается как неполная."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.42",
@@ -12771,7 +12835,8 @@
               "pt-BR": "- Remove o aviso de dados desatualizados de hosts da página de uso.",
               "ru": "- Удалено уведомление об устаревших данных хостов со страницы использования."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.41",
@@ -12791,7 +12856,8 @@
               "pt-BR": "- Esclarece o nome do teste de regressão de velocidade de geração e latência do primeiro token.",
               "ru": "- Уточнено название регрессионного теста скорости генерации и задержки первого токена."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.40",
@@ -12811,7 +12877,8 @@
               "pt-BR": "- Padroniza o nome em chinês dos subagentes nas estatísticas da sessão.",
               "ru": "- Унифицировано китайское название субагентов в статистике сеанса."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.39",
@@ -12831,7 +12898,8 @@
               "pt-BR": "- Esclarece a velocidade de geração no relatório de uso e nas estatísticas da sessão.",
               "ru": "- Уточнено значение скорости генерации в отчёте об использовании и статистике сеанса."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.38",
@@ -12851,7 +12919,8 @@
               "pt-BR": "- O mapa de calor de atividade mostra o histórico além do intervalo selecionado, mantém os filtros e afasta mais o título",
               "ru": "- Тепловая карта активности показывает историю за пределами выбранного периода, сохраняет фильтры и отделена от заголовка большим отступом"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.37",
@@ -12863,7 +12932,8 @@
             "locales": {
               "zh-CN": "- 按卡片宽度铺满活跃热力图，最新日期放在最后一格。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.36",
@@ -12875,7 +12945,8 @@
             "locales": {
               "zh-CN": "- 活跃热力图放在独立卡片中，每天显示为一个方格。"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.35",
@@ -12895,7 +12966,8 @@
               "pt-BR": "- Mostrar o mapa de calor de atividade também nos intervalos de 30 e 90 dias, como calendário semanal\n- Aguardar o relatório correspondente ao mudar o intervalo de datas",
               "ru": "- Показывать тепловую карту активности также для периодов 30 и 90 дней в виде недельного календаря\n- При смене периода ждать отчёт за выбранный период"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.34",
@@ -12907,7 +12979,8 @@
             "locales": {
               "zh-CN": "- 项目下拉包含所有执行主机的项目及空用量项目，项目和渠道筛选正确路由到所属主机\n- 全部项目汇总多主机用量，支持模型筛选并显示部分主机故障"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.33",
@@ -12927,7 +13000,8 @@
               "pt-BR": "- Remover o anel e o painel de contexto; agora o aplicativo os mostra no editor",
               "ru": "- Убрать кольцо и панель контекста: теперь их показывает приложение в поле ввода"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.32",
@@ -12947,7 +13021,8 @@
               "pt-BR": "- Encurtar os nomes dos testes sem alterar as asserções",
               "ru": "- Сократить названия тестов без изменения проверок"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.31",
@@ -12967,7 +13042,8 @@
               "pt-BR": "- Tabelas de uso compactas e com borda: modelo e sessão apenas pelo nome, cache como porcentagem e a participação ao lado da barra",
               "ru": "- Таблицы использования стали компактными и с рамкой: модель и сеанс показаны только названием, кэш — в процентах, доля — рядом с полосой"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.30",
@@ -12987,7 +13063,8 @@
               "pt-BR": "- Ícones de contorno restaurados na navegação e nas ferramentas",
               "ru": "- Возвращены контурные значки в навигации и инструментах"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.29",
@@ -13007,7 +13084,8 @@
               "pt-BR": "- Novo ícone do plugin",
               "ru": "- Новый значок плагина"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.28",
@@ -13027,7 +13105,8 @@
               "pt-BR": "- O tempo até o primeiro token aparece como TTFT",
               "ru": "- Время до первого токена отображается как TTFT"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.27",
@@ -13039,7 +13118,8 @@
             "locales": {
               "zh-CN": "- 首 Token 延迟数据需要 Sailry 0.1.3"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.26",
@@ -13063,7 +13143,8 @@
             "locales": {
               "zh-CN": "- 上下文步骤柱、标记与说明恢复悬停提示，并显示该步模型"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.24",
@@ -13074,7 +13155,8 @@
             "locales": {
               "zh-CN": "- 首步即显示步骤柱；无 API 响应时间时连接区改用会话均速补位\n- 工具调用按工具名分组显示，不再显示插件与 MCP 内部别名"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.23",
@@ -13085,7 +13167,8 @@
             "locales": {
               "zh-CN": "- 上下文面板收窄，只显示有数据的项，步骤柱固定宽度并新增缓存命中进度条"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.22",
@@ -13093,7 +13176,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show measured session composition when some categories are unknown and separate bar segments"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.21",
@@ -13101,7 +13185,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Align context metric values and units using shaped text baselines"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.20",
@@ -13120,7 +13205,8 @@
               "pt-BR": "- Mostrar médias de conexão da sessão e alternar detalhes de contexto de todas as etapas ou de uma",
               "ru": "- Показывать средние показатели соединений сеанса и переключать детали контекста всех или одного шага"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.19",
@@ -13139,7 +13225,8 @@
               "pt-BR": "- Mostrar a mesma velocidade média da sessão no rodapé e nos detalhes de contexto",
               "ru": "- Показывать одинаковую среднюю скорость сеанса внизу и в сведениях о контексте"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.18",
@@ -13147,7 +13234,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep slow connection observations visible using the semantic error color"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.17",
@@ -13166,7 +13254,8 @@
               "pt-BR": "- Manter a página normal enquanto os dados iniciais carregam",
               "ru": "- Сохранять обычную страницу при загрузке исходных данных"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.16",
@@ -13185,7 +13274,8 @@
               "pt-BR": "- Alinha os gráficos de contexto, as unidades e a ordem das seções ao layout de estatísticas.",
               "ru": "- Согласованы графики контекста, единицы измерения и порядок разделов статистики."
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.15",
@@ -13204,7 +13294,8 @@
               "pt-BR": "- Uma etapa de contexto por turno, hierarquia mais clara entre valores e unidades e alinhamento das barras de contexto e duração",
               "ru": "- Один шаг контекста на ход беседы, более чёткая иерархия чисел и единиц и выравнивание полос контекста и времени"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.14",
@@ -13223,7 +13314,8 @@
               "pt-BR": "- Mostrar tempo de resposta API e cores de latência por solicitação, restaurar ícones e alinhar números de contexto e linhas expansíveis, com a composição da sessão logo abaixo do uso",
               "ru": "- Показывать время ответа API и цвет задержки каждого запроса, восстановить значки и выровнять показатели контекста и раскрываемые строки; состав сеанса расположен сразу после использования"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.13",
@@ -13242,7 +13334,8 @@
               "pt-BR": "- Ajustar o espaçamento, o alinhamento dos valores e as conexões do painel; abrir os detalhes abaixo dos controles e mostrar as estatísticas salvas antes de carregar as mensagens\n\n# Changes",
               "ru": "- Выровнять отступы, значения и соединения панели; раскрывать сведения под кнопками и показывать сохранённую статистику до загрузки сообщений\n\n# Changes"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.12",
@@ -13250,7 +13343,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Keep compaction budgets in the meter and explain partial source attribution on hover"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.11",
@@ -13258,7 +13352,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show scoped context, session usage, active time, connection observations and composition in the session header\n- Keep unknown measurements distinct from zero and history selection separate from current occupancy\n\n# Changes"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.10",
@@ -13266,7 +13361,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "Keep the composer ring passive and show compact context details from the statistics row on hover. Hide unavailable measurements."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.9",
@@ -13274,7 +13370,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "Show context usage, effective compaction budgets and the latest maintenance record in the composer popover. Preserve unknown measurements and the model capacity attached to each observation."
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.8",
@@ -13282,7 +13379,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Show an estimated current context after compaction without changing recorded usage or cost"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.7",
@@ -13290,7 +13388,8 @@
           "api_version": "v1",
           "release_notes": {
             "text": "- Pair context usage with the model limit captured for that response"
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.6",
@@ -13309,37 +13408,44 @@
               "pt-BR": "- Adiciona categoria e cor do ícone ao catálogo",
               "ru": "- Добавлены категория каталога и цвет значка"
             }
-          }
+          },
+          "withdrawn": true
         },
         {
           "version": "0.1.5",
           "commit": "3dcd51a59c31a1e7e79fd17c562fdc92a4f4bf1a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.4",
           "commit": "a0f63ca998dc4510e70c927f5217e77c5a490429",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.3",
           "commit": "a31669a05fbf02fca0285861a22b41d56037a27a",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.2",
           "commit": "375d13c18f699896fed8c4fd6a95596cbd271118",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.1",
           "commit": "56106f5b5b18502eac65e8c20bf3388806ab8e11",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         },
         {
           "version": "0.1.0",
           "commit": "87b921e843dfe09241602044c61fa908faf0c3d8",
-          "api_version": "v1"
+          "api_version": "v1",
+          "withdrawn": true
         }
       ],
       "release_notes": {
