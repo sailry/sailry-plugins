@@ -21,12 +21,13 @@ Review the requested change and report concrete, actionable regressions. A revie
 
 ## Scope and rules
 
-1. Establish the exact review target using native Git tools (`git_status`, `git_diff`, `git_log`) or Git commands when authorized:
-   - Local worktree changes (staged, unstaged, and untracked files as requested)
-   - A specific commit or `base..head` commit range
-   - A pull request: read its description, existing review threads, checks, and exact base/head SHAs before inspecting the diff
+1. Establish the exact review target and use available read-only evidence for that target:
+   - For local changes, use `git_status` for the inventory and `git_diff` for each tracked file in the requested staged, unstaged, or combined scope, when those tools are available. Read requested untracked files with a file reader.
+   - For a commit or `base..head` range, use a diff source that supports the exact commit or both endpoints. Worktree status and diffs do not establish commit or range coverage.
+   - For a pull request, read its description, existing review threads, checks, and exact base/head SHAs. Use available GitHub reads or other evidence for those revisions.
+   - Use read-only Git commands only when a shell is available and authorized. A supplied patch for the requested scope can also be reviewed. If the exact diff cannot be obtained, ask for it or state what cannot be reviewed; do not substitute a different scope.
 2. Read `rules/index.md` via `read_skill_resource` for `code-review:code-review`, map the changed file paths to rule files, and load each applicable `rules/<name>.md` once. Also apply repository instructions (such as `AGENTS.md`) scoped to the changed paths.
-3. Inspect diffs and surrounding context directly with native `read_file` and `search_files` in parallel batches. Check relevant unchanged callers, interfaces, and tests when verifying a suspected bug. Note generated, binary, oversized, or inaccessible files that were skipped.
+3. Inspect diffs and use available read-only file and search tools for surrounding context, in parallel batches when independent. Check relevant unchanged callers, interfaces, and tests when verifying a suspected bug. Note generated, binary, oversized, or inaccessible files that were skipped.
 
 ## Review and delegation
 

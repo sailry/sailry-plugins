@@ -10,7 +10,9 @@ invalidate the preview; they do not automatically refresh or save it.
 Register a project containing this package on the execution Node and install
 `examples/project-summary` from its worktree-relative path in plugin settings.
 Open a conversation in that Node's Git worktree, then select Project summary in
-the resource panel. Skill use does not require an open panel.
+the resource panel. The panel and headless callbacks require the execution
+Node's Git service. The skill can use available read-only evidence without the
+panel or callbacks.
 
 The panel captures its Node, worktree, optional session and exact package
 revision. Its strings live in `desktop/locales.js`. `include_untracked` initializes

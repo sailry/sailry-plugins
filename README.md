@@ -65,8 +65,9 @@ installable package contents or commit identities. A package using either declar
 Harness platform `0.2.14` or later, independent of a downstream product's marketing
 version (for example, Code `0.1.0`).
 
-`catalog-requirements.json` supplements known native module dependencies for
-explicitly listed legacy package versions. The generator adds these only to
+`catalog-requirements.json` supplements known product and module requirements for
+explicitly listed legacy package versions. Use disjoint version groups if the
+requirements differ across releases. The generator adds these only to
 `version_requirements`; it preserves the immutable manifests and original host
 version floors. A supplement cannot contradict an authored declaration. Module
 dependencies belong to the package feature, not every permission it requests:

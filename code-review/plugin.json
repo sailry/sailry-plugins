@@ -1,12 +1,13 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-review",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Review code changes and pull requests with evidence-backed findings",
   "extensions": {
     "dev.sailry.platform": {
       "api_version": "v1",
-      "min_sailry_version": "0.1.6",
+      "min_sailry_version": "0.2.14",
+      "products": ["code"],
       "scope": "host",
       "actions": [],
       "display": {

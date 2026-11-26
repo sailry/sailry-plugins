@@ -68,20 +68,26 @@ def legacy_requirements(root, version_history):
     if not isinstance(declarations, dict):
         raise ValueError("Legacy catalog requirements must name packages")
     result = {}
-    for name, declaration in declarations.items():
-        if (name not in version_history or not isinstance(declaration, dict)
-                or set(declaration) - {"versions", "products", "requires_modules"}):
+    for name, groups in declarations.items():
+        if isinstance(groups, dict):
+            groups = [groups]
+        if name not in version_history or not isinstance(groups, list) or not groups:
             raise ValueError(f"Invalid legacy catalog requirements for {name}")
-        selected = declaration.get("versions")
         available = {record["version"] for record in version_history[name]}
-        if (not isinstance(selected, list) or not selected
-                or any(not isinstance(version, str) for version in selected)
-                or len(selected) != len(set(selected)) or not set(selected) <= available):
-            raise ValueError(f"Invalid legacy catalog requirements for {name}")
-        requirements = runtime_requirements(declaration)
-        if not requirements:
-            raise ValueError(f"Missing legacy catalog requirements for {name}")
-        result[name] = {version: requirements for version in selected}
+        by_version = result[name] = {}
+        for declaration in groups:
+            if not isinstance(declaration, dict) or set(declaration) - {"versions", "products", "requires_modules"}:
+                raise ValueError(f"Invalid legacy catalog requirements for {name}")
+            selected = declaration.get("versions")
+            if (not isinstance(selected, list) or not selected
+                    or any(not isinstance(version, str) for version in selected)
+                    or len(selected) != len(set(selected)) or not set(selected) <= available
+                    or not set(selected).isdisjoint(by_version)):
+                raise ValueError(f"Invalid legacy catalog requirements for {name}")
+            requirements = runtime_requirements(declaration)
+            if not requirements:
+                raise ValueError(f"Missing legacy catalog requirements for {name}")
+            by_version.update((version, requirements) for version in selected)
     return result
 
 

@@ -120,6 +120,9 @@ class Catalog(unittest.TestCase):
             history = {"sample": [{"version": "1.0.0", "requires_modules": ["git"]}]}
             path = root / "catalog-requirements.json"
             for invalid in [[], {"other": {"versions": ["1.0.0"], "requires_modules": ["files"]}},
+                            {"sample": []}, {"sample": [None]},
+                            {"sample": [{"versions": ["1.0.0"], "products": ["code"]},
+                                        {"versions": ["1.0.0"], "requires_modules": ["git"]}]},
                             {"sample": {"versions": ["2.0.0"], "requires_modules": ["files"]}},
                             {"sample": {"versions": ["1.0.0", "1.0.0"], "requires_modules": ["git"]}},
                             {"sample": {"versions": ["1.0.0"]}},
@@ -131,11 +134,42 @@ class Catalog(unittest.TestCase):
 
     def test_official_legacy_modules_are_feature_scoped(self):
         declarations = json.loads((SCRIPT.parents[1] / "catalog-requirements.json").read_text())
+        del declarations["code-review"]
         self.assertEqual(set(declarations), {"files", "git", "databases", "ssh", "worktrees"})
         for name, declaration in declarations.items():
             self.assertEqual(declaration["requires_modules"], [name])
         self.assertIn("0.1.40", declarations["git"]["versions"])
         self.assertIn("0.1.32", declarations["files"]["versions"])
+
+    def test_code_review_requires_code_including_official_fallbacks(self):
+        source = SCRIPT.parents[1]
+        data = json.loads((source / "code-review" / "plugin.json").read_text())
+        example = json.loads((source / "examples" / "project-summary" / "plugin.json").read_text())
+        extension = data["extensions"]["dev.sailry.platform"]
+        self.assertGreaterEqual(catalog.precedence(extension["min_sailry_version"]), catalog.precedence("0.2.14"))
+        self.assertEqual(catalog.runtime_requirements(extension), {"products": ["code"]})
+        self.assertNotIn("products", example["extensions"]["dev.sailry.platform"])
+
+        published = json.loads((source / "catalog.json").read_text())
+        previous = next(entry["versions"] for entry in published["packages"] if entry["id"] == "code-review")
+        supplements = json.loads((source / "catalog-requirements.json").read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "code-review" / "plugin.json"
+            path.parent.mkdir()
+            path.write_text(json.dumps(data))
+            (root / "catalog-requirements.json").write_text(json.dumps({"code-review": supplements["code-review"]}))
+            entry = catalog.catalog(root, version_history={"code-review": previous})["packages"][0]
+            requirements = entry["version_requirements"]
+            self.assertEqual(requirements[data["version"]], {"products": ["code"]})
+            self.assertEqual(requirements["0.2.0"], {"products": ["code"]})
+            frozen = [record["version"] for record in previous if record["version"].startswith("0.1.")]
+            self.assertIn("0.1.23", frozen)
+            for version in frozen:
+                self.assertEqual(requirements[version], {"products": ["code"], "requires_modules": ["git"]})
+            self.assertEqual(entry["versions"], previous)
+            self.assertEqual(catalog.runtime_requirements(entry["manifest"]["extensions"]["dev.sailry.platform"]), {})
+            self.assertEqual(json.loads(path.read_text()), data)
 
     def test_preserves_metadata(self):
         with tempfile.TemporaryDirectory() as directory:

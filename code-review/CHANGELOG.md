@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.1
+
+- Limit the package to Sailry Code and require Sailry platform 0.2.14 or later.
+- Use the available read-only evidence for each review target without requiring Git history tools or shell access. Report gaps when the exact diff is unavailable.
+
 ## 0.2.0
 
 - Convert the package to pure skills and rule resources using native Git, file, search, and subagent tools, removing the custom JavaScript host tools and storage layer.
